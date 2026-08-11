@@ -14,7 +14,6 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "postinstall": "prisma generate --schema=libs/database/prisma/schema.prisma",
     "lint-staged": "lint-staged",
     "setup": "./scripts/setup.sh",
     "clean": "./scripts/clean.sh",
