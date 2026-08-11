@@ -73,3 +73,6 @@ ios
 *.db-journal
 *secret*.json
 *credentials*.json
+
+.claude/worktrees
+.claude/settings.local.json
