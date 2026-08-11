@@ -15197,12 +15197,12 @@
       },
       {
         "source": "@student-erp/ui",
-        "target": "npm:tailwind-merge",
+        "target": "npm:tailwind-merge@2.6.1",
         "type": "static"
       },
       {
         "source": "@student-erp/ui",
-        "target": "npm:lucide-react",
+        "target": "npm:lucide-react@0.400.0",
         "type": "static"
       }
     ],
@@ -15286,12 +15286,12 @@
       },
       {
         "source": "web",
-        "target": "npm:framer-motion",
+        "target": "npm:framer-motion@11.18.2",
         "type": "static"
       },
       {
         "source": "web",
-        "target": "npm:lucide-react",
+        "target": "npm:lucide-react@0.400.0",
         "type": "static"
       },
       {
@@ -15302,16 +15302,6 @@
       {
         "source": "web",
         "target": "npm:next",
-        "type": "static"
-      },
-      {
-        "source": "web",
-        "target": "npm:lucide-react@0.400.0",
-        "type": "static"
-      },
-      {
-        "source": "web",
-        "target": "npm:framer-motion@11.18.2",
         "type": "static"
       },
       {
@@ -35500,5 +35490,5 @@
   },
   "version": "6.0",
   "errors": [],
-  "computedAt": 1786421323417
+  "computedAt": 1786427002656
 }

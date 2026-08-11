@@ -1,6 +1,0 @@
-
-> @student-erp/config@0.0.0 typecheck /home/ybl/proj/Ellipsonic/ERP/student_erp/packages/config
-> tsc --noEmit
-
-error TS18003: No inputs were found in config file '/home/ybl/proj/Ellipsonic/ERP/student_erp/packages/config/tsconfig.json'. Specified 'include' paths were '["src/**/*.ts","src/**/*.tsx"]' and 'exclude' paths were '["node_modules","dist"]'.
-[41m[30m ELIFECYCLE [39m[49m [31mCommand failed with exit code 2.[39m

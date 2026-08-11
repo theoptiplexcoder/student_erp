@@ -1,10 +1,26 @@
-import { type NextRequest } from "next/server";
-import { updateSession } from "./src/lib/supabase/middleware";
+import { NextResponse, type NextRequest } from "next/server";
+// import { updateSession } from "./src/lib/supabase/middleware";
 
-const protectedRoutePatterns = ["/admin", "/faculty", "/student", "/tenant-admin"];
+// const protectedRoutePatterns = ["/admin", "/faculty", "/student", "/tenant-admin"];
+
+/*
+ * ============================================================================
+ * MIDDLEWARE TEMPORARILY DISABLED
+ * ============================================================================
+ * 
+ * To re-enable the middleware:
+ * 1. Uncomment the `updateSession` import at the top of this file.
+ * 2. Uncomment the `protectedRoutePatterns` variable (if needed).
+ * 3. Remove or comment out `return NextResponse.next();` below.
+ * 4. Uncomment `return await updateSession(request);`.
+ */
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+  // 🔴 TEMPORARILY DISABLED: Returning next() immediately bypasses authentication checks.
+  return NextResponse.next();
+  
+  // 🟢 TO ENABLE: Uncomment the line below and remove the NextResponse.next() above.
+  // return await updateSession(request);
 }
 
 export const config = {

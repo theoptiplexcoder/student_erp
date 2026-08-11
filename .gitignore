@@ -32,6 +32,7 @@ Thumbs.db
 
 # Nx
 .turbo
+.nx
 
 # Prisma
 prisma/generated
