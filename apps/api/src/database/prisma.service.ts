@@ -1,9 +1,13 @@
-import { PrismaClient } from "@prisma/client";
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client';
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
+@Injectable()
+export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  async onModuleInit() {
+    await this.$connect();
+  }
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient();
-
-if (process.env['NODE_ENV'] !== "production") globalForPrisma.prisma = prisma;
+  async onModuleDestroy() {
+    await this.$disconnect();
+  }
+}

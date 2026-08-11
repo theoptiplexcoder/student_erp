@@ -2,9 +2,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Tabl
 import { Plus, Eye, Edit } from "lucide-react";
 import Link from "next/link";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
 async function getCourses() {
   try {
-    const res = await fetch('http://localhost:3001/api/admin/courses', { cache: 'no-store' });
+    const res = await fetch(`${API_URL}/api/admin/courses`, { cache: "no-store" });
     if (!res.ok) return [];
     return res.json();
   } catch (e) {
@@ -59,10 +61,10 @@ export default async function CoursesPage() {
                     <TableCell className="font-medium">{course.code}</TableCell>
                     <TableCell>{course.name}</TableCell>
                     <TableCell>{course.creditValue}</TableCell>
-                    <TableCell>{course.program?.name || '-'}</TableCell>
-                    <TableCell>{course.department?.name || '-'}</TableCell>
+                    <TableCell>{course.program?.name || "-"}</TableCell>
+                    <TableCell>{course.department?.name || "-"}</TableCell>
                     <TableCell>
-                      <Badge variant={course.status === 'ACTIVE' ? 'default' : 'secondary'}>
+                      <Badge variant={course.status === "ACTIVE" ? "default" : "secondary"}>
                         {course.status}
                       </Badge>
                     </TableCell>
@@ -72,9 +74,11 @@ export default async function CoursesPage() {
                           <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
-                      <Button variant="ghost" size="icon">
-                        <Edit className="h-4 w-4" />
-                      </Button>
+                      <Link href={`/admin/academics/courses/${course.id}/edit`}>
+                        <Button variant="ghost" size="icon">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))}

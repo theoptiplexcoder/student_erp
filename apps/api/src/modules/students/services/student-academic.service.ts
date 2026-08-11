@@ -1,18 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { prisma } from '../../../database/prisma.service';
+import { PrismaService } from '../../../database/prisma.service';
 
 @Injectable()
 export class StudentAcademicService {
+  constructor(private readonly prisma: PrismaService) {}
+
   async getCourses(authUserId: string, institutionId: string) {
-    const student = await prisma.student.findFirst({
-      where: { user: { authUserId, institutionId } }
+    const student = await this.prisma.student.findFirst({
+      where: { user: { authUserId, institutionId } },
     });
 
     if (!student) {
       return [];
     }
 
-    const enrollments = await prisma.enrollment.findMany({
+    const enrollments = await this.prisma.enrollment.findMany({
       where: {
         institutionId,
         studentId: student.id,
@@ -22,13 +24,13 @@ export class StudentAcademicService {
         course: {
           include: {
             department: true,
-          }
+          },
         },
         term: true,
       },
     });
 
-    return enrollments.map(e => ({
+    return enrollments.map((e) => ({
       ...e.course,
       enrollmentId: e.id,
       term: e.term,
@@ -36,34 +38,33 @@ export class StudentAcademicService {
   }
 
   async getCourseDetails(authUserId: string, institutionId: string, courseId: string) {
-    const student = await prisma.student.findFirst({
-      where: { user: { authUserId, institutionId } }
+    const student = await this.prisma.student.findFirst({
+      where: { user: { authUserId, institutionId } },
     });
 
     if (!student) return null;
 
-    // Verify enrollment
-    const enrollment = await prisma.enrollment.findFirst({
+    const enrollment = await this.prisma.enrollment.findFirst({
       where: {
         institutionId,
         studentId: student.id,
         courseId,
-      }
+      },
     });
 
     if (!enrollment) {
       throw new Error('Not enrolled in this course');
     }
 
-    const course = await prisma.course.findUnique({
+    const course = await this.prisma.course.findUnique({
       where: { id: courseId },
       include: {
         department: true,
         courseResources: true,
         assignments: {
-          where: { status: 'PUBLISHED' }
-        }
-      }
+          where: { status: 'PUBLISHED' },
+        },
+      },
     });
 
     return course;

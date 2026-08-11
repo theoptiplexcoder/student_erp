@@ -1,23 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { prisma } from '../../../database/prisma.service';
+import { PrismaService } from '../../../database/prisma.service';
 import { PolicyFactory } from '../../../common/policies/policy.factory';
 
 @Injectable()
 export class StudentAttendanceService {
-  constructor(private policyFactory: PolicyFactory) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private policyFactory: PolicyFactory,
+  ) {}
 
   async getAttendanceSummary(authUserId: string, institutionId: string) {
-    const student = await prisma.student.findFirst({
+    const student = await this.prisma.student.findFirst({
       where: { user: { authUserId, institutionId } },
-      include: { institution: true }
+      include: { institution: true },
     });
 
     if (!student) return [];
 
     const policy = this.policyFactory.getPolicy(student.institution.institutionType);
 
-
-    const enrollments = await prisma.enrollment.findMany({
+    const enrollments = await this.prisma.enrollment.findMany({
       where: {
         institutionId,
         studentId: student.id,
@@ -28,24 +30,25 @@ export class StudentAttendanceService {
       },
     });
 
-    // Compute attendance for each enrolled course
     const results = await Promise.all(
       enrollments.map(async (enr) => {
-        const records = await prisma.attendanceRecord.findMany({
+        const records = await this.prisma.attendanceRecord.findMany({
           where: {
             institutionId,
             studentId: student.id,
             attendanceSession: {
               courseId: enr.courseId || '',
-            }
+            },
           },
           include: {
             attendanceSession: true,
-          }
+          },
         });
 
         const totalSessions = records.length;
-        const presentSessions = records.filter(r => r.status === 'PRESENT' || r.status === 'LATE').length;
+        const presentSessions = records.filter(
+          (r) => r.status === 'PRESENT' || r.status === 'LATE',
+        ).length;
         const percentage = totalSessions > 0 ? (presentSessions / totalSessions) * 100 : 0;
 
         return {
@@ -54,52 +57,51 @@ export class StudentAttendanceService {
           presentSessions,
           percentage,
           requiredPercentage: policy.minimumAttendanceThreshold,
-          meetsRequirement: percentage >= policy.minimumAttendanceThreshold
+          meetsRequirement: percentage >= policy.minimumAttendanceThreshold,
         };
-      })
+      }),
     );
 
     return results;
   }
 
   async getCourseAttendance(authUserId: string, institutionId: string, courseId: string) {
-    const student = await prisma.student.findFirst({
+    const student = await this.prisma.student.findFirst({
       where: { user: { authUserId, institutionId } },
-      include: { institution: true }
+      include: { institution: true },
     });
 
     if (!student) return null;
 
     const policy = this.policyFactory.getPolicy(student.institution.institutionType);
 
-
-    const records = await prisma.attendanceRecord.findMany({
+    const records = await this.prisma.attendanceRecord.findMany({
       where: {
         institutionId,
         studentId: student.id,
         attendanceSession: {
           courseId,
-        }
+        },
       },
       include: {
         attendanceSession: {
           include: {
             faculty: {
-              include: { user: true }
-            }
-          }
+              include: { user: true },
+            },
+          },
         },
       },
       orderBy: {
         attendanceSession: {
-          date: 'desc'
-        }
-      }
+          date: 'desc',
+        },
+      },
     });
 
     return {
       records,
-      requiredPercentage: policy.minimumAttendanceThreshold
+      requiredPercentage: policy.minimumAttendanceThreshold,
     };
   }
 }

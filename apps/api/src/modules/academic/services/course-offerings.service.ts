@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient(); // Simplification for ERP context; normally injected
+import { PrismaService } from '../../../database/prisma.service';
 
 @Injectable()
 export class CourseOfferingsService {
+  constructor(private readonly prisma: PrismaService) {}
+
   async create(createCourseOfferingDto: any) {
-    return prisma.courseOffering.create({
+    return this.prisma.courseOffering.create({
       data: createCourseOfferingDto,
     });
   }
@@ -16,7 +16,7 @@ export class CourseOfferingsService {
     if (courseId) where.courseId = courseId;
     if (termId) where.termId = termId;
 
-    return prisma.courseOffering.findMany({
+    return this.prisma.courseOffering.findMany({
       where,
       include: {
         course: true,
@@ -30,7 +30,7 @@ export class CourseOfferingsService {
   }
 
   async findOne(id: string) {
-    const offering = await prisma.courseOffering.findUnique({
+    const offering = await this.prisma.courseOffering.findUnique({
       where: { id },
       include: {
         course: true,
@@ -48,14 +48,14 @@ export class CourseOfferingsService {
   }
 
   async update(id: string, updateCourseOfferingDto: any) {
-    return prisma.courseOffering.update({
+    return this.prisma.courseOffering.update({
       where: { id },
       data: updateCourseOfferingDto,
     });
   }
 
   async remove(id: string) {
-    return prisma.courseOffering.delete({
+    return this.prisma.courseOffering.delete({
       where: { id },
     });
   }

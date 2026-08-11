@@ -1,11 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge } from "@student-erp/ui";
 import Link from "next/link";
-import { Plus, AlertCircle } from "lucide-react";
+import { Plus, AlertCircle, Edit } from "lucide-react";
 import { notFound } from "next/navigation";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 async function getCourse(id: string) {
   try {
-    const res = await fetch(`http://localhost:3001/api/admin/courses/${id}`, { cache: 'no-store' });
+    const res = await fetch(`${API_URL}/api/admin/courses/${id}`, { cache: "no-store" });
     if (!res.ok) {
       if (res.status === 404) return null;
       throw new Error("Failed to fetch course");
@@ -30,11 +32,17 @@ export default async function CourseDetailsPage({ params }: { params: { courseId
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{course.name}</h1>
-          <p className="text-muted-foreground">{course.code} • {course.creditValue} Credits • {course.program?.name || "No Program"}</p>
+          <p className="text-muted-foreground">
+            {course.code} • {course.creditValue} Credits • {course.program?.name || "No Program"}
+          </p>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline">Edit Course</Button>
-          <Link href={`/admin/academics/courses/offerings/new?courseId=${courseId}`}>
+          <Link href={`/admin/academics/courses/${courseId}/edit`}>
+            <Button variant="outline">
+              <Edit className="mr-2 h-4 w-4" /> Edit Course
+            </Button>
+          </Link>
+          <Link href={`/admin/academics/courses/${courseId}/offerings/new`}>
             <Button>
               <Plus className="mr-2 h-4 w-4" /> Create Offering
             </Button>
@@ -58,7 +66,9 @@ export default async function CourseDetailsPage({ params }: { params: { courseId
             </div>
             <div className="flex justify-between border-b pb-2">
               <span className="font-semibold">Status</span>
-              <Badge variant={course.status === 'ACTIVE' ? 'default' : 'secondary'}>{course.status}</Badge>
+              <Badge variant={course.status === "ACTIVE" ? "default" : "secondary"}>
+                {course.status}
+              </Badge>
             </div>
             {course.description && (
               <div className="flex justify-between pt-2">
@@ -83,11 +93,15 @@ export default async function CourseDetailsPage({ params }: { params: { courseId
                       <h4 className="font-semibold">{offering.term?.name || "Unknown Term"}</h4>
                       <p className="text-sm text-muted-foreground">
                         {offering.section ? `Section ${offering.section.name}` : "No Section"}
-                        {offering.enrollments?.length > 0 ? ` • ${offering.enrollments.length} Enrolled` : " • 0 Enrolled"}
+                        {offering.enrollments?.length > 0
+                          ? ` • ${offering.enrollments.length} Enrolled`
+                          : " • 0 Enrolled"}
                       </p>
                     </div>
                     <Link href={`/admin/academics/courses/offerings/${offering.id}`}>
-                      <Button variant="secondary" size="sm">Manage</Button>
+                      <Button variant="secondary" size="sm">
+                        Manage
+                      </Button>
                     </Link>
                   </div>
                 ))

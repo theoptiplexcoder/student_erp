@@ -1,26 +1,33 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient, Course, Prisma } from '@prisma/client';
-
-const prisma = new PrismaClient(); // normally injected in ERP context
+import { PrismaService } from '../../../database/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CoursesService {
+  constructor(private readonly prisma: PrismaService) {}
+
   async create(data: Prisma.CourseUncheckedCreateInput) {
-    return prisma.course.create({ data });
+    return this.prisma.course.create({ data });
   }
 
-  async findAll() {
-    return prisma.course.findMany({
+  async findAll(institutionId?: string) {
+    const where: Prisma.CourseWhereInput = {};
+    if (institutionId) {
+      where.institutionId = institutionId;
+    }
+
+    return this.prisma.course.findMany({
+      where,
       include: {
         program: true,
         department: true,
         classLevel: true,
-      }
+      },
     });
   }
 
   async findOne(id: string) {
-    const course = await prisma.course.findUnique({
+    const course = await this.prisma.course.findUnique({
       where: { id },
       include: {
         program: true,
@@ -33,9 +40,9 @@ export class CoursesService {
             batch: true,
             section: true,
             enrollments: true,
-          }
+          },
         },
-      }
+      },
     });
 
     if (!course) {
@@ -46,13 +53,13 @@ export class CoursesService {
   }
 
   async update(id: string, data: Prisma.CourseUpdateInput) {
-    return prisma.course.update({
+    return this.prisma.course.update({
       where: { id },
       data,
     });
   }
 
   async remove(id: string) {
-    return prisma.course.delete({ where: { id } });
+    return this.prisma.course.delete({ where: { id } });
   }
 }

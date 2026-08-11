@@ -1,10 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { prisma } from '../../../database/prisma.service';
+import { PrismaService } from '../../../database/prisma.service';
 
 @Injectable()
 export class StudentService {
+  constructor(private readonly prisma: PrismaService) {}
+
   async getStudentProfile(authUserId: string, institutionId: string) {
-    const student = await prisma.student.findFirst({
+    const student = await this.prisma.student.findFirst({
       where: {
         user: {
           authUserId,
@@ -28,11 +30,10 @@ export class StudentService {
   async getDashboardData(authUserId: string, institutionId: string) {
     const student = await this.getStudentProfile(authUserId, institutionId);
 
-    // Get today's timetable
-    const today = new Date().getDay(); // 0-6 (Sun-Sat)
+    const today = new Date().getDay();
     const dayMap = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-    
-    const timetable = await prisma.timetableEntry.findMany({
+
+    const timetable = await this.prisma.timetableEntry.findMany({
       where: {
         institutionId,
         sectionId: student.sectionId ?? undefined,
@@ -41,13 +42,12 @@ export class StudentService {
       include: {
         course: true,
         faculty: {
-          include: { user: true }
+          include: { user: true },
         },
       },
     });
 
-    // Enrolled courses count
-    const enrollments = await prisma.enrollment.count({
+    const enrollments = await this.prisma.enrollment.count({
       where: {
         institutionId,
         studentId: student.id,
@@ -59,7 +59,6 @@ export class StudentService {
       student,
       stats: {
         enrolledCourses: enrollments,
-        // Mocked stats, should be implemented realistically later
         attendancePercentage: 85.5,
         upcomingDeadlines: 2,
       },
