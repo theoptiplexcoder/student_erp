@@ -3402,6 +3402,15 @@
         "hash": "sha512-wHpNJDPzM6XtZUOB3gW0J6mkFCSJilzCM3XrHI1o0C8vZmFE1snbmkIXNyoi1eV0Nxh1BMymcgz5vIMJgQtTqw=="
       }
     },
+    "npm:@nestjs/testing": {
+      "type": "npm",
+      "name": "npm:@nestjs/testing",
+      "data": {
+        "version": "10.4.22",
+        "packageName": "@nestjs/testing",
+        "hash": "sha512-HO9aPus3bAedAC+jKVAA8jTdaj4fs5M9fing4giHrcYV2txe9CvC1l1WAjwQ9RDhEHdugjY4y+FZA/U/YqPZrA=="
+      }
+    },
     "npm:@next/env": {
       "type": "npm",
       "name": "npm:@next/env",
@@ -5191,6 +5200,15 @@
         "version": "3.0.4",
         "packageName": "@types/istanbul-reports",
         "hash": "sha512-pk2B1NWalF9toCRu6gjBzR69syFjP4Od8WRAX+0mmf9lAjCRicLOWc+ZrxZHx/0XRjotgkF9t6iaMJ+aXcOdZQ=="
+      }
+    },
+    "npm:@types/jest": {
+      "type": "npm",
+      "name": "npm:@types/jest",
+      "data": {
+        "version": "29.5.14",
+        "packageName": "@types/jest",
+        "hash": "sha512-ZN+4sdnLUbo8EVvVc2ao0GFW6oVrQRPn4K2lglySj7APvSrgzxHiNNK99us4WDMi57xxA2yggblIAMNhXOotLQ=="
       }
     },
     "npm:@types/json-schema": {
@@ -20436,6 +20454,28 @@
         "type": "static"
       }
     ],
+    "npm:@nestjs/testing": [
+      {
+        "source": "npm:@nestjs/testing",
+        "target": "npm:@nestjs/common",
+        "type": "static"
+      },
+      {
+        "source": "npm:@nestjs/testing",
+        "target": "npm:@nestjs/core",
+        "type": "static"
+      },
+      {
+        "source": "npm:@nestjs/testing",
+        "target": "npm:tslib",
+        "type": "static"
+      },
+      {
+        "source": "npm:@nestjs/testing",
+        "target": "npm:@nestjs/platform-express",
+        "type": "static"
+      }
+    ],
     "npm:@nodelib/fs.scandir": [
       {
         "source": "npm:@nodelib/fs.scandir",
@@ -24091,6 +24131,18 @@
       {
         "source": "npm:@types/istanbul-reports",
         "target": "npm:@types/istanbul-lib-report",
+        "type": "static"
+      }
+    ],
+    "npm:@types/jest": [
+      {
+        "source": "npm:@types/jest",
+        "target": "npm:expect",
+        "type": "static"
+      },
+      {
+        "source": "npm:@types/jest",
+        "target": "npm:pretty-format",
         "type": "static"
       }
     ],
@@ -35490,5 +35542,5 @@
   },
   "version": "6.0",
   "errors": [],
-  "computedAt": 1786427002656
+  "computedAt": 1786431664621
 }

@@ -6,10 +6,7 @@ import { StudentAcademicController } from './controllers/student-academic.contro
 import { StudentAcademicService } from './services/student-academic.service';
 import { StudentAttendanceController } from './controllers/student-attendance.controller';
 import { StudentAttendanceService } from './services/student-attendance.service';
-import { StudentExaminationController } from './controllers/student-examination.controller';
-import { StudentExaminationService } from './services/student-examination.service';
-import { StudentProfileController } from './controllers/student-profile.controller';
-import { StudentProfileService } from './services/student-profile.service';
+import { PolicyFactory } from '../../common/policies/policy.factory';
 
 @Module({
   imports: [DatabaseModule],
@@ -17,15 +14,12 @@ import { StudentProfileService } from './services/student-profile.service';
     StudentController,
     StudentAcademicController,
     StudentAttendanceController,
-    StudentExaminationController,
-    StudentProfileController,
   ],
   providers: [
     StudentService,
     StudentAcademicService,
     StudentAttendanceService,
-    StudentExaminationService,
-    StudentProfileService,
+    PolicyFactory,
   ],
   exports: [StudentService],
 })
