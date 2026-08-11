@@ -14,7 +14,7 @@ export default function NewCoursePage() {
     // Submit logic will go here
     setTimeout(() => {
       setLoading(false);
-      router.push("/admin/courses");
+      router.push("/admin/academics/courses");
     }, 1000);
   };
 

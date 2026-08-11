@@ -1,26 +1,33 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@student-erp/ui"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button } from "@student-erp/ui";
+import { Plus } from "lucide-react";
+import Link from "next/link";
 
-export default function AcademicsCoursesPage() {
+export default function CoursesPage() {
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Courses</h1>
-          <p className="text-muted-foreground mt-1">Manage academic courses and curriculum.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Courses</h1>
+          <p className="text-muted-foreground">Manage academic courses and curriculum.</p>
         </div>
+        <Link href="/admin/courses/new">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" /> Add Course
+          </Button>
+        </Link>
       </div>
-      
+
       <Card>
         <CardHeader>
-          <CardTitle>Course Directory</CardTitle>
-          <CardDescription>All courses offered by the institution.</CardDescription>
+          <CardTitle>Course List</CardTitle>
+          <CardDescription>View and manage all courses</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center h-64 border-2 border-dashed border-border rounded-lg text-muted-foreground">
-            Courses Table Component
+          <div className="text-center py-10 text-muted-foreground">
+            No courses found. Add a course to get started.
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
