@@ -14,7 +14,8 @@
     "seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@prisma/client": "^6.19.3"
+    "@prisma/client": "^6.19.3",
+    "@supabase/supabase-js": "^2.112.2"
   },
   "devDependencies": {
     "prisma": "^6.19.3",

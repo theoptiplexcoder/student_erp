@@ -1,4 +1,5 @@
 import { PrismaClient, InstitutionType, ProgramLevel, TermType, UserRole, UserStatus, FacultyEmploymentType, FacultyStatus, StudentLifecycleStatus, AcademicTermStatus, CourseStatus, EnrollmentStatus, CurriculumStatus } from '@prisma/client';
+import { createClient } from '@supabase/supabase-js';
 
 const prisma = new PrismaClient();
 
@@ -548,6 +549,101 @@ async function main() {
     }
   }
   console.log('Upserted Student Enrollments');
+
+  // 18. Demo login accounts (Supabase Auth)
+  const DEMO_LOGIN_CREDENTIALS = [
+    {
+      email: 'admin@demo-institute.test',
+      password: 'Admin@123456',
+      syntheticAuthUserId: '11111111-1111-1111-1111-111111111111',
+      firstName: 'Demo',
+      lastName: 'Admin',
+      role: UserRole.ADMIN,
+    },
+    {
+      email: 'student1@demo-institute.test',
+      password: 'Student@123456',
+      syntheticAuthUserId: '33333333-3333-3333-3333-333333333001',
+      firstName: 'Student',
+      lastName: '1',
+      role: UserRole.STUDENT,
+    },
+  ];
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (supabaseUrl && supabaseServiceRoleKey) {
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    async function ensureAuthUser(email: string, password: string, firstName: string, lastName: string, role: UserRole) {
+      const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+      if (listError) throw listError;
+
+      let authUser = users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+
+      if (!authUser) {
+        const { data, error } = await supabaseAdmin.auth.admin.createUser({
+          email,
+          password,
+          email_confirm: true,
+          user_metadata: { first_name: firstName, last_name: lastName, role },
+        });
+        if (error) throw error;
+        authUser = data.user;
+      } else {
+        const { error } = await supabaseAdmin.auth.admin.updateUserById(authUser.id, {
+          password,
+          email_confirm: true,
+        });
+        if (error) throw error;
+      }
+
+      return authUser;
+    }
+
+    for (const account of DEMO_LOGIN_CREDENTIALS) {
+      const authUser = await ensureAuthUser(
+        account.email,
+        account.password,
+        account.firstName,
+        account.lastName,
+        account.role
+      );
+
+      // Retarget the seeded DB user row (keyed by synthetic authUserId) to the real Supabase auth ID.
+      const existingUser = await prisma.user.findUnique({
+        where: { authUserId: account.syntheticAuthUserId },
+      });
+
+      if (existingUser) {
+        await prisma.user.update({
+          where: { id: existingUser.id },
+          data: { authUserId: authUser.id },
+        });
+      } else {
+        await prisma.user.upsert({
+          where: { authUserId: authUser.id },
+          create: {
+            authUserId: authUser.id,
+            institutionId: institution.id,
+            email: account.email,
+            firstName: account.firstName,
+            lastName: account.lastName,
+            role: account.role,
+            status: UserStatus.ACTIVE,
+          },
+          update: {},
+        });
+      }
+    }
+
+    console.log('Seeded demo login accounts (Supabase Auth):');
+    console.log('  Tenant Admin -> admin@demo-institute.test / Admin@123456');
+    console.log('  Student      -> student1@demo-institute.test / Student@123456');
+  } else {
+    console.warn('SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set. Skipping Supabase auth account creation (login credentials will not be created).');
+  }
 
   console.log('Seeding completed successfully.');
 }

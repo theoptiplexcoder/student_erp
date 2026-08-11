@@ -1,16 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@student-erp/ui";
-import { requireAuth } from "@/lib/auth";
 import { NewCourseForm } from "@/components/admin/courses/NewCourseForm";
-import { redirect } from "next/navigation";
 
-export default async function NewCoursePage() {
-  let user;
-  try {
-    user = await requireAuth();
-  } catch {
-    redirect("/login");
-  }
+const INSTITUTION_ID = "d9b97b0a-0b2a-4a8f-b9f1-7c980d2215c2";
 
+export default function NewCoursePage() {
   return (
     <div className="p-6 space-y-6 max-w-2xl mx-auto">
       <div>
@@ -18,7 +11,7 @@ export default async function NewCoursePage() {
         <p className="text-muted-foreground">Add a new academic course to the system.</p>
       </div>
 
-      <NewCourseForm institutionId={user.institutionId} />
+      <NewCourseForm institutionId={INSTITUTION_ID} />
     </div>
   );
 }
