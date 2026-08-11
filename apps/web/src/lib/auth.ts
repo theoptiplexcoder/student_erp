@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "./supabase/server";
 import { prisma } from "./prisma";
 
@@ -8,6 +9,19 @@ export interface AuthUser {
   role: string;
   status: string;
   email: string;
+}
+
+export function getDashboardPath(role: string): string {
+  switch (role) {
+    case "ADMIN":
+      return "/admin/dashboard";
+    case "FACULTY":
+      return "/faculty/dashboard";
+    case "STUDENT":
+      return "/student";
+    default:
+      return "/";
+  }
 }
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
@@ -66,6 +80,22 @@ export async function requireRole(...roles: string[]): Promise<AuthUser> {
 
   if (!roles.includes(user.role)) {
     throw new Error("FORBIDDEN");
+  }
+
+  return user;
+}
+
+// Server-component guard: redirects to /login when unauthenticated and to the
+// user's own dashboard when they lack one of the allowed roles.
+export async function requireRoleOrRedirect(...roles: string[]): Promise<AuthUser> {
+  const user = await getCurrentUser();
+
+  if (!user || user.status !== "ACTIVE") {
+    redirect("/login");
+  }
+
+  if (!roles.includes(user.role)) {
+    redirect(getDashboardPath(user.role));
   }
 
   return user;

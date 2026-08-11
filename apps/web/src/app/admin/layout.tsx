@@ -1,11 +1,14 @@
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import { AdminHeader } from "@/components/admin/admin-header"
+import { requireRoleOrRedirect } from "@/lib/auth"
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  await requireRoleOrRedirect("ADMIN")
+
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <AdminSidebar />

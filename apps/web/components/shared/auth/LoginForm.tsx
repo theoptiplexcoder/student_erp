@@ -42,7 +42,7 @@ export function LoginForm() {
           return;
         }
 
-        router.push("/admin/dashboard");
+        router.push("/post-login");
         router.refresh();
       } else if (mode === "magic-link") {
         const { error } = await supabase.auth.signInWithOtp({

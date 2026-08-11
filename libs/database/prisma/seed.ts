@@ -550,24 +550,83 @@ async function main() {
   }
   console.log('Upserted Student Enrollments');
 
-  // 18. Demo login accounts (Supabase Auth)
+  // 18. Secondary demo tenant (login only)
+  const secondaryTenantId = 'd9b97b0a-0b2a-4a8f-b9f1-7c980d2215c3';
+  const secondaryTenant = await prisma.institution.upsert({
+    where: { id: secondaryTenantId },
+    create: {
+      id: secondaryTenantId,
+      institutionType: InstitutionType.COLLEGE,
+      legalName: 'Demo College of Business',
+      displayName: 'Demo College of Business',
+    },
+    update: {},
+  });
+  console.log(`Upserted Secondary Tenant: ${secondaryTenant.displayName}`);
+
+  const secondaryAdminAuthUserId = '44444444-4444-4444-4444-444444444444';
+  await prisma.user.upsert({
+    where: { authUserId: secondaryAdminAuthUserId },
+    create: {
+      authUserId: secondaryAdminAuthUserId,
+      institutionId: secondaryTenant.id,
+      email: 'admin@demo-cob.test',
+      firstName: 'Demo College',
+      lastName: 'Admin',
+      role: UserRole.ADMIN,
+      status: UserStatus.ACTIVE,
+    },
+    update: {},
+  });
+  console.log('Upserted Secondary Tenant Admin Account');
+
+  // 19. Demo login accounts (Supabase Auth)
+  const DEMO_LOGIN_PASSWORD = 'wasdwasd12';
+
+  const facultyLoginCredentials = facultyNames.map((fName, idx) => {
+    const parts = fName.split(' ');
+    const firstName = parts[1];
+    const lastName = parts[2] || '';
+    return {
+      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@demo-institute.test`,
+      password: DEMO_LOGIN_PASSWORD,
+      syntheticAuthUserId: `22222222-2222-2222-2222-2222222220${String(idx + 1).padStart(2, '0')}`,
+      firstName,
+      lastName,
+      role: UserRole.FACULTY,
+      institutionId: institution.id,
+    };
+  });
+
   const DEMO_LOGIN_CREDENTIALS = [
     {
       email: 'admin@demo-institute.test',
-      password: 'Admin@123456',
+      password: DEMO_LOGIN_PASSWORD,
       syntheticAuthUserId: '11111111-1111-1111-1111-111111111111',
       firstName: 'Demo',
       lastName: 'Admin',
       role: UserRole.ADMIN,
+      institutionId: institution.id,
     },
     {
       email: 'student1@demo-institute.test',
-      password: 'Student@123456',
+      password: DEMO_LOGIN_PASSWORD,
       syntheticAuthUserId: '33333333-3333-3333-3333-333333333001',
       firstName: 'Student',
       lastName: '1',
       role: UserRole.STUDENT,
+      institutionId: institution.id,
     },
+    {
+      email: 'admin@demo-cob.test',
+      password: DEMO_LOGIN_PASSWORD,
+      syntheticAuthUserId: '44444444-4444-4444-4444-444444444444',
+      firstName: 'Demo College',
+      lastName: 'Admin',
+      role: UserRole.ADMIN,
+      institutionId: secondaryTenant.id,
+    },
+    ...facultyLoginCredentials,
   ];
 
   const supabaseUrl = process.env.SUPABASE_URL;
@@ -612,35 +671,45 @@ async function main() {
       );
 
       // Retarget the seeded DB user row (keyed by synthetic authUserId) to the real Supabase auth ID.
-      const existingUser = await prisma.user.findUnique({
+      // Handles re-runs: after a successful seed the synthetic IDs no longer exist, so the earlier
+      // sections recreate them; the row linked to the real auth ID must win.
+      const userByRealAuthId = await prisma.user.findUnique({
+        where: { authUserId: authUser.id },
+      });
+      const userBySyntheticAuthId = await prisma.user.findUnique({
         where: { authUserId: account.syntheticAuthUserId },
       });
 
-      if (existingUser) {
-        await prisma.user.update({
-          where: { id: existingUser.id },
-          data: { authUserId: authUser.id },
-        });
-      } else {
-        await prisma.user.upsert({
-          where: { authUserId: authUser.id },
-          create: {
+      if (userBySyntheticAuthId) {
+        if (userByRealAuthId && userByRealAuthId.id !== userBySyntheticAuthId.id) {
+          await prisma.user.delete({ where: { id: userBySyntheticAuthId.id } });
+        } else {
+          await prisma.user.update({
+            where: { id: userBySyntheticAuthId.id },
+            data: { authUserId: authUser.id },
+          });
+        }
+      } else if (!userByRealAuthId) {
+        await prisma.user.create({
+          data: {
             authUserId: authUser.id,
-            institutionId: institution.id,
+            institutionId: account.institutionId,
             email: account.email,
             firstName: account.firstName,
             lastName: account.lastName,
             role: account.role,
             status: UserStatus.ACTIVE,
           },
-          update: {},
         });
       }
     }
 
     console.log('Seeded demo login accounts (Supabase Auth):');
-    console.log('  Tenant Admin -> admin@demo-institute.test / Admin@123456');
-    console.log('  Student      -> student1@demo-institute.test / Student@123456');
+    console.log(`  All demo accounts share the password: ${DEMO_LOGIN_PASSWORD}`);
+    console.log('  Tenant Admin   -> admin@demo-institute.test');
+    console.log('  Student        -> student1@demo-institute.test');
+    console.log('  Tenant 2 Admin -> admin@demo-cob.test');
+    console.log(`  Faculty        -> ${facultyLoginCredentials.length} accounts, e.g. rajesh.kumar@demo-institute.test`);
   } else {
     console.warn('SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set. Skipping Supabase auth account creation (login credentials will not be created).');
   }

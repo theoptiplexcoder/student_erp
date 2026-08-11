@@ -1,12 +1,15 @@
 import React from "react";
 import { StudentSidebar } from "../../components/student/layout/student-sidebar";
 import { StudentNavbar } from "../../components/student/layout/student-navbar";
+import { requireRoleOrRedirect } from "@/lib/auth";
 
-export default function StudentLayout({
+export default async function StudentLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  await requireRoleOrRedirect("STUDENT");
+
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[256px_1fr]">
       <StudentSidebar />

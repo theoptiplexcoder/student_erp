@@ -1,6 +1,23 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
+const PUBLIC_PATHS = [
+  "/",
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+  "/api/auth/callback",
+  "/api/hello",
+];
+
+const AUTH_ONLY_PATHS = [
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+];
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -35,8 +52,12 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  const publicPaths = ["/login", "/signup", "/forgot-password", "/reset-password"];
-  const isPublicPath = publicPaths.some((p) => pathname.startsWith(p));
+  const isPublicPath = PUBLIC_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`)
+  );
+  const isAuthOnlyPath = AUTH_ONLY_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`)
+  );
 
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();
@@ -44,9 +65,10 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && isPublicPath) {
+  if (user && isAuthOnlyPath) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/post-login";
+    url.search = "";
     return NextResponse.redirect(url);
   }
 
