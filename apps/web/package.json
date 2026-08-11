@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate --schema=../../libs/database/prisma/schema.prisma && next build",
+    "build": "PRISMA_GENERATE_SKIP_AUTOINSTALL=true prisma generate --schema=../../libs/database/prisma/schema.prisma && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
