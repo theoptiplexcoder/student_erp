@@ -1,0 +1,8 @@
+
+> @student-erp/ui@0.0.0 typecheck /home/ybl/proj/Ellipsonic/ERP/student_erp/packages/ui
+> tsc --noEmit
+
+error TS2688: Cannot find type definition file for 'node'.
+  The file is in the program because:
+    Entry point of type library 'node' specified in compilerOptions
+[41m[30m ELIFECYCLE [39m[49m [31mCommand failed with exit code 2.[39m

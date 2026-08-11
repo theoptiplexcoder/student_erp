@@ -1,0 +1,814 @@
+
+> @student-erp/web@0.0.0 dev /home/ybl/proj/Ellipsonic/ERP/student_erp/apps/web
+> next dev
+
+[1m[38;2;173;127;168m▲ Next.js 16.3.0[39m[22m (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.7:3000
+[32m[1m✓[22m[39m Ready in 5.9s
+[?25l[36m⠋[39m Creating project graph nodes with 4 plugins[2K[1G[36m⠙[39m Creating project graph nodes with 4 plugins[2K[1G[36m⠹[39m Creating project graph nodes with 4 plugins[2K[1G[36m⠸[39m Creating project graph nodes with 4 plugins[2K[1G[?25h[33m[1m⚠[22m[39m `eslint` configuration in next.config.js is no longer supported. See more info here: https://nextjs.org/docs/app/api-reference/cli/next#next-lint-options
+[33m[1m⚠[22m[39m Invalid next.config.js options detected: 
+[33m[1m⚠[22m[39m     Unrecognized key(s) in object: 'eslint'
+[33m[1m⚠[22m[39m See more info here: https://nextjs.org/docs/messages/invalid-next-config
+[32m[1m✓[22m[39m Running next.config.js took 3.9s
+[33m[1m⚠[22m[39m Slow filesystem detected. The benchmark took 404ms. If /home/ybl/proj/Ellipsonic/ERP/student_erp/apps/web/.next/dev is a network drive, consider moving it to a local folder.
+See more: https://nextjs.org/docs/app/guides/local-development
+
+1[37m[1m○[22m[39m Compiling / ...
+[31m[1m⨯[22m[39m ./apps/web/src/app/(faculty)
+[1m[31mError[39m: You cannot have two parallel pages that resolve to the same path. Please check /(admin)/dashboard and /(faculty).[22m
+
+
+./apps/web/src/app/(student)
+[1m[31mError[39m: You cannot have two parallel pages that resolve to the same path. Please check /(faculty)/dashboard and /(student).[22m
+
+
+./apps/web/src/app/page.tsx:7:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/FAQSection'[39m[22m
+  [90m 5 |[0m [36mimport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureShow...[0m
+  [90m 6 |[0m [36mimport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m [36mimport[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+  [90m 9 |[0m [36mimport[0m { [33mFooter[0m } [36mfrom[0m [32m"../../../components/landing/Footer"[0m;
+  [90m10 |[0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./apps/web/src/app/page.tsx:5:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/FeatureShowcase'[39m[22m
+  [90m3 |[0m ...[36mrt[0m { [33mHero[0m } [36mfrom[0m [32m"../../../components/landing/Hero"[0m;
+  [90m4 |[0m ...[36mrt[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+[31m[1m>[0m [90m5 |[0m ...[36mrt[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureShowca...[0m
+  [90m  |[0m    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m6 |[0m ...[36mrt[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+  [90m7 |[0m ...[36mrt[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+  [90m8 |[0m ...[36mrt[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./apps/web/src/app/page.tsx:8:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/FinalCTA'[39m[22m
+  [90m 6 |[0m [36mimport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+  [90m 7 |[0m [36mimport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+[31m[1m>[0m [90m 8 |[0m [36mimport[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 9 |[0m [36mimport[0m { [33mFooter[0m } [36mfrom[0m [32m"../../../components/landing/Footer"[0m;
+  [90m10 |[0m
+  [90m11 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mHome[0m(): [33mReact[0m.[33mJSX[0m.[33mElement[0m {
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./apps/web/src/app/page.tsx:9:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/Footer'[39m[22m
+  [90m 7 |[0m [36mimport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+  [90m 8 |[0m [36mimport[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+[31m[1m>[0m [90m 9 |[0m [36mimport[0m { [33mFooter[0m } [36mfrom[0m [32m"../../../components/landing/Footer"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m10 |[0m
+  [90m11 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mHome[0m(): [33mReact[0m.[33mJSX[0m.[33mElement[0m {
+  [90m12 |[0m   [36mreturn[0m (
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./apps/web/src/app/page.tsx:2:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/Header'[39m[22m
+  [90m1 |[0m [36mimport[0m [33mReact[0m [36mfrom[0m [32m"react"[0m;
+[31m[1m>[0m [90m2 |[0m [36mimport[0m { [33mHeader[0m } [36mfrom[0m [32m"../../../components/landing/Header"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m3 |[0m [36mimport[0m { [33mHero[0m } [36mfrom[0m [32m"../../../components/landing/Hero"[0m;
+  [90m4 |[0m [36mimport[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+  [90m5 |[0m [36mimport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureShowc...[0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./apps/web/src/app/page.tsx:3:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/Hero'[39m[22m
+  [90m1 |[0m [36mimport[0m [33mReact[0m [36mfrom[0m [32m"react"[0m;
+  [90m2 |[0m [36mimport[0m { [33mHeader[0m } [36mfrom[0m [32m"../../../components/landing/Header"[0m;
+[31m[1m>[0m [90m3 |[0m [36mimport[0m { [33mHero[0m } [36mfrom[0m [32m"../../../components/landing/Hero"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+  [90m5 |[0m [36mimport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureShowc...[0m
+  [90m6 |[0m [36mimport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./apps/web/src/app/page.tsx:4:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/MediaSection'[39m[22m
+  [90m2 |[0m ...[36mmport[0m { [33mHeader[0m } [36mfrom[0m [32m"../../../components/landing/Header"[0m;
+  [90m3 |[0m ...[36mmport[0m { [33mHero[0m } [36mfrom[0m [32m"../../../components/landing/Hero"[0m;
+[31m[1m>[0m [90m4 |[0m ...[36mmport[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+  [90m  |[0m    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m ...[36mmport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureSho...[0m
+  [90m6 |[0m ...[36mmport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+  [90m7 |[0m ...[36mmport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./apps/web/src/app/page.tsx:6:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/Testimonials'[39m[22m
+  [90m4 |[0m ...[36mmport[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+  [90m5 |[0m ...[36mmport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureSho...[0m
+[31m[1m>[0m [90m6 |[0m ...[36mmport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+  [90m  |[0m    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m ...[36mmport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+  [90m8 |[0m ...[36mmport[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+  [90m9 |[0m ...[36mmport[0m { [33mFooter[0m } [36mfrom[0m [32m"../../../components/landing/Footer"[0m;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET / [31m500[39m in 11.2s[2m (next.js: 10.9s, application-code: 260ms)[22m
+[36m[browser][39m [31mUncaught Error: ./apps/web/src/app/(faculty)
+Error: You cannot have two parallel pages that resolve to the same path. Please check /(admin)/dashboard and /(faculty).
+[39m
+[36m[browser][39m ./apps/web/src/app/(faculty)
+Error: You cannot have two parallel pages that resolve to the same path. Please check /(admin)/dashboard and /(faculty). 
+[36m[browser][39m ./apps/web/src/app/(student)
+Error: You cannot have two parallel pages that resolve to the same path. Please check /(faculty)/dashboard and /(student). 
+[36m[browser][39m ./apps/web/src/app/page.tsx:7:1
+Error: Module not found: Can't resolve '../../../components/landing/FAQSection'
+   5 | import { FeatureShowcase } from "../../../components/landing/FeatureShow...
+   6 | import { Testimonials } from "../../../components/landing/Testimonials";
+>  7 | import { FAQSection } from "../../../components/landing/FAQSection";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { FinalCTA } from "../../../components/landing/FinalCTA";
+   9 | import { Footer } from "../../../components/landing/Footer";
+  10 |
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:5:1
+Error: Module not found: Can't resolve '../../../components/landing/FeatureShowcase'
+  3 | ...rt { Hero } from "../../../components/landing/Hero";
+  4 | ...rt { MediaSection } from "../../../components/landing/MediaSection";
+> 5 | ...rt { FeatureShowcase } from "../../../components/landing/FeatureShowca...
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | ...rt { Testimonials } from "../../../components/landing/Testimonials";
+  7 | ...rt { FAQSection } from "../../../components/landing/FAQSection";
+  8 | ...rt { FinalCTA } from "../../../components/landing/FinalCTA";
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:8:1
+Error: Module not found: Can't resolve '../../../components/landing/FinalCTA'
+   6 | import { Testimonials } from "../../../components/landing/Testimonials";
+   7 | import { FAQSection } from "../../../components/landing/FAQSection";
+>  8 | import { FinalCTA } from "../../../components/landing/FinalCTA";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   9 | import { Footer } from "../../../components/landing/Footer";
+  10 |
+  11 | export default function Home(): React.JSX.Element {
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:9:1
+Error: Module not found: Can't resolve '../../../components/landing/Footer'
+   7 | import { FAQSection } from "../../../components/landing/FAQSection";
+   8 | import { FinalCTA } from "../../../components/landing/FinalCTA";
+>  9 | import { Footer } from "../../../components/landing/Footer";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  10 |
+  11 | export default function Home(): React.JSX.Element {
+  12 |   return (
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:2:1
+Error: Module not found: Can't resolve '../../../components/landing/Header'
+  1 | import React from "react";
+> 2 | import { Header } from "../../../components/landing/Header";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 | import { Hero } from "../../../components/landing/Hero";
+  4 | import { MediaSection } from "../../../components/landing/MediaSection";
+  5 | import { FeatureShowcase } from "../../../components/landing/FeatureShowc...
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:3:1
+Error: Module not found: Can't resolve '../../../components/landing/Hero'
+  1 | import React from "react";
+  2 | import { Header } from "../../../components/landing/Header";
+> 3 | import { Hero } from "../../../components/landing/Hero";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { MediaSection } from "../../../components/landing/MediaSection";
+  5 | import { FeatureShowcase } from "../../../components/landing/FeatureShowc...
+  6 | import { Testimonials } from "../../../components/landing/Testimonials";
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:4:1
+Error: Module not found: Can't resolve '../../../components/landing/MediaSection'
+  2 | ...mport { Header } from "../../../components/landing/Header";
+  3 | ...mport { Hero } from "../../../components/landing/Hero";
+> 4 | ...mport { MediaSection } from "../../../components/landing/MediaSection";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | ...mport { FeatureShowcase } from "../../../components/landing/FeatureSho...
+  6 | ...mport { Testimonials } from "../../../components/landing/Testimonials";
+  7 | ...mport { FAQSection } from "../../../components/landing/FAQSection";
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:6:1
+Error: Module not found: Can't resolve '../../../components/landing/Testimonials'
+  4 | ...mport { MediaSection } from "../../../components/landing/MediaSection";
+  5 | ...mport { FeatureShowcase } from "../../../components/landing/FeatureSho...
+> 6 | ...mport { Testimonials } from "../../../components/landing/Testimonials";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | ...mport { FAQSection } from "../../../components/landing/FAQSection";
+  8 | ...mport { FinalCTA } from "../../../components/landing/FinalCTA";
+  9 | ...mport { Footer } from "../../../components/landing/Footer";
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/(faculty)
+Error: You cannot have two parallel pages that resolve to the same path. Please check /(admin)/dashboard and /(faculty). 
+[36m[browser][39m ./apps/web/src/app/(student)
+Error: You cannot have two parallel pages that resolve to the same path. Please check /(faculty)/dashboard and /(student). 
+[36m[browser][39m ./apps/web/src/app/page.tsx:7:1
+Error: Module not found: Can't resolve '../../../components/landing/FAQSection'
+   5 | import { FeatureShowcase } from "../../../components/landing/FeatureShow...
+   6 | import { Testimonials } from "../../../components/landing/Testimonials";
+>  7 | import { FAQSection } from "../../../components/landing/FAQSection";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { FinalCTA } from "../../../components/landing/FinalCTA";
+   9 | import { Footer } from "../../../components/landing/Footer";
+  10 |
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:5:1
+Error: Module not found: Can't resolve '../../../components/landing/FeatureShowcase'
+  3 | ...rt { Hero } from "../../../components/landing/Hero";
+  4 | ...rt { MediaSection } from "../../../components/landing/MediaSection";
+> 5 | ...rt { FeatureShowcase } from "../../../components/landing/FeatureShowca...
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | ...rt { Testimonials } from "../../../components/landing/Testimonials";
+  7 | ...rt { FAQSection } from "../../../components/landing/FAQSection";
+  8 | ...rt { FinalCTA } from "../../../components/landing/FinalCTA";
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:8:1
+Error: Module not found: Can't resolve '../../../components/landing/FinalCTA'
+   6 | import { Testimonials } from "../../../components/landing/Testimonials";
+   7 | import { FAQSection } from "../../../components/landing/FAQSection";
+>  8 | import { FinalCTA } from "../../../components/landing/FinalCTA";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   9 | import { Footer } from "../../../components/landing/Footer";
+  10 |
+  11 | export default function Home(): React.JSX.Element {
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:9:1
+Error: Module not found: Can't resolve '../../../components/landing/Footer'
+   7 | import { FAQSection } from "../../../components/landing/FAQSection";
+   8 | import { FinalCTA } from "../../../components/landing/FinalCTA";
+>  9 | import { Footer } from "../../../components/landing/Footer";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  10 |
+  11 | export default function Home(): React.JSX.Element {
+  12 |   return (
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:2:1
+Error: Module not found: Can't resolve '../../../components/landing/Header'
+  1 | import React from "react";
+> 2 | import { Header } from "../../../components/landing/Header";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 | import { Hero } from "../../../components/landing/Hero";
+  4 | import { MediaSection } from "../../../components/landing/MediaSection";
+  5 | import { FeatureShowcase } from "../../../components/landing/FeatureShowc...
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:3:1
+Error: Module not found: Can't resolve '../../../components/landing/Hero'
+  1 | import React from "react";
+  2 | import { Header } from "../../../components/landing/Header";
+> 3 | import { Hero } from "../../../components/landing/Hero";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { MediaSection } from "../../../components/landing/MediaSection";
+  5 | import { FeatureShowcase } from "../../../components/landing/FeatureShowc...
+  6 | import { Testimonials } from "../../../components/landing/Testimonials";
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:4:1
+Error: Module not found: Can't resolve '../../../components/landing/MediaSection'
+  2 | ...mport { Header } from "../../../components/landing/Header";
+  3 | ...mport { Hero } from "../../../components/landing/Hero";
+> 4 | ...mport { MediaSection } from "../../../components/landing/MediaSection";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | ...mport { FeatureShowcase } from "../../../components/landing/FeatureSho...
+  6 | ...mport { Testimonials } from "../../../components/landing/Testimonials";
+  7 | ...mport { FAQSection } from "../../../components/landing/FAQSection";
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:6:1
+Error: Module not found: Can't resolve '../../../components/landing/Testimonials'
+  4 | ...mport { MediaSection } from "../../../components/landing/MediaSection";
+  5 | ...mport { FeatureShowcase } from "../../../components/landing/FeatureSho...
+> 6 | ...mport { Testimonials } from "../../../components/landing/Testimonials";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | ...mport { FAQSection } from "../../../components/landing/FAQSection";
+  8 | ...mport { FinalCTA } from "../../../components/landing/FinalCTA";
+  9 | ...mport { Footer } from "../../../components/landing/Footer";
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/(faculty)
+Error: You cannot have two parallel pages that resolve to the same path. Please check /(admin)/dashboard and /(faculty). 
+[36m[browser][39m ./apps/web/src/app/(student)
+Error: You cannot have two parallel pages that resolve to the same path. Please check /(faculty)/dashboard and /(student). 
+[36m[browser][39m ./apps/web/src/app/page.tsx:7:1
+Error: Module not found: Can't resolve '../../../components/landing/FAQSection'
+   5 | import { FeatureShowcase } from "../../../components/landing/FeatureShow...
+   6 | import { Testimonials } from "../../../components/landing/Testimonials";
+>  7 | import { FAQSection } from "../../../components/landing/FAQSection";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { FinalCTA } from "../../../components/landing/FinalCTA";
+   9 | import { Footer } from "../../../components/landing/Footer";
+  10 |
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:5:1
+Error: Module not found: Can't resolve '../../../components/landing/FeatureShowcase'
+  3 | ...rt { Hero } from "../../../components/landing/Hero";
+  4 | ...rt { MediaSection } from "../../../components/landing/MediaSection";
+> 5 | ...rt { FeatureShowcase } from "../../../components/landing/FeatureShowca...
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | ...rt { Testimonials } from "../../../components/landing/Testimonials";
+  7 | ...rt { FAQSection } from "../../../components/landing/FAQSection";
+  8 | ...rt { FinalCTA } from "../../../components/landing/FinalCTA";
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:8:1
+Error: Module not found: Can't resolve '../../../components/landing/FinalCTA'
+   6 | import { Testimonials } from "../../../components/landing/Testimonials";
+   7 | import { FAQSection } from "../../../components/landing/FAQSection";
+>  8 | import { FinalCTA } from "../../../components/landing/FinalCTA";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   9 | import { Footer } from "../../../components/landing/Footer";
+  10 |
+  11 | export default function Home(): React.JSX.Element {
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:9:1
+Error: Module not found: Can't resolve '../../../components/landing/Footer'
+   7 | import { FAQSection } from "../../../components/landing/FAQSection";
+   8 | import { FinalCTA } from "../../../components/landing/FinalCTA";
+>  9 | import { Footer } from "../../../components/landing/Footer";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  10 |
+  11 | export default function Home(): React.JSX.Element {
+  12 |   return (
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:2:1
+Error: Module not found: Can't resolve '../../../components/landing/Header'
+  1 | import React from "react";
+> 2 | import { Header } from "../../../components/landing/Header";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 | import { Hero } from "../../../components/landing/Hero";
+  4 | import { MediaSection } from "../../../components/landing/MediaSection";
+  5 | import { FeatureShowcase } from "../../../components/landing/FeatureShowc...
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:3:1
+Error: Module not found: Can't resolve '../../../components/landing/Hero'
+  1 | import React from "react";
+  2 | import { Header } from "../../../components/landing/Header";
+> 3 | import { Hero } from "../../../components/landing/Hero";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import { MediaSection } from "../../../components/landing/MediaSection";
+  5 | import { FeatureShowcase } from "../../../components/landing/FeatureShowc...
+  6 | import { Testimonials } from "../../../components/landing/Testimonials";
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:4:1
+Error: Module not found: Can't resolve '../../../components/landing/MediaSection'
+  2 | ...mport { Header } from "../../../components/landing/Header";
+  3 | ...mport { Hero } from "../../../components/landing/Hero";
+> 4 | ...mport { MediaSection } from "../../../components/landing/MediaSection";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | ...mport { FeatureShowcase } from "../../../components/landing/FeatureSho...
+  6 | ...mport { Testimonials } from "../../../components/landing/Testimonials";
+  7 | ...mport { FAQSection } from "../../../components/landing/FAQSection";
+
+https://nextjs.org/docs/messages/module-not-found 
+[36m[browser][39m ./apps/web/src/app/page.tsx:6:1
+Error: Module not found: Can't resolve '../../../components/landing/Testimonials'
+  4 | ...mport { MediaSection } from "../../../components/landing/MediaSection";
+  5 | ...mport { FeatureShowcase } from "../../../components/landing/FeatureSho...
+> 6 | ...mport { Testimonials } from "../../../components/landing/Testimonials";
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 | ...mport { FAQSection } from "../../../components/landing/FAQSection";
+  8 | ...mport { FinalCTA } from "../../../components/landing/FinalCTA";
+  9 | ...mport { Footer } from "../../../components/landing/Footer";
+
+https://nextjs.org/docs/messages/module-not-found 
+[31m[1m⨯[22m[39m ./apps/web/src/app/page.tsx:7:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/FAQSection'[39m[22m
+  [90m 5 |[0m [36mimport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureShow...[0m
+  [90m 6 |[0m [36mimport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m [36mimport[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+  [90m 9 |[0m [36mimport[0m { [33mFooter[0m } [36mfrom[0m [32m"../../../components/landing/Footer"[0m;
+  [90m10 |[0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[31m[1m⨯[22m[39m ./apps/web/src/app/page.tsx:7:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/FAQSection'[39m[22m
+  [90m 5 |[0m [36mimport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureShow...[0m
+  [90m 6 |[0m [36mimport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m [36mimport[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+  [90m 9 |[0m [36mimport[0m { [33mFooter[0m } [36mfrom[0m [32m"../../../components/landing/Footer"[0m;
+  [90m10 |[0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[31m[1m⨯[22m[39m ./apps/web/src/app/page.tsx:5:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/FeatureShowcase'[39m[22m
+  [90m3 |[0m ...[36mrt[0m { [33mHero[0m } [36mfrom[0m [32m"../../../components/landing/Hero"[0m;
+  [90m4 |[0m ...[36mrt[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+[31m[1m>[0m [90m5 |[0m ...[36mrt[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureShowca...[0m
+  [90m  |[0m    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m6 |[0m ...[36mrt[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+  [90m7 |[0m ...[36mrt[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+  [90m8 |[0m ...[36mrt[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[31m[1m⨯[22m[39m ./apps/web/src/app/page.tsx:5:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/FeatureShowcase'[39m[22m
+  [90m3 |[0m ...[36mrt[0m { [33mHero[0m } [36mfrom[0m [32m"../../../components/landing/Hero"[0m;
+  [90m4 |[0m ...[36mrt[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+[31m[1m>[0m [90m5 |[0m ...[36mrt[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureShowca...[0m
+  [90m  |[0m    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m6 |[0m ...[36mrt[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+  [90m7 |[0m ...[36mrt[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+  [90m8 |[0m ...[36mrt[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[31m[1m⨯[22m[39m ./apps/web/src/app/page.tsx:8:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/FinalCTA'[39m[22m
+  [90m 6 |[0m [36mimport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+  [90m 7 |[0m [36mimport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+[31m[1m>[0m [90m 8 |[0m [36mimport[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 9 |[0m [36mimport[0m { [33mFooter[0m } [36mfrom[0m [32m"../../../components/landing/Footer"[0m;
+  [90m10 |[0m
+  [90m11 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mHome[0m(): [33mReact[0m.[33mJSX[0m.[33mElement[0m {
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[31m[1m⨯[22m[39m ./apps/web/src/app/page.tsx:8:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/FinalCTA'[39m[22m
+  [90m 6 |[0m [36mimport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+  [90m 7 |[0m [36mimport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+[31m[1m>[0m [90m 8 |[0m [36mimport[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 9 |[0m [36mimport[0m { [33mFooter[0m } [36mfrom[0m [32m"../../../components/landing/Footer"[0m;
+  [90m10 |[0m
+  [90m11 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mHome[0m(): [33mReact[0m.[33mJSX[0m.[33mElement[0m {
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[31m[1m⨯[22m[39m ./apps/web/src/app/page.tsx:9:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/Footer'[39m[22m
+  [90m 7 |[0m [36mimport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+  [90m 8 |[0m [36mimport[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+[31m[1m>[0m [90m 9 |[0m [36mimport[0m { [33mFooter[0m } [36mfrom[0m [32m"../../../components/landing/Footer"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m10 |[0m
+  [90m11 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mHome[0m(): [33mReact[0m.[33mJSX[0m.[33mElement[0m {
+  [90m12 |[0m   [36mreturn[0m (
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[31m[1m⨯[22m[39m ./apps/web/src/app/page.tsx:9:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/Footer'[39m[22m
+  [90m 7 |[0m [36mimport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+  [90m 8 |[0m [36mimport[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+[31m[1m>[0m [90m 9 |[0m [36mimport[0m { [33mFooter[0m } [36mfrom[0m [32m"../../../components/landing/Footer"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m10 |[0m
+  [90m11 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mHome[0m(): [33mReact[0m.[33mJSX[0m.[33mElement[0m {
+  [90m12 |[0m   [36mreturn[0m (
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[31m[1m⨯[22m[39m ./apps/web/src/app/page.tsx:2:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/Header'[39m[22m
+  [90m1 |[0m [36mimport[0m [33mReact[0m [36mfrom[0m [32m"react"[0m;
+[31m[1m>[0m [90m2 |[0m [36mimport[0m { [33mHeader[0m } [36mfrom[0m [32m"../../../components/landing/Header"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m3 |[0m [36mimport[0m { [33mHero[0m } [36mfrom[0m [32m"../../../components/landing/Hero"[0m;
+  [90m4 |[0m [36mimport[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+  [90m5 |[0m [36mimport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureShowc...[0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[31m[1m⨯[22m[39m ./apps/web/src/app/page.tsx:2:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/Header'[39m[22m
+  [90m1 |[0m [36mimport[0m [33mReact[0m [36mfrom[0m [32m"react"[0m;
+[31m[1m>[0m [90m2 |[0m [36mimport[0m { [33mHeader[0m } [36mfrom[0m [32m"../../../components/landing/Header"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m3 |[0m [36mimport[0m { [33mHero[0m } [36mfrom[0m [32m"../../../components/landing/Hero"[0m;
+  [90m4 |[0m [36mimport[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+  [90m5 |[0m [36mimport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureShowc...[0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[31m[1m⨯[22m[39m ./apps/web/src/app/page.tsx:3:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/Hero'[39m[22m
+  [90m1 |[0m [36mimport[0m [33mReact[0m [36mfrom[0m [32m"react"[0m;
+  [90m2 |[0m [36mimport[0m { [33mHeader[0m } [36mfrom[0m [32m"../../../components/landing/Header"[0m;
+[31m[1m>[0m [90m3 |[0m [36mimport[0m { [33mHero[0m } [36mfrom[0m [32m"../../../components/landing/Hero"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+  [90m5 |[0m [36mimport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureShowc...[0m
+  [90m6 |[0m [36mimport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[31m[1m⨯[22m[39m ./apps/web/src/app/page.tsx:3:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/Hero'[39m[22m
+  [90m1 |[0m [36mimport[0m [33mReact[0m [36mfrom[0m [32m"react"[0m;
+  [90m2 |[0m [36mimport[0m { [33mHeader[0m } [36mfrom[0m [32m"../../../components/landing/Header"[0m;
+[31m[1m>[0m [90m3 |[0m [36mimport[0m { [33mHero[0m } [36mfrom[0m [32m"../../../components/landing/Hero"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+  [90m5 |[0m [36mimport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureShowc...[0m
+  [90m6 |[0m [36mimport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[31m[1m⨯[22m[39m ./apps/web/src/app/page.tsx:4:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/MediaSection'[39m[22m
+  [90m2 |[0m ...[36mmport[0m { [33mHeader[0m } [36mfrom[0m [32m"../../../components/landing/Header"[0m;
+  [90m3 |[0m ...[36mmport[0m { [33mHero[0m } [36mfrom[0m [32m"../../../components/landing/Hero"[0m;
+[31m[1m>[0m [90m4 |[0m ...[36mmport[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+  [90m  |[0m    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m ...[36mmport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureSho...[0m
+  [90m6 |[0m ...[36mmport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+  [90m7 |[0m ...[36mmport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[31m[1m⨯[22m[39m ./apps/web/src/app/page.tsx:4:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/MediaSection'[39m[22m
+  [90m2 |[0m ...[36mmport[0m { [33mHeader[0m } [36mfrom[0m [32m"../../../components/landing/Header"[0m;
+  [90m3 |[0m ...[36mmport[0m { [33mHero[0m } [36mfrom[0m [32m"../../../components/landing/Hero"[0m;
+[31m[1m>[0m [90m4 |[0m ...[36mmport[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+  [90m  |[0m    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m ...[36mmport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureSho...[0m
+  [90m6 |[0m ...[36mmport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+  [90m7 |[0m ...[36mmport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[31m[1m⨯[22m[39m ./apps/web/src/app/page.tsx:6:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/Testimonials'[39m[22m
+  [90m4 |[0m ...[36mmport[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+  [90m5 |[0m ...[36mmport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureSho...[0m
+[31m[1m>[0m [90m6 |[0m ...[36mmport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+  [90m  |[0m    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m ...[36mmport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+  [90m8 |[0m ...[36mmport[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+  [90m9 |[0m ...[36mmport[0m { [33mFooter[0m } [36mfrom[0m [32m"../../../components/landing/Footer"[0m;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[31m[1m⨯[22m[39m ./apps/web/src/app/page.tsx:6:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/Testimonials'[39m[22m
+  [90m4 |[0m ...[36mmport[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+  [90m5 |[0m ...[36mmport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureSho...[0m
+[31m[1m>[0m [90m6 |[0m ...[36mmport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+  [90m  |[0m    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m ...[36mmport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+  [90m8 |[0m ...[36mmport[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+  [90m9 |[0m ...[36mmport[0m { [33mFooter[0m } [36mfrom[0m [32m"../../../components/landing/Footer"[0m;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[32m[1m✓[22m[39m Compiled in 172ms
+[31m[1m⨯[22m[39m ./apps/web/src/app/page.tsx:7:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/FAQSection'[39m[22m
+  [90m 5 |[0m [36mimport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureShow...[0m
+  [90m 6 |[0m [36mimport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m [36mimport[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+  [90m 9 |[0m [36mimport[0m { [33mFooter[0m } [36mfrom[0m [32m"../../../components/landing/Footer"[0m;
+  [90m10 |[0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./apps/web/src/app/page.tsx:5:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/FeatureShowcase'[39m[22m
+  [90m3 |[0m ...[36mrt[0m { [33mHero[0m } [36mfrom[0m [32m"../../../components/landing/Hero"[0m;
+  [90m4 |[0m ...[36mrt[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+[31m[1m>[0m [90m5 |[0m ...[36mrt[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureShowca...[0m
+  [90m  |[0m    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m6 |[0m ...[36mrt[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+  [90m7 |[0m ...[36mrt[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+  [90m8 |[0m ...[36mrt[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./apps/web/src/app/page.tsx:8:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/FinalCTA'[39m[22m
+  [90m 6 |[0m [36mimport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+  [90m 7 |[0m [36mimport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+[31m[1m>[0m [90m 8 |[0m [36mimport[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 9 |[0m [36mimport[0m { [33mFooter[0m } [36mfrom[0m [32m"../../../components/landing/Footer"[0m;
+  [90m10 |[0m
+  [90m11 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mHome[0m(): [33mReact[0m.[33mJSX[0m.[33mElement[0m {
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./apps/web/src/app/page.tsx:9:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/Footer'[39m[22m
+  [90m 7 |[0m [36mimport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+  [90m 8 |[0m [36mimport[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+[31m[1m>[0m [90m 9 |[0m [36mimport[0m { [33mFooter[0m } [36mfrom[0m [32m"../../../components/landing/Footer"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m10 |[0m
+  [90m11 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mHome[0m(): [33mReact[0m.[33mJSX[0m.[33mElement[0m {
+  [90m12 |[0m   [36mreturn[0m (
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./apps/web/src/app/page.tsx:2:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/Header'[39m[22m
+  [90m1 |[0m [36mimport[0m [33mReact[0m [36mfrom[0m [32m"react"[0m;
+[31m[1m>[0m [90m2 |[0m [36mimport[0m { [33mHeader[0m } [36mfrom[0m [32m"../../../components/landing/Header"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m3 |[0m [36mimport[0m { [33mHero[0m } [36mfrom[0m [32m"../../../components/landing/Hero"[0m;
+  [90m4 |[0m [36mimport[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+  [90m5 |[0m [36mimport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureShowc...[0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./apps/web/src/app/page.tsx:3:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/Hero'[39m[22m
+  [90m1 |[0m [36mimport[0m [33mReact[0m [36mfrom[0m [32m"react"[0m;
+  [90m2 |[0m [36mimport[0m { [33mHeader[0m } [36mfrom[0m [32m"../../../components/landing/Header"[0m;
+[31m[1m>[0m [90m3 |[0m [36mimport[0m { [33mHero[0m } [36mfrom[0m [32m"../../../components/landing/Hero"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+  [90m5 |[0m [36mimport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureShowc...[0m
+  [90m6 |[0m [36mimport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./apps/web/src/app/page.tsx:4:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/MediaSection'[39m[22m
+  [90m2 |[0m ...[36mmport[0m { [33mHeader[0m } [36mfrom[0m [32m"../../../components/landing/Header"[0m;
+  [90m3 |[0m ...[36mmport[0m { [33mHero[0m } [36mfrom[0m [32m"../../../components/landing/Hero"[0m;
+[31m[1m>[0m [90m4 |[0m ...[36mmport[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+  [90m  |[0m    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m ...[36mmport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureSho...[0m
+  [90m6 |[0m ...[36mmport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+  [90m7 |[0m ...[36mmport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./apps/web/src/app/page.tsx:6:1
+[1m[31mError[39m: [1m[31mModule not found[39m[22m[1m: Can't resolve [32m'../../../components/landing/Testimonials'[39m[22m
+  [90m4 |[0m ...[36mmport[0m { [33mMediaSection[0m } [36mfrom[0m [32m"../../../components/landing/MediaSection"[0m;
+  [90m5 |[0m ...[36mmport[0m { [33mFeatureShowcase[0m } [36mfrom[0m [32m"../../../components/landing/FeatureSho...[0m
+[31m[1m>[0m [90m6 |[0m ...[36mmport[0m { [33mTestimonials[0m } [36mfrom[0m [32m"../../../components/landing/Testimonials"[0m;
+  [90m  |[0m    [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m ...[36mmport[0m { [33mFAQSection[0m } [36mfrom[0m [32m"../../../components/landing/FAQSection"[0m;
+  [90m8 |[0m ...[36mmport[0m { [33mFinalCTA[0m } [36mfrom[0m [32m"../../../components/landing/FinalCTA"[0m;
+  [90m9 |[0m ...[36mmport[0m { [33mFooter[0m } [36mfrom[0m [32m"../../../components/landing/Footer"[0m;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET / [31m500[39m in 68ms[2m (next.js: 59ms, application-code: 9ms)[22m
+[36m[browser][39m [31mUncaught Error: ./apps/web/src/app/page.tsx:7:1
+Error: Module not found: Can't resolve '../../../components/landing/FAQSection'
+   5 | import { FeatureShowcase } from "../../../components/landing/FeatureShow...
+   6 | import { Testimonials } from "../../../components/landing/Testimonials";
+>  7 | import { FAQSection } from "../../../components/landing/FAQSection";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   8 | import { FinalCTA } from "../../../components/landing/FinalCTA";
+   9 | import { Footer } from "../../../components/landing/Footer";
+  10 |
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+[39m
+[31m    at <unknown> (Error: ./apps/web/src/app/page.tsx:7:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (Error: (./apps/web/src/app/page.tsx:7:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)[39m
+^C[?25h[?25h

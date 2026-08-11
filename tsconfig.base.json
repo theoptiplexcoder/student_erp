@@ -1,0 +1,64 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": true,
+    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "incremental": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@student-erp/config": [
+        "packages/config/src/index.ts"
+      ],
+      "@student-erp/constants": [
+        "packages/constants/src/index.ts"
+      ],
+      "@student-erp/hooks": [
+        "packages/hooks/src/index.ts"
+      ],
+      "@student-erp/schemas": [
+        "packages/schemas/src/index.ts"
+      ],
+      "@student-erp/sdk": [
+        "packages/sdk/src/index.ts"
+      ],
+      "@student-erp/sdk/*": [
+        "packages/sdk/src/*"
+      ],
+      "@student-erp/types": [
+        "packages/types/src/index.ts"
+      ],
+      "@student-erp/ui": [
+        "packages/ui/src/index.ts"
+      ],
+      "@student-erp/utils": [
+        "packages/utils/src/index.ts"
+      ]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

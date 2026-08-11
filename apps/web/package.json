@@ -1,0 +1,34 @@
+{
+  "name": "@student-erp/web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@student-erp/config": "workspace:*",
+    "@student-erp/constants": "workspace:*",
+    "@student-erp/hooks": "workspace:*",
+    "@student-erp/types": "workspace:*",
+    "@prisma/client": "^6.19.3",
+    "@student-erp/ui": "workspace:*",
+    "@student-erp/utils": "workspace:*",
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.112.2",
+    "framer-motion": "^11.0.0",
+    "lucide-react": "^0.400.0",
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.5.0"
+  }
+}

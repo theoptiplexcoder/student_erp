@@ -1,0 +1,74 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build output
+dist
+build
+.next
+.nuxt
+.output
+.out
+
+# Testing
+coverage
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Nx
+.turbo
+
+# Prisma
+prisma/generated
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temp
+tmp
+temp
+
+# Expo
+.expo
+*.hprof
+
+# Capacitor
+android
+ios
+
+# Misc
+*.tsbuildinfo
+.vercel
+
+# Secrets & Confidential
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*secret*.json
+*credentials*.json
