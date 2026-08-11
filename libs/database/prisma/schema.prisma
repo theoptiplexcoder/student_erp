@@ -389,16 +389,16 @@ model Program {
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
 
-  institution    Institution     @relation(fields: [institutionId], references: [id])
-  department     Department      @relation(fields: [departmentId], references: [id])
-  students       Student[]
-  sections       Section[]
-  batches        Batch[]
-  curriculums    Curriculum[]
-  calendarEvents CalendarEvent[]
-  courses        Course[]
+  institution     Institution      @relation(fields: [institutionId], references: [id])
+  department      Department       @relation(fields: [departmentId], references: [id])
+  students        Student[]
+  sections        Section[]
+  batches         Batch[]
+  curriculums     Curriculum[]
+  calendarEvents  CalendarEvent[]
+  courses         Course[]
   courseOfferings CourseOffering[]
-  enrollments    Enrollment[]
+  enrollments     Enrollment[]
 
   @@unique([institutionId, code])
   @@index([institutionId])
@@ -462,11 +462,11 @@ model Batch {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  institution Institution  @relation(fields: [institutionId], references: [id])
-  program     Program      @relation(fields: [programId], references: [id])
-  sections    Section[]
+  institution     Institution      @relation(fields: [institutionId], references: [id])
+  program         Program          @relation(fields: [programId], references: [id])
+  sections        Section[]
   courseOfferings CourseOffering[]
-  enrollments Enrollment[]
+  enrollments     Enrollment[]
 
   @@index([institutionId])
   @@index([programId])
@@ -557,6 +557,8 @@ model Student {
   programId              String?                 @db.Uuid
   section                Section?                @relation(fields: [sectionId], references: [id])
   sectionId              String?                 @db.Uuid
+  curriculum             Curriculum?             @relation(fields: [curriculumId], references: [id])
+  curriculumId           String?                 @map("curriculum_id") @db.Uuid
 
   @@unique([institutionId, studentCode])
   @@unique([institutionId, admissionNumber])
@@ -670,26 +672,26 @@ model Course {
 }
 
 model CourseOffering {
-  id             String       @id @default(uuid()) @db.Uuid
-  institutionId  String       @map("institution_id") @db.Uuid
-  courseId       String       @map("course_id") @db.Uuid
-  termId         String       @map("term_id") @db.Uuid
-  programId      String?      @map("program_id") @db.Uuid
-  batchId        String?      @map("batch_id") @db.Uuid
-  sectionId      String?      @map("section_id") @db.Uuid
-  capacity       Int          @default(0)
-  status         CourseStatus @default(ACTIVE)
-  createdAt      DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
+  id            String       @id @default(uuid()) @db.Uuid
+  institutionId String       @map("institution_id") @db.Uuid
+  courseId      String       @map("course_id") @db.Uuid
+  termId        String       @map("term_id") @db.Uuid
+  programId     String?      @map("program_id") @db.Uuid
+  batchId       String?      @map("batch_id") @db.Uuid
+  sectionId     String?      @map("section_id") @db.Uuid
+  capacity      Int          @default(0)
+  status        CourseStatus @default(ACTIVE)
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
 
-  institution  Institution  @relation(fields: [institutionId], references: [id])
-  course       Course       @relation(fields: [courseId], references: [id])
-  term         AcademicTerm @relation(fields: [termId], references: [id])
-  program      Program?     @relation(fields: [programId], references: [id])
-  batch        Batch?       @relation(fields: [batchId], references: [id])
-  section      Section?     @relation(fields: [sectionId], references: [id])
+  institution Institution  @relation(fields: [institutionId], references: [id])
+  course      Course       @relation(fields: [courseId], references: [id])
+  term        AcademicTerm @relation(fields: [termId], references: [id])
+  program     Program?     @relation(fields: [programId], references: [id])
+  batch       Batch?       @relation(fields: [batchId], references: [id])
+  section     Section?     @relation(fields: [sectionId], references: [id])
 
-  enrollments  Enrollment[]
+  enrollments Enrollment[]
 
   @@index([institutionId])
   @@index([courseId])
@@ -698,34 +700,36 @@ model CourseOffering {
 }
 
 model Enrollment {
-  id             String           @id @default(uuid()) @db.Uuid
-  institutionId  String           @map("institution_id") @db.Uuid
-  studentId      String           @map("student_id") @db.Uuid
-  academicYearId String           @map("academic_year_id") @db.Uuid
-  courseId       String?          @map("course_id") @db.Uuid
-  courseOfferingId String?        @map("course_offering_id") @db.Uuid
-  programId      String?          @map("program_id") @db.Uuid
-  classLevelId   String?          @map("class_level_id") @db.Uuid
-  batchId        String?          @map("batch_id") @db.Uuid
-  sectionId      String?          @map("section_id") @db.Uuid
-  termId         String?          @map("term_id") @db.Uuid
-  rollNumber     String?          @map("roll_number")
-  status         EnrollmentStatus @default(ACTIVE)
-  enrolledAt     DateTime         @default(now()) @map("enrolled_at")
-  completedAt    DateTime?        @map("completed_at")
-  createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt      DateTime         @updatedAt @map("updated_at")
+  id               String           @id @default(uuid()) @db.Uuid
+  institutionId    String           @map("institution_id") @db.Uuid
+  studentId        String           @map("student_id") @db.Uuid
+  academicYearId   String           @map("academic_year_id") @db.Uuid
+  courseId         String?          @map("course_id") @db.Uuid
+  courseOfferingId String?          @map("course_offering_id") @db.Uuid
+  programId        String?          @map("program_id") @db.Uuid
+  curriculumId     String?          @map("curriculum_id") @db.Uuid
+  classLevelId     String?          @map("class_level_id") @db.Uuid
+  batchId          String?          @map("batch_id") @db.Uuid
+  sectionId        String?          @map("section_id") @db.Uuid
+  termId           String?          @map("term_id") @db.Uuid
+  rollNumber       String?          @map("roll_number")
+  status           EnrollmentStatus @default(ACTIVE)
+  enrolledAt       DateTime         @default(now()) @map("enrolled_at")
+  completedAt      DateTime?        @map("completed_at")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
 
-  institution  Institution   @relation(fields: [institutionId], references: [id])
-  student      Student       @relation(fields: [studentId], references: [id])
-  academicYear AcademicYear  @relation(fields: [academicYearId], references: [id])
-  course       Course?       @relation(fields: [courseId], references: [id])
+  institution    Institution     @relation(fields: [institutionId], references: [id])
+  student        Student         @relation(fields: [studentId], references: [id])
+  academicYear   AcademicYear    @relation(fields: [academicYearId], references: [id])
+  course         Course?         @relation(fields: [courseId], references: [id])
   courseOffering CourseOffering? @relation(fields: [courseOfferingId], references: [id])
-  program      Program?      @relation(fields: [programId], references: [id])
-  classLevel   ClassLevel?   @relation(fields: [classLevelId], references: [id])
-  batch        Batch?        @relation(fields: [batchId], references: [id])
-  section      Section?      @relation(fields: [sectionId], references: [id])
-  term         AcademicTerm? @relation(fields: [termId], references: [id])
+  program        Program?        @relation(fields: [programId], references: [id])
+  curriculum     Curriculum?     @relation(fields: [curriculumId], references: [id])
+  classLevel     ClassLevel?     @relation(fields: [classLevelId], references: [id])
+  batch          Batch?          @relation(fields: [batchId], references: [id])
+  section        Section?        @relation(fields: [sectionId], references: [id])
+  term           AcademicTerm?   @relation(fields: [termId], references: [id])
 
   marks Mark[]
 
@@ -1418,6 +1422,8 @@ model Curriculum {
   proposedByUser  User?            @relation("CurriculumProposedBy", fields: [proposedByUserId], references: [id])
   approvedByUser  User?            @relation("CurriculumApprovedBy", fields: [approvedByUserId], references: [id])
   curriculumTerms CurriculumTerm[]
+  students        Student[]
+  enrollments     Enrollment[]
 
   @@unique([programId, versionNumber])
   @@index([institutionId])

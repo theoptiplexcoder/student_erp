@@ -16,6 +16,8 @@ const bodyFont = DM_Sans({
   display: "swap",
 });
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Student ERP | Modern Academic Management Platform",
   description:

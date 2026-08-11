@@ -26,7 +26,7 @@ const navigation = [
   { name: "Institution", href: "/admin/institution", icon: Building2 },
   { name: "People", href: "/admin/people/students", icon: Users },
   { name: "Admissions", href: "/admin/admissions", icon: UserPlus },
-  { name: "Academics", href: "/admin/academics/courses", icon: BookOpen },
+  { name: "Academics", href: "/admin/academics", icon: BookOpen },
   { name: "Attendance", href: "/admin/attendance", icon: CalendarCheck },
   { name: "Examinations", href: "/admin/examinations/exams", icon: FileText },
   { name: "Certificates", href: "/admin/certificates", icon: Award },

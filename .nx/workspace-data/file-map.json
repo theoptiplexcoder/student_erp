@@ -46,12 +46,136 @@
   "fileMap": {
     "nonProjectFiles": [
       {
-        "file": ".agents/skills/shadcn/rules/composition.md",
-        "hash": "5874420640157523202"
+        "file": "tooling/generators/.gitkeep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": ".agents/skills/shadcn/rules/icons.md",
+        "hash": "6575187419887765535"
+      },
+      {
+        "file": "docs/domains/club_coord.md",
+        "hash": "18260283096069532405"
+      },
+      {
+        "file": "docs/architecture/tech_stack.md",
+        "hash": "5167933787386171494"
+      },
+      {
+        "file": "docs/domains/guardian.md",
+        "hash": "13660101355834283063"
+      },
+      {
+        "file": "pnpm-lock.yaml",
+        "hash": "17309269018616388428"
+      },
+      {
+        "file": ".agents/skills/shadcn/evals/evals.json",
+        "hash": "6926275806249365701"
+      },
+      {
+        "file": ".github/workflows/.gitkeep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": ".agents/skills/landing-page-guide/landing-page-v2.png",
+        "hash": "9906016976012921024"
+      },
+      {
+        "file": "docs/domains/facilities.md",
+        "hash": "9875827269484697491"
+      },
+      {
+        "file": ".editorconfig",
+        "hash": "18159089960499058905"
+      },
+      {
+        "file": "libs/database/package.json",
+        "hash": "7135159368665935027"
+      },
+      {
+        "file": "libs/database/prisma/schema.prisma",
+        "hash": "2753752251440914495"
+      },
+      {
+        "file": "scripts/clean.sh",
+        "hash": "3302138256578618042"
+      },
+      {
+        "file": "scripts/dev.sh",
+        "hash": "10195272983680487281"
+      },
+      {
+        "file": ".agents/skills/landing-page-guide/SKILL.md",
+        "hash": "2486816965017939544"
+      },
+      {
+        "file": "docs/architecture/project_structure.md",
+        "hash": "1772271277608434154"
+      },
+      {
+        "file": "docs/domains/library.md",
+        "hash": "18206676582713280750"
+      },
+      {
+        "file": "README.md",
+        "hash": "4301680797572612217"
+      },
+      {
+        "file": ".github/workflows/test.yml",
+        "hash": "4573398215460759137"
+      },
+      {
+        "file": "skills-lock.json",
+        "hash": "17672258943726110989"
+      },
+      {
+        "file": "docs/product/functional_requirements.md",
+        "hash": "4065387538731690738"
+      },
+      {
+        "file": ".github/workflows/lint.yml",
+        "hash": "7177904472385530327"
+      },
+      {
+        "file": ".env.example",
+        "hash": "10384074283337870620"
       },
       {
         "file": "package.json",
         "hash": "4799690674238299523"
+      },
+      {
+        "file": "infrastructure/docker/Dockerfile",
+        "hash": "10072888121047519576"
+      },
+      {
+        "file": "AGENTS.md",
+        "hash": "1149565417168876831"
+      },
+      {
+        "file": "docs/product/personas.md",
+        "hash": "4917804179993548597"
+      },
+      {
+        "file": ".agents/skills/shadcn/agents/openai.yml",
+        "hash": "2570410524583272810"
+      },
+      {
+        "file": "docs/domains/comms.md",
+        "hash": "3441528392612358141"
+      },
+      {
+        "file": "docs/product/mvp.md",
+        "hash": "897505159854492184"
+      },
+      {
+        "file": "pnpm-workspace.yaml",
+        "hash": "9750177317466281158"
+      },
+      {
+        "file": "tooling/templates/.gitkeep",
+        "hash": "3244421341483603138"
       },
       {
         "file": ".agents/skills/shadcn/rules/forms.md",
@@ -62,72 +186,72 @@
         "hash": "14245479798826654071"
       },
       {
-        "file": ".agents/skills/shadcn/rules/icons.md",
-        "hash": "6575187419887765535"
+        "file": ".agents/skills/shadcn/assets/shadcn.png",
+        "hash": "640468323980521187"
       },
       {
-        "file": "docs/product/mvp.md",
-        "hash": "897505159854492184"
+        "file": "infrastructure/docker/development/docker-compose.yml",
+        "hash": "1615564413742500726"
       },
       {
-        "file": "docs/product/PRD.md",
-        "hash": "9007622492542802006"
+        "file": "docs/domains/transport.md",
+        "hash": "4347075793911950322"
       },
       {
-        "file": "scripts/setup.sh",
-        "hash": "12851669715169889709"
+        "file": "docs/architecture/platform_roles.md",
+        "hash": "3458473894953270925"
       },
       {
-        "file": "tsconfig.base.json",
-        "hash": "2740071325005573920"
+        "file": "docs/architecture/schemas.md",
+        "hash": "15163072803641887960"
       },
       {
-        "file": "pnpm-workspace.yaml",
-        "hash": "9750177317466281158"
+        "file": ".agents/skills/shadcn/rules/chat.md",
+        "hash": "17452687626980285713"
       },
       {
-        "file": "docs/architecture/project_structure.md",
-        "hash": "1772271277608434154"
-      },
-      {
-        "file": "nx.json",
-        "hash": "1049875440782385995"
-      },
-      {
-        "file": "docs/architecture/tech_stack.md",
-        "hash": "5167933787386171494"
+        "file": "commitlint.config.js",
+        "hash": "5882725012641755451"
       },
       {
         "file": ".agents/skills/shadcn/SKILL.md",
         "hash": "11232608093340059808"
       },
       {
-        "file": "docs/domains/library.md",
-        "hash": "18206676582713280750"
+        "file": "docs/domains/external_users.md",
+        "hash": "8933474930640667424"
       },
       {
-        "file": "docs/design/COMPONENT_ARCHITECTURE.md",
-        "hash": "14320350766604999797"
+        "file": "tsconfig.base.json",
+        "hash": "2740071325005573920"
       },
       {
-        "file": ".agents/skills/shadcn/cli.md",
-        "hash": "16016486859242880059"
+        "file": ".eslintignore",
+        "hash": "7566804611931815582"
       },
       {
-        "file": "skills-lock.json",
-        "hash": "17672258943726110989"
+        "file": ".eslintrc.json",
+        "hash": "16688278775780502781"
       },
       {
-        "file": ".agents/skills/shadcn/rules/base-vs-radix.md",
-        "hash": "4590266970920187994"
-      },
-      {
-        "file": ".github/workflows/.gitkeep",
+        "file": "tooling/plop/.gitkeep",
         "hash": "3244421341483603138"
       },
       {
-        "file": ".agents/skills/shadcn/rules/chat.md",
-        "hash": "17452687626980285713"
+        "file": ".agents/skills/shadcn/assets/shadcn-small.png",
+        "hash": "3503294767916450072"
+      },
+      {
+        "file": "infrastructure/docker/production/docker-compose.yml",
+        "hash": "6329179713057248711"
+      },
+      {
+        "file": "docs/domains/finance.md",
+        "hash": "16026577993781088067"
+      },
+      {
+        "file": "docs/domains/faculty.md",
+        "hash": "8084710419886949604"
       },
       {
         "file": ".agents/skills/shadcn/registry.md",
@@ -138,248 +262,124 @@
         "hash": "17800832535745621011"
       },
       {
-        "file": ".eslintrc.json",
-        "hash": "16688278775780502781"
-      },
-      {
-        "file": "docs/domains/faculty.md",
-        "hash": "8084710419886949604"
-      },
-      {
-        "file": "docs/product/user_journey.md",
-        "hash": "781424912649730412"
-      },
-      {
-        "file": ".agents/skills/shadcn/assets/shadcn.png",
-        "hash": "640468323980521187"
-      },
-      {
-        "file": ".github/workflows/test.yml",
-        "hash": "4573398215460759137"
-      },
-      {
-        "file": "pnpm-lock.yaml",
-        "hash": "17309269018616388428"
-      },
-      {
-        "file": "docs/architecture/platform_roles.md",
-        "hash": "3458473894953270925"
-      },
-      {
-        "file": ".prettierrc",
-        "hash": "15807585019959272767"
-      },
-      {
-        "file": "commitlint.config.js",
-        "hash": "5882725012641755451"
-      },
-      {
-        "file": "scripts/lint.sh",
-        "hash": "16378719945974082810"
-      },
-      {
-        "file": "libs/database/package.json",
-        "hash": "7135159368665935027"
-      },
-      {
-        "file": "infrastructure/docker/development/docker-compose.yml",
-        "hash": "1615564413742500726"
-      },
-      {
-        "file": "infrastructure/docker/production/docker-compose.yml",
-        "hash": "6329179713057248711"
-      },
-      {
-        "file": ".agents/skills/shadcn/customization.md",
-        "hash": "10720737914367455975"
-      },
-      {
-        "file": "scripts/clean.sh",
-        "hash": "3302138256578618042"
-      },
-      {
-        "file": "tooling/plop/.gitkeep",
-        "hash": "3244421341483603138"
-      },
-      {
-        "file": ".agents/skills/shadcn/evals/evals.json",
-        "hash": "6926275806249365701"
-      },
-      {
-        "file": "docs/domains/admissions.md",
-        "hash": "10917823325260538795"
-      },
-      {
-        "file": ".gitignore",
-        "hash": "11390792887711183173"
-      },
-      {
-        "file": "infrastructure/docker/docker-compose.yml",
-        "hash": "1456763521009465802"
-      },
-      {
-        "file": ".agents/skills/shadcn/rules/styling.md",
-        "hash": "4043927735326720350"
-      },
-      {
-        "file": "docs/product/personas.md",
-        "hash": "4917804179993548597"
-      },
-      {
-        "file": "infrastructure/docker/development/.gitkeep",
-        "hash": "3244421341483603138"
-      },
-      {
-        "file": "libs/database/prisma/schema.prisma",
-        "hash": "3295759491462363359"
-      },
-      {
-        "file": "docs/domains/transport.md",
-        "hash": "4347075793911950322"
-      },
-      {
-        "file": "docs/architecture/schemas.md",
-        "hash": "15163072803641887960"
-      },
-      {
-        "file": "docs/domains/comms.md",
-        "hash": "3441528392612358141"
-      },
-      {
-        "file": ".editorconfig",
-        "hash": "18159089960499058905"
-      },
-      {
-        "file": "scripts/format.sh",
-        "hash": "1510311940476497292"
-      },
-      {
-        "file": "docs/domains/facilities.md",
-        "hash": "9875827269484697491"
-      },
-      {
-        "file": ".env.example",
-        "hash": "10384074283337870620"
-      },
-      {
-        "file": ".agents/skills/shadcn/mcp.md",
-        "hash": "10267946545532028515"
-      },
-      {
-        "file": "docs/domains/club_coord.md",
-        "hash": "18260283096069532405"
-      },
-      {
-        "file": "tooling/templates/.gitkeep",
-        "hash": "3244421341483603138"
-      },
-      {
-        "file": "tooling/generators/.gitkeep",
-        "hash": "3244421341483603138"
-      },
-      {
-        "file": "README.md",
-        "hash": "4301680797572612217"
-      },
-      {
-        "file": "AGENTS.md",
-        "hash": "1149565417168876831"
-      },
-      {
-        "file": "docs/domains/finance.md",
-        "hash": "16026577993781088067"
-      },
-      {
-        "file": ".agents/skills/shadcn/agents/openai.yml",
-        "hash": "2570410524583272810"
-      },
-      {
         "file": "docs/product/screens.md",
         "hash": "13562752980965139759"
       },
       {
-        "file": ".github/workflows/lint.yml",
-        "hash": "7177904472385530327"
-      },
-      {
-        "file": "libs/database/prisma/schema.prisma.bak",
-        "hash": "16648513231195577410"
-      },
-      {
-        "file": ".agents/skills/landing-page-guide/landing-page-v2.png",
-        "hash": "9906016976012921024"
-      },
-      {
-        "file": "docs/domains/guardian.md",
-        "hash": "13660101355834283063"
+        "file": "docs/design/COMPONENT_ARCHITECTURE.md",
+        "hash": "14320350766604999797"
       },
       {
         "file": "infrastructure/docker/production/.gitkeep",
         "hash": "3244421341483603138"
       },
       {
-        "file": "docs/domains/placement.md",
-        "hash": "14931455719022513645"
+        "file": "scripts/setup.sh",
+        "hash": "12851669715169889709"
       },
       {
-        "file": ".agents/skills/shadcn/assets/shadcn-small.png",
-        "hash": "3503294767916450072"
-      },
-      {
-        "file": "scripts/.gitkeep",
-        "hash": "3244421341483603138"
-      },
-      {
-        "file": ".agents/skills/landing-page-guide/SKILL.md",
-        "hash": "2486816965017939544"
-      },
-      {
-        "file": "docs/domains/students.md",
-        "hash": "3491695313920027416"
-      },
-      {
-        "file": "LICENSE",
-        "hash": "6558072483248049117"
-      },
-      {
-        "file": ".prettierignore",
-        "hash": "10532210378611834566"
-      },
-      {
-        "file": "docs/product/functional_requirements.md",
-        "hash": "4065387538731690738"
-      },
-      {
-        "file": "scripts/dev.sh",
-        "hash": "10195272983680487281"
-      },
-      {
-        "file": "infrastructure/docker/Dockerfile",
-        "hash": "10072888121047519576"
-      },
-      {
-        "file": "docs/domains/institution.md",
-        "hash": "15685584724969601551"
-      },
-      {
-        "file": "docs/domains/external_users.md",
-        "hash": "8933474930640667424"
-      },
-      {
-        "file": ".github/workflows/ci.yml",
-        "hash": "6652644493274423447"
+        "file": "lint-staged.config.js",
+        "hash": "13319812215759256199"
       },
       {
         "file": ".agents/skills/design-taste-frontend/SKILL.md",
         "hash": "1471540080238260908"
       },
       {
-        "file": ".eslintignore",
-        "hash": "7566804611931815582"
+        "file": "docs/domains/admissions.md",
+        "hash": "10917823325260538795"
       },
       {
-        "file": "lint-staged.config.js",
-        "hash": "13319812215759256199"
+        "file": "scripts/lint.sh",
+        "hash": "16378719945974082810"
+      },
+      {
+        "file": ".agents/skills/shadcn/rules/styling.md",
+        "hash": "4043927735326720350"
+      },
+      {
+        "file": "docs/domains/placement.md",
+        "hash": "14931455719022513645"
+      },
+      {
+        "file": "docs/product/PRD.md",
+        "hash": "9007622492542802006"
+      },
+      {
+        "file": "nx.json",
+        "hash": "1049875440782385995"
+      },
+      {
+        "file": ".agents/skills/shadcn/rules/composition.md",
+        "hash": "5874420640157523202"
+      },
+      {
+        "file": "docs/domains/students.md",
+        "hash": "3491695313920027416"
+      },
+      {
+        "file": ".github/workflows/ci.yml",
+        "hash": "6652644493274423447"
+      },
+      {
+        "file": "docs/product/user_journey.md",
+        "hash": "781424912649730412"
+      },
+      {
+        "file": "docs/domains/institution.md",
+        "hash": "15685584724969601551"
+      },
+      {
+        "file": ".agents/skills/shadcn/customization.md",
+        "hash": "10720737914367455975"
+      },
+      {
+        "file": "scripts/format.sh",
+        "hash": "1510311940476497292"
+      },
+      {
+        "file": "infrastructure/docker/docker-compose.yml",
+        "hash": "1456763521009465802"
+      },
+      {
+        "file": "infrastructure/docker/development/.gitkeep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": ".agents/skills/shadcn/rules/base-vs-radix.md",
+        "hash": "4590266970920187994"
+      },
+      {
+        "file": ".prettierrc",
+        "hash": "15807585019959272767"
+      },
+      {
+        "file": "scripts/.gitkeep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": ".gitignore",
+        "hash": "11390792887711183173"
+      },
+      {
+        "file": ".prettierignore",
+        "hash": "10532210378611834566"
+      },
+      {
+        "file": "LICENSE",
+        "hash": "6558072483248049117"
+      },
+      {
+        "file": ".agents/skills/shadcn/mcp.md",
+        "hash": "10267946545532028515"
+      },
+      {
+        "file": "libs/database/prisma/schema.prisma.bak",
+        "hash": "16648513231195577410"
+      },
+      {
+        "file": ".agents/skills/shadcn/cli.md",
+        "hash": "16016486859242880059"
       }
     ],
     "projectFileMap": {
@@ -434,6 +434,1440 @@
         {
           "file": "packages/constants/tsconfig.json",
           "hash": "18366424291377654036"
+        }
+      ],
+      "web": [
+        {
+          "file": "apps/web/components/landing/FAQSection.tsx",
+          "hash": "9929819347317375423",
+          "deps": [
+            "npm:react",
+            "npm:framer-motion@11.18.2",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/components/landing/FeatureShowcase.tsx",
+          "hash": "3176965692115435124",
+          "deps": [
+            "npm:react",
+            "npm:framer-motion@11.18.2",
+            "npm:lucide-react@0.400.0",
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/components/landing/FinalCTA.tsx",
+          "hash": "8546781230684231716",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/components/landing/Footer.tsx",
+          "hash": "11854460851640689591",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/components/landing/Header.tsx",
+          "hash": "16345796996899234171",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/components/landing/Hero.tsx",
+          "hash": "11859876199801967246",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0",
+            "npm:next",
+            "npm:framer-motion@11.18.2"
+          ]
+        },
+        {
+          "file": "apps/web/components/landing/IntegrationsSection.tsx",
+          "hash": "5786416050446475475",
+          "deps": [
+            "npm:react",
+            "npm:framer-motion@11.18.2",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/components/landing/MediaSection.tsx",
+          "hash": "15452038701956029661",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "npm:framer-motion@11.18.2"
+          ]
+        },
+        {
+          "file": "apps/web/components/landing/PersonaSection.tsx",
+          "hash": "18308548194429149834",
+          "deps": [
+            "npm:react",
+            "npm:framer-motion@11.18.2",
+            "npm:lucide-react@0.400.0",
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/components/landing/PricingSection.tsx",
+          "hash": "13798525476473119835",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0",
+            "@student-erp/ui",
+            "npm:framer-motion@11.18.2"
+          ]
+        },
+        {
+          "file": "apps/web/components/landing/SecuritySection.tsx",
+          "hash": "722412051792690882",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0",
+            "@student-erp/ui",
+            "npm:framer-motion@11.18.2"
+          ]
+        },
+        {
+          "file": "apps/web/components/landing/Testimonials.tsx",
+          "hash": "10557951071064868364",
+          "deps": [
+            "npm:react",
+            "npm:framer-motion@11.18.2",
+            "npm:lucide-react@0.400.0",
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/components/landing/WorkflowSection.tsx",
+          "hash": "6178173231891566442",
+          "deps": [
+            "npm:react",
+            "npm:framer-motion@11.18.2",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/components/shared/auth/AuthCard.tsx",
+          "hash": "14133896614559012607",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0",
+            "@student-erp/ui",
+            "npm:framer-motion@11.18.2"
+          ]
+        },
+        {
+          "file": "apps/web/components/shared/auth/AuthDivider.tsx",
+          "hash": "3196624080404148557",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/components/shared/auth/AuthLayout.tsx",
+          "hash": "8993246824111143863",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/components/shared/auth/BrandPanel.tsx",
+          "hash": "4890853070792251906",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0",
+            "npm:framer-motion@11.18.2"
+          ]
+        },
+        {
+          "file": "apps/web/components/shared/auth/LoginForm.tsx",
+          "hash": "3844329798084473256",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "npm:lucide-react@0.400.0",
+            "@student-erp/ui",
+            "npm:framer-motion@11.18.2"
+          ]
+        },
+        {
+          "file": "apps/web/components/shared/auth/PasswordStrength.tsx",
+          "hash": "4752931621626706367",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/components/shared/auth/RoleSelectionDialog.tsx",
+          "hash": "14554229165189307453",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0",
+            "@student-erp/ui",
+            "npm:framer-motion@11.18.2"
+          ]
+        },
+        {
+          "file": "apps/web/components/shared/auth/SignupForm.tsx",
+          "hash": "18239822781687463534",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0",
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/components/shared/auth/SocialLoginButtons.tsx",
+          "hash": "13002927061677618519",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/middleware.ts",
+          "hash": "930840746680943928",
+          "deps": [
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/next-env.d.ts",
+          "hash": "17884542380368184820"
+        },
+        {
+          "file": "apps/web/next.config.js",
+          "hash": "2403449015712537202",
+          "deps": [
+            "npm:@nx/next"
+          ]
+        },
+        {
+          "file": "apps/web/package.json",
+          "hash": "5788847231793753391",
+          "deps": [
+            "npm:@types/node",
+            "npm:@types/react",
+            "npm:@types/react-dom",
+            "npm:typescript",
+            "@student-erp/config",
+            "@student-erp/constants",
+            "@student-erp/hooks",
+            "@student-erp/types",
+            "npm:@prisma/client",
+            "@student-erp/ui",
+            "@student-erp/utils",
+            "npm:@supabase/ssr",
+            "npm:@supabase/supabase-js",
+            "npm:framer-motion@11.18.2",
+            "npm:lucide-react@0.400.0",
+            "npm:next",
+            "npm:react",
+            "npm:react-dom"
+          ]
+        },
+        {
+          "file": "apps/web/postcss.config.mjs",
+          "hash": "5511442426987897172"
+        },
+        {
+          "file": "apps/web/project.json",
+          "hash": "17287509661122615663"
+        },
+        {
+          "file": "apps/web/public/favicon.ico",
+          "hash": "9303420814833116677"
+        },
+        {
+          "file": "apps/web/public/landing1.svg",
+          "hash": "5530043857406583021"
+        },
+        {
+          "file": "apps/web/src/app/(auth)/forgot-password/page.tsx",
+          "hash": "3266361635123584161",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0",
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/(auth)/login/page.tsx",
+          "hash": "9670439912381363611",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/(auth)/reset-password/page.tsx",
+          "hash": "14860595817306429928",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "npm:lucide-react@0.400.0",
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/(auth)/signup/page.tsx",
+          "hash": "5810727065850294417",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/academics/courses/[courseId]/offerings/new/page.tsx",
+          "hash": "9088375346591474841",
+          "deps": [
+            "@student-erp/ui",
+            "npm:next",
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/academics/courses/[courseId]/page.tsx",
+          "hash": "14224012379808565351",
+          "deps": [
+            "@student-erp/ui",
+            "npm:next",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/academics/courses/new/page.tsx",
+          "hash": "2639128482655071579",
+          "deps": [
+            "@student-erp/ui",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/academics/courses/offerings/[offeringId]/page.tsx",
+          "hash": "8183836318202580973",
+          "deps": [
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/academics/courses/page.tsx",
+          "hash": "16304589788975492344",
+          "deps": [
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/academics/page.tsx",
+          "hash": "16179470021904175677",
+          "deps": [
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/academics/programs/[programId]/curriculums/[curriculumId]/page.tsx",
+          "hash": "4088190808390375894",
+          "deps": [
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/academics/programs/[programId]/curriculums/[curriculumId]/terms/[termId]/page.tsx",
+          "hash": "12275305071176853301",
+          "deps": [
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/academics/programs/[programId]/page.tsx",
+          "hash": "1245425132774788144",
+          "deps": [
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/admissions/applications/[applicationId]/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/admissions/applications/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/admissions/forms/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/admissions/page.tsx",
+          "hash": "2411570308265906342",
+          "deps": [
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/admissions/settings/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/alumni/[alumniId]/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/alumni/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/announcements/new/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/announcements/page.tsx",
+          "hash": "1743925124345375505",
+          "deps": [
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/attendance/courses/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/attendance/page.tsx",
+          "hash": "13088547471410896746",
+          "deps": [
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/attendance/reports/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/attendance/students/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/batches/[batchId]/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/batches/new/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/batches/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/certificates/[certificateId]/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/certificates/generate/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/certificates/page.tsx",
+          "hash": "15628732154943977224",
+          "deps": [
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/dashboard/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/departments/[departmentId]/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/departments/new/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/departments/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/examinations/exams/[examId]/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/examinations/exams/new/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/examinations/exams/page.tsx",
+          "hash": "8910216487556713431",
+          "deps": [
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/examinations/grading/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/examinations/marks/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/examinations/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/examinations/results/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/examinations/timetable/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/faculty/[facultyId]/academics/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/faculty/[facultyId]/courses/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/faculty/[facultyId]/history/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/faculty/[facultyId]/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/faculty/[facultyId]/profile/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/faculty/[facultyId]/timetable/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/faculty/new/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/faculty/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/institution/academic-year/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/institution/calendar/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/institution/page.tsx",
+          "hash": "12331524112508594007",
+          "deps": [
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/institution/profile/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/institution/settings/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/layout.tsx",
+          "hash": "1186051951191450224"
+        },
+        {
+          "file": "apps/web/src/app/admin/page.tsx",
+          "hash": "14228987421339191951",
+          "deps": [
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/people/students/page.tsx",
+          "hash": "4595506784195003324",
+          "deps": [
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/permissions/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/programs/[programId]/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/programs/new/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/programs/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/promotions/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/promotions/pending/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/promotions/promoted/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/promotions/rules/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/reports/admissions/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/reports/attendance/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/reports/examinations/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/reports/faculty/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/reports/page.tsx",
+          "hash": "11519229440469077036",
+          "deps": [
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/reports/students/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/roles/[roleId]/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/roles/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/sections/[sectionId]/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/sections/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/settings/academic/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/settings/general/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/settings/notifications/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/settings/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/settings/roles/page.tsx",
+          "hash": "7383767420110190550",
+          "deps": [
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/students/[studentId]/academics/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/students/[studentId]/attendance/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/students/[studentId]/documents/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/students/[studentId]/examinations/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/students/[studentId]/history/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/students/[studentId]/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/students/[studentId]/profile/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/students/new/page.tsx",
+          "hash": "7438259197836333449",
+          "deps": [
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/admin/students/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/subjects/[subjectId]/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/subjects/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/timetable/faculty/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/timetable/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/timetable/rooms/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/timetable/weekly/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/users/[userId]/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/users/invite/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/admin/users/page.tsx",
+          "hash": "2369704440826724951"
+        },
+        {
+          "file": "apps/web/src/app/api/auth/callback/route.ts",
+          "hash": "778511712554704889",
+          "deps": [
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/api/auth/logout/route.ts",
+          "hash": "7697236719683676648",
+          "deps": [
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/api/hello/route.ts",
+          "hash": "481462152031695647"
+        },
+        {
+          "file": "apps/web/src/app/faculty/dashboard/page.tsx",
+          "hash": "8052687696081983414",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/global-error.tsx",
+          "hash": "6713678988633352119"
+        },
+        {
+          "file": "apps/web/src/app/globals.css",
+          "hash": "6745882473194730835"
+        },
+        {
+          "file": "apps/web/src/app/layout.tsx",
+          "hash": "6165037624442220498",
+          "deps": [
+            "npm:react",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/page.tsx",
+          "hash": "1236115799942775560",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/providers.tsx",
+          "hash": "2366123963566977249",
+          "deps": [
+            "npm:react",
+            "npm:@tanstack/react-query"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/student/calendar/page.tsx",
+          "hash": "15443483618425287863",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/student/certificates/page.tsx",
+          "hash": "5893364852972970308",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/student/clubs/page.tsx",
+          "hash": "13399728667274324716",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/student/courses/[courseId]/page.tsx",
+          "hash": "2624507342127119872",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/student/courses/page.tsx",
+          "hash": "9569278411177373719",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/student/documents/page.tsx",
+          "hash": "10776780555308180351",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/student/feedback/page.tsx",
+          "hash": "15652272170977198762",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/student/forums/page.tsx",
+          "hash": "11652772032128695528",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/student/layout.tsx",
+          "hash": "10006137379484628095",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/student/notifications/page.tsx",
+          "hash": "6983823491216360828",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/student/page.tsx",
+          "hash": "16031188561652763604",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/student/profile/page.tsx",
+          "hash": "9718486458489488893",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/student/timetable/page.tsx",
+          "hash": "8176917261261204041",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/tenant-admin/layout.tsx",
+          "hash": "5759824022082269835",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/tenant-admin/page.tsx",
+          "hash": "10560565221471948754",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/tenant-admin/students/[studentId]/page.tsx",
+          "hash": "6367681826470179759",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/tenant-admin/students/admissions/[applicationId]/page.tsx",
+          "hash": "7672059732162907606",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/tenant-admin/students/admissions/page.tsx",
+          "hash": "198061042299096889",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/tenant-admin/students/applicants/[applicationId]/page.tsx",
+          "hash": "3445038181288173816",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/tenant-admin/students/applicants/page.tsx",
+          "hash": "3228552915691326416",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/tenant-admin/students/new/page.tsx",
+          "hash": "12764662042469453533",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/app/tenant-admin/students/page.tsx",
+          "hash": "17683837308883174866",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/admin/admin-header.tsx",
+          "hash": "15469994809527134285",
+          "deps": [
+            "npm:lucide-react@0.400.0",
+            "@student-erp/ui",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/admin/admin-sidebar.tsx",
+          "hash": "8665895551564687354",
+          "deps": [
+            "npm:next",
+            "@student-erp/utils",
+            "npm:lucide-react@0.400.0",
+            "npm:react",
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/admin/courses/EnrollStudentDialog.tsx",
+          "hash": "18224176077019678811",
+          "deps": [
+            "@student-erp/ui",
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/admin/courses/NewCourseForm.tsx",
+          "hash": "10858473402996963293",
+          "deps": [
+            "@student-erp/ui",
+            "npm:next",
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/layout/AppLayout.tsx",
+          "hash": "11818037386189152392",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/layout/Navbar.tsx",
+          "hash": "2353368735072375654",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/layout/Sidebar.tsx",
+          "hash": "2057770198278130320",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/student/calendar/calendar-view.tsx",
+          "hash": "16644318438579338425",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/student/courses/attendance/AttendanceFilters.tsx",
+          "hash": "848106218742620922",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/student/courses/attendance/AttendanceSessionItem.tsx",
+          "hash": "324450274763396860",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/student/courses/attendance/AttendanceSessionList.tsx",
+          "hash": "16011599997019055667",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/student/courses/attendance/AttendanceSummary.tsx",
+          "hash": "7357503473570094475",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/student/courses/attendance/CourseAttendance.tsx",
+          "hash": "14607322517306583503",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/student/dashboard/attendance-overview-card.tsx",
+          "hash": "10755696087037077960",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:next",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/student/dashboard/recent-announcements.tsx",
+          "hash": "16142406563117243069",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/student/dashboard/student-welcome-header.tsx",
+          "hash": "990362781062224514",
+          "deps": [
+            "npm:react",
+            "@student-erp/hooks",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/student/dashboard/today-schedule-card.tsx",
+          "hash": "14624571205154580386",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "@student-erp/hooks",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/student/dashboard/upcoming-deadlines-card.tsx",
+          "hash": "8186791967673494526",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/student/dashboard/upcoming-events-card.tsx",
+          "hash": "2319719485202858996",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/student/layout/student-navbar.tsx",
+          "hash": "9587426370575235495",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "npm:lucide-react@0.400.0",
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/student/layout/student-sidebar.tsx",
+          "hash": "13858807028580945185",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "npm:lucide-react@0.400.0",
+            "@student-erp/utils"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/student/profile/about-section.tsx",
+          "hash": "15631852864054167536",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/student/profile/profile-banner.tsx",
+          "hash": "816668029579514667",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/student/timetable/timetable-grid.tsx",
+          "hash": "15158076810343596643",
+          "deps": [
+            "npm:react",
+            "@student-erp/ui",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/admissions/components/AdmissionCyclesList.tsx",
+          "hash": "15944361445760689053",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/admissions/components/AdmissionsFilters.tsx",
+          "hash": "9597392757457106141",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/admissions/components/AdmissionsToolbar.tsx",
+          "hash": "14102679616265793356",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/admissions/components/ApplicationsTable.tsx",
+          "hash": "4985800114631217422",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/admissions/components/SeatMatrixTracker.tsx",
+          "hash": "5245013385343650750",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/applicants/components/ApplicantFilters.tsx",
+          "hash": "7975237566541378860",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/applicants/components/ApplicantToolbar.tsx",
+          "hash": "14312185379496007563",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/applicants/components/ApplicantsTable.tsx",
+          "hash": "14640772672755960132",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/dashboard/components/QuickActionCard.tsx",
+          "hash": "13551068775551738420",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/dashboard/components/WelcomeBanner.tsx",
+          "hash": "4337372284535281357",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/dashboard/components/WorkQueueCard.tsx",
+          "hash": "11371872872322963903",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/shared/components/ApplicantProfileTabs.tsx",
+          "hash": "10277095218816283280",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/students/components/StudentFilters.tsx",
+          "hash": "16679600456893230646",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/students/components/StudentTable.tsx",
+          "hash": "15648597540220850840",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/students/components/StudentToolbar.tsx",
+          "hash": "4536374717529164214",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/students/components/profile/StudentHeader.tsx",
+          "hash": "17042213231184858660",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/students/components/profile/StudentTabs.tsx",
+          "hash": "7932161367628846698",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/students/components/profile/tabs/DocumentsTab.tsx",
+          "hash": "2230349889091114345",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/students/components/profile/tabs/OverviewTab.tsx",
+          "hash": "16142932440848219827",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/students/components/profile/tabs/TimelineTab.tsx",
+          "hash": "2945201449748623226",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/features/students/components/registration/RegistrationWizard.tsx",
+          "hash": "2936189015027741715",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
+          "file": "apps/web/src/lib/auth.ts",
+          "hash": "1426009540686521263"
+        },
+        {
+          "file": "apps/web/src/lib/mock/student/data.ts",
+          "hash": "824017759307322115"
+        },
+        {
+          "file": "apps/web/src/lib/prisma.ts",
+          "hash": "7737742968263189472",
+          "deps": [
+            "npm:@prisma/client"
+          ]
+        },
+        {
+          "file": "apps/web/src/lib/supabase/client.ts",
+          "hash": "13479513546793243651",
+          "deps": [
+            "npm:@supabase/ssr"
+          ]
+        },
+        {
+          "file": "apps/web/src/lib/supabase/middleware.ts",
+          "hash": "16877349204137369396",
+          "deps": [
+            "npm:@supabase/ssr",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/lib/supabase/server.ts",
+          "hash": "5786401733898470740",
+          "deps": [
+            "npm:@supabase/ssr",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/web/src/lib/utils.ts",
+          "hash": "1260146919662595987",
+          "deps": [
+            "npm:clsx",
+            "npm:tailwind-merge"
+          ]
+        },
+        {
+          "file": "apps/web/tsconfig.json",
+          "hash": "11872111498085250137"
         }
       ],
       "@student-erp/api": [
@@ -592,7 +2026,7 @@
         },
         {
           "file": "apps/api/src/modules/academic/academic.module.ts",
-          "hash": "3097870412111526285",
+          "hash": "11898558052391294580",
           "deps": [
             "npm:@nestjs/common"
           ]
@@ -609,12 +2043,40 @@
           ]
         },
         {
+          "file": "apps/api/src/modules/academic/controllers/curriculum-courses.controller.ts",
+          "hash": "13193604854317605762",
+          "deps": [
+            "npm:@nestjs/common"
+          ]
+        },
+        {
+          "file": "apps/api/src/modules/academic/controllers/curriculum-terms.controller.ts",
+          "hash": "8114147348469076814",
+          "deps": [
+            "npm:@nestjs/common"
+          ]
+        },
+        {
+          "file": "apps/api/src/modules/academic/controllers/curriculums.controller.ts",
+          "hash": "14635212796382799450",
+          "deps": [
+            "npm:@nestjs/common"
+          ]
+        },
+        {
           "file": "apps/api/src/modules/academic/controllers/enrollments.controller.spec.ts",
           "hash": "16832564010165095108"
         },
         {
           "file": "apps/api/src/modules/academic/controllers/enrollments.controller.ts",
           "hash": "6994804027733901433",
+          "deps": [
+            "npm:@nestjs/common"
+          ]
+        },
+        {
+          "file": "apps/api/src/modules/academic/controllers/programs.controller.ts",
+          "hash": "14636256901205562970",
           "deps": [
             "npm:@nestjs/common"
           ]
@@ -631,12 +2093,43 @@
           ]
         },
         {
+          "file": "apps/api/src/modules/academic/services/curriculum-courses.service.ts",
+          "hash": "1558368201102192769",
+          "deps": [
+            "npm:@nestjs/common",
+            "npm:@prisma/client"
+          ]
+        },
+        {
+          "file": "apps/api/src/modules/academic/services/curriculum-terms.service.ts",
+          "hash": "1053319904349047470",
+          "deps": [
+            "npm:@nestjs/common",
+            "npm:@prisma/client"
+          ]
+        },
+        {
+          "file": "apps/api/src/modules/academic/services/curriculums.service.ts",
+          "hash": "6508240563169283501",
+          "deps": [
+            "npm:@nestjs/common",
+            "npm:@prisma/client"
+          ]
+        },
+        {
           "file": "apps/api/src/modules/academic/services/enrollments.service.spec.ts",
           "hash": "8653717647051613356"
         },
         {
           "file": "apps/api/src/modules/academic/services/enrollments.service.ts",
           "hash": "638317393026631482",
+          "deps": [
+            "npm:@nestjs/common"
+          ]
+        },
+        {
+          "file": "apps/api/src/modules/academic/services/programs.service.ts",
+          "hash": "8713294126908262758",
           "deps": [
             "npm:@nestjs/common"
           ]
@@ -1515,1411 +3008,28 @@
           "hash": "5949837164884098438"
         }
       ],
-      "web": [
+      "@student-erp/utils": [
         {
-          "file": "apps/web/components/landing/FAQSection.tsx",
-          "hash": "9929819347317375423",
-          "deps": [
-            "npm:react",
-            "npm:framer-motion@11.18.2",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/components/landing/FeatureShowcase.tsx",
-          "hash": "3176965692115435124",
-          "deps": [
-            "npm:react",
-            "npm:framer-motion@11.18.2",
-            "npm:lucide-react@0.400.0",
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/components/landing/FinalCTA.tsx",
-          "hash": "8546781230684231716",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/components/landing/Footer.tsx",
-          "hash": "11854460851640689591",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/components/landing/Header.tsx",
-          "hash": "16345796996899234171",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/components/landing/Hero.tsx",
-          "hash": "11859876199801967246",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0",
-            "npm:next",
-            "npm:framer-motion@11.18.2"
-          ]
-        },
-        {
-          "file": "apps/web/components/landing/IntegrationsSection.tsx",
-          "hash": "5786416050446475475",
-          "deps": [
-            "npm:react",
-            "npm:framer-motion@11.18.2",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/components/landing/MediaSection.tsx",
-          "hash": "15452038701956029661",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "npm:framer-motion@11.18.2"
-          ]
-        },
-        {
-          "file": "apps/web/components/landing/PersonaSection.tsx",
-          "hash": "18308548194429149834",
-          "deps": [
-            "npm:react",
-            "npm:framer-motion@11.18.2",
-            "npm:lucide-react@0.400.0",
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/components/landing/PricingSection.tsx",
-          "hash": "13798525476473119835",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0",
-            "@student-erp/ui",
-            "npm:framer-motion@11.18.2"
-          ]
-        },
-        {
-          "file": "apps/web/components/landing/SecuritySection.tsx",
-          "hash": "722412051792690882",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0",
-            "@student-erp/ui",
-            "npm:framer-motion@11.18.2"
-          ]
-        },
-        {
-          "file": "apps/web/components/landing/Testimonials.tsx",
-          "hash": "10557951071064868364",
-          "deps": [
-            "npm:react",
-            "npm:framer-motion@11.18.2",
-            "npm:lucide-react@0.400.0",
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/components/landing/WorkflowSection.tsx",
-          "hash": "6178173231891566442",
-          "deps": [
-            "npm:react",
-            "npm:framer-motion@11.18.2",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/components/shared/auth/AuthCard.tsx",
-          "hash": "14133896614559012607",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0",
-            "@student-erp/ui",
-            "npm:framer-motion@11.18.2"
-          ]
-        },
-        {
-          "file": "apps/web/components/shared/auth/AuthDivider.tsx",
-          "hash": "3196624080404148557",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/components/shared/auth/AuthLayout.tsx",
-          "hash": "8993246824111143863",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/components/shared/auth/BrandPanel.tsx",
-          "hash": "4890853070792251906",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0",
-            "npm:framer-motion@11.18.2"
-          ]
-        },
-        {
-          "file": "apps/web/components/shared/auth/LoginForm.tsx",
-          "hash": "3844329798084473256",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "npm:lucide-react@0.400.0",
-            "@student-erp/ui",
-            "npm:framer-motion@11.18.2"
-          ]
-        },
-        {
-          "file": "apps/web/components/shared/auth/PasswordStrength.tsx",
-          "hash": "4752931621626706367",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/components/shared/auth/RoleSelectionDialog.tsx",
-          "hash": "14554229165189307453",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0",
-            "@student-erp/ui",
-            "npm:framer-motion@11.18.2"
-          ]
-        },
-        {
-          "file": "apps/web/components/shared/auth/SignupForm.tsx",
-          "hash": "18239822781687463534",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0",
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/components/shared/auth/SocialLoginButtons.tsx",
-          "hash": "13002927061677618519",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/middleware.ts",
-          "hash": "930840746680943928",
-          "deps": [
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/next-env.d.ts",
-          "hash": "17884542380368184820"
-        },
-        {
-          "file": "apps/web/next.config.js",
-          "hash": "15904926528745366350",
-          "deps": [
-            "npm:@nx/next"
-          ]
-        },
-        {
-          "file": "apps/web/package.json",
-          "hash": "5788847231793753391",
-          "deps": [
-            "npm:@types/node",
-            "npm:@types/react",
-            "npm:@types/react-dom",
-            "npm:typescript",
-            "@student-erp/config",
-            "@student-erp/constants",
-            "@student-erp/hooks",
-            "@student-erp/types",
-            "npm:@prisma/client",
-            "@student-erp/ui",
-            "@student-erp/utils",
-            "npm:@supabase/ssr",
-            "npm:@supabase/supabase-js",
-            "npm:framer-motion@11.18.2",
-            "npm:lucide-react@0.400.0",
-            "npm:next",
-            "npm:react",
-            "npm:react-dom"
-          ]
-        },
-        {
-          "file": "apps/web/postcss.config.mjs",
-          "hash": "5511442426987897172"
-        },
-        {
-          "file": "apps/web/project.json",
-          "hash": "17287509661122615663"
-        },
-        {
-          "file": "apps/web/public/favicon.ico",
-          "hash": "9303420814833116677"
-        },
-        {
-          "file": "apps/web/public/landing1.svg",
-          "hash": "5530043857406583021"
-        },
-        {
-          "file": "apps/web/src/app/(auth)/forgot-password/page.tsx",
-          "hash": "3266361635123584161",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0",
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/(auth)/login/page.tsx",
-          "hash": "9670439912381363611",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/(auth)/reset-password/page.tsx",
-          "hash": "14860595817306429928",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "npm:lucide-react@0.400.0",
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/(auth)/signup/page.tsx",
-          "hash": "5810727065850294417",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/academics/courses/[courseId]/page.tsx",
-          "hash": "14224012379808565351",
-          "deps": [
-            "@student-erp/ui",
-            "npm:next",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/academics/courses/new/page.tsx",
-          "hash": "2639128482655071579",
-          "deps": [
-            "@student-erp/ui",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/academics/courses/page.tsx",
-          "hash": "16304589788975492344",
-          "deps": [
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/admissions/applications/[applicationId]/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/admissions/applications/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/admissions/forms/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/admissions/page.tsx",
-          "hash": "2411570308265906342",
-          "deps": [
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/admissions/settings/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/alumni/[alumniId]/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/alumni/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/announcements/new/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/announcements/page.tsx",
-          "hash": "1743925124345375505",
-          "deps": [
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/attendance/courses/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/attendance/page.tsx",
-          "hash": "13088547471410896746",
-          "deps": [
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/attendance/reports/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/attendance/students/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/batches/[batchId]/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/batches/new/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/batches/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/certificates/[certificateId]/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/certificates/generate/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/certificates/page.tsx",
-          "hash": "15628732154943977224",
-          "deps": [
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/courses/[courseId]/offerings/new/page.tsx",
-          "hash": "9088375346591474841",
-          "deps": [
-            "@student-erp/ui",
-            "npm:next",
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/courses/[courseId]/page.tsx",
-          "hash": "16562633195540946847",
-          "deps": [
-            "@student-erp/ui",
-            "npm:next",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/courses/new/page.tsx",
-          "hash": "7341275672583931814",
-          "deps": [
-            "@student-erp/ui",
-            "npm:next",
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/courses/offerings/[offeringId]/page.tsx",
-          "hash": "8183836318202580973",
-          "deps": [
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/courses/page.tsx",
-          "hash": "2115312282180040017",
-          "deps": [
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/dashboard/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/departments/[departmentId]/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/departments/new/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/departments/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/examinations/exams/[examId]/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/examinations/exams/new/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/examinations/exams/page.tsx",
-          "hash": "8910216487556713431",
-          "deps": [
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/examinations/grading/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/examinations/marks/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/examinations/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/examinations/results/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/examinations/timetable/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/faculty/[facultyId]/academics/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/faculty/[facultyId]/courses/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/faculty/[facultyId]/history/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/faculty/[facultyId]/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/faculty/[facultyId]/profile/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/faculty/[facultyId]/timetable/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/faculty/new/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/faculty/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/institution/academic-year/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/institution/calendar/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/institution/page.tsx",
-          "hash": "12331524112508594007",
-          "deps": [
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/institution/profile/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/institution/settings/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/layout.tsx",
-          "hash": "1186051951191450224"
-        },
-        {
-          "file": "apps/web/src/app/admin/page.tsx",
-          "hash": "14228987421339191951",
-          "deps": [
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/people/students/page.tsx",
-          "hash": "4595506784195003324",
-          "deps": [
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/permissions/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/programs/[programId]/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/programs/new/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/programs/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/promotions/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/promotions/pending/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/promotions/promoted/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/promotions/rules/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/reports/admissions/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/reports/attendance/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/reports/examinations/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/reports/faculty/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/reports/page.tsx",
-          "hash": "11519229440469077036",
-          "deps": [
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/reports/students/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/roles/[roleId]/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/roles/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/sections/[sectionId]/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/sections/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/settings/academic/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/settings/general/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/settings/notifications/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/settings/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/settings/roles/page.tsx",
-          "hash": "7383767420110190550",
-          "deps": [
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/admin/students/[studentId]/academics/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/students/[studentId]/attendance/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/students/[studentId]/documents/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/students/[studentId]/examinations/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/students/[studentId]/history/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/students/[studentId]/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/students/[studentId]/profile/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/students/new/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/students/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/subjects/[subjectId]/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/subjects/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/timetable/faculty/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/timetable/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/timetable/rooms/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/timetable/weekly/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/users/[userId]/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/users/invite/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/admin/users/page.tsx",
-          "hash": "2369704440826724951"
-        },
-        {
-          "file": "apps/web/src/app/api/auth/callback/route.ts",
-          "hash": "778511712554704889",
-          "deps": [
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/api/auth/logout/route.ts",
-          "hash": "7697236719683676648",
-          "deps": [
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/api/hello/route.ts",
-          "hash": "481462152031695647"
-        },
-        {
-          "file": "apps/web/src/app/faculty/dashboard/page.tsx",
-          "hash": "8052687696081983414",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/globals.css",
-          "hash": "6745882473194730835"
-        },
-        {
-          "file": "apps/web/src/app/layout.tsx",
-          "hash": "10074753438458343950",
-          "deps": [
-            "npm:react",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/page.tsx",
-          "hash": "1236115799942775560",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/providers.tsx",
-          "hash": "2366123963566977249",
-          "deps": [
-            "npm:react",
-            "npm:@tanstack/react-query"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/student/calendar/page.tsx",
-          "hash": "15443483618425287863",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/student/certificates/page.tsx",
-          "hash": "5893364852972970308",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/student/clubs/page.tsx",
-          "hash": "13399728667274324716",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/student/courses/[courseId]/page.tsx",
-          "hash": "2624507342127119872",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/student/courses/page.tsx",
-          "hash": "9569278411177373719",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/student/documents/page.tsx",
-          "hash": "10776780555308180351",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/student/feedback/page.tsx",
-          "hash": "15652272170977198762",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/student/forums/page.tsx",
-          "hash": "11652772032128695528",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/student/layout.tsx",
-          "hash": "10006137379484628095",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/student/notifications/page.tsx",
-          "hash": "6983823491216360828",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/student/page.tsx",
-          "hash": "16031188561652763604",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/student/profile/page.tsx",
-          "hash": "9718486458489488893",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/student/timetable/page.tsx",
-          "hash": "8176917261261204041",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/tenant-admin/layout.tsx",
-          "hash": "5759824022082269835",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/tenant-admin/page.tsx",
-          "hash": "10560565221471948754",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/tenant-admin/students/[studentId]/page.tsx",
-          "hash": "6367681826470179759",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/tenant-admin/students/admissions/[applicationId]/page.tsx",
-          "hash": "7672059732162907606",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/tenant-admin/students/admissions/page.tsx",
-          "hash": "198061042299096889",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/tenant-admin/students/applicants/[applicationId]/page.tsx",
-          "hash": "3445038181288173816",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/tenant-admin/students/applicants/page.tsx",
-          "hash": "3228552915691326416",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/tenant-admin/students/new/page.tsx",
-          "hash": "12764662042469453533",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/app/tenant-admin/students/page.tsx",
-          "hash": "17683837308883174866",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/admin/admin-header.tsx",
-          "hash": "15469994809527134285",
-          "deps": [
-            "npm:lucide-react@0.400.0",
-            "@student-erp/ui",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/admin/admin-sidebar.tsx",
-          "hash": "17447577108271844375",
-          "deps": [
-            "npm:next",
-            "@student-erp/utils",
-            "npm:lucide-react@0.400.0",
-            "npm:react",
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/admin/courses/EnrollStudentDialog.tsx",
-          "hash": "18224176077019678811",
-          "deps": [
-            "@student-erp/ui",
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/admin/courses/NewCourseForm.tsx",
-          "hash": "10858473402996963293",
-          "deps": [
-            "@student-erp/ui",
-            "npm:next",
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/layout/AppLayout.tsx",
-          "hash": "11818037386189152392",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/layout/Navbar.tsx",
-          "hash": "2353368735072375654",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/layout/Sidebar.tsx",
-          "hash": "2057770198278130320",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/student/calendar/calendar-view.tsx",
-          "hash": "16644318438579338425",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/student/courses/attendance/AttendanceFilters.tsx",
-          "hash": "848106218742620922",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/student/courses/attendance/AttendanceSessionItem.tsx",
-          "hash": "324450274763396860",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/student/courses/attendance/AttendanceSessionList.tsx",
-          "hash": "16011599997019055667",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/student/courses/attendance/AttendanceSummary.tsx",
-          "hash": "7357503473570094475",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/student/courses/attendance/CourseAttendance.tsx",
-          "hash": "14607322517306583503",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/student/dashboard/attendance-overview-card.tsx",
-          "hash": "10755696087037077960",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:next",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/student/dashboard/recent-announcements.tsx",
-          "hash": "16142406563117243069",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/student/dashboard/student-welcome-header.tsx",
-          "hash": "990362781062224514",
-          "deps": [
-            "npm:react",
-            "@student-erp/hooks",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/student/dashboard/today-schedule-card.tsx",
-          "hash": "14624571205154580386",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "@student-erp/hooks",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/student/dashboard/upcoming-deadlines-card.tsx",
-          "hash": "8186791967673494526",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/student/dashboard/upcoming-events-card.tsx",
-          "hash": "2319719485202858996",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/student/layout/student-navbar.tsx",
-          "hash": "9587426370575235495",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "npm:lucide-react@0.400.0",
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/student/layout/student-sidebar.tsx",
-          "hash": "13858807028580945185",
-          "deps": [
-            "npm:react",
-            "npm:next",
-            "npm:lucide-react@0.400.0",
-            "@student-erp/utils"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/student/profile/about-section.tsx",
-          "hash": "15631852864054167536",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/student/profile/profile-banner.tsx",
-          "hash": "816668029579514667",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/components/student/timetable/timetable-grid.tsx",
-          "hash": "15158076810343596643",
-          "deps": [
-            "npm:react",
-            "@student-erp/ui",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/admissions/components/AdmissionCyclesList.tsx",
-          "hash": "15944361445760689053",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/admissions/components/AdmissionsFilters.tsx",
-          "hash": "9597392757457106141",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/admissions/components/AdmissionsToolbar.tsx",
-          "hash": "14102679616265793356",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/admissions/components/ApplicationsTable.tsx",
-          "hash": "4985800114631217422",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/admissions/components/SeatMatrixTracker.tsx",
-          "hash": "5245013385343650750",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/applicants/components/ApplicantFilters.tsx",
-          "hash": "7975237566541378860",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/applicants/components/ApplicantToolbar.tsx",
-          "hash": "14312185379496007563",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/applicants/components/ApplicantsTable.tsx",
-          "hash": "14640772672755960132",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0",
-            "npm:next"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/dashboard/components/QuickActionCard.tsx",
-          "hash": "13551068775551738420",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/dashboard/components/WelcomeBanner.tsx",
-          "hash": "4337372284535281357",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/dashboard/components/WorkQueueCard.tsx",
-          "hash": "11371872872322963903",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/shared/components/ApplicantProfileTabs.tsx",
-          "hash": "10277095218816283280",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/students/components/StudentFilters.tsx",
-          "hash": "16679600456893230646",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/students/components/StudentTable.tsx",
-          "hash": "15648597540220850840",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/students/components/StudentToolbar.tsx",
-          "hash": "4536374717529164214",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/students/components/profile/StudentHeader.tsx",
-          "hash": "17042213231184858660",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/students/components/profile/StudentTabs.tsx",
-          "hash": "7932161367628846698",
-          "deps": [
-            "npm:react"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/students/components/profile/tabs/DocumentsTab.tsx",
-          "hash": "2230349889091114345",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/students/components/profile/tabs/OverviewTab.tsx",
-          "hash": "16142932440848219827",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/students/components/profile/tabs/TimelineTab.tsx",
-          "hash": "2945201449748623226",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/features/students/components/registration/RegistrationWizard.tsx",
-          "hash": "2936189015027741715",
-          "deps": [
-            "npm:react",
-            "npm:lucide-react@0.400.0"
-          ]
-        },
-        {
-          "file": "apps/web/src/lib/auth.ts",
-          "hash": "1426009540686521263"
-        },
-        {
-          "file": "apps/web/src/lib/mock/student/data.ts",
-          "hash": "824017759307322115"
-        },
-        {
-          "file": "apps/web/src/lib/prisma.ts",
-          "hash": "7737742968263189472",
-          "deps": [
-            "npm:@prisma/client"
-          ]
+          "file": "packages/utils/README.md",
+          "hash": "17313887993807381200"
         },
         {
-          "file": "apps/web/src/lib/supabase/client.ts",
-          "hash": "13479513546793243651",
+          "file": "packages/utils/package.json",
+          "hash": "4176169574702292753",
           "deps": [
-            "npm:@supabase/ssr"
+            "npm:typescript"
           ]
         },
         {
-          "file": "apps/web/src/lib/supabase/middleware.ts",
-          "hash": "16877349204137369396",
-          "deps": [
-            "npm:@supabase/ssr",
-            "npm:next"
-          ]
+          "file": "packages/utils/src/date/.gitkeep",
+          "hash": "3244421341483603138"
         },
         {
-          "file": "apps/web/src/lib/supabase/server.ts",
-          "hash": "5786401733898470740",
-          "deps": [
-            "npm:@supabase/ssr",
-            "npm:next"
-          ]
+          "file": "packages/utils/src/file/.gitkeep",
+          "hash": "3244421341483603138"
         },
         {
-          "file": "apps/web/src/lib/utils.ts",
+          "file": "packages/utils/src/index.ts",
           "hash": "1260146919662595987",
           "deps": [
             "npm:clsx",
@@ -2927,8 +3037,28 @@
           ]
         },
         {
-          "file": "apps/web/tsconfig.json",
-          "hash": "11872111498085250137"
+          "file": "packages/utils/src/network/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/utils/src/number/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/utils/src/storage/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/utils/src/string/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/utils/src/validation/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/utils/tsconfig.json",
+          "hash": "18366424291377654036"
         }
       ],
       "@student-erp/config": [
@@ -2966,6 +3096,105 @@
         {
           "file": "packages/config/typescript/.gitkeep",
           "hash": "3244421341483603138"
+        }
+      ],
+      "@student-erp/types": [
+        {
+          "file": "packages/types/README.md",
+          "hash": "7291488029573698628"
+        },
+        {
+          "file": "packages/types/package.json",
+          "hash": "7970420508751460793",
+          "deps": [
+            "npm:typescript"
+          ]
+        },
+        {
+          "file": "packages/types/src/api/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/types/src/auth/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/types/src/auth/index.ts",
+          "hash": "12872428820177870422"
+        },
+        {
+          "file": "packages/types/src/common/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/types/src/database/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/types/src/database/index.ts",
+          "hash": "3912414520755879497"
+        },
+        {
+          "file": "packages/types/src/faculty/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/types/src/index.ts",
+          "hash": "419882146286254945"
+        },
+        {
+          "file": "packages/types/src/student/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/types/tsconfig.json",
+          "hash": "18366424291377654036"
+        }
+      ],
+      "@student-erp/hooks": [
+        {
+          "file": "packages/hooks/README.md",
+          "hash": "9375398124601580508"
+        },
+        {
+          "file": "packages/hooks/package.json",
+          "hash": "12135266190200035961",
+          "deps": [
+            "npm:react@19.2.8",
+            "npm:typescript"
+          ]
+        },
+        {
+          "file": "packages/hooks/src/api/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/hooks/src/api/student.hooks.ts",
+          "hash": "5882993822122305100",
+          "deps": [
+            "npm:@tanstack/react-query",
+            "@student-erp/sdk"
+          ]
+        },
+        {
+          "file": "packages/hooks/src/auth/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/hooks/src/forms/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/hooks/src/index.ts",
+          "hash": "926945769308965383"
+        },
+        {
+          "file": "packages/hooks/src/ui/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/hooks/tsconfig.json",
+          "hash": "18366424291377654036"
         }
       ],
       "@student-erp/ui": [
@@ -3104,158 +3333,6 @@
         },
         {
           "file": "packages/ui/tsconfig.json",
-          "hash": "18366424291377654036"
-        }
-      ],
-      "@student-erp/hooks": [
-        {
-          "file": "packages/hooks/README.md",
-          "hash": "9375398124601580508"
-        },
-        {
-          "file": "packages/hooks/package.json",
-          "hash": "12135266190200035961",
-          "deps": [
-            "npm:react@19.2.8",
-            "npm:typescript"
-          ]
-        },
-        {
-          "file": "packages/hooks/src/api/.gitkeep",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "packages/hooks/src/api/student.hooks.ts",
-          "hash": "5882993822122305100",
-          "deps": [
-            "npm:@tanstack/react-query",
-            "@student-erp/sdk"
-          ]
-        },
-        {
-          "file": "packages/hooks/src/auth/.gitkeep",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "packages/hooks/src/forms/.gitkeep",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "packages/hooks/src/index.ts",
-          "hash": "926945769308965383"
-        },
-        {
-          "file": "packages/hooks/src/ui/.gitkeep",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "packages/hooks/tsconfig.json",
-          "hash": "18366424291377654036"
-        }
-      ],
-      "@student-erp/utils": [
-        {
-          "file": "packages/utils/README.md",
-          "hash": "17313887993807381200"
-        },
-        {
-          "file": "packages/utils/package.json",
-          "hash": "4176169574702292753",
-          "deps": [
-            "npm:typescript"
-          ]
-        },
-        {
-          "file": "packages/utils/src/date/.gitkeep",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "packages/utils/src/file/.gitkeep",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "packages/utils/src/index.ts",
-          "hash": "1260146919662595987",
-          "deps": [
-            "npm:clsx",
-            "npm:tailwind-merge"
-          ]
-        },
-        {
-          "file": "packages/utils/src/network/.gitkeep",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "packages/utils/src/number/.gitkeep",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "packages/utils/src/storage/.gitkeep",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "packages/utils/src/string/.gitkeep",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "packages/utils/src/validation/.gitkeep",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "packages/utils/tsconfig.json",
-          "hash": "18366424291377654036"
-        }
-      ],
-      "@student-erp/types": [
-        {
-          "file": "packages/types/README.md",
-          "hash": "7291488029573698628"
-        },
-        {
-          "file": "packages/types/package.json",
-          "hash": "7970420508751460793",
-          "deps": [
-            "npm:typescript"
-          ]
-        },
-        {
-          "file": "packages/types/src/api/.gitkeep",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "packages/types/src/auth/.gitkeep",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "packages/types/src/auth/index.ts",
-          "hash": "12872428820177870422"
-        },
-        {
-          "file": "packages/types/src/common/.gitkeep",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "packages/types/src/database/.gitkeep",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "packages/types/src/database/index.ts",
-          "hash": "3912414520755879497"
-        },
-        {
-          "file": "packages/types/src/faculty/.gitkeep",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "packages/types/src/index.ts",
-          "hash": "419882146286254945"
-        },
-        {
-          "file": "packages/types/src/student/.gitkeep",
-          "hash": "3244421341483603138"
-        },
-        {
-          "file": "packages/types/tsconfig.json",
           "hash": "18366424291377654036"
         }
       ],
