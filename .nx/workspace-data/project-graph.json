@@ -595,7 +595,7 @@
               "script": "build"
             },
             "metadata": {
-              "scriptContent": "next build",
+              "scriptContent": "NODE_ENV=production next build",
               "runCommand": "pnpm run build"
             },
             "configurations": {},
@@ -35542,5 +35542,5 @@
   },
   "version": "6.0",
   "errors": [],
-  "computedAt": 1786440200052
+  "computedAt": 1786440955743
 }
