@@ -11,11 +11,32 @@ export default function NewCoursePage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    // Submit logic will go here
-    setTimeout(() => {
+    
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      code: formData.get("code") as string,
+      name: formData.get("name") as string,
+      creditValue: parseFloat(formData.get("credits") as string),
+      description: formData.get("description") as string,
+      institutionId: "00000000-0000-0000-0000-000000000000", // Hardcoded for demo
+    };
+
+    try {
+      const res = await fetch('/api/admin/courses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        router.push("/admin/academics/courses");
+      } else {
+        console.error("Failed to create course");
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
       setLoading(false);
-      router.push("/admin/academics/courses");
-    }, 1000);
+    }
   };
 
   return (
@@ -34,22 +55,22 @@ export default function NewCoursePage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="code">Course Code</Label>
-              <Input id="code" required placeholder="e.g. CS301" />
+              <Input id="code" name="code" required placeholder="e.g. CS301" />
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="name">Course Name</Label>
-              <Input id="name" required placeholder="e.g. Database Management Systems" />
+              <Input id="name" name="name" required placeholder="e.g. Database Management Systems" />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="credits">Credits</Label>
-              <Input id="credits" type="number" step="0.5" required placeholder="e.g. 4.0" />
+              <Input id="credits" name="credits" type="number" step="0.5" required placeholder="e.g. 4.0" />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
-              <Input id="description" placeholder="Optional brief description" />
+              <Input id="description" name="description" placeholder="Optional brief description" />
             </div>
 
             <div className="flex justify-end space-x-2 pt-4">

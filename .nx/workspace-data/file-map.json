@@ -46,340 +46,340 @@
   "fileMap": {
     "nonProjectFiles": [
       {
-        "file": "docs/product/screens.md",
-        "hash": "13562752980965139759"
-      },
-      {
-        "file": ".agents/skills/shadcn/cli.md",
-        "hash": "16016486859242880059"
-      },
-      {
-        "file": "commitlint.config.js",
-        "hash": "5882725012641755451"
-      },
-      {
-        "file": ".agents/skills/shadcn/rules/styling.md",
-        "hash": "4043927735326720350"
-      },
-      {
-        "file": ".env.example",
-        "hash": "10384074283337870620"
-      },
-      {
-        "file": ".agents/skills/shadcn/rules/composition.md",
-        "hash": "5874420640157523202"
-      },
-      {
-        "file": "docs/product/PRD.md",
-        "hash": "9007622492542802006"
-      },
-      {
-        "file": "nx.json",
-        "hash": "1049875440782385995"
-      },
-      {
-        "file": "infrastructure/docker/production/.gitkeep",
-        "hash": "3244421341483603138"
-      },
-      {
-        "file": "skills-lock.json",
-        "hash": "17672258943726110989"
-      },
-      {
-        "file": ".agents/skills/shadcn/rules/base-vs-radix.md",
-        "hash": "4590266970920187994"
-      },
-      {
-        "file": ".agents/skills/shadcn/SKILL.md",
-        "hash": "11232608093340059808"
-      },
-      {
-        "file": "scripts/lint.sh",
-        "hash": "16378719945974082810"
-      },
-      {
-        "file": "scripts/build.sh",
-        "hash": "17800832535745621011"
-      },
-      {
-        "file": "docs/domains/admissions.md",
-        "hash": "10917823325260538795"
-      },
-      {
-        "file": ".agents/skills/landing-page-guide/landing-page-v2.png",
-        "hash": "9906016976012921024"
-      },
-      {
-        "file": "lint-staged.config.js",
-        "hash": "13319812215759256199"
-      },
-      {
-        "file": "pnpm-lock.yaml",
-        "hash": "17309269018616388428"
-      },
-      {
-        "file": "scripts/dev.sh",
-        "hash": "10195272983680487281"
-      },
-      {
-        "file": "docs/domains/students.md",
-        "hash": "3491695313920027416"
+        "file": ".eslintignore",
+        "hash": "7566804611931815582"
       },
       {
         "file": ".prettierrc",
         "hash": "15807585019959272767"
       },
       {
-        "file": "infrastructure/docker/production/docker-compose.yml",
-        "hash": "6329179713057248711"
-      },
-      {
-        "file": "libs/database/prisma/schema.prisma.bak",
-        "hash": "16648513231195577410"
-      },
-      {
-        "file": ".github/workflows/test.yml",
-        "hash": "4573398215460759137"
-      },
-      {
-        "file": "infrastructure/docker/development/docker-compose.yml",
-        "hash": "1615564413742500726"
-      },
-      {
-        "file": "docs/design/COMPONENT_ARCHITECTURE.md",
-        "hash": "14320350766604999797"
-      },
-      {
-        "file": "docs/domains/club_coord.md",
-        "hash": "18260283096069532405"
-      },
-      {
-        "file": ".agents/skills/shadcn/evals/evals.json",
-        "hash": "6926275806249365701"
-      },
-      {
-        "file": ".editorconfig",
-        "hash": "18159089960499058905"
-      },
-      {
-        "file": ".eslintignore",
-        "hash": "7566804611931815582"
-      },
-      {
-        "file": "infrastructure/docker/development/.gitkeep",
-        "hash": "3244421341483603138"
-      },
-      {
-        "file": "tooling/generators/.gitkeep",
-        "hash": "3244421341483603138"
-      },
-      {
-        "file": "docs/domains/institution.md",
-        "hash": "15685584724969601551"
-      },
-      {
-        "file": "docs/product/functional_requirements.md",
-        "hash": "4065387538731690738"
-      },
-      {
-        "file": "scripts/setup.sh",
-        "hash": "12851669715169889709"
-      },
-      {
-        "file": "docs/product/personas.md",
-        "hash": "4917804179993548597"
-      },
-      {
-        "file": "pnpm-workspace.yaml",
-        "hash": "9750177317466281158"
-      },
-      {
-        "file": "scaffold.js",
-        "hash": "14245479798826654071"
+        "file": "tsconfig.base.json",
+        "hash": "2740071325005573920"
       },
       {
         "file": "docs/domains/library.md",
         "hash": "18206676582713280750"
       },
       {
-        "file": "tooling/plop/.gitkeep",
-        "hash": "3244421341483603138"
-      },
-      {
-        "file": "docs/architecture/tech_stack.md",
-        "hash": "5167933787386171494"
-      },
-      {
-        "file": "infrastructure/docker/Dockerfile",
-        "hash": "10072888121047519576"
-      },
-      {
-        "file": "scripts/format.sh",
-        "hash": "1510311940476497292"
-      },
-      {
-        "file": "docs/domains/guardian.md",
-        "hash": "13660101355834283063"
-      },
-      {
-        "file": "docs/domains/transport.md",
-        "hash": "4347075793911950322"
-      },
-      {
-        "file": "docs/architecture/project_structure.md",
-        "hash": "1772271277608434154"
-      },
-      {
-        "file": "docs/product/user_journey.md",
-        "hash": "781424912649730412"
-      },
-      {
-        "file": ".agents/skills/shadcn/assets/shadcn.png",
-        "hash": "640468323980521187"
-      },
-      {
-        "file": ".agents/skills/shadcn/rules/icons.md",
-        "hash": "6575187419887765535"
-      },
-      {
-        "file": ".eslintrc.json",
-        "hash": "16688278775780502781"
-      },
-      {
-        "file": "README.md",
-        "hash": "4301680797572612217"
-      },
-      {
-        "file": ".agents/skills/shadcn/assets/shadcn-small.png",
-        "hash": "3503294767916450072"
-      },
-      {
-        "file": ".github/workflows/ci.yml",
-        "hash": "6652644493274423447"
-      },
-      {
-        "file": ".agents/skills/shadcn/registry.md",
-        "hash": "11795879039172529046"
-      },
-      {
-        "file": ".agents/skills/shadcn/customization.md",
-        "hash": "10720737914367455975"
-      },
-      {
-        "file": ".gitignore",
-        "hash": "11390792887711183173"
-      },
-      {
-        "file": "docs/domains/placement.md",
-        "hash": "14931455719022513645"
-      },
-      {
-        "file": "infrastructure/docker/docker-compose.yml",
-        "hash": "1456763521009465802"
-      },
-      {
-        "file": ".github/workflows/.gitkeep",
-        "hash": "3244421341483603138"
-      },
-      {
-        "file": "package.json",
-        "hash": "4799690674238299523"
-      },
-      {
-        "file": "docs/domains/facilities.md",
-        "hash": "9875827269484697491"
-      },
-      {
-        "file": "libs/database/prisma/schema.prisma",
-        "hash": "3295759491462363359"
-      },
-      {
-        "file": ".agents/skills/design-taste-frontend/SKILL.md",
-        "hash": "1471540080238260908"
+        "file": ".agents/skills/landing-page-guide/SKILL.md",
+        "hash": "2486816965017939544"
       },
       {
         "file": ".github/workflows/lint.yml",
         "hash": "7177904472385530327"
       },
       {
-        "file": "AGENTS.md",
-        "hash": "1149565417168876831"
-      },
-      {
-        "file": ".agents/skills/shadcn/mcp.md",
-        "hash": "10267946545532028515"
-      },
-      {
-        "file": "docs/domains/comms.md",
-        "hash": "3441528392612358141"
-      },
-      {
-        "file": "LICENSE",
-        "hash": "6558072483248049117"
-      },
-      {
-        "file": ".agents/skills/shadcn/agents/openai.yml",
-        "hash": "2570410524583272810"
-      },
-      {
-        "file": "scripts/clean.sh",
-        "hash": "3302138256578618042"
-      },
-      {
-        "file": "docs/domains/external_users.md",
-        "hash": "8933474930640667424"
-      },
-      {
-        "file": "docs/domains/finance.md",
-        "hash": "16026577993781088067"
-      },
-      {
-        "file": "libs/database/package.json",
-        "hash": "7135159368665935027"
-      },
-      {
-        "file": "docs/architecture/schemas.md",
-        "hash": "15163072803641887960"
-      },
-      {
-        "file": "docs/product/mvp.md",
-        "hash": "897505159854492184"
-      },
-      {
-        "file": "tsconfig.base.json",
-        "hash": "2740071325005573920"
-      },
-      {
         "file": "docs/architecture/platform_roles.md",
         "hash": "3458473894953270925"
-      },
-      {
-        "file": ".agents/skills/shadcn/rules/chat.md",
-        "hash": "17452687626980285713"
-      },
-      {
-        "file": ".agents/skills/shadcn/rules/forms.md",
-        "hash": "9696703400549885214"
-      },
-      {
-        "file": "scripts/.gitkeep",
-        "hash": "3244421341483603138"
-      },
-      {
-        "file": ".prettierignore",
-        "hash": "10532210378611834566"
-      },
-      {
-        "file": "docs/domains/faculty.md",
-        "hash": "8084710419886949604"
       },
       {
         "file": "tooling/templates/.gitkeep",
         "hash": "3244421341483603138"
       },
       {
-        "file": ".agents/skills/landing-page-guide/SKILL.md",
-        "hash": "2486816965017939544"
+        "file": ".agents/skills/shadcn/mcp.md",
+        "hash": "10267946545532028515"
+      },
+      {
+        "file": ".agents/skills/shadcn/rules/styling.md",
+        "hash": "4043927735326720350"
+      },
+      {
+        "file": ".github/workflows/test.yml",
+        "hash": "4573398215460759137"
+      },
+      {
+        "file": ".agents/skills/shadcn/registry.md",
+        "hash": "11795879039172529046"
+      },
+      {
+        "file": "docs/product/functional_requirements.md",
+        "hash": "4065387538731690738"
+      },
+      {
+        "file": ".agents/skills/shadcn/rules/forms.md",
+        "hash": "9696703400549885214"
+      },
+      {
+        "file": "infrastructure/docker/Dockerfile",
+        "hash": "10072888121047519576"
+      },
+      {
+        "file": "docs/domains/comms.md",
+        "hash": "3441528392612358141"
+      },
+      {
+        "file": "scripts/.gitkeep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "commitlint.config.js",
+        "hash": "5882725012641755451"
+      },
+      {
+        "file": ".gitignore",
+        "hash": "11390792887711183173"
+      },
+      {
+        "file": "scripts/build.sh",
+        "hash": "17800832535745621011"
+      },
+      {
+        "file": "docs/domains/faculty.md",
+        "hash": "8084710419886949604"
+      },
+      {
+        "file": ".agents/skills/shadcn/assets/shadcn-small.png",
+        "hash": "3503294767916450072"
+      },
+      {
+        "file": ".env.example",
+        "hash": "10384074283337870620"
+      },
+      {
+        "file": ".agents/skills/landing-page-guide/landing-page-v2.png",
+        "hash": "9906016976012921024"
+      },
+      {
+        "file": ".agents/skills/shadcn/agents/openai.yml",
+        "hash": "2570410524583272810"
+      },
+      {
+        "file": ".agents/skills/shadcn/evals/evals.json",
+        "hash": "6926275806249365701"
+      },
+      {
+        "file": "docs/domains/guardian.md",
+        "hash": "13660101355834283063"
+      },
+      {
+        "file": "docs/domains/external_users.md",
+        "hash": "8933474930640667424"
+      },
+      {
+        "file": "infrastructure/docker/development/.gitkeep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "scripts/format.sh",
+        "hash": "1510311940476497292"
+      },
+      {
+        "file": ".github/workflows/ci.yml",
+        "hash": "6652644493274423447"
+      },
+      {
+        "file": "docs/product/PRD.md",
+        "hash": "9007622492542802006"
+      },
+      {
+        "file": ".agents/skills/shadcn/customization.md",
+        "hash": "10720737914367455975"
+      },
+      {
+        "file": "docs/domains/transport.md",
+        "hash": "4347075793911950322"
+      },
+      {
+        "file": "lint-staged.config.js",
+        "hash": "13319812215759256199"
+      },
+      {
+        "file": "scripts/setup.sh",
+        "hash": "12851669715169889709"
+      },
+      {
+        "file": "docs/domains/finance.md",
+        "hash": "16026577993781088067"
+      },
+      {
+        "file": "docs/product/mvp.md",
+        "hash": "897505159854492184"
+      },
+      {
+        "file": "README.md",
+        "hash": "4301680797572612217"
+      },
+      {
+        "file": ".eslintrc.json",
+        "hash": "16688278775780502781"
+      },
+      {
+        "file": ".agents/skills/shadcn/rules/icons.md",
+        "hash": "6575187419887765535"
+      },
+      {
+        "file": ".agents/skills/design-taste-frontend/SKILL.md",
+        "hash": "1471540080238260908"
+      },
+      {
+        "file": "infrastructure/docker/development/docker-compose.yml",
+        "hash": "1615564413742500726"
+      },
+      {
+        "file": "docs/domains/students.md",
+        "hash": "3491695313920027416"
+      },
+      {
+        "file": "LICENSE",
+        "hash": "6558072483248049117"
+      },
+      {
+        "file": "docs/architecture/schemas.md",
+        "hash": "15163072803641887960"
+      },
+      {
+        "file": "scripts/clean.sh",
+        "hash": "3302138256578618042"
+      },
+      {
+        "file": "libs/database/prisma/schema.prisma",
+        "hash": "3295759491462363359"
+      },
+      {
+        "file": "docs/domains/facilities.md",
+        "hash": "9875827269484697491"
+      },
+      {
+        "file": "libs/database/prisma/schema.prisma.bak",
+        "hash": "16648513231195577410"
+      },
+      {
+        "file": "infrastructure/docker/production/docker-compose.yml",
+        "hash": "6329179713057248711"
+      },
+      {
+        "file": "docs/product/user_journey.md",
+        "hash": "781424912649730412"
+      },
+      {
+        "file": "scripts/dev.sh",
+        "hash": "10195272983680487281"
+      },
+      {
+        "file": "tooling/generators/.gitkeep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": ".agents/skills/shadcn/rules/composition.md",
+        "hash": "5874420640157523202"
+      },
+      {
+        "file": "docs/architecture/tech_stack.md",
+        "hash": "5167933787386171494"
+      },
+      {
+        "file": ".editorconfig",
+        "hash": "18159089960499058905"
+      },
+      {
+        "file": "pnpm-workspace.yaml",
+        "hash": "9750177317466281158"
+      },
+      {
+        "file": "scripts/lint.sh",
+        "hash": "16378719945974082810"
+      },
+      {
+        "file": "docs/product/personas.md",
+        "hash": "4917804179993548597"
+      },
+      {
+        "file": ".agents/skills/shadcn/cli.md",
+        "hash": "16016486859242880059"
+      },
+      {
+        "file": ".prettierignore",
+        "hash": "10532210378611834566"
+      },
+      {
+        "file": "skills-lock.json",
+        "hash": "17672258943726110989"
+      },
+      {
+        "file": "infrastructure/docker/docker-compose.yml",
+        "hash": "1456763521009465802"
+      },
+      {
+        "file": ".agents/skills/shadcn/assets/shadcn.png",
+        "hash": "640468323980521187"
+      },
+      {
+        "file": "docs/domains/institution.md",
+        "hash": "15685584724969601551"
+      },
+      {
+        "file": ".agents/skills/shadcn/rules/chat.md",
+        "hash": "17452687626980285713"
+      },
+      {
+        "file": "pnpm-lock.yaml",
+        "hash": "17309269018616388428"
+      },
+      {
+        "file": "docs/domains/placement.md",
+        "hash": "14931455719022513645"
+      },
+      {
+        "file": "docs/domains/admissions.md",
+        "hash": "10917823325260538795"
+      },
+      {
+        "file": ".agents/skills/shadcn/SKILL.md",
+        "hash": "11232608093340059808"
+      },
+      {
+        "file": "infrastructure/docker/production/.gitkeep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": ".agents/skills/shadcn/rules/base-vs-radix.md",
+        "hash": "4590266970920187994"
+      },
+      {
+        "file": "tooling/plop/.gitkeep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "nx.json",
+        "hash": "1049875440782385995"
+      },
+      {
+        "file": "docs/product/screens.md",
+        "hash": "13562752980965139759"
+      },
+      {
+        "file": "docs/architecture/project_structure.md",
+        "hash": "1772271277608434154"
+      },
+      {
+        "file": "package.json",
+        "hash": "4799690674238299523"
+      },
+      {
+        "file": "docs/design/COMPONENT_ARCHITECTURE.md",
+        "hash": "14320350766604999797"
+      },
+      {
+        "file": "AGENTS.md",
+        "hash": "1149565417168876831"
+      },
+      {
+        "file": "libs/database/package.json",
+        "hash": "7135159368665935027"
+      },
+      {
+        "file": "scaffold.js",
+        "hash": "14245479798826654071"
+      },
+      {
+        "file": "docs/domains/club_coord.md",
+        "hash": "18260283096069532405"
+      },
+      {
+        "file": ".github/workflows/.gitkeep",
+        "hash": "3244421341483603138"
       }
     ],
     "projectFileMap": {
@@ -813,9 +813,10 @@
         },
         {
           "file": "apps/api/src/modules/admin/courses/courses.controller.ts",
-          "hash": "11973471312537967317",
+          "hash": "4235506726206830851",
           "deps": [
-            "npm:@nestjs/common"
+            "npm:@nestjs/common",
+            "npm:@prisma/client"
           ]
         },
         {
@@ -827,9 +828,10 @@
         },
         {
           "file": "apps/api/src/modules/admin/courses/courses.service.ts",
-          "hash": "972603610982924713",
+          "hash": "11164363072204994927",
           "deps": [
-            "npm:@nestjs/common"
+            "npm:@nestjs/common",
+            "npm:@prisma/client"
           ]
         },
         {
@@ -1805,8 +1807,17 @@
           ]
         },
         {
+          "file": "apps/web/src/app/admin/academics/courses/[courseId]/page.tsx",
+          "hash": "8457913871909935141",
+          "deps": [
+            "@student-erp/ui",
+            "npm:next",
+            "npm:lucide-react@0.400.0"
+          ]
+        },
+        {
           "file": "apps/web/src/app/admin/academics/courses/new/page.tsx",
-          "hash": "7211655493592263439",
+          "hash": "12211917131303894940",
           "deps": [
             "@student-erp/ui",
             "npm:next",
@@ -1815,7 +1826,7 @@
         },
         {
           "file": "apps/web/src/app/admin/academics/courses/page.tsx",
-          "hash": "2115312282180040017",
+          "hash": "740286127070635645",
           "deps": [
             "@student-erp/ui",
             "npm:lucide-react@0.400.0",
