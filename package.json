@@ -14,7 +14,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "postinstall": "npx prisma generate --schema=libs/database/prisma/schema.prisma",
+    "postinstall": "prisma generate --schema=libs/database/prisma/schema.prisma",
     "lint-staged": "lint-staged",
     "setup": "./scripts/setup.sh",
     "clean": "./scripts/clean.sh",
@@ -41,6 +41,7 @@
     "lint-staged": "^15.0.0",
     "nx": "^20.0.0",
     "prettier": "^3.0.0",
+    "prisma": "^6.19.3",
     "typescript": "^5.5.0"
   },
   "packageManager": "pnpm@9.12.0",

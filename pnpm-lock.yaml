@@ -135,6 +135,9 @@ importers:
       prettier:
         specifier: ^3.0.0
         version: 3.9.6
+      prisma:
+        specifier: ^6.19.3
+        version: 6.19.3(typescript@5.9.3)
       typescript:
         specifier: ^5.5.0
         version: 5.9.3
@@ -245,6 +248,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.0.0
         version: 19.0.0
+      prisma:
+        specifier: ^6.19.3
+        version: 6.19.3(typescript@5.9.3)
       typescript:
         specifier: ^5.5.0
         version: 5.9.3

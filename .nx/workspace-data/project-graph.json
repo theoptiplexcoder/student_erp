@@ -15344,6 +15344,11 @@
       },
       {
         "source": "web",
+        "target": "npm:prisma",
+        "type": "static"
+      },
+      {
+        "source": "web",
         "target": "npm:typescript",
         "type": "static"
       },
@@ -35542,5 +35547,5 @@
   },
   "version": "6.0",
   "errors": [],
-  "computedAt": 1786441887738
+  "computedAt": 1786442302765
 }
