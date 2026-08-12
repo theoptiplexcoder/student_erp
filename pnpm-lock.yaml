@@ -170,7 +170,7 @@ importers:
         version: 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.22)
       '@prisma/client':
         specifier: ^6.0.0
-        version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
+        version: 6.19.3(prisma@6.19.3(typescript@6.0.3))(typescript@6.0.3)
       '@supabase/supabase-js':
         specifier: ^2.112.2
         version: 2.112.2
@@ -192,7 +192,7 @@ importers:
         version: 10.4.9(@swc/cli@0.8.1(@swc/core@1.15.8(@swc/helpers@0.5.23)))(@swc/core@1.15.8(@swc/helpers@0.5.23))(esbuild@0.28.2)(postcss@8.5.25)
       '@nestjs/schematics':
         specifier: ^10.0.0
-        version: 10.2.3(chokidar@3.6.0)(typescript@5.9.3)
+        version: 10.2.3(chokidar@3.6.0)(typescript@6.0.3)
       '@nestjs/testing':
         specifier: ^10.0.0
         version: 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.22)(@nestjs/platform-express@10.4.22)
@@ -204,16 +204,16 @@ importers:
         version: 22.20.1
       prisma:
         specifier: ^6.19.3
-        version: 6.19.3(typescript@5.9.3)
+        version: 6.19.3(typescript@6.0.3)
       typescript:
-        specifier: ^5.5.0
-        version: 5.9.3
+        specifier: 6.0.3
+        version: 6.0.3
 
   apps/web:
     dependencies:
       '@prisma/client':
         specifier: ^6.19.3
-        version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
+        version: 6.19.3(prisma@6.19.3(typescript@6.0.3))(typescript@6.0.3)
       '@student-erp/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -265,10 +265,10 @@ importers:
         version: 19.0.0
       prisma:
         specifier: ^6.19.3
-        version: 6.19.3(typescript@5.9.3)
+        version: 6.19.3(typescript@6.0.3)
       typescript:
-        specifier: ^5.5.0
-        version: 5.9.3
+        specifier: 6.0.3
+        version: 6.0.3
 
   libs/database:
     dependencies:
@@ -10813,14 +10813,14 @@ snapshots:
     transitivePeerDependencies:
       - chokidar
 
-  '@nestjs/schematics@10.2.3(chokidar@3.6.0)(typescript@5.9.3)':
+  '@nestjs/schematics@10.2.3(chokidar@3.6.0)(typescript@6.0.3)':
     dependencies:
       '@angular-devkit/core': 17.3.11(chokidar@3.6.0)
       '@angular-devkit/schematics': 17.3.11(chokidar@3.6.0)
       comment-json: 4.2.5
       jsonc-parser: 3.3.1
       pluralize: 8.0.0
-      typescript: 5.9.3
+      typescript: 6.0.3
     transitivePeerDependencies:
       - chokidar
 
@@ -11736,11 +11736,6 @@ snapshots:
     optional: true
 
   '@pkgr/core@0.3.6': {}
-
-  '@prisma/client@6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)':
-    optionalDependencies:
-      prisma: 6.19.3(typescript@5.9.3)
-      typescript: 5.9.3
 
   '@prisma/client@6.19.3(prisma@6.19.3(typescript@6.0.3))(typescript@6.0.3)':
     optionalDependencies:
@@ -17123,15 +17118,6 @@ snapshots:
   pretty-ms@9.3.0:
     dependencies:
       parse-ms: 4.0.0
-
-  prisma@6.19.3(typescript@5.9.3):
-    dependencies:
-      '@prisma/config': 6.19.3
-      '@prisma/engines': 6.19.3
-    optionalDependencies:
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - magicast
 
   prisma@6.19.3(typescript@6.0.3):
     dependencies:

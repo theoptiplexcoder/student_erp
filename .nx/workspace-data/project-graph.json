@@ -21940,7 +21940,7 @@
       },
       {
         "source": "npm:@nestjs/schematics@10.2.3",
-        "target": "npm:typescript@5.9.3",
+        "target": "npm:typescript",
         "type": "static"
       }
     ],
@@ -23650,11 +23650,6 @@
       {
         "source": "npm:@prisma/client",
         "target": "npm:prisma",
-        "type": "static"
-      },
-      {
-        "source": "npm:@prisma/client",
-        "target": "npm:typescript@5.9.3",
         "type": "static"
       },
       {
@@ -35802,11 +35797,6 @@
       },
       {
         "source": "npm:prisma",
-        "target": "npm:typescript@5.9.3",
-        "type": "static"
-      },
-      {
-        "source": "npm:prisma",
         "target": "npm:typescript",
         "type": "static"
       }
@@ -38954,5 +38944,5 @@
   },
   "version": "6.0",
   "errors": [],
-  "computedAt": 1786539549746
+  "computedAt": 1786542386905
 }
