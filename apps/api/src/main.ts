@@ -8,7 +8,7 @@ async function bootstrap() {
   app.setGlobalPrefix("api/v1");
 
   app.enableCors({
-    origin: process.env['NEXT_PUBLIC_APP_URL'] || "http://localhost:3000",
+    origin: [process.env['NEXT_PUBLIC_APP_URL'] || "http://localhost:3000", "https://student-erp-web.vercel.app"],
     credentials: true,
   });
 
