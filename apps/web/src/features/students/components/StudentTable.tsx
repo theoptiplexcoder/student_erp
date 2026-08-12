@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { useStudents } from "../../api/use-students";
+import { useStudents } from "../api/use-students";
 
 export function StudentTable() {
   const [page, setPage] = useState(1);
