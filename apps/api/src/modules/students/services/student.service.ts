@@ -55,6 +55,15 @@ export class StudentService {
       },
     });
 
+    const upcomingEvents = await this.prisma.calendarEvent.findMany({
+      where: {
+        institutionId,
+        startDate: { gte: new Date() },
+      },
+      take: 5,
+      orderBy: { startDate: 'asc' }
+    });
+
     return {
       student,
       stats: {
@@ -63,6 +72,7 @@ export class StudentService {
         upcomingDeadlines: 2,
       },
       todaySchedule: timetable,
+      upcomingEvents,
     };
   }
 }
