@@ -7,6 +7,7 @@ import { Prisma } from '@prisma/client';
 export class StudentsService {
   constructor(private readonly prisma: PrismaService) {}
 
+
   async findAll(institutionId: string, query: StudentQueryDto) {
     const { page = 1, pageSize = 20, search, programId, batchId, sectionId, status, sortBy = 'createdAt', sortOrder = 'desc' } = query;
     const skip = (page - 1) * pageSize;
@@ -71,7 +72,7 @@ export class StudentsService {
         },
         attendanceRecords: {
           take: 5,
-          orderBy: { date: 'desc' },
+          orderBy: { markedAt: 'desc' },
         }
       },
     });

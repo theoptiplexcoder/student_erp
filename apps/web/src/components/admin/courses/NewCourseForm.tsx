@@ -3,8 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Input, Label } from "@student-erp/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+import { useCreateCourse } from "@/hooks/api/admin/useCourses";
 
 interface NewCourseFormProps {
   institutionId: string;
@@ -12,12 +11,11 @@ interface NewCourseFormProps {
 
 export function NewCourseForm({ institutionId }: NewCourseFormProps) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const createCourseMutation = useCreateCourse();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
 
     const formData = new FormData(e.currentTarget);
@@ -30,21 +28,10 @@ export function NewCourseForm({ institutionId }: NewCourseFormProps) {
     };
 
     try {
-      const res = await fetch(`${API_URL}/api/admin/courses`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (res.ok) {
-        router.push("/admin/academics/courses");
-      } else {
-        const body = await res.json().catch(() => null);
-        setError(body?.message || "Failed to create course");
-      }
-    } catch (e) {
-      setError("Network error. Is the API server running?");
-    } finally {
-      setLoading(false);
+      await createCourseMutation.mutateAsync(data);
+      router.push("/admin/academics/courses");
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err.message || "Failed to create course");
     }
   };
 
@@ -86,8 +73,8 @@ export function NewCourseForm({ institutionId }: NewCourseFormProps) {
             <Button type="button" variant="outline" onClick={() => router.back()}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Creating..." : "Create Course"}
+            <Button type="submit" disabled={createCourseMutation.isPending}>
+              {createCourseMutation.isPending ? "Creating..." : "Create Course"}
             </Button>
           </div>
         </form>

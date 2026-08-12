@@ -1,30 +1,30 @@
+"use client";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge } from "@student-erp/ui";
 import Link from "next/link";
-import { Plus, AlertCircle, Edit } from "lucide-react";
-import { notFound } from "next/navigation";
+import { Plus, AlertCircle, Edit, Loader2 } from "lucide-react";
+import { useAdminCourse } from "@/hooks/api/admin/useCourses";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+export default function CourseDetailsPage({ params }: { params: { courseId: string } }) {
+  const { data: course, isLoading, isError } = useAdminCourse(params.courseId);
 
-async function getCourse(id: string) {
-  try {
-    const res = await fetch(`${API_URL}/api/admin/courses/${id}`, { cache: "no-store" });
-    if (!res.ok) {
-      if (res.status === 404) return null;
-      throw new Error("Failed to fetch course");
-    }
-    return res.json();
-  } catch (e) {
-    console.error(e);
-    return null;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
-}
 
-export default async function CourseDetailsPage({ params }: { params: { courseId: string } }) {
-  const { courseId } = params;
-  const course = await getCourse(courseId);
-
-  if (!course) {
-    notFound();
+  if (isError || !course) {
+    return (
+      <div className="flex flex-col justify-center items-center h-64 space-y-4">
+        <div className="text-destructive">Course not found or failed to load.</div>
+        <Link href="/admin/academics/courses">
+          <Button variant="outline">Back to Courses</Button>
+        </Link>
+      </div>
+    );
   }
 
   return (
@@ -33,16 +33,16 @@ export default async function CourseDetailsPage({ params }: { params: { courseId
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{course.name}</h1>
           <p className="text-muted-foreground">
-            {course.code} • {course.creditValue} Credits • {course.program?.name || "No Program"}
+            {course.code} • {course.credits || course.creditValue} Credits • {course.program?.name || "No Program"}
           </p>
         </div>
         <div className="flex space-x-2">
-          <Link href={`/admin/academics/courses/${courseId}/edit`}>
+          <Link href={`/admin/academics/courses/${params.courseId}/edit`}>
             <Button variant="outline">
               <Edit className="mr-2 h-4 w-4" /> Edit Course
             </Button>
           </Link>
-          <Link href={`/admin/academics/courses/${courseId}/offerings/new`}>
+          <Link href={`/admin/academics/courses/${params.courseId}/offerings/new`}>
             <Button>
               <Plus className="mr-2 h-4 w-4" /> Create Offering
             </Button>
@@ -86,7 +86,7 @@ export default async function CourseDetailsPage({ params }: { params: { courseId
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {course.courseOfferings?.length > 0 ? (
+              {course.courseOfferings && course.courseOfferings.length > 0 ? (
                 course.courseOfferings.map((offering: any) => (
                   <div key={offering.id} className="border rounded-md p-4 flex justify-between items-center">
                     <div>

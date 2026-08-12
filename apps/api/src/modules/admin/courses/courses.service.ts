@@ -10,20 +10,45 @@ export class CoursesService {
     return this.prisma.course.create({ data });
   }
 
-  async findAll(institutionId?: string) {
+  async findAll(institutionId?: string, page: number = 1, pageSize: number = 50, search?: string) {
+    const skip = (page - 1) * pageSize;
     const where: Prisma.CourseWhereInput = {};
+    
     if (institutionId) {
       where.institutionId = institutionId;
     }
 
-    return this.prisma.course.findMany({
-      where,
-      include: {
-        program: true,
-        department: true,
-        classLevel: true,
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { code: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [total, data] = await Promise.all([
+      this.prisma.course.count({ where }),
+      this.prisma.course.findMany({
+        where,
+        skip,
+        take: pageSize,
+        include: {
+          program: true,
+          department: true,
+          classLevel: true,
+        },
+        orderBy: { code: 'asc' },
+      }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
       },
-    });
+    };
   }
 
   async findOne(id: string) {

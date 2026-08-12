@@ -1,24 +1,31 @@
+"use client";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Badge } from "@student-erp/ui";
-import { Plus, Eye, ArrowLeft } from "lucide-react";
+import { Plus, Eye, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useAdminProgram } from "@/hooks/api/admin/usePrograms";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+export default function ProgramPage({ params }: { params: { programId: string } }) {
+  const { data: program, isLoading, isError } = useAdminProgram(params.programId);
 
-async function getProgram(id: string) {
-  try {
-    const res = await fetch(`${API_URL}/api/admin/academic/programs/${id}`, { cache: "no-store" });
-    if (!res.ok) return null;
-    return res.json();
-  } catch (e) {
-    console.error("Failed to fetch program", e);
-    return null;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
-}
 
-export default async function ProgramPage({ params }: { params: { programId: string } }) {
-  const program = await getProgram(params.programId);
-  if (!program) notFound();
+  if (isError || !program) {
+    return (
+      <div className="flex flex-col justify-center items-center h-64 space-y-4">
+        <div className="text-destructive">Program not found or failed to load.</div>
+        <Link href="/admin/academics">
+          <Button variant="outline">Back to Programs</Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -33,7 +40,7 @@ export default async function ProgramPage({ params }: { params: { programId: str
             </div>
           </div>
           <h1 className="text-3xl font-bold tracking-tight">{program.name}</h1>
-          <p className="text-muted-foreground">{program.level} • {program.durationYears} Years</p>
+          <p className="text-muted-foreground">{program.level?.replace(/_/g, ' ')} • {program.durationYears} Years</p>
         </div>
       </div>
 

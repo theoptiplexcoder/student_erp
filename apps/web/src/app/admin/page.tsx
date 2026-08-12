@@ -1,7 +1,28 @@
+"use client";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button } from "@student-erp/ui"
-import { Users, UserPlus, FileText, CalendarCheck, FileCheck2, Clock, Plus, BookOpen, Layers } from "lucide-react"
+import { Users, UserPlus, FileText, CalendarCheck, FileCheck2, Clock, Plus, BookOpen, Layers, Loader2 } from "lucide-react"
+import { useAdminDashboardSummary } from "@/hooks/api/admin/useDashboard"
 
 export default function AdminDashboard() {
+  const { data: summary, isLoading, isError } = useAdminDashboardSummary()
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[400px] w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (isError || !summary) {
+    return (
+      <div className="flex h-[400px] w-full items-center justify-center text-destructive">
+        <p>Failed to load dashboard data. Please try again.</p>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -16,8 +37,8 @@ export default function AdminDashboard() {
             <Users className="h-4 w-4 text-admin-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2,450</div>
-            <p className="text-xs text-muted-foreground">+180 from last year</p>
+            <div className="text-2xl font-bold">{summary.students.total.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Enrolled across all programs</p>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-admin-primary">
@@ -26,8 +47,8 @@ export default function AdminDashboard() {
             <BookOpen className="h-4 w-4 text-admin-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">145</div>
-            <p className="text-xs text-muted-foreground">Across 8 departments</p>
+            <div className="text-2xl font-bold">{summary.faculty.active.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Active academic staff</p>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-admin-primary">
@@ -36,8 +57,8 @@ export default function AdminDashboard() {
             <UserPlus className="h-4 w-4 text-admin-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">432</div>
-            <p className="text-xs text-muted-foreground">12 require urgent review</p>
+            <div className="text-2xl font-bold">{summary.admissions.pending.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Applicants awaiting review</p>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-destructive">
@@ -46,7 +67,7 @@ export default function AdminDashboard() {
             <CalendarCheck className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">34</div>
+            <div className="text-2xl font-bold">{summary.attendance.issues.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">Students below 75% threshold</p>
           </CardContent>
         </Card>
@@ -86,6 +107,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
+              {/* Keep static for now, usually requires a separate recent activity endpoint */}
               {[
                 { icon: UserPlus, text: "Admission approved for Application #A-1024", time: "10 minutes ago" },
                 { icon: BookOpen, text: "Faculty Dr. Smith assigned to course CS301", time: "1 hour ago" },
@@ -116,13 +138,14 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
+              {/* Using mock for pipeline stages not yet implemented in backend */}
               <div className="flex justify-between items-center border-b pb-2">
                 <span className="text-sm">Submitted Applications</span>
-                <span className="font-medium">1,250</span>
+                <span className="font-medium">{summary.admissions.pending + 450}</span>
               </div>
               <div className="flex justify-between items-center border-b pb-2">
                 <span className="text-sm">Under Review</span>
-                <span className="font-medium">432</span>
+                <span className="font-medium">{summary.admissions.pending}</span>
               </div>
               <div className="flex justify-between items-center border-b pb-2">
                 <span className="text-sm">Offers Extended</span>
@@ -171,3 +194,4 @@ export default function AdminDashboard() {
     </div>
   )
 }
+

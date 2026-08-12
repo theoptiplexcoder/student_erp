@@ -1,22 +1,14 @@
+"use client";
+
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Badge } from "@student-erp/ui";
-import { Plus, Eye, Edit, Layers } from "lucide-react";
+import { Plus, Eye, Edit, Layers, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useAdminPrograms } from "@/hooks/api/admin/usePrograms";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
-async function getPrograms() {
-  try {
-    const res = await fetch(`${API_URL}/api/admin/academic/programs`, { cache: "no-store" });
-    if (!res.ok) return [];
-    return res.json();
-  } catch (e) {
-    console.error("Failed to fetch programs", e);
-    return [];
-  }
-}
-
-export default async function AcademicsPage() {
-  const programs = await getPrograms();
+export default function AcademicsPage() {
+  const [page, setPage] = useState(1);
+  const { data: programsData, isLoading, isError } = useAdminPrograms(page, 50);
 
   return (
     <div className="p-6 space-y-6">
@@ -45,7 +37,15 @@ export default async function AcademicsPage() {
           <CardDescription>View and manage academic offerings</CardDescription>
         </CardHeader>
         <CardContent>
-          {programs.length === 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : isError || !programsData ? (
+            <div className="text-center py-10 text-destructive">
+              Failed to load programs.
+            </div>
+          ) : programsData.data.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground">
               No programs found. Create a program to get started.
             </div>
@@ -57,18 +57,18 @@ export default async function AcademicsPage() {
                   <TableHead>Name</TableHead>
                   <TableHead>Level</TableHead>
                   <TableHead>Duration</TableHead>
-                  <TableHead>Curriculums</TableHead>
+                  <TableHead>Students</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {programs.map((program: any) => (
+                {programsData.data.map((program) => (
                   <TableRow key={program.id}>
                     <TableCell className="font-medium">{program.code}</TableCell>
                     <TableCell>{program.name}</TableCell>
-                    <TableCell>{program.level}</TableCell>
+                    <TableCell>{program.level.replace(/_/g, ' ')}</TableCell>
                     <TableCell>{program.durationYears} Years</TableCell>
-                    <TableCell>{program._count?.curriculums || 0}</TableCell>
+                    <TableCell>{program._count?.students || 0}</TableCell>
                     <TableCell className="text-right space-x-2">
                       <Link href={`/admin/academics/programs/${program.id}`}>
                         <Button variant="ghost" size="icon">
@@ -86,3 +86,4 @@ export default async function AcademicsPage() {
     </div>
   );
 }
+

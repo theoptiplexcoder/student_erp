@@ -58,10 +58,10 @@ export class StudentService {
     const upcomingEvents = await this.prisma.calendarEvent.findMany({
       where: {
         institutionId,
-        startDate: { gte: new Date() },
+        startAt: { gte: new Date() },
       },
       take: 5,
-      orderBy: { startDate: 'asc' }
+      orderBy: { startAt: 'asc' }
     });
 
     return {
