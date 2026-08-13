@@ -1,28 +1,44 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Badge } from "@student-erp/ui";
-import { Plus, Eye, Edit, Layers, Loader2 } from "lucide-react";
-import Link from "next/link";
-import { useAdminPrograms } from "@/hooks/api/admin/usePrograms";
+import { useState } from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Badge,
+} from '@student-erp/ui';
+import { Plus, Eye, Edit, Layers, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
 
 export default function AcademicsPage() {
   const [page, setPage] = useState(1);
   const { data: programsData, isLoading, isError } = useAdminPrograms(page, 50);
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 p-6">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Academic Management</h1>
-          <p className="text-muted-foreground">Manage academic programs, curriculums, and courses.</p>
+          <p className="text-muted-foreground">
+            Manage academic programs, curriculums, and courses.
+          </p>
         </div>
         <div className="space-x-2">
-          <Link href="/admin/academics/courses">
-            <Button variant="outline">
+          <Button asChild variant="outline">
+            <Link href="/admin/academics/courses">
               <Layers className="mr-2 h-4 w-4" /> Global Courses
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <Link href="/admin/academics/programs/new">
             <Button>
               <Plus className="mr-2 h-4 w-4" /> Create Program
@@ -39,14 +55,12 @@ export default function AcademicsPage() {
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center py-10">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
             </div>
           ) : isError || !programsData ? (
-            <div className="text-center py-10 text-destructive">
-              Failed to load programs.
-            </div>
+            <div className="text-destructive py-10 text-center">Failed to load programs.</div>
           ) : programsData.data.length === 0 ? (
-            <div className="text-center py-10 text-muted-foreground">
+            <div className="text-muted-foreground py-10 text-center">
               No programs found. Create a program to get started.
             </div>
           ) : (
@@ -69,7 +83,7 @@ export default function AcademicsPage() {
                     <TableCell>{program.level.replace(/_/g, ' ')}</TableCell>
                     <TableCell>{program.durationYears} Years</TableCell>
                     <TableCell>{program._count?.students || 0}</TableCell>
-                    <TableCell className="text-right space-x-2">
+                    <TableCell className="space-x-2 text-right">
                       <Link href={`/admin/academics/programs/${program.id}`}>
                         <Button variant="ghost" size="icon">
                           <Eye className="h-4 w-4" />
@@ -86,4 +100,3 @@ export default function AcademicsPage() {
     </div>
   );
 }
-

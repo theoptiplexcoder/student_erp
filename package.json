@@ -17,13 +17,15 @@
     "lint-staged": "lint-staged",
     "setup": "./scripts/setup.sh",
     "clean": "./scripts/clean.sh",
-    "test": "nx run-many --target=test --all"
+    "test": "nx run-many --target=test --all",
+    "test:e2e": "cd apps/web && npx playwright test"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",
     "@commitlint/config-conventional": "^19.0.0",
     "@eslint/eslintrc": "^3.0.0",
     "@nx/eslint": "23.1.1",
+    "@nx/eslint-plugin": "^23.1.1",
     "@nx/js": "23.1.1",
     "@nx/nest": "23.1.1",
     "@nx/next": "23.1.1",
@@ -44,6 +46,7 @@
     "lint-staged": "^15.0.0",
     "nx": "23.1.1",
     "prettier": "^3.0.0",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "prisma": "^6.19.3",
     "typescript": "6.0.3",
     "typescript-eslint": "^8.58.0"

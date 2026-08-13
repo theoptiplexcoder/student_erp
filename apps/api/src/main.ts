@@ -1,14 +1,20 @@
-import { NestFactory } from "@nestjs/core";
-import { ValidationPipe } from "@nestjs/common";
-import { AppModule } from "./app.module";
+import * as path from 'path';
+import * as dotenv from 'dotenv';
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
+  dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
   const app = await NestFactory.create(AppModule);
 
-  app.setGlobalPrefix("api/v1");
+  app.setGlobalPrefix('api/v1');
 
   app.enableCors({
-    origin: [process.env['NEXT_PUBLIC_APP_URL'] || "http://localhost:3000", "https://student-erp-web.vercel.app"],
+    origin: [
+      process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000',
+      'https://student-erp-web.vercel.app',
+    ],
     credentials: true,
   });
 
@@ -17,7 +23,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    })
+    }),
   );
 
   const port = process.env['API_PORT'] || 3001;

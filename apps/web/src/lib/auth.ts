@@ -1,6 +1,6 @@
-import { redirect } from "next/navigation";
-import { createClient } from "./supabase/server";
-import { prisma } from "./prisma";
+import { redirect } from 'next/navigation';
+import { createClient } from './supabase/server';
+import { prisma } from './prisma';
 
 export interface AuthUser {
   id: string;
@@ -13,14 +13,14 @@ export interface AuthUser {
 
 export function getDashboardPath(role: string): string {
   switch (role) {
-    case "ADMIN":
-      return "/admin/dashboard";
-    case "FACULTY":
-      return "/faculty/dashboard";
-    case "STUDENT":
-      return "/student";
+    case 'ADMIN':
+      return '/admin';
+    case 'FACULTY':
+      return '/faculty/dashboard';
+    case 'STUDENT':
+      return '/student';
     default:
-      return "/";
+      return '/';
   }
 }
 
@@ -65,11 +65,11 @@ export async function requireAuth(): Promise<AuthUser> {
   const user = await getCurrentUser();
 
   if (!user) {
-    throw new Error("UNAUTHORIZED");
+    throw new Error('UNAUTHORIZED');
   }
 
-  if (user.status !== "ACTIVE") {
-    throw new Error("ACCOUNT_INACTIVE");
+  if (user.status !== 'ACTIVE') {
+    throw new Error('ACCOUNT_INACTIVE');
   }
 
   return user;
@@ -79,7 +79,7 @@ export async function requireRole(...roles: string[]): Promise<AuthUser> {
   const user = await requireAuth();
 
   if (!roles.includes(user.role)) {
-    throw new Error("FORBIDDEN");
+    throw new Error('FORBIDDEN');
   }
 
   return user;
@@ -90,8 +90,8 @@ export async function requireRole(...roles: string[]): Promise<AuthUser> {
 export async function requireRoleOrRedirect(...roles: string[]): Promise<AuthUser> {
   const user = await getCurrentUser();
 
-  if (!user || user.status !== "ACTIVE") {
-    redirect("/login");
+  if (!user || user.status !== 'ACTIVE') {
+    redirect('/login');
   }
 
   if (!roles.includes(user.role)) {

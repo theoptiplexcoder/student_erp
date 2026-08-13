@@ -12,6 +12,8 @@ build
 
 # Testing
 coverage
+playwright-report
+test-results
 
 # Environment
 .env
@@ -73,6 +75,7 @@ ios
 *.db-journal
 *secret*.json
 *credentials*.json
+users.txt
 
 .claude/worktrees
 .claude/settings.local.json
