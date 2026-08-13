@@ -1,6 +1,5 @@
 //@ts-check
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { composePlugins, withNx } = require('@nx/next');
 
 /**
@@ -13,10 +12,20 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/v1/:path*',
+        destination: 'https://student-erp-api.onrender.com/api/v1/:path*',
+      },
+      {
+        source: '/api/admin/:path*',
+        destination: 'https://student-erp-api.onrender.com/api/v1/admin/:path*',
+      },
+    ];
+  },
 };
 
-const plugins = [
-  withNx,
-];
+const plugins = [withNx];
 
 module.exports = composePlugins(...plugins)(nextConfig);
