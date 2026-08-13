@@ -29,7 +29,7 @@ export default async function NewStudentPage() {
   return (
     <div className="space-y-6 p-6">
       <div className="mb-2 flex items-center gap-2">
-        <Link href="/admin/people/students" className="text-muted-foreground hover:text-foreground">
+        <Link href="/admin/students" className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div className="text-muted-foreground text-sm">Students / New Admission</div>
@@ -112,7 +112,7 @@ export default async function NewStudentPage() {
       </div>
 
       <div className="flex justify-end space-x-2">
-        <Link href="/admin/people/students">
+        <Link href="/admin/students">
           <Button variant="outline">Cancel</Button>
         </Link>
         <Button>Complete Admission</Button>
