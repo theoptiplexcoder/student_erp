@@ -6,7 +6,7 @@ import { Prisma } from '@prisma/client';
 export class FacultyService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getFaculty(institutionId: string, page: number = 1, pageSize: number = 50, search?: string) {
+  async getFaculty(institutionId: string, page = 1, pageSize = 50, search?: string) {
     const skip = (page - 1) * pageSize;
     const where: Prisma.FacultyWhereInput = {
       institutionId,
@@ -46,5 +46,19 @@ export class FacultyService {
       },
     };
   }
-}
 
+  async getFacultyById(institutionId: string, id: string) {
+    const faculty = await this.prisma.faculty.findFirst({
+      where: { id, institutionId },
+      include: {
+        user: true,
+        department: true,
+      },
+    });
+
+    if (!faculty) {
+      throw new Error('Faculty not found');
+    }
+    return faculty;
+  }
+}

@@ -32,14 +32,25 @@ export interface StudentsResponse {
   };
 }
 
-export const useAdminStudents = (page: number = 1, pageSize: number = 50, search: string = '') => {
+export const useAdminStudents = (page = 1, pageSize = 50, search = '', status = '') => {
   return useQuery({
-    queryKey: ['admin', 'students', page, pageSize, search],
+    queryKey: ['admin', 'students', page, pageSize, search, status],
     queryFn: async () => {
       const response = await apiClient.get<StudentsResponse>('/admin/students', {
-        params: { page, pageSize, search },
+        params: { page, pageSize, search, status: status || undefined },
       });
       return response.data;
     },
+  });
+};
+
+export const useAdminStudent = (id: string) => {
+  return useQuery({
+    queryKey: ['admin', 'students', id],
+    queryFn: async () => {
+      const response = await apiClient.get<Student>(`/admin/students/${id}`);
+      return response.data;
+    },
+    enabled: !!id,
   });
 };

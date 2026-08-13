@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Param, UseGuards } from '@nestjs/common';
 import { FacultyService } from './faculty.service';
 import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { SupabaseAuthGuard } from '../../../guards/supabase-auth.guard';
@@ -22,5 +22,9 @@ export class FacultyController {
     const sizeNum = pageSize ? parseInt(pageSize, 10) : 50;
     return this.facultyService.getFaculty(user.institutionId, pageNum, sizeNum, search);
   }
-}
 
+  @Get(':id')
+  async getFacultyById(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.facultyService.getFacultyById(user.institutionId, id);
+  }
+}

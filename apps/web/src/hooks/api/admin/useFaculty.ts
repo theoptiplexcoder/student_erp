@@ -28,7 +28,7 @@ export interface FacultyResponse {
   };
 }
 
-export const useAdminFaculty = (page: number = 1, pageSize: number = 50, search: string = '') => {
+export const useAdminFaculty = (page = 1, pageSize = 50, search = '') => {
   return useQuery({
     queryKey: ['admin', 'faculty', page, pageSize, search],
     queryFn: async () => {
@@ -37,5 +37,16 @@ export const useAdminFaculty = (page: number = 1, pageSize: number = 50, search:
       });
       return response.data;
     },
+  });
+};
+
+export const useAdminFacultyDetails = (id: string) => {
+  return useQuery({
+    queryKey: ['admin', 'faculty', id],
+    queryFn: async () => {
+      const response = await apiClient.get<Faculty>(`/admin/faculty/${id}`);
+      return response.data;
+    },
+    enabled: !!id,
   });
 };
