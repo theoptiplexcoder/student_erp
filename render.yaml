@@ -7,7 +7,7 @@ services:
     plan: free
     buildCommand: NODE_ENV=development pnpm install --frozen-lockfile && pnpm exec prisma generate --schema=../../libs/database/prisma/schema.prisma && pnpm run build
     startCommand: node dist/main
-    healthCheckPath: /api/v1/admin/dashboard/summary
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production

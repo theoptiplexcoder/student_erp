@@ -8,6 +8,10 @@ async function bootstrap() {
   dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
   const app = await NestFactory.create(AppModule);
 
+  app.use('/health', (_req: any, res: any) => {
+    res.json({ status: 'ok' });
+  });
+
   app.setGlobalPrefix('api/v1');
 
   app.enableCors({
