@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: student-erp-api
+    runtime: node
+    repo: https://github.com/theoptiplexcoder/student_erp
+    rootDir: apps/api
+    plan: free
+    buildCommand: pnpm install --frozen-lockfile && pnpm exec prisma generate --schema=../../libs/database/prisma/schema.prisma && pnpm run build
+    startCommand: node dist/main
+    healthCheckPath: /api/v1/admin/dashboard/summary
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_APP_URL
+        value: https://student-erp-web.vercel.app
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

@@ -1,13 +1,29 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Badge } from "@student-erp/ui";
-import { Plus, ArrowLeft, Trash2 } from "lucide-react";
-import Link from "next/link";
-import { notFound } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Badge,
+} from '@student-erp/ui';
+import { Plus, ArrowLeft, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://student-erp-web.vercel.app';
 
 async function getCurriculum(id: string) {
   try {
-    const res = await fetch(`${API_URL}/api/admin/academic/curriculums/${id}`, { cache: "no-store" });
+    const res = await fetch(`${API_URL}/api/admin/academic/curriculums/${id}`, {
+      cache: 'no-store',
+    });
     if (!res.ok) return null;
     return res.json();
   } catch (e) {
@@ -15,27 +31,35 @@ async function getCurriculum(id: string) {
   }
 }
 
-export default async function TermPage({ params }: { params: { programId: string, curriculumId: string, termId: string } }) {
+export default async function TermPage({
+  params,
+}: {
+  params: { programId: string; curriculumId: string; termId: string };
+}) {
   const curriculum = await getCurriculum(params.curriculumId);
   if (!curriculum) notFound();
 
   const term = curriculum.curriculumTerms.find((t: any) => t.id === params.termId);
   if (!term) notFound();
 
-  const isDraft = curriculum.status === "DRAFT";
+  const isDraft = curriculum.status === 'DRAFT';
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center gap-2 mb-2">
-        <Link href={`/admin/academics/programs/${params.programId}/curriculums/${params.curriculumId}`} className="text-muted-foreground hover:text-foreground">
+    <div className="space-y-6 p-6">
+      <div className="mb-2 flex items-center gap-2">
+        <Link
+          href={`/admin/academics/programs/${params.programId}/curriculums/${params.curriculumId}`}
+          className="text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="h-4 w-4" />
         </Link>
-        <div className="text-sm text-muted-foreground">
-          Academics / Programs / {curriculum.program?.code} / {curriculum.versionNumber} / {term.name}
+        <div className="text-muted-foreground text-sm">
+          Academics / Programs / {curriculum.program?.code} / {curriculum.versionNumber} /{' '}
+          {term.name}
         </div>
       </div>
-      
-      <div className="flex justify-between items-center">
+
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{term.name} Courses</h1>
           <p className="text-muted-foreground">Manage courses for this specific term.</p>
@@ -50,7 +74,9 @@ export default async function TermPage({ params }: { params: { programId: string
           </div>
           {isDraft && (
             <div className="space-x-2">
-              <Link href={`/admin/academics/programs/${params.programId}/curriculums/${curriculum.id}/terms/${term.id}/courses/add`}>
+              <Link
+                href={`/admin/academics/programs/${params.programId}/curriculums/${curriculum.id}/terms/${term.id}/courses/add`}
+              >
                 <Button size="sm">
                   <Plus className="mr-2 h-4 w-4" /> Add Existing Course
                 </Button>
@@ -60,7 +86,7 @@ export default async function TermPage({ params }: { params: { programId: string
         </CardHeader>
         <CardContent>
           {!term.curriculumCourses || term.curriculumCourses.length === 0 ? (
-            <div className="text-center py-10 text-muted-foreground">
+            <div className="text-muted-foreground py-10 text-center">
               No courses found for this term.
             </div>
           ) : (
@@ -83,17 +109,26 @@ export default async function TermPage({ params }: { params: { programId: string
                     <TableCell>{cc.course.name}</TableCell>
                     <TableCell>{cc.creditValue || cc.course.creditValue}</TableCell>
                     <TableCell>
-                      <Badge variant={cc.isMandatory ? "default" : "secondary"}>
-                        {cc.isMandatory ? "Mandatory" : "Elective"}
+                      <Badge variant={cc.isMandatory ? 'default' : 'secondary'}>
+                        {cc.isMandatory ? 'Mandatory' : 'Elective'}
                       </Badge>
                     </TableCell>
                     {isDraft && (
                       <TableCell className="text-right">
-                        <form action={async () => {
-                          "use server"
-                          await fetch(`${API_URL}/api/admin/academic/curriculum-courses/${cc.id}`, { method: "DELETE" })
-                        }}>
-                          <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10">
+                        <form
+                          action={async () => {
+                            'use server';
+                            await fetch(
+                              `${API_URL}/api/admin/academic/curriculum-courses/${cc.id}`,
+                              { method: 'DELETE' },
+                            );
+                          }}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:bg-destructive/10"
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </form>

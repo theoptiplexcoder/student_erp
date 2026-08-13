@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { createClient } from './supabase/client';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://student-erp-web.vercel.app/api/v1';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -25,5 +25,5 @@ apiClient.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
