@@ -11,8 +11,18 @@ export default function TenantAdminDashboard() {
 
   useEffect(() => {
     apiClient
-      .get('/admin/dashboard/summary') // Assumed similar endpoint for tenant
-      .then((res) => setSummary(res.data))
+      .get('/admin/dashboard') // Updated endpoint
+      .then((res) => {
+        const data = res.data;
+        // Map new API response structure to what this legacy component expects
+        setSummary({
+          enrolledStudents: data.kpis?.activeStudents?.current || 0,
+          activeCourses: data.academicHealth?.upcomingExams || 0, // Fallback proxy
+          attendanceRate: data.kpis?.attendanceRate?.percentage || 0,
+          pendingAlerts:
+            (data.attentionRequired?.length || 0) + (data.kpis?.openGrievances?.current || 0),
+        });
+      })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
   }, []);

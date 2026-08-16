@@ -11,8 +11,8 @@ import { Roles } from '../../../decorators/roles.decorator';
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
-  @Get('summary')
-  async getSummary(@CurrentUser() user: any) {
+  @Get()
+  async getDashboard(@CurrentUser() user: any) {
     return this.dashboardService.getSummary(user.institutionId);
   }
 }

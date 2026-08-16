@@ -38,11 +38,11 @@ export interface DashboardResponse {
   };
 }
 
-export const useAdminDashboardSummary = () => {
+export const useAdminDashboard = () => {
   return useQuery({
-    queryKey: ['admin', 'dashboard', 'summary'],
+    queryKey: ['admin', 'dashboard'],
     queryFn: async () => {
-      const response = await apiClient.get<DashboardResponse>('/admin/dashboard/summary');
+      const response = await apiClient.get<DashboardResponse>('/admin/dashboard');
       return response.data;
     },
   });

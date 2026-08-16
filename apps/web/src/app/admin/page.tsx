@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useAdminDashboardSummary } from '@/hooks/api/admin/useDashboard';
+import { useAdminDashboard } from '@/hooks/api/admin/useDashboard';
 import {
   Card,
   CardHeader,
@@ -29,7 +29,7 @@ import {
 import { motion } from 'framer-motion';
 
 export default function AdminDashboard() {
-  const { data: dashboard, isLoading, isError, refetch } = useAdminDashboardSummary();
+  const { data: dashboard, isLoading, isError, refetch } = useAdminDashboard();
 
   if (isError) {
     return (
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
     );
   }
 
-  if (isLoading || !dashboard) {
+  if (isLoading || !dashboard || !dashboard.kpis) {
     return (
       <div className="min-h-screen space-y-8 bg-gray-50/50 p-8 dark:bg-gray-900/50">
         <div className="mb-8 space-y-2">
