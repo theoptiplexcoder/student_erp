@@ -319,6 +319,7 @@ model Institution {
   clubEvents             ClubEvent[]
   clubEventRegistrations ClubEventRegistration[]
   studentSkills          StudentSkill[]
+  studentPreviousEducations StudentPreviousEducation[]
   studentInternships     StudentInternship[]
   studentProjects        StudentProject[]
   studentAchievements    StudentAchievement[]
@@ -527,6 +528,10 @@ model Student {
   motherName        String?   @map("mother_name")
   fatherPhone       String?   @map("father_phone")
   motherPhone       String?   @map("mother_phone")
+  fatherEmail       String?   @map("father_email")
+  motherEmail       String?   @map("mother_email")
+  guardianName      String?   @map("guardian_name")
+  guardianPhone     String?   @map("guardian_phone")
   admissionDate     DateTime? @map("admission_date") @db.Date
   rollNumber        String?   @map("roll_number")
   bio               String?
@@ -550,6 +555,7 @@ model Student {
   clubMemberships        ClubMembership[]
   clubEventRegistrations ClubEventRegistration[]
   studentSkills          StudentSkill[]
+  studentPreviousEducations StudentPreviousEducation[]
   studentInternships     StudentInternship[]
   studentProjects        StudentProject[]
   studentAchievements    StudentAchievement[]
@@ -1309,6 +1315,22 @@ model StudentAchievement {
 
   @@index([institutionId])
   @@map("student_achievements")
+}
+
+model StudentPreviousEducation {
+  id              String   @id @default(uuid()) @db.Uuid
+  institutionId   String   @map("institution_id") @db.Uuid
+  studentId       String   @map("student_id") @db.Uuid
+  institutionName String   @map("institution_name")
+  academicYear    String   @map("academic_year")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  institution Institution @relation(fields: [institutionId], references: [id])
+  student     Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([institutionId])
+  @@map("student_previous_education")
 }
 
 model StudentInternship {

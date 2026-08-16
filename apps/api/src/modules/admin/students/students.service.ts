@@ -90,4 +90,38 @@ export class StudentsService {
 
     return student;
   }
+
+  async addDocument(
+    institutionId: string,
+    studentId: string,
+    data: { fileName: string; fileUrl: string; mimeType?: string; size?: number },
+  ) {
+    const student = await this.prisma.student.findFirst({
+      where: { id: studentId, institutionId },
+    });
+    if (!student) throw new NotFoundException('Student not found');
+
+    return this.prisma.studentDocument.create({
+      data: {
+        institutionId,
+        studentId,
+        documentType: 'OTHER',
+        title: data.fileName,
+        fileUrl: data.fileUrl,
+        verificationStatus: 'PENDING',
+      },
+    });
+  }
+
+  async updatePhoto(institutionId: string, studentId: string, photoUrl: string) {
+    const student = await this.prisma.student.findFirst({
+      where: { id: studentId, institutionId },
+    });
+    if (!student) throw new NotFoundException('Student not found');
+
+    return this.prisma.user.update({
+      where: { id: student.userId },
+      data: { photoUrl },
+    });
+  }
 }
