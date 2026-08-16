@@ -63,10 +63,17 @@ export default function DirectAdmissionPage() {
           apiClient.get('/admin/sections'),
           apiClient.get('/admin/institution/profile'),
         ]);
-        setAcademicYears(ayRes.data || []);
+        const fetchedAYs = ayRes.data || [];
+        setAcademicYears(fetchedAYs);
         setPrograms(progRes.data.data || []);
         setSections(secRes.data.data || []);
         setInstitutionType(settingsRes.data.institutionType || 'SCHOOL');
+
+        // Automatically select the active academic year
+        const activeAy = fetchedAYs.find((ay: any) => ay.isActive);
+        if (activeAy) {
+          setFormData((prev) => ({ ...prev, academicYearId: activeAy.id }));
+        }
       } catch (e) {
         console.error('Failed to fetch dropdowns', e);
       }
@@ -118,17 +125,13 @@ export default function DirectAdmissionPage() {
         if (formData.programId && institutionType === 'COLLEGE') {
           const cRes = await apiClient.get(`/admin/courses?programId=${formData.programId}`);
           setCourses(cRes.data.data || []);
+        } else {
+          setCourses([]);
         }
+
         if (formData.programId) {
           const bRes = await apiClient.get(`/admin/batches?programId=${formData.programId}`);
-          let loadedBatches = bRes.data.data || [];
-          if (formData.sectionId) {
-            const selectedSection = sections.find((s) => s.id === formData.sectionId);
-            if (selectedSection && selectedSection.batchId) {
-              loadedBatches = loadedBatches.filter((b: any) => b.id === selectedSection.batchId);
-            }
-          }
-          setBatches(loadedBatches);
+          setBatches(bRes.data.data || []);
         } else {
           setBatches([]);
         }
@@ -137,7 +140,25 @@ export default function DirectAdmissionPage() {
       }
     };
     loadCoursesAndBatches();
-  }, [formData.programId, formData.sectionId, institutionType, sections]);
+  }, [formData.programId, institutionType]);
+
+  useEffect(() => {
+    const loadSections = async () => {
+      try {
+        if (formData.batchId) {
+          // If the backend doesn't filter sections by batchId natively yet, we can filter locally from all sections or pass the query
+          const sRes = await apiClient.get(`/admin/sections`);
+          const allSections = sRes.data.data || [];
+          setSections(allSections.filter((s: any) => s.batchId === formData.batchId));
+        } else {
+          setSections([]);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    loadSections();
+  }, [formData.batchId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -162,7 +183,9 @@ export default function DirectAdmissionPage() {
     }
     if (step === 2) {
       if (!formData.academicYearId) newErrors['academicYearId'] = 'Academic Year is required';
+      if (!formData.batchId) newErrors['batchId'] = 'Batch is required';
       if (!formData.sectionId) newErrors['sectionId'] = 'Section is required';
+      if (!formData.usn) newErrors['usn'] = 'USN / Registration No. is required';
     }
     if (step === 3) {
       const sum = formData.installments.reduce((acc, curr) => acc + Number(curr.amount), 0);
@@ -767,7 +790,10 @@ export default function DirectAdmissionPage() {
                       <select
                         name="programId"
                         value={formData.programId}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                          handleChange(e);
+                          setFormData((p) => ({ ...p, courseId: '', batchId: '', sectionId: '' }));
+                        }}
                         className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
                       >
                         <option value="">Select Program</option>
@@ -800,15 +826,37 @@ export default function DirectAdmissionPage() {
 
                     <div className="space-y-2">
                       <Label>
+                        Batch <span className="text-red-500">*</span>
+                      </Label>
+                      <select
+                        name="batchId"
+                        value={formData.batchId}
+                        onChange={(e) => {
+                          handleChange(e);
+                          setFormData((p) => ({ ...p, sectionId: '' }));
+                        }}
+                        className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                      >
+                        <option value="">Select Batch</option>
+                        {batches.map((b) => (
+                          <option key={b.id} value={b.id}>
+                            {b.name}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.batchId && (
+                        <span className="text-xs text-red-500">{errors.batchId}</span>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>
                         Section <span className="text-red-500">*</span>
                       </Label>
                       <select
                         name="sectionId"
                         value={formData.sectionId}
-                        onChange={(e) => {
-                          handleChange(e);
-                          setFormData((p) => ({ ...p, batchId: '' }));
-                        }}
+                        onChange={handleChange}
                         className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
                       >
                         <option value="">Select Section</option>
@@ -824,25 +872,11 @@ export default function DirectAdmissionPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Batch</Label>
-                      <select
-                        name="batchId"
-                        value={formData.batchId}
-                        onChange={handleChange}
-                        className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                      >
-                        <option value="">Select Batch</option>
-                        {batches.map((b) => (
-                          <option key={b.id} value={b.id}>
-                            {b.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>USN / Registration No. (Optional)</Label>
+                      <Label>
+                        USN / Registration No. <span className="text-red-500">*</span>
+                      </Label>
                       <Input name="usn" value={formData.usn} onChange={handleChange} />
+                      {errors.usn && <span className="text-xs text-red-500">{errors.usn}</span>}
                     </div>
                   </div>
                 </section>

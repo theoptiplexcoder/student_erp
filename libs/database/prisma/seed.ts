@@ -90,7 +90,7 @@ async function main() {
     },
     {
       name: 'Master of Business Administration',
-      code: 'MBA-PROG',
+      code: 'MBA',
       level: ProgramLevel.POSTGRADUATE,
       durationYears: 2,
       departmentCode: 'MBA',
@@ -117,23 +117,33 @@ async function main() {
   console.log('Upserted Programs');
 
   // 4. Academic Years
+  const today = new Date();
+  const startYear = today.getMonth() >= 6 ? today.getFullYear() : today.getFullYear() - 1; // July is 6
+
+  function getAyName(year: number) {
+    const nextYearStr = (year + 1).toString().slice(-2);
+    return `${year}-${nextYearStr}`;
+  }
+
+  const currentAyName = getAyName(startYear);
+
   const academicYearsData = [
     {
-      name: '2025-26',
-      startDate: new Date('2025-07-01'),
-      endDate: new Date('2026-06-30'),
+      name: getAyName(startYear - 1),
+      startDate: new Date(`${startYear - 1}-07-01`),
+      endDate: new Date(`${startYear}-06-30`),
       isActive: false,
     },
     {
-      name: '2026-27',
-      startDate: new Date('2026-07-01'),
-      endDate: new Date('2027-06-30'),
+      name: currentAyName,
+      startDate: new Date(`${startYear}-07-01`),
+      endDate: new Date(`${startYear + 1}-06-30`),
       isActive: true,
     },
     {
-      name: '2027-28',
-      startDate: new Date('2027-07-01'),
-      endDate: new Date('2028-06-30'),
+      name: getAyName(startYear + 1),
+      startDate: new Date(`${startYear + 1}-07-01`),
+      endDate: new Date(`${startYear + 2}-06-30`),
       isActive: false,
     },
   ];
@@ -163,7 +173,7 @@ async function main() {
   }
   console.log('Upserted Academic Years');
 
-  const activeAcademicYear = academicYears['2026-27'];
+  const activeAcademicYear = academicYears[currentAyName];
 
   // 5. Academic Terms
   const academicTermsData = [
