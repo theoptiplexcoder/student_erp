@@ -29,9 +29,8 @@ export function AttendanceSessionList({ sessions, activeFilter }: AttendanceSess
     // However, it's safer to convert to a comparable format or use Date objects
     const getTimeVal = (timeStr: string) => {
       const [time, period] = timeStr.split(' ');
-      const [hours, minutes] = time.split(':').map(Number);
-      if (period === 'PM' && hours !== 12) hours += 12;
-      if (period === 'AM' && hours === 12) hours = 0;
+      const [h, minutes] = time.split(':').map(Number);
+      const hours = period === 'PM' && h !== 12 ? h + 12 : period === 'AM' && h === 12 ? 0 : h;
       return hours * 60 + minutes;
     };
 
