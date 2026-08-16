@@ -6,7 +6,7 @@ import { Prisma } from '@prisma/client';
 export class ProgramsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getPrograms(institutionId: string, page: number = 1, pageSize: number = 50, search?: string) {
+  async getPrograms(institutionId: string, page = 1, pageSize = 50, search?: string) {
     const skip = (page - 1) * pageSize;
     const where: Prisma.ProgramWhereInput = {
       institutionId,

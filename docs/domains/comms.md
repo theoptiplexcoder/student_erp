@@ -1,6 +1,6 @@
 # Communication Staff — Detailed User Journey
 
-*Companion deep-dive to `user_journey.md` §17.1. Grounded in the role definition in `personas.md` §17, the capabilities in `functional_requirements.md` §9 (Communication & Collaboration) and §25 (Reporting & Analytics), and the module boundaries in `project_structure.md`.*
+_Companion deep-dive to `user_journey.md` §17.1. Grounded in the role definition in `personas.md` §17, the capabilities in `functional_requirements.md` §9 (Communication & Collaboration) and §25 (Reporting & Analytics), and the module boundaries in `project_structure.md`._
 
 **Primary app(s):** `web-admin-console` (communication module)
 **Primary domain module:** `libs/core/communication` (institution-wide comms; the Course Workspace piece of this same lib is Faculty-owned, not Comms Staff-owned — see boundary note below)
@@ -19,7 +19,7 @@
 ## 2. Setup & Configuration
 
 1. **Audience segmentation** — Defines the reusable targeting groups (by role, batch, campus, department) that announcements and notifications will be sent against, within the boundaries of institution-wide policy set by the Institution Administrator.
-2. **DM policy awareness** — Does *not* own the Student↔Faculty / Parent↔Faculty direct-messaging policy — that's configured by the Institution Administrator — but designs broadcast campaigns to respect it (e.g., not routing student replies into a channel the policy disallows).
+2. **DM policy awareness** — Does _not_ own the Student↔Faculty / Parent↔Faculty direct-messaging policy — that's configured by the Institution Administrator — but designs broadcast campaigns to respect it (e.g., not routing student replies into a channel the policy disallows).
 3. **Template library** — Builds reusable message templates per event type (welcome, holiday notice, fee reminder framing, exam schedule release) so downstream automated triggers (see §4 below) look and read consistently.
 4. **Calendar setup** — Establishes the newsletter and social-media publishing cadence (e.g., weekly digest, monthly newsletter) and an editorial calendar for recurring institutional events (admissions cycle, exam season, orientation).
 
@@ -34,7 +34,7 @@
 ## 4. Routine — Targeted & Event-Driven Notifications
 
 1. **Targeting configuration** — Sets up which role/batch/campus segments receive which recurring notification types, and which channels each segment prefers by default.
-2. **Boundary with automated triggers** — Event-driven notifications (attendance shortage, grades published, fee due, assignment graded, timetable changed, leave approved) are *fired automatically* by their originating module (Attendance, Examination, Finance, etc.) through the Rules & Monitoring Engine and dispatched by the Notification Service — Communication Staff doesn't originate these, but owns the message templates/wording and the multi-channel delivery configuration they use.
+2. **Boundary with automated triggers** — Event-driven notifications (attendance shortage, grades published, fee due, assignment graded, timetable changed, leave approved) are _fired automatically_ by their originating module (Attendance, Examination, Finance, etc.) through the Rules & Monitoring Engine and dispatched by the Notification Service — Communication Staff doesn't originate these, but owns the message templates/wording and the multi-channel delivery configuration they use.
 3. **Preference respect** — Ensures campaigns honor each user's own notification preference settings rather than overriding them, except for institution-mandated emergency broadcasts.
 
 ## 5. Event & Activity Coordination
@@ -71,16 +71,16 @@
 
 ## Key Cross-Persona Touchpoints
 
-| Persona | Nature of interaction |
-|---|---|
-| Institution Administrator | Sets institution-wide comms policy and DM policy; approves branding and sensitive/emergency broadcasts |
-| Institution Head | Co-owns external-facing tone for major public messaging; escalation point for crisis comms |
-| Club Coordinator | Co-promotes club/society events and competitions |
-| Security Staff | Joint owner of emergency alert broadcasts triggered by security incidents |
-| IT Staff | Configures and maintains the underlying SMS/WhatsApp/email/push provider integrations Communication Staff depends on |
-| Academic Administrator / Examination Staff | Source of urgent off-cycle announcements (timetable, exam schedule changes) |
-| Notification Service (machine actor) | Executes the actual multi-channel dispatch for everything Communication Staff authors or targets |
-| Students / Guardians / Faculty | End recipients; manage their own notification preferences, which Communication Staff's campaigns must respect outside emergencies |
+| Persona                                    | Nature of interaction                                                                                                             |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| Institution Administrator                  | Sets institution-wide comms policy and DM policy; approves branding and sensitive/emergency broadcasts                            |
+| Institution Head                           | Co-owns external-facing tone for major public messaging; escalation point for crisis comms                                        |
+| Club Coordinator                           | Co-promotes club/society events and competitions                                                                                  |
+| Security Staff                             | Joint owner of emergency alert broadcasts triggered by security incidents                                                         |
+| IT Staff                                   | Configures and maintains the underlying SMS/WhatsApp/email/push provider integrations Communication Staff depends on              |
+| Academic Administrator / Examination Staff | Source of urgent off-cycle announcements (timetable, exam schedule changes)                                                       |
+| Notification Service (machine actor)       | Executes the actual multi-channel dispatch for everything Communication Staff authors or targets                                  |
+| Students / Guardians / Faculty             | End recipients; manage their own notification preferences, which Communication Staff's campaigns must respect outside emergencies |
 
 ## Boundary Note (per `project_structure.md`)
 

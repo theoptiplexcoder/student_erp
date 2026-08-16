@@ -5,7 +5,7 @@ Shared ui package for Student ERP.
 ## Usage
 
 ```typescript
-import { } from '@student-erp/ui';
+import {} from '@student-erp/ui';
 ```
 
 ## Development

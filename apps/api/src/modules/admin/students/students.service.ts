@@ -7,9 +7,18 @@ import { Prisma } from '@prisma/client';
 export class StudentsService {
   constructor(private readonly prisma: PrismaService) {}
 
-
   async findAll(institutionId: string, query: StudentQueryDto) {
-    const { page = 1, pageSize = 20, search, programId, batchId, sectionId, status, sortBy = 'createdAt', sortOrder = 'desc' } = query;
+    const {
+      page = 1,
+      pageSize = 20,
+      search,
+      programId,
+      batchId,
+      sectionId,
+      status,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = query;
     const skip = (page - 1) * pageSize;
 
     const where: Prisma.StudentWhereInput = {
@@ -40,9 +49,7 @@ export class StudentsService {
         },
         skip,
         take: pageSize,
-        orderBy: sortBy === 'name' 
-          ? { user: { firstName: sortOrder } } 
-          : { [sortBy]: sortOrder },
+        orderBy: sortBy === 'name' ? { user: { firstName: sortOrder } } : { [sortBy]: sortOrder },
       }),
     ]);
 
@@ -68,12 +75,12 @@ export class StudentsService {
           include: {
             course: true,
             term: true,
-          }
+          },
         },
         attendanceRecords: {
           take: 5,
           orderBy: { markedAt: 'desc' },
-        }
+        },
       },
     });
 

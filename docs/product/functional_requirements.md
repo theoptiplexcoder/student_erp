@@ -1,6 +1,6 @@
 # Student ERP — Functional Requirements
 
-This document defines the functional requirements for the multi-tenant Student ERP, organized by module. It complements `personas.md` (which defines *who* can act) by defining *what the system does*.
+This document defines the functional requirements for the multi-tenant Student ERP, organized by module. It complements `personas.md` (which defines _who_ can act) by defining _what the system does_.
 
 ## Priority Legend
 
@@ -15,6 +15,7 @@ This document defines the functional requirements for the multi-tenant Student E
 The system of record for a student's identity and journey from applicant to alumni.
 
 ### Functional Requirements
+
 - Create and maintain a unique student record (ID, demographics, contact info, photo)
 - Track student lifecycle status: Applicant → Enrolled → Active → Suspended → Graduated → Alumni → Withdrawn
 - Manage program/course/batch/section assignment
@@ -33,7 +34,9 @@ The system of record for a student's identity and journey from applicant to alum
 ## 2. Admissions Management (P0)
 
 ### Functional Requirements
+
 **Application**
+
 - Online application form (configurable per program)
 - Application fee collection
 - Multi-step application status tracking (Submitted → Under Review → Shortlisted → Offer → Accepted → Enrolled → Rejected)
@@ -42,6 +45,7 @@ The system of record for a student's identity and journey from applicant to alum
 - Application deduplication (detect repeat applicants)
 
 **Evaluation & Offer**
+
 - Configurable eligibility rules (marks cutoffs, quotas, reservations)
 - Interview/counseling scheduling
 - Offer letter generation
@@ -49,6 +53,7 @@ The system of record for a student's identity and journey from applicant to alum
 - Seat matrix and quota tracking (by program, category, campus)
 
 **Conversion**
+
 - Convert accepted applicant to enrolled student record
 - Fee payment linkage to confirm admission
 - Admission reports (funnel, conversion rate, source-wise)
@@ -58,6 +63,7 @@ The system of record for a student's identity and journey from applicant to alum
 ## 3. Academic & Curriculum Management (P0)
 
 ### Functional Requirements
+
 - Define academic years, terms/semesters, and academic calendar
 - Define programs, courses, subjects, and credit structure
 - Curriculum/syllabus versioning
@@ -75,6 +81,7 @@ The system of record for a student's identity and journey from applicant to alum
 ## 4. Attendance Management (P0)
 
 ### Attendance Capture
+
 - Manual attendance recording
 - Biometric attendance integration
 - RFID attendance integration
@@ -87,6 +94,7 @@ The system of record for a student's identity and journey from applicant to alum
 - Offline attendance synchronization
 
 ### Attendance Processing
+
 - Attendance validation
 - Attendance correction workflow
 - Attendance approval workflow
@@ -97,6 +105,7 @@ The system of record for a student's identity and journey from applicant to alum
 - Custom attendance policies (per course/institution)
 
 ### Automatic Attendance Monitoring
+
 - Automatically detect low attendance based on configurable thresholds
 - Automatically identify attendance defaulters
 - Detect consecutive absences
@@ -109,6 +118,7 @@ The system of record for a student's identity and journey from applicant to alum
 - Automatically identify at-risk students based on attendance trends
 
 ### Alerts & Notifications
+
 - Notify students of attendance shortages
 - Notify guardians of repeated absences
 - Notify faculty of attendance anomalies
@@ -118,6 +128,7 @@ The system of record for a student's identity and journey from applicant to alum
 - Escalate unresolved attendance issues through configurable workflows
 
 ### Reporting & Analytics
+
 - Attendance reports
 - Daily attendance dashboard
 - Course-wise attendance analytics
@@ -134,6 +145,7 @@ The system of record for a student's identity and journey from applicant to alum
 ## 5. Examination & Assessment Management (P0)
 
 ### Exam Setup
+
 - Define exam types (internal, midterm, final, makeup, online)
 - Exam scheduling and timetable generation
 - Seating arrangement generation
@@ -142,6 +154,7 @@ The system of record for a student's identity and journey from applicant to alum
 - Attendance eligibility check before exam registration (integration with Attendance module)
 
 ### Conduct
+
 - In-person invigilation support (attendance, malpractice reporting)
 - Online/remote exam session support
 - Automated exam monitoring (via Proctoring Service integration)
@@ -150,6 +163,7 @@ The system of record for a student's identity and journey from applicant to alum
 - Malpractice/incident reporting workflow
 
 ### Evaluation
+
 - Marks entry (manual and bulk upload)
 - Moderation/re-evaluation workflow
 - Grace marks and rounding rules
@@ -158,6 +172,7 @@ The system of record for a student's identity and journey from applicant to alum
 - Answer script scanning and digital evaluation (optional, P2)
 
 ### Results & Certification
+
 - Result computation and publishing
 - Result withholding rules (fee dues, disciplinary holds)
 - Revaluation/re-check request workflow
@@ -171,6 +186,7 @@ The system of record for a student's identity and journey from applicant to alum
 ## 6. Finance & Fee Management (P0)
 
 ### Fee Structure & Billing
+
 - Configurable fee structure (by program, batch, category)
 - One-time and recurring fee heads (tuition, hostel, transport, misc.)
 - Fee due date and installment configuration
@@ -178,6 +194,7 @@ The system of record for a student's identity and journey from applicant to alum
 - Late fee/penalty rules
 
 ### Collection
+
 - Online payment gateway integration
 - Offline payment recording (cash, cheque, DD, bank transfer)
 - Receipt generation
@@ -185,6 +202,7 @@ The system of record for a student's identity and journey from applicant to alum
 - Refund processing
 
 ### Monitoring & Reporting
+
 - Outstanding dues tracking
 - Fee defaulter identification and alerts (guardian/student notification)
 - Fee collection dashboards (daily/monthly/by campus)
@@ -192,6 +210,7 @@ The system of record for a student's identity and journey from applicant to alum
 - Scholarship/financial aid disbursement tracking
 
 ### Accounting & Payroll
+
 - General ledger / accounting integration
 - Budgeting and expense tracking
 - Payroll processing (linked to HR module)
@@ -203,6 +222,7 @@ The system of record for a student's identity and journey from applicant to alum
 ## 7. Student Portal (P0)
 
 ### Academic
+
 - View academic dashboard
 - View timetable
 - View attendance and attendance analytics
@@ -216,11 +236,13 @@ The system of record for a student's identity and journey from applicant to alum
 - Track academic progress
 
 ### Financial
+
 - Pay fees online
 - View fee receipts and outstanding dues
 - Apply for scholarships
 
 ### Services
+
 - Request certificates
 - Submit service requests
 - Book library resources
@@ -228,6 +250,7 @@ The system of record for a student's identity and journey from applicant to alum
 - Schedule counseling appointments
 
 ### Communication
+
 - Receive announcements and notifications
 - Message faculty (within configured DM policy)
 - Participate in course discussions
@@ -235,6 +258,7 @@ The system of record for a student's identity and journey from applicant to alum
 - Register for events and clubs
 
 ### Profile & Administration
+
 - Manage profile and contact information
 - View guardian information
 - Track application status (pre-enrollment)
@@ -246,6 +270,7 @@ The system of record for a student's identity and journey from applicant to alum
 ## 8. Faculty Portal & Teaching Tools (P0)
 
 ### Functional Requirements
+
 - View assigned courses, sections, and timetable
 - Take/manage attendance for assigned classes
 - Enter and manage grades/marks
@@ -271,6 +296,7 @@ The system of record for a student's identity and journey from applicant to alum
 Modeled as a **Course Workspace** rather than a general chat/forum product — see design rationale below.
 
 ### Course Workspace (per course)
+
 - Announcements feed (immutable/versioned, searchable)
 - Chapter-wise resource repository (see Faculty module)
 - Threaded discussions (Q&A style, not free-form chat)
@@ -278,6 +304,7 @@ Modeled as a **Course Workspace** rather than a general chat/forum product — s
 - Course-level FAQ / knowledge base
 
 ### Institution-wide Communication
+
 - Institution/department/campus-level announcements
 - Targeted notifications by role, batch, or campus
 - Direct messaging, constrained by configurable policy:
@@ -292,7 +319,9 @@ Modeled as a **Course Workspace** rather than a general chat/forum product — s
 - Searchable institutional knowledge base (Q&A accumulated over time)
 
 ### Design Rationale (for reference)
+
 A general-purpose chat/forum product was evaluated and rejected in favor of the Course Workspace model:
+
 - **Simple messaging** — easy to build, good audit trail, but poor for academic content organization.
 - **Discussion forums** — persist knowledge, but require moderation and feel disconnected from course structure.
 - **Course Workspace (chosen)** — mirrors how students already think about a course (announcements, resources, discussions, assignments, quizzes, grades all in one place); messaging becomes a supporting capability rather than the center of the product. Scales from a small coaching center (announcements + resources only) to a full university (discussions, quizzes, LMS integration).
@@ -302,6 +331,7 @@ A general-purpose chat/forum product was evaluated and rejected in favor of the 
 ## 10. Human Resources Management (P1)
 
 ### Functional Requirements
+
 - Employee record management (faculty and non-teaching staff)
 - Recruitment/onboarding workflow
 - Leave management (application, approval, balance tracking)
@@ -317,6 +347,7 @@ A general-purpose chat/forum product was evaluated and rejected in favor of the 
 ## 11. Library Management (P1)
 
 ### Functional Requirements
+
 - Book/media catalog management
 - Circulation (issue, return, renew, reserve)
 - Overdue tracking and fine calculation
@@ -332,6 +363,7 @@ A general-purpose chat/forum product was evaluated and rejected in favor of the 
 ## 12. Hostel Management (P1)
 
 ### Functional Requirements
+
 - Room/block inventory management
 - Room allocation (manual and rule-based)
 - Occupancy tracking and vacancy reports
@@ -346,6 +378,7 @@ A general-purpose chat/forum product was evaluated and rejected in favor of the 
 ## 13. Transport Management (P1)
 
 ### Functional Requirements
+
 - Route and stop configuration
 - Vehicle and driver assignment
 - Student-to-route/stop mapping
@@ -359,6 +392,7 @@ A general-purpose chat/forum product was evaluated and rejected in favor of the 
 ## 14. Medical & Wellness (P1)
 
 ### Functional Requirements
+
 - Student medical record management
 - Appointment scheduling with health staff
 - Counseling session scheduling and notes (confidentiality controls)
@@ -371,6 +405,7 @@ A general-purpose chat/forum product was evaluated and rejected in favor of the 
 ## 15. Placement & Career Services (P1)
 
 ### Functional Requirements
+
 - Recruiter/company registration and management
 - Job/internship posting
 - Student eligibility and application workflow
@@ -385,6 +420,7 @@ A general-purpose chat/forum product was evaluated and rejected in favor of the 
 ## 16. Facilities & Asset Management (P1)
 
 ### Functional Requirements
+
 - Asset inventory (classrooms, labs, equipment)
 - Asset allocation and tracking
 - Maintenance request and scheduling
@@ -397,6 +433,7 @@ A general-purpose chat/forum product was evaluated and rejected in favor of the 
 ## 17. IT Administration (P1)
 
 ### Functional Requirements
+
 - User account provisioning/deprovisioning
 - Role and permission assignment (see `personas.md`)
 - Device/asset tracking for IT equipment
@@ -410,6 +447,7 @@ A general-purpose chat/forum product was evaluated and rejected in favor of the 
 ## 18. Security & Access Control (P1)
 
 ### Functional Requirements
+
 - Visitor management (registration, gate pass issuance, check-in/out)
 - Biometric device integration for gate access
 - Incident logging
@@ -421,6 +459,7 @@ A general-purpose chat/forum product was evaluated and rejected in favor of the 
 ## 19. Student Activities & Clubs (P2)
 
 ### Functional Requirements
+
 - Club/society registration and management
 - Event creation and registration
 - Competition/extracurricular activity tracking
@@ -432,6 +471,7 @@ A general-purpose chat/forum product was evaluated and rejected in favor of the 
 ## 20. Alumni Management (P2)
 
 ### Functional Requirements
+
 - Alumni profile and directory
 - Degree/certificate verification requests
 - Alumni event management
@@ -443,6 +483,7 @@ A general-purpose chat/forum product was evaluated and rejected in favor of the 
 ## 21. Regional/Cross-Campus Operations (P1 — multi-campus institutions)
 
 ### Functional Requirements
+
 - Cross-campus reporting and dashboards
 - Resource reallocation across campuses (staff, budget, seats)
 - Campus-level configuration inheritance and overrides
@@ -453,16 +494,19 @@ A general-purpose chat/forum product was evaluated and rejected in favor of the 
 ## 22. External/B2B Portals (P1/P2)
 
 ### Corporate Client Portal
+
 - View sponsored learners' enrollment, progress, and completion status
 - Receive invoices for sponsored learners
 - No access to grading or internal institution data
 
 ### Auditor / Accrediting Body / Government Reporting
+
 - Read-only access to compliance-relevant reports
 - Scheduled/regulatory report generation and export
 - Accreditation documentation repository
 
 ### Vendor Portal
+
 - Purchase order visibility
 - Invoice submission
 - Payment status tracking
@@ -474,6 +518,7 @@ A general-purpose chat/forum product was evaluated and rejected in favor of the 
 A reusable capability so monitoring logic isn't duplicated per module.
 
 ### Functional Requirements
+
 - Configurable rule definition (e.g., "Attendance < 75% for 7 consecutive days")
 - Rule evaluation scheduler (real-time and batch)
 - Centralized alert/notification dispatch
@@ -496,12 +541,14 @@ A reusable capability so monitoring logic isn't duplicated per module.
 ## 24. Platform & Institution Administration (P0)
 
 ### Platform-Level (SaaS)
+
 - Tenant provisioning and lifecycle management
 - Subscription and billing management
 - Global platform configuration
 - Platform-wide monitoring, security, and support tooling
 
 ### Institution-Level
+
 - Institution profile and settings
 - Campus/department/program hierarchy configuration
 - User and role/permission management
@@ -515,6 +562,7 @@ A reusable capability so monitoring logic isn't duplicated per module.
 ## 25. Reporting & Analytics (Cross-Cutting) (P0/P1)
 
 ### Functional Requirements
+
 - Configurable dashboards per role
 - Cross-module report builder
 - Scheduled report generation and email delivery
@@ -526,11 +574,11 @@ A reusable capability so monitoring logic isn't duplicated per module.
 
 ## Build Priority Summary
 
-| Priority | Modules |
-|---|---|
-| **P0 (Core)** | Student Information, Admissions, Academic & Curriculum, Attendance, Examination, Finance/Fees, Student Portal, Faculty Portal, Communication (Course Workspace), Platform/Institution Administration, Core Reporting |
-| **P1 (Standard)** | HR, Library, Hostel, Transport, Medical/Wellness, Placement, Facilities, IT Administration, Security, Regional/Cross-Campus Ops, External/B2B Portals, Rules & Monitoring Engine |
-| **P2 (Advanced)** | Student Activities/Clubs, Alumni Management, GPS vehicle tracking, facial recognition attendance, digital answer script evaluation, predictive analytics |
+| Priority          | Modules                                                                                                                                                                                                              |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **P0 (Core)**     | Student Information, Admissions, Academic & Curriculum, Attendance, Examination, Finance/Fees, Student Portal, Faculty Portal, Communication (Course Workspace), Platform/Institution Administration, Core Reporting |
+| **P1 (Standard)** | HR, Library, Hostel, Transport, Medical/Wellness, Placement, Facilities, IT Administration, Security, Regional/Cross-Campus Ops, External/B2B Portals, Rules & Monitoring Engine                                     |
+| **P2 (Advanced)** | Student Activities/Clubs, Alumni Management, GPS vehicle tracking, facial recognition attendance, digital answer script evaluation, predictive analytics                                                             |
 
 ---
 

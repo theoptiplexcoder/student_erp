@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@student-erp/ui";
-import { useStudentDashboard } from "@student-erp/hooks";
-import { Clock, MapPin, User } from "lucide-react";
-import { Skeleton } from "@student-erp/ui"; // Assuming Skeleton exists
+import React from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from '@student-erp/ui';
+import { useStudentDashboard } from '@student-erp/hooks';
+import { Clock, MapPin, User } from 'lucide-react';
+import { Skeleton } from '@student-erp/ui'; // Assuming Skeleton exists
 
 function formatTime(timeString: string | Date) {
   if (!timeString) return '';
@@ -47,33 +47,34 @@ export function TodayScheduleCard() {
         {todaysSchedule.length > 0 ? (
           <div className="space-y-4">
             {todaysSchedule.map((cls: any, idx: number) => (
-              <div 
-                key={cls.id} 
-                className={`relative pl-4 border-l-2 ${idx === 0 ? "border-primary" : "border-muted"}`}
+              <div
+                key={cls.id}
+                className={`relative border-l-2 pl-4 ${idx === 0 ? 'border-primary' : 'border-muted'}`}
               >
-                <div className="flex justify-between items-start mb-1">
-                  <h4 className={`font-medium ${idx === 0 ? "text-primary" : ""}`}>
-                    {cls.course?.name || "Unknown Course"}
+                <div className="mb-1 flex items-start justify-between">
+                  <h4 className={`font-medium ${idx === 0 ? 'text-primary' : ''}`}>
+                    {cls.course?.name || 'Unknown Course'}
                   </h4>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap bg-muted px-2 py-1 rounded-md">
+                  <span className="text-muted-foreground bg-muted rounded-md px-2 py-1 text-xs whitespace-nowrap">
                     {formatTime(cls.startTime)} - {formatTime(cls.endTime)}
                   </span>
                 </div>
-                
-                <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mt-2">
+
+                <div className="text-muted-foreground mt-2 grid grid-cols-2 gap-2 text-xs">
                   <div className="flex items-center gap-1">
-                    <User className="h-3 w-3" /> {cls.faculty?.user?.firstName} {cls.faculty?.user?.lastName}
+                    <User className="h-3 w-3" /> {cls.faculty?.user?.firstName}{' '}
+                    {cls.faculty?.user?.lastName}
                   </div>
                   <div className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" /> {cls.room || "TBA"}
+                    <MapPin className="h-3 w-3" /> {cls.room || 'TBA'}
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
-            <Clock className="h-8 w-8 mb-2 opacity-20" />
+          <div className="text-muted-foreground flex flex-col items-center justify-center py-8 text-center">
+            <Clock className="mb-2 h-8 w-8 opacity-20" />
             <p>No classes scheduled for today.</p>
           </div>
         )}

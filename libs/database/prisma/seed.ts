@@ -1,4 +1,18 @@
-import { PrismaClient, InstitutionType, ProgramLevel, TermType, UserRole, UserStatus, FacultyEmploymentType, FacultyStatus, StudentLifecycleStatus, AcademicTermStatus, CourseStatus, EnrollmentStatus, CurriculumStatus } from '@prisma/client';
+import {
+  PrismaClient,
+  InstitutionType,
+  ProgramLevel,
+  TermType,
+  UserRole,
+  UserStatus,
+  FacultyEmploymentType,
+  FacultyStatus,
+  StudentLifecycleStatus,
+  AcademicTermStatus,
+  CourseStatus,
+  EnrollmentStatus,
+  CurriculumStatus,
+} from '@prisma/client';
 import { createClient } from '@supabase/supabase-js';
 
 const prisma = new PrismaClient();
@@ -46,11 +60,41 @@ async function main() {
 
   // 3. Programs
   const programsData = [
-    { name: 'B.Tech Computer Science and Engineering', code: 'BTECH-CSE', level: ProgramLevel.UNDERGRADUATE, durationYears: 4, departmentCode: 'CSE' },
-    { name: 'B.Tech Information Technology', code: 'BTECH-IT', level: ProgramLevel.UNDERGRADUATE, durationYears: 4, departmentCode: 'IT' },
-    { name: 'B.Tech Electronics and Communication Engineering', code: 'BTECH-ECE', level: ProgramLevel.UNDERGRADUATE, durationYears: 4, departmentCode: 'ECE' },
-    { name: 'Bachelor of Computer Applications', code: 'BCA', level: ProgramLevel.UNDERGRADUATE, durationYears: 3, departmentCode: 'CSE' },
-    { name: 'Master of Business Administration', code: 'MBA-PROG', level: ProgramLevel.POSTGRADUATE, durationYears: 2, departmentCode: 'MBA' },
+    {
+      name: 'B.Tech Computer Science and Engineering',
+      code: 'BTECH-CSE',
+      level: ProgramLevel.UNDERGRADUATE,
+      durationYears: 4,
+      departmentCode: 'CSE',
+    },
+    {
+      name: 'B.Tech Information Technology',
+      code: 'BTECH-IT',
+      level: ProgramLevel.UNDERGRADUATE,
+      durationYears: 4,
+      departmentCode: 'IT',
+    },
+    {
+      name: 'B.Tech Electronics and Communication Engineering',
+      code: 'BTECH-ECE',
+      level: ProgramLevel.UNDERGRADUATE,
+      durationYears: 4,
+      departmentCode: 'ECE',
+    },
+    {
+      name: 'Bachelor of Computer Applications',
+      code: 'BCA',
+      level: ProgramLevel.UNDERGRADUATE,
+      durationYears: 3,
+      departmentCode: 'CSE',
+    },
+    {
+      name: 'Master of Business Administration',
+      code: 'MBA-PROG',
+      level: ProgramLevel.POSTGRADUATE,
+      durationYears: 2,
+      departmentCode: 'MBA',
+    },
   ];
 
   const programs: Record<string, any> = {};
@@ -74,9 +118,24 @@ async function main() {
 
   // 4. Academic Years
   const academicYearsData = [
-    { name: '2025-26', startDate: new Date('2025-07-01'), endDate: new Date('2026-06-30'), isActive: false },
-    { name: '2026-27', startDate: new Date('2026-07-01'), endDate: new Date('2027-06-30'), isActive: true },
-    { name: '2027-28', startDate: new Date('2027-07-01'), endDate: new Date('2028-06-30'), isActive: false },
+    {
+      name: '2025-26',
+      startDate: new Date('2025-07-01'),
+      endDate: new Date('2026-06-30'),
+      isActive: false,
+    },
+    {
+      name: '2026-27',
+      startDate: new Date('2026-07-01'),
+      endDate: new Date('2027-06-30'),
+      isActive: true,
+    },
+    {
+      name: '2027-28',
+      startDate: new Date('2027-07-01'),
+      endDate: new Date('2028-06-30'),
+      isActive: false,
+    },
   ];
 
   const academicYears: Record<string, any> = {};
@@ -108,20 +167,88 @@ async function main() {
 
   // 5. Academic Terms
   const academicTermsData = [
-    { name: 'Semester 1', code: 'SEM1-2026', semester: 1, termType: TermType.SEMESTER, startDate: new Date('2026-07-15'), endDate: new Date('2026-12-15'), status: AcademicTermStatus.COMPLETED },
-    { name: 'Semester 2', code: 'SEM2-2026', semester: 2, termType: TermType.SEMESTER, startDate: new Date('2027-01-15'), endDate: new Date('2027-05-30'), status: AcademicTermStatus.COMPLETED },
-    { name: 'Semester 3', code: 'SEM3-2026', semester: 3, termType: TermType.SEMESTER, startDate: new Date('2026-07-15'), endDate: new Date('2026-12-15'), status: AcademicTermStatus.ACTIVE },
-    { name: 'Semester 4', code: 'SEM4-2026', semester: 4, termType: TermType.SEMESTER, startDate: new Date('2027-01-15'), endDate: new Date('2027-05-30'), status: AcademicTermStatus.UPCOMING },
-    { name: 'Semester 5', code: 'SEM5-2026', semester: 5, termType: TermType.SEMESTER, startDate: new Date('2026-07-15'), endDate: new Date('2026-12-15'), status: AcademicTermStatus.ACTIVE },
-    { name: 'Semester 6', code: 'SEM6-2026', semester: 6, termType: TermType.SEMESTER, startDate: new Date('2027-01-15'), endDate: new Date('2027-05-30'), status: AcademicTermStatus.UPCOMING },
-    { name: 'Semester 7', code: 'SEM7-2026', semester: 7, termType: TermType.SEMESTER, startDate: new Date('2026-07-15'), endDate: new Date('2026-12-15'), status: AcademicTermStatus.ACTIVE },
-    { name: 'Semester 8', code: 'SEM8-2026', semester: 8, termType: TermType.SEMESTER, startDate: new Date('2027-01-15'), endDate: new Date('2027-05-30'), status: AcademicTermStatus.UPCOMING },
+    {
+      name: 'Semester 1',
+      code: 'SEM1-2026',
+      semester: 1,
+      termType: TermType.SEMESTER,
+      startDate: new Date('2026-07-15'),
+      endDate: new Date('2026-12-15'),
+      status: AcademicTermStatus.COMPLETED,
+    },
+    {
+      name: 'Semester 2',
+      code: 'SEM2-2026',
+      semester: 2,
+      termType: TermType.SEMESTER,
+      startDate: new Date('2027-01-15'),
+      endDate: new Date('2027-05-30'),
+      status: AcademicTermStatus.COMPLETED,
+    },
+    {
+      name: 'Semester 3',
+      code: 'SEM3-2026',
+      semester: 3,
+      termType: TermType.SEMESTER,
+      startDate: new Date('2026-07-15'),
+      endDate: new Date('2026-12-15'),
+      status: AcademicTermStatus.ACTIVE,
+    },
+    {
+      name: 'Semester 4',
+      code: 'SEM4-2026',
+      semester: 4,
+      termType: TermType.SEMESTER,
+      startDate: new Date('2027-01-15'),
+      endDate: new Date('2027-05-30'),
+      status: AcademicTermStatus.UPCOMING,
+    },
+    {
+      name: 'Semester 5',
+      code: 'SEM5-2026',
+      semester: 5,
+      termType: TermType.SEMESTER,
+      startDate: new Date('2026-07-15'),
+      endDate: new Date('2026-12-15'),
+      status: AcademicTermStatus.ACTIVE,
+    },
+    {
+      name: 'Semester 6',
+      code: 'SEM6-2026',
+      semester: 6,
+      termType: TermType.SEMESTER,
+      startDate: new Date('2027-01-15'),
+      endDate: new Date('2027-05-30'),
+      status: AcademicTermStatus.UPCOMING,
+    },
+    {
+      name: 'Semester 7',
+      code: 'SEM7-2026',
+      semester: 7,
+      termType: TermType.SEMESTER,
+      startDate: new Date('2026-07-15'),
+      endDate: new Date('2026-12-15'),
+      status: AcademicTermStatus.ACTIVE,
+    },
+    {
+      name: 'Semester 8',
+      code: 'SEM8-2026',
+      semester: 8,
+      termType: TermType.SEMESTER,
+      startDate: new Date('2027-01-15'),
+      endDate: new Date('2027-05-30'),
+      status: AcademicTermStatus.UPCOMING,
+    },
   ];
 
   const academicTerms: Record<string, any> = {};
   for (const term of academicTermsData) {
     let t = await prisma.academicTerm.findFirst({
-      where: { institutionId: institution.id, academicYearId: activeAcademicYear.id, code: term.code },
+      where: {
+        institutionId: institution.id,
+        academicYearId: activeAcademicYear.id,
+        code: term.code,
+      },
     });
     if (!t) {
       t = await prisma.academicTerm.create({
@@ -196,42 +323,42 @@ async function main() {
     { code: 'PH101', name: 'Engineering Physics', creditValue: 4, sem: 1 },
     { code: 'EC101', name: 'Basic Electronics', creditValue: 4, sem: 1 },
     { code: 'HS101', name: 'Communication Skills', creditValue: 4, sem: 1 },
-    
+
     { code: 'CS102', name: 'Data Structures', creditValue: 4, sem: 2 },
     { code: 'MA102', name: 'Mathematics II', creditValue: 4, sem: 2 },
     { code: 'CS103', name: 'Object Oriented Programming', creditValue: 4, sem: 2 },
     { code: 'EC102', name: 'Digital Logic', creditValue: 4, sem: 2 },
     { code: 'HS102', name: 'Professional Communication', creditValue: 4, sem: 2 },
-    
+
     { code: 'CS201', name: 'Database Management Systems', creditValue: 4, sem: 3 },
     { code: 'CS202', name: 'Operating Systems', creditValue: 4, sem: 3 },
     { code: 'CS203', name: 'Computer Networks', creditValue: 4, sem: 3 },
     { code: 'CS204', name: 'Computer Organization', creditValue: 4, sem: 3 },
     { code: 'MA201', name: 'Discrete Mathematics', creditValue: 4, sem: 3 },
-    
+
     { code: 'CS205', name: 'Software Engineering', creditValue: 4, sem: 4 },
     { code: 'CS206', name: 'Theory of Computation', creditValue: 4, sem: 4 },
     { code: 'CS207', name: 'Design and Analysis of Algorithms', creditValue: 4, sem: 4 },
     { code: 'CS208', name: 'Web Technologies', creditValue: 4, sem: 4 },
     { code: 'CS209', name: 'Microprocessors', creditValue: 4, sem: 4 },
-    
+
     { code: 'CS301', name: 'Artificial Intelligence', creditValue: 4, sem: 5 },
     { code: 'CS302', name: 'Machine Learning', creditValue: 4, sem: 5 },
     { code: 'CS303', name: 'Compiler Design', creditValue: 4, sem: 5 },
     { code: 'CS304', name: 'Distributed Systems', creditValue: 4, sem: 5 },
     { code: 'CS305', name: 'Cloud Computing', creditValue: 4, sem: 5 },
-    
+
     { code: 'CS306', name: 'Data Mining', creditValue: 4, sem: 6 },
     { code: 'CS307', name: 'Cyber Security', creditValue: 4, sem: 6 },
     { code: 'CS308', name: 'Mobile Application Development', creditValue: 4, sem: 6 },
     { code: 'CS309', name: 'Big Data Analytics', creditValue: 4, sem: 6 },
     { code: 'CS310', name: 'Internet of Things', creditValue: 4, sem: 6 },
-    
+
     { code: 'CS401', name: 'Deep Learning', creditValue: 4, sem: 7 },
     { code: 'CS402', name: 'Natural Language Processing', creditValue: 4, sem: 7 },
     { code: 'CS403', name: 'Advanced Database Systems', creditValue: 4, sem: 7 },
     { code: 'CS404', name: 'Software Project Management', creditValue: 4, sem: 7 },
-    
+
     { code: 'CS405', name: 'Major Project', creditValue: 10, sem: 8 },
     { code: 'CS406', name: 'Internship', creditValue: 6, sem: 8 },
     { code: 'CS407', name: 'Seminar', creditValue: 2, sem: 8 },
@@ -245,7 +372,7 @@ async function main() {
       },
       create: {
         institutionId: institution.id,
-        departmentId: departments['CSE'].id, 
+        departmentId: departments['CSE'].id,
         programId: programs['BTECH-CSE'].id,
         code: c.code,
         name: c.name,
@@ -264,7 +391,7 @@ async function main() {
     const cData = coursesData[i];
     const term = curriculumTerms[cData.sem];
     const course = courses[cData.code];
-    
+
     await prisma.curriculumCourse.upsert({
       where: {
         curriculumTermId_courseId: { curriculumTermId: term.id, courseId: course.id },
@@ -297,9 +424,9 @@ async function main() {
   for (const p of prerequisites) {
     await prisma.coursePrerequisite.upsert({
       where: {
-        courseId_prerequisiteCourseId: { 
-          courseId: courses[p.courseCode].id, 
-          prerequisiteCourseId: courses[p.prereqCode].id 
+        courseId_prerequisiteCourseId: {
+          courseId: courses[p.courseCode].id,
+          prerequisiteCourseId: courses[p.prereqCode].id,
         },
       },
       create: {
@@ -322,7 +449,11 @@ async function main() {
   const batches: Record<number, any> = {};
   for (const b of batchesData) {
     let batch = await prisma.batch.findFirst({
-      where: { institutionId: institution.id, programId: programs['BTECH-CSE'].id, admissionYear: b.admissionYear },
+      where: {
+        institutionId: institution.id,
+        programId: programs['BTECH-CSE'].id,
+        admissionYear: b.admissionYear,
+      },
     });
     if (!batch) {
       batch = await prisma.batch.create({
@@ -361,7 +492,7 @@ async function main() {
           name: s.name,
           code: s.code,
           capacity: s.capacity,
-          semester: 3, 
+          semester: 3,
         },
       });
     }
@@ -388,9 +519,16 @@ async function main() {
 
   // 14. Faculty
   const facultyNames = [
-    'Dr. Rajesh Kumar', 'Prof. Ananya Sharma', 'Dr. Vivek Rao', 'Dr. Priya Nair', 
-    'Prof. Arjun Mehta', 'Dr. Sneha Kapoor', 'Prof. Rohit Verma', 'Dr. Neha Singh', 
-    'Prof. Amit Joshi', 'Dr. Kavita Menon'
+    'Dr. Rajesh Kumar',
+    'Prof. Ananya Sharma',
+    'Dr. Vivek Rao',
+    'Dr. Priya Nair',
+    'Prof. Arjun Mehta',
+    'Dr. Sneha Kapoor',
+    'Prof. Rohit Verma',
+    'Dr. Neha Singh',
+    'Prof. Amit Joshi',
+    'Dr. Kavita Menon',
   ];
 
   const faculties: Record<string, any> = {};
@@ -402,7 +540,7 @@ async function main() {
     const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@demo-institute.test`;
     const authUserId = `22222222-2222-2222-2222-2222222220${String(fCounter).padStart(2, '0')}`;
     const teacherCode = `FAC${String(fCounter).padStart(3, '0')}`;
-    
+
     let user = await prisma.user.findUnique({ where: { authUserId } });
     if (!user) {
       user = await prisma.user.create({
@@ -414,7 +552,7 @@ async function main() {
           lastName,
           role: UserRole.FACULTY,
           status: UserStatus.ACTIVE,
-        }
+        },
       });
     }
 
@@ -442,7 +580,7 @@ async function main() {
     { courseCode: 'CS203', facultyName: 'Dr. Vivek Rao', sectionCode: 'CSE-A' },
     { courseCode: 'CS204', facultyName: 'Dr. Priya Nair', sectionCode: 'CSE-A' },
     { courseCode: 'MA201', facultyName: 'Prof. Arjun Mehta', sectionCode: 'CSE-A' },
-    
+
     { courseCode: 'CS201', facultyName: 'Dr. Sneha Kapoor', sectionCode: 'CSE-B' },
     { courseCode: 'CS202', facultyName: 'Prof. Rohit Verma', sectionCode: 'CSE-B' },
     { courseCode: 'CS203', facultyName: 'Dr. Neha Singh', sectionCode: 'CSE-B' },
@@ -463,7 +601,7 @@ async function main() {
           courseId: cId,
           sectionId: sId,
           termId: tId,
-        }
+        },
       },
       create: {
         institutionId: institution.id,
@@ -496,7 +634,7 @@ async function main() {
           lastName: `${i}`,
           role: UserRole.STUDENT,
           status: UserStatus.ACTIVE,
-        }
+        },
       });
     }
 
@@ -523,13 +661,13 @@ async function main() {
   const sem3Courses = ['CS201', 'CS202', 'CS203', 'CS204', 'MA201'];
   for (const s of students) {
     for (const cCode of sem3Courses) {
-      let enrollment = await prisma.enrollment.findFirst({
+      const enrollment = await prisma.enrollment.findFirst({
         where: {
           institutionId: institution.id,
           studentId: s.id,
           termId: academicTerms['SEM3-2026'].id,
           courseId: courses[cCode].id,
-        }
+        },
       });
       if (!enrollment) {
         await prisma.enrollment.create({
@@ -543,7 +681,7 @@ async function main() {
             sectionId: s.sectionId,
             termId: academicTerms['SEM3-2026'].id,
             status: EnrollmentStatus.ACTIVE,
-          }
+          },
         });
       }
     }
@@ -635,8 +773,17 @@ async function main() {
   if (supabaseUrl && supabaseServiceRoleKey) {
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-    async function ensureAuthUser(email: string, password: string, firstName: string, lastName: string, role: UserRole) {
-      const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+    async function ensureAuthUser(
+      email: string,
+      password: string,
+      firstName: string,
+      lastName: string,
+      role: UserRole,
+    ) {
+      const {
+        data: { users },
+        error: listError,
+      } = await supabaseAdmin.auth.admin.listUsers();
       if (listError) throw listError;
 
       let authUser = users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
@@ -667,7 +814,7 @@ async function main() {
         account.password,
         account.firstName,
         account.lastName,
-        account.role
+        account.role,
       );
 
       // Retarget the seeded DB user row (keyed by synthetic authUserId) to the real Supabase auth ID.
@@ -709,9 +856,13 @@ async function main() {
     console.log('  Tenant Admin   -> admin@demo-institute.test');
     console.log('  Student        -> student1@demo-institute.test');
     console.log('  Tenant 2 Admin -> admin@demo-cob.test');
-    console.log(`  Faculty        -> ${facultyLoginCredentials.length} accounts, e.g. rajesh.kumar@demo-institute.test`);
+    console.log(
+      `  Faculty        -> ${facultyLoginCredentials.length} accounts, e.g. rajesh.kumar@demo-institute.test`,
+    );
   } else {
-    console.warn('SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set. Skipping Supabase auth account creation (login credentials will not be created).');
+    console.warn(
+      'SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set. Skipping Supabase auth account creation (login credentials will not be created).',
+    );
   }
 
   console.log('Seeding completed successfully.');

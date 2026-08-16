@@ -11,7 +11,7 @@ Applicant → (fee payment confirms admission) → Student → (program completi
                                                     └── Withdrawn (drop-out / transfer-out)
 ```
 
-This maps directly to the lifecycle status field owned by **Student Information & Lifecycle Management** (`functional_requirements.md` §1): *Applicant → Enrolled → Active → Suspended → Graduated → Alumni → Withdrawn*. All three personas below share the **same underlying student record** — `libs/core/student` (`project_structure.md`) — which merges Student Information, Admissions, and Alumni state into one bounded context, rather than three siloed tables.
+This maps directly to the lifecycle status field owned by **Student Information & Lifecycle Management** (`functional_requirements.md` §1): _Applicant → Enrolled → Active → Suspended → Graduated → Alumni → Withdrawn_. All three personas below share the **same underlying student record** — `libs/core/student` (`project_structure.md`) — which merges Student Information, Admissions, and Alumni state into one bounded context, rather than three siloed tables.
 
 **Primary apps:** `web-student-portal` (all three personas) and `mobile` (Student and Alumni; Applicant flow is supported but web-first). Both are `type:app` and reach the domain via `libs/core/*`, never directly touching another app.
 
@@ -19,7 +19,7 @@ This maps directly to the lifecycle status field owned by **Student Information 
 
 ## Part A — Applicant
 
-*Persona reference: `personas.md` §4 — "Applies for admission." Journey reference: `user_journey.md` §4.1. Functional reference: `functional_requirements.md` §2 (Admissions Management) and §1 (Student Information & Lifecycle Management).*
+_Persona reference: `personas.md` §4 — "Applies for admission." Journey reference: `user_journey.md` §4.1. Functional reference: `functional_requirements.md` §2 (Admissions Management) and §1 (Student Information & Lifecycle Management)._
 
 ### A.1 Registration & Application
 
@@ -52,20 +52,20 @@ This maps directly to the lifecycle status field owned by **Student Information 
 
 ### A.5 Handoffs & Cross-Persona Touchpoints
 
-| Stage | Other persona/system involved | Interaction |
-|---|---|---|
-| Application fee | Payment Gateway, Finance Staff | Payment processed; reconciled by Finance Staff |
-| Document review | Admissions Staff, Office Staff | Verification, status advancement |
-| Eligibility/seat matrix | Admissions Staff | Cutoff/quota rule application |
-| Interview scheduling | Admissions Staff | Scheduling and outcome recording |
-| Offer generation | Admissions Staff | Offer letter, waitlist management |
-| Conversion | Finance module (event bus) | `PaymentConfirmed` → student record creation |
+| Stage                   | Other persona/system involved  | Interaction                                    |
+| ----------------------- | ------------------------------ | ---------------------------------------------- |
+| Application fee         | Payment Gateway, Finance Staff | Payment processed; reconciled by Finance Staff |
+| Document review         | Admissions Staff, Office Staff | Verification, status advancement               |
+| Eligibility/seat matrix | Admissions Staff               | Cutoff/quota rule application                  |
+| Interview scheduling    | Admissions Staff               | Scheduling and outcome recording               |
+| Offer generation        | Admissions Staff               | Offer letter, waitlist management              |
+| Conversion              | Finance module (event bus)     | `PaymentConfirmed` → student record creation   |
 
 ---
 
 ## Part B — Student
 
-*Persona reference: `personas.md` §4 — "Learning, attendance, assignments, exams, fees." Journey reference: `user_journey.md` §4.2. Functional reference: `functional_requirements.md` §7 (Student Portal) plus the modules it draws on: §3 Academic, §4 Attendance, §5 Examination, §6 Finance, §9 Communication.*
+_Persona reference: `personas.md` §4 — "Learning, attendance, assignments, exams, fees." Journey reference: `user_journey.md` §4.2. Functional reference: `functional_requirements.md` §7 (Student Portal) plus the modules it draws on: §3 Academic, §4 Attendance, §5 Examination, §6 Finance, §9 Communication._
 
 ### B.1 Onboarding
 
@@ -130,7 +130,7 @@ This maps directly to the lifecycle status field owned by **Student Information 
 
 ## Part C — Alumni
 
-*Persona reference: `personas.md` §4 — "Degree verification, alumni activities." Journey reference: `user_journey.md` §4.3. Functional reference: `functional_requirements.md` §20 (Alumni Management, P2).*
+_Persona reference: `personas.md` §4 — "Degree verification, alumni activities." Journey reference: `user_journey.md` §4.3. Functional reference: `functional_requirements.md` §20 (Alumni Management, P2)._
 
 ### C.1 Transition
 
@@ -159,15 +159,15 @@ This maps directly to the lifecycle status field owned by **Student Information 
 
 The Applicant → Student → Alumni arc is stitched together entirely through the event bus and shared services described in `project_structure.md` — none of the three personas' data lives in a bespoke table outside `libs/core/student`.
 
-| Event / Trigger | Emitted by | Consumed by |
-|---|---|---|
-| `FeeChargeRequested` / `PaymentConfirmed` (application fee, confirmation fee, tuition, hostel, transport) | Payment Gateway | Finance module; triggers Applicant→Student conversion at confirmation-fee stage |
-| `AttendanceRecorded` | Biometric Device / RFID / QR / manual entry / LMS Integration | Attendance module → Rules & Monitoring Engine → Notification Service |
-| Attendance-shortage / defaulter flags | Rules & Monitoring Engine (§23) | Notification Service → Student, Guardian, Academic Administrator |
-| Exam-eligibility check | Attendance module | Examination module (blocks/allows exam registration) |
-| Grades published / results withheld | Examination module | Notification Service → Student; Finance/disciplinary holds can suppress the release |
-| Resource uploaded, assignment graded, timetable changed, leave approved | Faculty Portal, Academic module | Notification Service, multi-channel delivery |
-| Lifecycle transitions (`Applicant → Enrolled → Active → Suspended → Graduated → Alumni → Withdrawn`) | Student Information module (§1) | Every downstream module gates feature access off this single status field |
+| Event / Trigger                                                                                           | Emitted by                                                    | Consumed by                                                                         |
+| --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `FeeChargeRequested` / `PaymentConfirmed` (application fee, confirmation fee, tuition, hostel, transport) | Payment Gateway                                               | Finance module; triggers Applicant→Student conversion at confirmation-fee stage     |
+| `AttendanceRecorded`                                                                                      | Biometric Device / RFID / QR / manual entry / LMS Integration | Attendance module → Rules & Monitoring Engine → Notification Service                |
+| Attendance-shortage / defaulter flags                                                                     | Rules & Monitoring Engine (§23)                               | Notification Service → Student, Guardian, Academic Administrator                    |
+| Exam-eligibility check                                                                                    | Attendance module                                             | Examination module (blocks/allows exam registration)                                |
+| Grades published / results withheld                                                                       | Examination module                                            | Notification Service → Student; Finance/disciplinary holds can suppress the release |
+| Resource uploaded, assignment graded, timetable changed, leave approved                                   | Faculty Portal, Academic module                               | Notification Service, multi-channel delivery                                        |
+| Lifecycle transitions (`Applicant → Enrolled → Active → Suspended → Graduated → Alumni → Withdrawn`)      | Student Information module (§1)                               | Every downstream module gates feature access off this single status field           |
 
 ---
 

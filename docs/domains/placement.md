@@ -4,13 +4,13 @@ This document expands the high-level journey for **Placement Staff** (see `user_
 
 **Persona snapshot**
 
-| | |
-|---|---|
-| **Role** | Placement Staff |
-| **Section** | `personas.md` §14 — Placement & Career |
-| **Primary app** | `app-placement` (standalone app) |
-| **Priority tier** | P1 — Standard (`functional_requirements.md` §15) |
-| **Related personas** | Recruiter (external, §20.1 — shares `app-placement` via an external-facing view), Student (applies to openings, builds resume/profile), Institution Head (consumes placement statistics), Communication Staff (event/drive promotion), Academic Administrator (program/batch eligibility rules), IT Staff (provisions the role) |
+|                       |                                                                                                                                                                                                                                                                                                                                                                |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Role**              | Placement Staff                                                                                                                                                                                                                                                                                                                                                |
+| **Section**           | `personas.md` §14 — Placement & Career                                                                                                                                                                                                                                                                                                                         |
+| **Primary app**       | `app-placement` (standalone app)                                                                                                                                                                                                                                                                                                                               |
+| **Priority tier**     | P1 — Standard (`functional_requirements.md` §15)                                                                                                                                                                                                                                                                                                               |
+| **Related personas**  | Recruiter (external, §20.1 — shares `app-placement` via an external-facing view), Student (applies to openings, builds resume/profile), Institution Head (consumes placement statistics), Communication Staff (event/drive promotion), Academic Administrator (program/batch eligibility rules), IT Staff (provisions the role)                                |
 | **Architecture note** | `app-placement` is tagged `type:standalone` in `project_structure.md`, meaning it **cannot import `libs/core/*` directly**. Anything Placement Staff needs from Student/Academic/Attendance/Finance (eligibility, program, batch, fee-hold status) arrives via the published API surface in `libs/shared/sdk` or the event bus — never a direct database read. |
 
 ---
@@ -110,16 +110,16 @@ This document expands the high-level journey for **Placement Staff** (see `user_
 
 ## Cross-Persona Touchpoints
 
-| Persona | Interaction with Placement Staff |
-|---|---|
-| **Recruiter** (§20.1) | Onboarded by Placement Staff; may self-post openings and record interview outcomes for their own drive, subject to Placement Staff's approval gate |
-| **Student** (§4.2) | Applies to postings, builds resume/profile, receives offers — all mediated through eligibility rules Placement Staff configures |
-| **Academic Administrator** | Source of program/curriculum structure that eligibility rules key off of |
-| **Facilities Staff** | Coordinates room/venue booking for on-campus drives |
-| **Communication Staff** | Promotes drives/results institution-wide; consumes placement statistics for newsletters |
-| **Institution Head** | Consumes rolled-up placement statistics for strategic/board reporting |
-| **Finance Staff** | Source of any fee-due holds that could gate a student's exam-style "eligibility" for placement (pattern reused from Examination's fee-withholding rule) |
-| **Accrediting Body** (external) | Placement outcome data is a common accreditation input, exported via reporting |
+| Persona                         | Interaction with Placement Staff                                                                                                                        |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Recruiter** (§20.1)           | Onboarded by Placement Staff; may self-post openings and record interview outcomes for their own drive, subject to Placement Staff's approval gate      |
+| **Student** (§4.2)              | Applies to postings, builds resume/profile, receives offers — all mediated through eligibility rules Placement Staff configures                         |
+| **Academic Administrator**      | Source of program/curriculum structure that eligibility rules key off of                                                                                |
+| **Facilities Staff**            | Coordinates room/venue booking for on-campus drives                                                                                                     |
+| **Communication Staff**         | Promotes drives/results institution-wide; consumes placement statistics for newsletters                                                                 |
+| **Institution Head**            | Consumes rolled-up placement statistics for strategic/board reporting                                                                                   |
+| **Finance Staff**               | Source of any fee-due holds that could gate a student's exam-style "eligibility" for placement (pattern reused from Examination's fee-withholding rule) |
+| **Accrediting Body** (external) | Placement outcome data is a common accreditation input, exported via reporting                                                                          |
 
 ---
 

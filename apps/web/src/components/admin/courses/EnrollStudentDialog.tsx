@@ -1,9 +1,17 @@
-"use client";
+'use client';
 
-import { Button, Input, Label } from "@student-erp/ui";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@student-erp/ui";
-import { useState } from "react";
-import { UserPlus } from "lucide-react";
+import { Button, Input, Label } from '@student-erp/ui';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@student-erp/ui';
+import { useState } from 'react';
+import { UserPlus } from 'lucide-react';
 
 export function EnrollStudentDialog({ offeringId }: { offeringId: string }) {
   const [open, setOpen] = useState(false);
@@ -51,24 +59,30 @@ export function EnrollStudentDialog({ offeringId }: { offeringId: string }) {
             </div>
             <DialogFooter>
               <Button type="submit" disabled={loading}>
-                {loading ? "Searching..." : "Search"}
+                {loading ? 'Searching...' : 'Search'}
               </Button>
             </DialogFooter>
           </form>
         ) : (
           <div className="space-y-4 py-4">
-            <div className="border rounded-md p-4 bg-muted/50">
-              <h4 className="font-semibold text-lg">Advik Sharma</h4>
-              <p className="text-sm text-muted-foreground">STU-2025-001 • B.Tech CSE</p>
+            <div className="bg-muted/50 rounded-md border p-4">
+              <h4 className="text-lg font-semibold">Advik Sharma</h4>
+              <p className="text-muted-foreground text-sm">STU-2025-001 • B.Tech CSE</p>
               <div className="mt-4 text-sm">
-                <p><strong>Course:</strong> Database Management Systems (4 Credits)</p>
-                <p><strong>Term:</strong> Semester 3</p>
+                <p>
+                  <strong>Course:</strong> Database Management Systems (4 Credits)
+                </p>
+                <p>
+                  <strong>Term:</strong> Semester 3
+                </p>
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setStep(1)} disabled={loading}>Back</Button>
+              <Button variant="outline" onClick={() => setStep(1)} disabled={loading}>
+                Back
+              </Button>
               <Button onClick={handleEnroll} disabled={loading}>
-                {loading ? "Enrolling..." : "Confirm Enrollment"}
+                {loading ? 'Enrolling...' : 'Confirm Enrollment'}
               </Button>
             </DialogFooter>
           </div>

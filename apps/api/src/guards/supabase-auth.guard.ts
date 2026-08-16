@@ -1,11 +1,6 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from "@nestjs/common";
-import { createClient } from "@supabase/supabase-js";
-import { PrismaClient } from "@prisma/client";
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { createClient } from '@supabase/supabase-js';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -16,7 +11,7 @@ export class SupabaseAuthGuard implements CanActivate {
   constructor() {
     this.supabase = createClient(
       process.env['SUPABASE_URL']!,
-      process.env['SUPABASE_SERVICE_ROLE_KEY']!
+      process.env['SUPABASE_SERVICE_ROLE_KEY']!,
     );
   }
 
@@ -24,11 +19,11 @@ export class SupabaseAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const authorization = request.headers.authorization;
 
-    if (!authorization?.startsWith("Bearer ")) {
-      throw new UnauthorizedException("Missing or invalid authorization header");
+    if (!authorization?.startsWith('Bearer ')) {
+      throw new UnauthorizedException('Missing or invalid authorization header');
     }
 
-    const token = authorization.split(" ")[1];
+    const token = authorization.split(' ')[1];
 
     const {
       data: { user: supabaseUser },
@@ -36,7 +31,7 @@ export class SupabaseAuthGuard implements CanActivate {
     } = await this.supabase.auth.getUser(token);
 
     if (error || !supabaseUser) {
-      throw new UnauthorizedException("Invalid or expired token");
+      throw new UnauthorizedException('Invalid or expired token');
     }
 
     const dbUser = await prisma.user.findUnique({
@@ -52,11 +47,11 @@ export class SupabaseAuthGuard implements CanActivate {
     });
 
     if (!dbUser) {
-      throw new UnauthorizedException("User not found in application");
+      throw new UnauthorizedException('User not found in application');
     }
 
-    if (dbUser.status !== "ACTIVE") {
-      throw new UnauthorizedException("Account is not active");
+    if (dbUser.status !== 'ACTIVE') {
+      throw new UnauthorizedException('Account is not active');
     }
 
     request.user = {

@@ -1,4 +1,3 @@
-
 Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
@@ -76,6 +75,6 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ** Describe the error when you see one before editing it**
 
-
 ## Always make sure the UI changes that you make are reponsive for desktop and mobile screens
+
 ## Use the existing colors only. Do not add new colors.

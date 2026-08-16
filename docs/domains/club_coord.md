@@ -1,20 +1,20 @@
 # Club Coordinator — Detailed User Journey
 
-*Persona source: `personas.md` §18 (Student Activities). Base journey source: `user_journey.md` §18.1. Functional scope: `functional_requirements.md` §19 (Student Activities & Clubs, P2). App boundary: `project_structure.md` — `app-student-activities` (standalone).*
+_Persona source: `personas.md` §18 (Student Activities). Base journey source: `user_journey.md` §18.1. Functional scope: `functional_requirements.md` §19 (Student Activities & Clubs, P2). App boundary: `project_structure.md` — `app-student-activities` (standalone)._
 
 ---
 
 ## Persona Snapshot
 
-| Attribute | Value |
-|---|---|
-| Persona category | Institution-facing, functional-department staff (§18 in `personas.md`) |
-| Primary app | `app-student-activities` |
-| Priority tier of module | **P2 — Advanced/Optional** (`functional_requirements.md` §19) |
-| Role type | Job-title-independent; typically a staff member or faculty member given the "Club Coordinator" role/permission set, per the Person/Role/Job Title separation in `personas.md` |
-| Core responsibilities | Clubs, competitions, extracurricular activities |
-| Directly named collaborators | Communication Staff (`user_journey.md` §18.1, §17.1) |
-| Reasonably inferred collaborators (not yet detailed in source docs — see §9 Gaps) | Students, Facilities Staff, IT Staff, Finance Staff, Faculty advisors |
+| Attribute                                                                         | Value                                                                                                                                                                         |
+| --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Persona category                                                                  | Institution-facing, functional-department staff (§18 in `personas.md`)                                                                                                        |
+| Primary app                                                                       | `app-student-activities`                                                                                                                                                      |
+| Priority tier of module                                                           | **P2 — Advanced/Optional** (`functional_requirements.md` §19)                                                                                                                 |
+| Role type                                                                         | Job-title-independent; typically a staff member or faculty member given the "Club Coordinator" role/permission set, per the Person/Role/Job Title separation in `personas.md` |
+| Core responsibilities                                                             | Clubs, competitions, extracurricular activities                                                                                                                               |
+| Directly named collaborators                                                      | Communication Staff (`user_journey.md` §18.1, §17.1)                                                                                                                          |
+| Reasonably inferred collaborators (not yet detailed in source docs — see §9 Gaps) | Students, Facilities Staff, IT Staff, Finance Staff, Faculty advisors                                                                                                         |
 
 ---
 
@@ -29,7 +29,7 @@
 
 ## 2. Club & Society Setup
 
-*(`functional_requirements.md` §19: "Club/society registration and management")*
+_(`functional_requirements.md` §19: "Club/society registration and management")_
 
 1. **Registration** — Creates a new club/society record: name, category, description, faculty advisor (if applicable), membership rules.
 2. **Membership management** — Opens/closes membership, sets eligibility criteria if any, and approves or rejects student membership requests submitted from the Student Portal ("registers for events and clubs" — `functional_requirements.md` §7 Communication; `user_journey.md` §4.2 step 6).
@@ -39,7 +39,7 @@
 
 ## 3. Event & Competition Lifecycle
 
-*(`functional_requirements.md` §19: "Event creation and registration"; "Competition/extracurricular activity tracking")*
+_(`functional_requirements.md` §19: "Event creation and registration"; "Competition/extracurricular activity tracking")_
 
 1. **Creation** — Defines a new event or competition: type, date/time, eligibility (open to all vs. club-members-only), capacity limits.
 2. **Registration** — Opens registration; students register for events/clubs via the Student Portal (`user_journey.md` §4.2, §7 Communication section).
@@ -51,7 +51,7 @@
 
 ## 4. Routine Operations
 
-*(`functional_requirements.md` §19: "Attendance/participation tracking for activities"; "Certificates for participation/achievement")*
+_(`functional_requirements.md` §19: "Attendance/participation tracking for activities"; "Certificates for participation/achievement")_
 
 1. **Attendance/participation tracking** — Logs which students attended or participated in each club session, event, or competition.
 2. **Certificate issuance** — Generates and issues participation or achievement certificates to students, tied to the tracked participation record (`user_journey.md` §18.1 step 2).
@@ -61,13 +61,13 @@
 
 ## 5. Coordination & Cross-Persona Touchpoints
 
-| Counterpart | Nature of interaction | Source |
-|---|---|---|
-| **Communication Staff** | Joint promotion of club events/competitions across institution/department/campus channels | `user_journey.md` §17.1 step 3, §18.1 step 3 |
-| **Student** | Registers for clubs/events; receives certificates and notifications | `user_journey.md` §4.2 step 6; `functional_requirements.md` §7 |
-| **Notification Service** (machine actor) | Dispatches event-driven notifications (e.g., event reminders) once an event/registration is created | `user_journey.md` §21.3 — note: club/event triggers are not explicitly enumerated in the current event list and would need to be added |
-| **IT Staff** | Provisions/deprovisions the Coordinator's own account and role permissions | `user_journey.md` §16.1 |
-| Facilities Staff, Finance Staff, Faculty advisors | Plausible touchpoints (venue booking, event budget, advisor sign-off) but **not currently documented** for this persona | See §9 Gaps |
+| Counterpart                                       | Nature of interaction                                                                                                   | Source                                                                                                                                 |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **Communication Staff**                           | Joint promotion of club events/competitions across institution/department/campus channels                               | `user_journey.md` §17.1 step 3, §18.1 step 3                                                                                           |
+| **Student**                                       | Registers for clubs/events; receives certificates and notifications                                                     | `user_journey.md` §4.2 step 6; `functional_requirements.md` §7                                                                         |
+| **Notification Service** (machine actor)          | Dispatches event-driven notifications (e.g., event reminders) once an event/registration is created                     | `user_journey.md` §21.3 — note: club/event triggers are not explicitly enumerated in the current event list and would need to be added |
+| **IT Staff**                                      | Provisions/deprovisions the Coordinator's own account and role permissions                                              | `user_journey.md` §16.1                                                                                                                |
+| Facilities Staff, Finance Staff, Faculty advisors | Plausible touchpoints (venue booking, event budget, advisor sign-off) but **not currently documented** for this persona | See §9 Gaps                                                                                                                            |
 
 **Boundary note:** Because `app-student-activities` is a `type:standalone` app, none of the above coordination happens via direct database access to Core modules. Per `project_structure.md`, integration must occur through the event bus (e.g., an `EventCreated` or `ParticipationRecorded` style event) or through the published `libs/shared/sdk` contract.
 

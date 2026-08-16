@@ -157,22 +157,22 @@ This includes administrative, faculty, student, guardian, and platform screens w
 97. Examination Setup
 98. Subject Marks Entry
 99. Internal Marks
-100. Practical Marks
-101. Grade Calculator
-102. Marks Verification
-103. Result Generation
-104. Result Approval
-105. Result Publication
-106. Student Result
-107. Promotion Dashboard
-108. Promotion Rules
-109. Promotion Review
-110. Promotion Approval
-111. Promotion History
-112. Failed Students
-113. Revaluation
-114. Academic Transcript
-115. Examination Reports
+100.  Practical Marks
+101.  Grade Calculator
+102.  Marks Verification
+103.  Result Generation
+104.  Result Approval
+105.  Result Publication
+106.  Student Result
+107.  Promotion Dashboard
+108.  Promotion Rules
+109.  Promotion Review
+110.  Promotion Approval
+111.  Promotion History
+112.  Failed Students
+113.  Revaluation
+114.  Academic Transcript
+115.  Examination Reports
 
 ---
 
@@ -351,15 +351,15 @@ This includes administrative, faculty, student, guardian, and platform screens w
 
 For your **first production release (v1.0)**, prioritize approximately **90–110 screens**:
 
-* Platform Foundation
-* Institution Management
-* Admissions & Student Lifecycle
-* Teacher Lifecycle
-* Attendance
-* Marks & Student Promotion
-* Timetable Generator
-* Certificate Issuing
-* Student Portal
-* Faculty Portal
+- Platform Foundation
+- Institution Management
+- Admissions & Student Lifecycle
+- Teacher Lifecycle
+- Attendance
+- Marks & Student Promotion
+- Timetable Generator
+- Certificate Issuing
+- Student Portal
+- Faculty Portal
 
 Transport, Guardian Portal, and Integrations can be implemented as subsequent milestones without affecting the core academic workflow.

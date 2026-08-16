@@ -14,20 +14,20 @@ import { CurriculumCoursesService } from './services/curriculum-courses.service'
 
 @Module({
   controllers: [
-    CourseOfferingsController, 
+    CourseOfferingsController,
     EnrollmentsController,
     ProgramsController,
     CurriculumsController,
     CurriculumTermsController,
-    CurriculumCoursesController
+    CurriculumCoursesController,
   ],
   providers: [
-    CourseOfferingsService, 
+    CourseOfferingsService,
     EnrollmentsService,
     ProgramsService,
     CurriculumsService,
     CurriculumTermsService,
-    CurriculumCoursesService
-  ]
+    CurriculumCoursesService,
+  ],
 })
 export class AcademicModule {}

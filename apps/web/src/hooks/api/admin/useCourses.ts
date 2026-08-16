@@ -34,7 +34,7 @@ export interface CoursesResponse {
   };
 }
 
-export const useAdminCourses = (page: number = 1, pageSize: number = 50, search: string = '') => {
+export const useAdminCourses = (page = 1, pageSize = 50, search = '') => {
   return useQuery({
     queryKey: ['admin', 'courses', page, pageSize, search],
     queryFn: async () => {
@@ -59,7 +59,7 @@ export const useAdminCourse = (id: string) => {
 
 export const useCreateCourse = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (data: any) => {
       const response = await apiClient.post('/admin/courses', data);

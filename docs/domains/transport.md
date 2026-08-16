@@ -1,21 +1,21 @@
 # Transport Staff — Detailed User Journey
 
-*Companion deep-dive to `user_journey.md` §12 (Transport). Grounded in `personas.md` §12, `functional_requirements.md` §13 (Transport Management, P1), and the `app-transport` boundary defined in `project_structure.md`.*
+_Companion deep-dive to `user_journey.md` §12 (Transport). Grounded in `personas.md` §12, `functional_requirements.md` §13 (Transport Management, P1), and the `app-transport` boundary defined in `project_structure.md`._
 
 ---
 
 ## Persona Snapshot
 
-| Attribute | Detail |
-|---|---|
-| Persona | Transport Staff |
-| Category | Functional Department Staff (Institution-facing) |
-| Primary app | `app-transport` (standalone) |
-| Module | Transport Management — P1 |
-| Reports to | Campus Administrator (day-to-day), Institution Administrator (policy) |
-| Coordinates with | Finance Staff, Facilities Staff, Security Staff, IT Staff, Communication Staff |
-| Student-facing counterparts | Student, Guardian |
-| Key system integrations | Rules & Monitoring Engine, Notification Service, Payment Gateway (via Finance), Biometric/RFID device (optional boarding attendance), GPS/telematics feed (P2) |
+| Attribute                   | Detail                                                                                                                                                         |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Persona                     | Transport Staff                                                                                                                                                |
+| Category                    | Functional Department Staff (Institution-facing)                                                                                                               |
+| Primary app                 | `app-transport` (standalone)                                                                                                                                   |
+| Module                      | Transport Management — P1                                                                                                                                      |
+| Reports to                  | Campus Administrator (day-to-day), Institution Administrator (policy)                                                                                          |
+| Coordinates with            | Finance Staff, Facilities Staff, Security Staff, IT Staff, Communication Staff                                                                                 |
+| Student-facing counterparts | Student, Guardian                                                                                                                                              |
+| Key system integrations     | Rules & Monitoring Engine, Notification Service, Payment Gateway (via Finance), Biometric/RFID device (optional boarding attendance), GPS/telematics feed (P2) |
 
 **Architectural note:** `app-transport` is tagged `type:standalone` in `project_structure.md`. It never queries `libs/core/*` (Student, Finance, Academic) directly. Every cross-boundary interaction — checking who's enrolled, charging a fee, notifying a guardian — happens either through the event bus (`TransportSubscriptionRequested`, `FeeChargeRequested`, `BoardingRecorded`) or through the published API contract in `libs/shared/sdk`. This keeps Transport Staff's world self-contained even though their work touches Students, Finance, and Communication constantly.
 
@@ -135,19 +135,19 @@ All reports export in PDF/Excel/CSV per the cross-cutting Reporting & Analytics 
 
 ## Cross-Persona Touchpoints Summary
 
-| Persona | Interaction |
-|---|---|
-| Student / Guardian | Subscription requests, route/stop selection, real-time notifications and (optional) live tracking |
-| Finance Staff | Fee-head configuration, charge events, defaulter alerts, collection reconciliation |
-| Campus Administrator | Resource approval (new vehicles/routes), incident escalation |
-| Regional/Zonal Administrator | Cross-campus resource reallocation for shared fleets |
-| Security Staff | Safety incidents involving vehicles or students in transit |
-| Health Staff | Medical emergencies during transport |
-| Communication Staff | Institution-wide alerts for major route disruptions |
-| IT Staff | Account provisioning, GPS/telematics device integration, biometric/RFID setup |
-| Vendor | Third-party vehicle/fleet procurement and invoicing (via `portal-vendor`) |
-| Rules & Monitoring Engine | Occupancy, compliance, safety, and fee-defaulter alerting |
-| Notification Service | Delay/breakdown/route-change communications to students and guardians |
+| Persona                      | Interaction                                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------------- |
+| Student / Guardian           | Subscription requests, route/stop selection, real-time notifications and (optional) live tracking |
+| Finance Staff                | Fee-head configuration, charge events, defaulter alerts, collection reconciliation                |
+| Campus Administrator         | Resource approval (new vehicles/routes), incident escalation                                      |
+| Regional/Zonal Administrator | Cross-campus resource reallocation for shared fleets                                              |
+| Security Staff               | Safety incidents involving vehicles or students in transit                                        |
+| Health Staff                 | Medical emergencies during transport                                                              |
+| Communication Staff          | Institution-wide alerts for major route disruptions                                               |
+| IT Staff                     | Account provisioning, GPS/telematics device integration, biometric/RFID setup                     |
+| Vendor                       | Third-party vehicle/fleet procurement and invoicing (via `portal-vendor`)                         |
+| Rules & Monitoring Engine    | Occupancy, compliance, safety, and fee-defaulter alerting                                         |
+| Notification Service         | Delay/breakdown/route-change communications to students and guardians                             |
 
 ---
 

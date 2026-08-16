@@ -20,9 +20,9 @@ export class ProgramsService {
       include: {
         department: true,
         _count: {
-          select: { curriculums: true }
-        }
-      }
+          select: { curriculums: true },
+        },
+      },
     });
   }
 
@@ -32,8 +32,8 @@ export class ProgramsService {
       include: {
         department: true,
         curriculums: {
-          orderBy: { createdAt: 'desc' }
-        }
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
     if (!program) {

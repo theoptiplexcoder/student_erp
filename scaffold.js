@@ -146,8 +146,10 @@ const getDtoContent = (className) => `export class ${className}Dto {}
 `;
 
 const getAdminModuleContent = (modules) => {
-  const imports = modules.map(m => `import { ${m.className}Module } from './${m.name}/${m.name}.module';`).join('\n');
-  const moduleList = modules.map(m => `${m.className}Module`).join(',\n    ');
+  const imports = modules
+    .map((m) => `import { ${m.className}Module } from './${m.name}/${m.name}.module';`)
+    .join('\n');
+  const moduleList = modules.map((m) => `${m.className}Module`).join(',\n    ');
   return `import { Module } from '@nestjs/common';
 ${imports}
 
@@ -158,7 +160,7 @@ ${imports}
 })
 export class AdminModule {}
 `;
-}
+};
 
 function capitalize(s) {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -200,7 +202,10 @@ for (const [mod, dtos] of Object.entries(backendModules)) {
   const className = toClassName(mod);
   moduleObjects.push({ name: mod, className });
 
-  fs.writeFileSync(path.join(modPath, `${mod}.controller.ts`), getControllerContent(mod, className));
+  fs.writeFileSync(
+    path.join(modPath, `${mod}.controller.ts`),
+    getControllerContent(mod, className),
+  );
   fs.writeFileSync(path.join(modPath, `${mod}.service.ts`), getServiceContent(className));
   fs.writeFileSync(path.join(modPath, `${mod}.module.ts`), getModuleContent(className, mod));
 

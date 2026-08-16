@@ -1,12 +1,10 @@
-@import "tailwindcss";
-
-
+@import 'tailwindcss';
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --font-display: "Outfit", sans-serif;
-  --font-body: "DM Sans", sans-serif;
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
 
   --background: #ffffff;
   --foreground: #1a1a1a;
@@ -16,11 +14,11 @@
   --popover-foreground: #1a1a1a;
   --primary: #059212;
   --primary-foreground: #ffffff;
-  --secondary: #06D001;
+  --secondary: #06d001;
   --secondary-foreground: #ffffff;
   --muted: #f3f4f6;
   --muted-foreground: #6b7280;
-  --accent: #9BEC00;
+  --accent: #9bec00;
   --accent-foreground: #059212;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
@@ -28,8 +26,8 @@
   --input: #e5e7eb;
   --ring: #059212;
   --chart-1: #059212;
-  --chart-2: #06D001;
-  --chart-3: #9BEC00;
+  --chart-2: #06d001;
+  --chart-3: #9bec00;
   --chart-4: #047a0f;
   --chart-5: #03610c;
   --radius: 0.5rem;
@@ -59,32 +57,32 @@
   --card-foreground: #f8fafc;
   --popover: #1e293b;
   --popover-foreground: #f8fafc;
-  --primary: #06D001;
+  --primary: #06d001;
   --primary-foreground: #022c22;
   --secondary: #059212;
   --secondary-foreground: #ffffff;
   --muted: #334155;
   --muted-foreground: #94a3b8;
-  --accent: #9BEC00;
+  --accent: #9bec00;
   --accent-foreground: #022c22;
   --destructive: #ef4444;
   --destructive-foreground: #f8fafc;
   --border: #334155;
   --input: #334155;
-  --ring: #06D001;
-  --chart-1: #06D001;
+  --ring: #06d001;
+  --chart-1: #06d001;
   --chart-2: #059212;
-  --chart-3: #9BEC00;
+  --chart-3: #9bec00;
   --chart-4: #047a0f;
   --chart-5: #03610c;
   --sidebar: #1e293b;
   --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #06D001;
+  --sidebar-primary: #06d001;
   --sidebar-primary-foreground: #022c22;
   --sidebar-accent: #334155;
   --sidebar-accent-foreground: #f8fafc;
   --sidebar-border: #334155;
-  --sidebar-ring: #06D001;
+  --sidebar-ring: #06d001;
 
   --admin-primary: #6366f1;
   --admin-primary-foreground: #ffffff;
@@ -154,7 +152,12 @@
     @apply bg-background text-foreground;
     font-family: var(--font-body);
   }
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
   }
 }

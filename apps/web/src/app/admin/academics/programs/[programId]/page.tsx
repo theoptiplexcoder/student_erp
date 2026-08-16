@@ -1,24 +1,38 @@
-"use client";
+'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Badge } from "@student-erp/ui";
-import { Plus, Eye, ArrowLeft, Loader2 } from "lucide-react";
-import Link from "next/link";
-import { useAdminProgram } from "@/hooks/api/admin/usePrograms";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Badge,
+} from '@student-erp/ui';
+import { Plus, Eye, ArrowLeft, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { useAdminProgram } from '@/hooks/api/admin/usePrograms';
 
 export default function ProgramPage({ params }: { params: { programId: string } }) {
   const { data: program, isLoading, isError } = useAdminProgram(params.programId);
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
     );
   }
 
   if (isError || !program) {
     return (
-      <div className="flex flex-col justify-center items-center h-64 space-y-4">
+      <div className="flex h-64 flex-col items-center justify-center space-y-4">
         <div className="text-destructive">Program not found or failed to load.</div>
         <Link href="/admin/academics">
           <Button variant="outline">Back to Programs</Button>
@@ -28,19 +42,21 @@ export default function ProgramPage({ params }: { params: { programId: string } 
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 p-6">
+      <div className="flex items-center justify-between">
         <div>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="mb-2 flex items-center gap-2">
             <Link href="/admin/academics" className="text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-4 w-4" />
             </Link>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-muted-foreground text-sm">
               Academics / Programs / {program.code}
             </div>
           </div>
           <h1 className="text-3xl font-bold tracking-tight">{program.name}</h1>
-          <p className="text-muted-foreground">{program.level?.replace(/_/g, ' ')} • {program.durationYears} Years</p>
+          <p className="text-muted-foreground">
+            {program.level?.replace(/_/g, ' ')} • {program.durationYears} Years
+          </p>
         </div>
       </div>
 
@@ -58,7 +74,7 @@ export default function ProgramPage({ params }: { params: { programId: string } 
         </CardHeader>
         <CardContent>
           {!program.curriculums || program.curriculums.length === 0 ? (
-            <div className="text-center py-10 text-muted-foreground">
+            <div className="text-muted-foreground py-10 text-center">
               No curriculums found. Create one to get started.
             </div>
           ) : (
@@ -79,12 +95,22 @@ export default function ProgramPage({ params }: { params: { programId: string } 
                     <TableCell>{curriculum.name}</TableCell>
                     <TableCell>{new Date(curriculum.effectiveFrom).toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <Badge variant={curriculum.status === "ACTIVE" ? "default" : curriculum.status === "DRAFT" ? "secondary" : "destructive"}>
+                      <Badge
+                        variant={
+                          curriculum.status === 'ACTIVE'
+                            ? 'default'
+                            : curriculum.status === 'DRAFT'
+                              ? 'secondary'
+                              : 'destructive'
+                        }
+                      >
                         {curriculum.status}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Link href={`/admin/academics/programs/${program.id}/curriculums/${curriculum.id}`}>
+                      <Link
+                        href={`/admin/academics/programs/${program.id}/curriculums/${curriculum.id}`}
+                      >
                         <Button variant="ghost" size="icon">
                           <Eye className="h-4 w-4" />
                         </Button>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input } from '@student-erp/ui';
 import { Search, Filter, Plus, MoreHorizontal, Loader2 } from 'lucide-react';
+import Link from 'next/link';
 import { useAdminStudents } from '@/hooks/api/admin/useStudents';
 
 export default function ApplicationsPage() {
@@ -72,8 +73,9 @@ export default function ApplicationsPage() {
                   <thead className="text-muted-foreground bg-muted/50 border-border border-b text-xs uppercase">
                     <tr>
                       <th className="px-4 py-3 font-medium">Applicant Name</th>
-                      <th className="px-4 py-3 font-medium">Application No</th>
+                      <th className="px-4 py-3 font-medium">Application ID</th>
                       <th className="px-4 py-3 font-medium">Program</th>
+                      <th className="px-4 py-3 font-medium">Applied Date</th>
                       <th className="px-4 py-3 font-medium">Status</th>
                       <th className="px-4 py-3 text-right font-medium">Actions</th>
                     </tr>
@@ -86,6 +88,9 @@ export default function ApplicationsPage() {
                       >
                         <td className="px-4 py-3 font-medium">
                           {student.user?.firstName} {student.user?.lastName}
+                          <div className="text-muted-foreground text-xs font-normal">
+                            {student.user?.email || '-'}
+                          </div>
                         </td>
                         <td className="text-muted-foreground px-4 py-3">
                           {student.admissionNumber || student.studentCode || '-'}
@@ -93,13 +98,21 @@ export default function ApplicationsPage() {
                         <td className="text-muted-foreground px-4 py-3">
                           {student.program?.name || '-'}
                         </td>
+                        <td className="text-muted-foreground px-4 py-3">
+                          {student.createdAt
+                            ? new Date(student.createdAt).toLocaleDateString()
+                            : '-'}
+                        </td>
                         <td className="px-4 py-3">
-                          <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-500">
+                          <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-500">
                             {student.lifecycleStatus}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/admin/students/${student.id}`}>View</Link>
+                          </Button>
+                          <Button variant="ghost" size="icon" className="ml-1 h-8 w-8">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </td>

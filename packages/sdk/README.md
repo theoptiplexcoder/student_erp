@@ -5,7 +5,7 @@ Shared sdk package for Student ERP.
 ## Usage
 
 ```typescript
-import { } from '@student-erp/sdk';
+import {} from '@student-erp/sdk';
 ```
 
 ## Development

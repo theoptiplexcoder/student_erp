@@ -1,8 +1,17 @@
-"use client";
+'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Input, Label } from "@student-erp/ui";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Button,
+  Input,
+  Label,
+} from '@student-erp/ui';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function NewCourseOfferingPage({ params }: { params: { courseId: string } }) {
   const router = useRouter();
@@ -19,10 +28,12 @@ export default function NewCourseOfferingPage({ params }: { params: { courseId: 
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-2xl mx-auto">
+    <div className="mx-auto max-w-2xl space-y-6 p-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Create Course Offering</h1>
-        <p className="text-muted-foreground">Assign this course to an academic term, program, and section.</p>
+        <p className="text-muted-foreground">
+          Assign this course to an academic term, program, and section.
+        </p>
       </div>
 
       <Card>
@@ -69,7 +80,7 @@ export default function NewCourseOfferingPage({ params }: { params: { courseId: 
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? "Creating..." : "Create Offering"}
+                {loading ? 'Creating...' : 'Create Offering'}
               </Button>
             </div>
           </form>

@@ -8,6 +8,7 @@ description: Create distinctive, high-converting landing pages that combine prov
 ## Overview
 
 This skill enables creation of **distinctive, high-converting landing pages** that combine:
+
 - **Proven Conversion Framework**: 11 essential elements from DESIGNNAS for high conversion rates
 - **Exceptional Design Quality**: Bold aesthetic choices that create unforgettable brand experiences
 - **Production-Ready Code**: Next.js 14+ with ShadCN UI, TypeScript, and performance optimization
@@ -17,6 +18,7 @@ This skill enables creation of **distinctive, high-converting landing pages** th
 ## When to Use This Skill
 
 Use this skill when users request:
+
 - Creation of landing pages, marketing pages, or product pages
 - Next.js or React-based promotional websites
 - Pages that need to convert visitors into customers AND stand out visually
@@ -29,6 +31,7 @@ Use this skill when users request:
 Before implementing any landing page, commit to a **BOLD aesthetic direction** that aligns with the brand and product:
 
 ### 1. Understand Context
+
 - **Purpose**: What problem does this product solve? Who is the target audience?
 - **Brand Personality**: Is this brand playful, professional, luxury, minimalist, bold, technical?
 - **Industry**: What visual language does this industry expect (or should we break)?
@@ -39,6 +42,7 @@ Before implementing any landing page, commit to a **BOLD aesthetic direction** t
 Pick an extreme direction and commit fully. Examples:
 
 **Minimalist & Refined**
+
 - Brutally clean layouts, generous whitespace
 - Sophisticated typography with large scale contrasts
 - Monochromatic or limited color palette (2-3 colors max)
@@ -46,6 +50,7 @@ Pick an extreme direction and commit fully. Examples:
 - Examples: Luxury products, professional services, premium SaaS
 
 **Bold & Maximalist**
+
 - Rich, complex visual layers
 - Dynamic animations and scroll effects
 - Gradient meshes, textures, and overlapping elements
@@ -53,6 +58,7 @@ Pick an extreme direction and commit fully. Examples:
 - Examples: Creative agencies, entertainment, youth brands
 
 **Retro-Futuristic**
+
 - Nostalgic elements with modern execution
 - Geometric patterns, neon accents
 - Glitch effects, scanlines, grain textures
@@ -60,6 +66,7 @@ Pick an extreme direction and commit fully. Examples:
 - Examples: Gaming, tech startups, creative tools
 
 **Organic & Natural**
+
 - Soft, flowing shapes and gradients
 - Nature-inspired colors (earth tones, pastels)
 - Smooth animations mimicking natural motion
@@ -67,6 +74,7 @@ Pick an extreme direction and commit fully. Examples:
 - Examples: Wellness, sustainability, food
 
 **Editorial & Magazine**
+
 - Strong typographic hierarchy
 - Grid-breaking asymmetric layouts
 - Large, impactful imagery
@@ -74,6 +82,7 @@ Pick an extreme direction and commit fully. Examples:
 - Examples: Content platforms, media, education
 
 **Brutalist & Raw**
+
 - Unconventional layouts, intentional "ugly"
 - System fonts or deliberately basic typography
 - High contrast, limited color
@@ -87,6 +96,7 @@ Pick an extreme direction and commit fully. Examples:
 Before coding, define these core decisions:
 
 **Typography Choices**
+
 - **Display Font**: Choose something distinctive and memorable (NOT Inter, Roboto, Arial, or system fonts)
   - Consider: Space Grotesk, Clash Display, Cabinet Grotesk, Syne, DM Serif Display, Zodiak, Fraunces, Archivo Black, Unbounded, Outfit
   - Or use Google Fonts wisely: Playfair Display, Crimson Pro, Libre Baskerville, Epilogue, Plus Jakarta Sans
@@ -96,6 +106,7 @@ Before coding, define these core decisions:
 - **Scale**: Establish clear hierarchy (e.g., H1: 4rem → H2: 3rem → H3: 2rem → Body: 1rem)
 
 **Color Palette**
+
 - **Dominant Color**: Your primary brand color (60% usage)
 - **Accent Color**: High-contrast color for CTAs (10% usage)
 - **Neutral Palette**: Grays or earth tones (30% usage)
@@ -103,12 +114,14 @@ Before coding, define these core decisions:
 - Define as CSS variables for consistency
 
 **Motion Strategy**
+
 - **Page Load**: Staggered reveals with animation-delay for hero elements
 - **Scroll Interactions**: Fade-ups, parallax, or scroll-triggered animations?
 - **Hover States**: Subtle scale, color shift, or dramatic transformations?
 - **CTA Animations**: How do buttons attract attention without being annoying?
 
 **Spatial Approach**
+
 - **Layout Style**: Centered and symmetric? Asymmetric and dynamic? Grid-breaking?
 - **Spacing System**: Tight and dense? Generous and airy?
 - **Section Flow**: Traditional stacked? Diagonal? Overlapping?
@@ -118,18 +131,22 @@ Before coding, define these core decisions:
 Every effective landing page must include these 11 essential elements. These are based on DESIGNNAS's proven framework for high-converting landing pages.
 
 **Each element has TWO requirements:**
+
 1. **Functional requirement** (for conversion) - Must be included
 2. **Design excellence** (for memorability) - Must be distinctive and beautiful
 
 ### Element-by-Element Design Guide
 
 #### 1. URL with Keywords
+
 **Functional**: SEO-optimized, descriptive URL structure
 **Design**: N/A (SEO-focused)
 
 #### 2. Company Logo (Header)
+
 **Functional**: Brand identity placed prominently (top-left)
 **Design Excellence**:
+
 - Consider animated logo on page load
 - Sticky header with smooth scroll transitions
 - Logo mark variation for different scroll states
@@ -137,8 +154,10 @@ Every effective landing page must include these 11 essential elements. These are
 - Navigation typography that matches your display font choice
 
 #### 3. SEO-Optimized Title and Subtitle (Hero)
+
 **Functional**: Clear value proposition with keywords
 **Design Excellence**:
+
 - **Typography**: Make this MASSIVE and unforgettable (4rem-6rem+)
 - Use your distinctive display font here
 - Consider gradient text, outlined text, or text shadows for impact
@@ -147,8 +166,10 @@ Every effective landing page must include these 11 essential elements. These are
 - Add visual rhythm with line breaks and spacing
 
 #### 4. Primary CTA (Hero)
+
 **Functional**: Main call-to-action button in hero section
 **Design Excellence**:
+
 - Make it IMPOSSIBLE to miss: size, color contrast, position
 - Avoid boring rectangles: consider pill shapes, unique borders, or geometric shapes
 - Add micro-interactions: hover scale, shadow expansion, color shift
@@ -157,8 +178,10 @@ Every effective landing page must include these 11 essential elements. These are
 - Add visual cues: arrows, icons, or pulsing effects
 
 #### 5. Social Proof (Hero)
+
 **Functional**: Reviews, ratings, user statistics
 **Design Excellence**:
+
 - Numbers should be HUGE and animated on load (count-up effect)
 - Statistics cards with gradient backgrounds or subtle borders
 - Customer avatars in overlapping circles
@@ -167,8 +190,10 @@ Every effective landing page must include these 11 essential elements. These are
 - Consider rotating testimonials or animated social proof carousel
 
 #### 6. Images or Videos (Media Section)
+
 **Functional**: Visual demonstration of product/service
 **Design Excellence**:
+
 - **CRITICAL**: Never use placeholder or generic images
 - Product screenshots with device mockups (laptop/phone frames)
 - Add depth: shadows, reflections, 3D tilt effects
@@ -178,8 +203,10 @@ Every effective landing page must include these 11 essential elements. These are
 - Grid layouts: Asymmetric, overlapping, or bento box style
 
 #### 7. Core Benefits/Features
+
 **Functional**: 3-6 key advantages with icons
 **Design Excellence**:
+
 - **Icons**: Custom designed or carefully selected (NOT generic line icons)
 - Consider: Gradient fills, animated icons on hover, 3D-style illustrations
 - Card design variations: glassmorphism, neumorphism, gradient borders, subtle shadows
@@ -189,8 +216,10 @@ Every effective landing page must include these 11 essential elements. These are
 - Typography: Feature titles in your display font, bold and prominent
 
 #### 8. Customer Testimonials
+
 **Functional**: 4-6 authentic reviews with photos
 **Design Excellence**:
+
 - Photo treatment: Circular avatars with gradient borders or unique shapes
 - Card backgrounds: Subtle gradients, frosted glass, or elevated shadows
 - Quote marks: Oversized, decorative, or custom styled
@@ -200,8 +229,10 @@ Every effective landing page must include these 11 essential elements. These are
 - Customer names and titles: Refined typography
 
 #### 9. FAQ Section
+
 **Functional**: 5-10 common questions with accordion UI
 **Design Excellence**:
+
 - Accordion animations: Smooth expand/collapse with easing
 - Icons: Custom chevrons or plus/minus signs with rotation
 - Hover states on questions
@@ -211,8 +242,10 @@ Every effective landing page must include these 11 essential elements. These are
 - Spacing: Generous padding inside accordion items
 
 #### 10. Final CTA
+
 **Functional**: Bottom call-to-action for second chance conversion
 **Design Excellence**:
+
 - **Make it a HERO moment**: This is the last chance
 - Full-width section with dramatic background (gradient, pattern, or color)
 - CTA button even BIGGER than hero CTA
@@ -222,8 +255,10 @@ Every effective landing page must include these 11 essential elements. These are
 - Consider: Email input + button combo for newsletter/waitlist
 
 #### 11. Contact Information/Legal Pages (Footer)
+
 **Functional**: Footer with complete information, legal links
 **Design Excellence**:
+
 - Multi-column layout with clear information hierarchy
 - Social icons: Hover effects (color shift, scale, or rotate)
 - Newsletter signup: Styled input with inline button
@@ -239,6 +274,7 @@ For detailed explanations of each element, refer to `references/11-essential-ele
 ## Design Aesthetics Guidelines
 
 ### Typography Excellence
+
 - **NEVER** use generic fonts: Inter, Roboto, Arial, Helvetica, system-ui
 - **Display fonts** should be distinctive and memorable
 - **Pair wisely**: Display font for headings + refined body font for text
@@ -247,6 +283,7 @@ For detailed explanations of each element, refer to `references/11-essential-ele
 - **Line height**: Display = 1.1-1.2, Body = 1.6-1.8
 
 ### Color & Visual Coherence
+
 - **Define CSS variables** for all colors (maintain consistency)
 - **Dominant color** should appear throughout (not just CTAs)
 - **Accent colors** must have sufficient contrast for accessibility (WCAG AA minimum)
@@ -258,6 +295,7 @@ For detailed explanations of each element, refer to `references/11-essential-ele
   - Layered transparencies: Overlapping colored sections
 
 ### Motion & Animation
+
 - **Page load**: One well-orchestrated entrance with staggered reveals
   - Hero title words fade in sequentially (animation-delay: 0ms, 100ms, 200ms)
   - Subtitle follows (delay: 300ms)
@@ -274,6 +312,7 @@ For detailed explanations of each element, refer to `references/11-essential-ele
   - Avoid animating `width`, `height`, `top`, `left`
 
 ### Spatial Composition & Layout
+
 - **Break the grid**: Don't default to centered, symmetric layouts
 - **Asymmetry**: One side larger text, other side visual
 - **Overlapping elements**: Layer sections for depth
@@ -282,9 +321,11 @@ For detailed explanations of each element, refer to `references/11-essential-ele
 - **Z-axis thinking**: Use shadows, blur, and layering for depth
 
 ### AVOID Generic AI Aesthetics
+
 These patterns make landing pages look "AI-generated" and forgettable:
 
 **DON'T:**
+
 - ❌ Inter/Roboto/Arial fonts
 - ❌ Purple gradients on white backgrounds
 - ❌ Perfectly centered, symmetric layouts every time
@@ -296,6 +337,7 @@ These patterns make landing pages look "AI-generated" and forgettable:
 - ❌ Stock photos of people pointing at laptops
 
 **DO:**
+
 - ✅ Choose distinctive fonts that match brand personality
 - ✅ Commit to a unique color palette (not always purple!)
 - ✅ Create unexpected layouts with asymmetry
@@ -310,6 +352,7 @@ These patterns make landing pages look "AI-generated" and forgettable:
 When creating landing pages, always use:
 
 ### Required Technologies
+
 - **Next.js 14+** with App Router
 - **TypeScript** for type safety
 - **Tailwind CSS** for styling
@@ -331,12 +374,14 @@ npx shadcn-ui@latest add input
 ```
 
 **IMPORTANT**: ShadCN components are STARTING POINTS, not final designs. Customize them heavily:
+
 - Modify default styles in component files
 - Add custom variants in Tailwind config
 - Override with className props
 - Create wrapper components for brand-specific styling
 
 ### Why ShadCN UI?
+
 - **Accessibility**: WCAG-compliant components (maintain this!)
 - **Customizable**: Fully customizable with Tailwind CSS (leverage this!)
 - **Type-safe**: Written in TypeScript
@@ -370,7 +415,9 @@ landing-page/
 ## Implementation Workflow
 
 ### Step 1: Design First (CRITICAL)
+
 **Before writing ANY code**, complete the Design Thinking section:
+
 1. Understand the brand, audience, and purpose
 2. Choose your aesthetic direction (minimalist, maximalist, retro, etc.)
 3. Define your design system:
@@ -414,7 +461,12 @@ Create `globals.css` or `app.css` with your design system:
 }
 
 /* Apply fonts */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-display);
 }
 
@@ -440,7 +492,7 @@ export default {
       },
     },
   },
-}
+};
 ```
 
 ### Step 3: Setup Metadata (SEO)
@@ -448,7 +500,7 @@ export default {
 Configure proper SEO metadata in `layout.tsx` or `page.tsx`:
 
 ```typescript
-import type { Metadata } from 'next'
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'SEO Optimized Title with Keywords | Brand Name',
@@ -459,7 +511,7 @@ export const metadata: Metadata = {
     description: 'OG Description',
     images: ['/og-image.jpg'],
   },
-}
+};
 ```
 
 ### Step 4: Create Component Structure with Design
@@ -480,18 +532,20 @@ Build components in this order, applying your aesthetic direction to each:
 Map sections to ShadCN components and **customize heavily**:
 
 **Hero CTA Example:**
+
 ```tsx
 <Button
   size="lg"
-  className="bg-accent hover:bg-accent/90 text-white px-12 py-6 text-xl font-display rounded-full shadow-2xl hover:shadow-accent/50 hover:scale-105 transition-all duration-300"
+  className="bg-accent hover:bg-accent/90 font-display hover:shadow-accent/50 rounded-full px-12 py-6 text-xl text-white shadow-2xl transition-all duration-300 hover:scale-105"
 >
   Get Started →
 </Button>
 ```
 
 **Benefits Card Example:**
+
 ```tsx
-<Card className="border-2 border-primary/10 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-gradient-to-br from-white to-primary/5">
+<Card className="border-primary/10 hover:border-primary/30 to-primary/5 border-2 bg-gradient-to-br from-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
   {/* Custom content */}
 </Card>
 ```
@@ -576,6 +630,7 @@ Ensure mobile-first responsive design with brand consistency:
 For complete, production-ready component implementations using ShadCN UI, refer to `references/component-examples.md`.
 
 This reference file includes:
+
 - Hero section with Button, Badge, and Image optimization
 - Benefits section with Card components
 - Testimonials with Avatar and Card
@@ -590,6 +645,7 @@ Load this reference when implementing components to follow best practices.
 Before completing any landing page, verify ALL items:
 
 ### Design Quality ⭐
+
 - [ ] **Aesthetic direction chosen** and executed consistently
 - [ ] **Typography**: Distinctive display font (NOT Inter/Roboto/Arial)
 - [ ] **Typography**: Clear hierarchy with dramatic scale differences
@@ -601,6 +657,7 @@ Before completing any landing page, verify ALL items:
 - [ ] **NO generic AI aesthetics**: Passes the "does this look AI-generated?" test
 
 ### 11 Essential Elements (Conversion) ✅
+
 - [ ] 1. URL with keywords
 - [ ] 2. Company logo (top-left, animated)
 - [ ] 3. SEO-optimized title and subtitle (MASSIVE typography)
@@ -614,6 +671,7 @@ Before completing any landing page, verify ALL items:
 - [ ] 11. Footer with contact and legal links (multi-column, refined)
 
 ### Technical Requirements 🔧
+
 - [ ] Next.js 14+ with App Router
 - [ ] TypeScript types defined
 - [ ] Tailwind CSS styling
@@ -626,6 +684,7 @@ Before completing any landing page, verify ALL items:
 - [ ] Reduced motion support for animations
 
 ### Final Polish 💎
+
 - [ ] All fonts loaded correctly (check browser DevTools)
 - [ ] Color contrast tested (use browser DevTools)
 - [ ] Tested on mobile, tablet, desktop
@@ -637,6 +696,7 @@ Before completing any landing page, verify ALL items:
 ## Best Practices
 
 ### Design-First Approach
+
 - **Always start with design thinking** before coding
 - Document your aesthetic direction in comments
 - Create a mood board or reference images before implementing
@@ -644,6 +704,7 @@ Before completing any landing page, verify ALL items:
 - Remember: Conversions come from trust, and trust comes from professionalism + distinctiveness
 
 ### Content Guidelines
+
 - Write clear, benefit-focused copy that matches your brand voice
 - Use action-oriented language in CTAs (verb + benefit)
 - Keep sections scannable with proper headings
@@ -652,6 +713,7 @@ Before completing any landing page, verify ALL items:
 - **Match tone to aesthetic**: Playful design → playful copy, Professional design → authoritative copy
 
 ### Typography Best Practices
+
 - **Never compromise on typography** - it's 80% of design
 - Use display fonts at large sizes (4rem+) where they shine
 - Maintain consistent line heights across sections
@@ -660,6 +722,7 @@ Before completing any landing page, verify ALL items:
 - Load fonts efficiently: Only weights you actually use
 
 ### Color & Visual Consistency
+
 - Define ALL colors as CSS variables upfront
 - Use your primary color in at least 3-4 places (not just logo)
 - Accent color should be high contrast and used sparingly
@@ -668,6 +731,7 @@ Before completing any landing page, verify ALL items:
 - Consider color psychology: Blue = trust, Green = growth, Red = urgency, Purple = creativity
 
 ### Animation & Motion Guidelines
+
 - **Less is more**: One great page entrance > scattered micro-animations
 - Use `animation-delay` to create rhythm and flow
 - Respect `prefers-reduced-motion` - always
@@ -676,6 +740,7 @@ Before completing any landing page, verify ALL items:
 - Use easing functions: `cubic-bezier(0.4, 0, 0.2, 1)` is smooth and professional
 
 ### SEO Optimization
+
 - Include keywords naturally in H1, H2, and first paragraph
 - Use proper heading tag structure (H1 → H2 → H3), only one H1
 - Add descriptive alt text to all images (SEO + accessibility)
@@ -684,6 +749,7 @@ Before completing any landing page, verify ALL items:
 - Schema markup for business/product info
 
 ### Conversion Optimization
+
 - **Primary CTA**: Above the fold, impossible to miss
 - **Final CTA**: Last chance conversion, make it dramatic
 - Reduce friction: Minimize form fields, clear value proposition
@@ -694,6 +760,7 @@ Before completing any landing page, verify ALL items:
 - Show human faces: Testimonials with real photos convert better
 
 ### Performance Best Practices
+
 - Optimize images: WebP format, proper sizing, lazy loading
 - Font loading strategy: `font-display: swap` to avoid FOIT (Flash of Invisible Text)
 - Minimize JavaScript: Use CSS animations when possible
@@ -706,48 +773,59 @@ Before completing any landing page, verify ALL items:
 Each landing page type has different conversion goals AND can express unique aesthetics:
 
 ### SaaS Product Landing Page
+
 **Conversion Focus**: Free trial CTA, feature comparisons, pricing clarity, security badges
 **Aesthetic Recommendations**:
+
 - **Minimalist & Professional**: Clean layout, lots of whitespace, sophisticated typography
 - **Tech-Forward**: Gradient backgrounds, subtle animations, modern sans-serif fonts
 - **Bold & Confident**: Large typography, high-contrast CTAs, dynamic hover states
-**Avoid**: Generic blue gradients, stock photos of laptops in coffee shops
+  **Avoid**: Generic blue gradients, stock photos of laptops in coffee shops
 
 ### E-commerce Product Landing Page
+
 **Conversion Focus**: Product images, pricing, shipping info, return policy, urgency
 **Aesthetic Recommendations**:
+
 - **Luxury/Premium**: Elegant serif fonts, monochrome palette, generous whitespace
 - **Energetic/Youth**: Bold colors, playful fonts, dynamic layouts, vibrant CTAs
 - **Natural/Sustainable**: Earth tones, organic shapes, soft shadows, rounded corners
-**Avoid**: Cluttered layouts, too many competing visual elements
+  **Avoid**: Cluttered layouts, too many competing visual elements
 
 ### Service/Agency Landing Page
+
 **Conversion Focus**: Portfolio/case studies, process explanation, team credentials, contact form
 **Aesthetic Recommendations**:
+
 - **Creative/Bold**: Asymmetric layouts, unique typography, portfolio as hero
 - **Editorial**: Magazine-style layouts, large imagery, strong typographic hierarchy
 - **Minimalist/Portfolio**: Grid of work, minimal text, let work speak for itself
-**Avoid**: Generic "professional" templates, stock photography
+  **Avoid**: Generic "professional" templates, stock photography
 
 ### Event/Webinar Landing Page
+
 **Conversion Focus**: Date/time prominence, speaker profiles, agenda, registration form, countdown timer
 **Aesthetic Recommendations**:
+
 - **Exciting/Dynamic**: Animated countdown, gradient backgrounds, energetic colors
 - **Professional/Conference**: Clean layout, speaker headshots with borders, agenda timeline
 - **Community/Friendly**: Warm colors, circular avatars, social proof emphasis
-**Avoid**: Boring bullet-point agendas, generic conference aesthetics
+  **Avoid**: Boring bullet-point agendas, generic conference aesthetics
 
 ### Mobile App Landing Page
+
 **Conversion Focus**: App Store badges, screenshots in device frames, feature highlights, demo video
 **Aesthetic Recommendations**:
+
 - **Modern/Sleek**: Device mockups with 3D tilt, floating screenshots, smooth animations
 - **Playful/Fun**: Bright colors, illustrated icons, character mascots
 - **Screenshot-Forward**: Large phone mockups as hero, minimal text, visual storytelling
-**Avoid**: Tiny screenshots, generic app icons
+  **Avoid**: Tiny screenshots, generic app icons
 
 ## Resources
 
 ### references/
+
 This skill includes detailed reference documentation:
 
 - `11-essential-elements.md` - In-depth explanation of each of the 11 essential elements with principles, implementation tips, and examples
@@ -758,6 +836,7 @@ Load these references as needed when implementing specific sections or when you 
 ## Notes & Philosophy
 
 ### Core Principles
+
 1. **Conversion + Memorability**: A landing page must both convert and be memorable
 2. **Intentional Design**: Every aesthetic choice should be deliberate, not default
 3. **No Generic AI Aesthetics**: Avoid the "AI-generated" look that makes brands forgettable
@@ -765,30 +844,36 @@ Load these references as needed when implementing specific sections or when you 
 5. **Customize Everything**: ShadCN is a starting point, not the final design
 
 ### Framework Origins
+
 - **11 Essential Elements** based on DESIGNNAS's proven conversion framework
 - **Design Excellence** principles adapted from high-quality frontend design practices
 - Combined to create landing pages that are functionally effective AND visually extraordinary
 
 ### Adaptation Guidelines
+
 - Adapt to specific brand guidelines and target audience
 - Use A/B testing to continuously improve conversion rates
 - Balance conversion optimization with creative expression
 - When in doubt, be bold - generic pages don't convert OR impress
 
 ### Success Metrics
+
 **Conversion metrics:**
+
 - Click-through rate on CTAs
 - Form submission rate
 - Scroll depth (are users reaching all 11 elements?)
 - Bounce rate and time on page
 
 **Brand metrics:**
+
 - User feedback on design quality
 - Social sharing of the landing page
 - Brand recall in user surveys
 - Differentiation from competitors
 
 ### Remember
+
 Every landing page is an opportunity to make an unforgettable first impression. The 11 essential elements ensure conversions. Exceptional design ensures they remember your brand. Never sacrifice one for the other.
 
 **The best landing pages convert AND inspire.**

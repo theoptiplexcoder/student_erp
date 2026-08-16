@@ -5,7 +5,7 @@ Shared hooks package for Student ERP.
 ## Usage
 
 ```typescript
-import { } from '@student-erp/hooks';
+import {} from '@student-erp/hooks';
 ```
 
 ## Development

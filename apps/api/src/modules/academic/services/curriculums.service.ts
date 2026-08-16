@@ -38,10 +38,10 @@ export class CurriculumsService {
           include: {
             curriculumCourses: {
               include: {
-                course: true
-              }
-            }
-          }
+                course: true,
+              },
+            },
+          },
         },
       },
     });
@@ -64,7 +64,7 @@ export class CurriculumsService {
 
   async publish(institutionId: string, id: string) {
     const curriculum = await this.findOne(institutionId, id);
-    
+
     // Validation
     if (curriculum.curriculumTerms.length === 0) {
       throw new BadRequestException('Cannot publish a curriculum with no terms.');

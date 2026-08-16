@@ -11,15 +11,15 @@ This document expands the one-paragraph journey in `user_journey.md` §10.1 into
 
 ## 1. Persona Snapshot
 
-| Attribute | Value |
-|---|---|
-| Persona | Library Staff |
-| Category | Functional department staff (`personas.md` §10) |
-| Primary app | `app-library` (standalone) |
-| App boundary type | `type:standalone` — cannot import `libs/core/*` directly; integrates only via `libs/shared/sdk` or the event bus (`project_structure.md`) |
-| Reports to (org) | Campus Administrator / Department Administrator (escalation path per `user_journey.md` §2.5–2.6) |
-| Core responsibilities | Catalog management, circulation, overdue/fine tracking, digital library access, inventory audit, recommendations (`personas.md` §10, `functional_requirements.md` §11) |
-| Primary students-facing counterpart | Student Portal "book library resources" action (`user_journey.md` §4.2, `functional_requirements.md` §7) |
+| Attribute                           | Value                                                                                                                                                                  |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Persona                             | Library Staff                                                                                                                                                          |
+| Category                            | Functional department staff (`personas.md` §10)                                                                                                                        |
+| Primary app                         | `app-library` (standalone)                                                                                                                                             |
+| App boundary type                   | `type:standalone` — cannot import `libs/core/*` directly; integrates only via `libs/shared/sdk` or the event bus (`project_structure.md`)                              |
+| Reports to (org)                    | Campus Administrator / Department Administrator (escalation path per `user_journey.md` §2.5–2.6)                                                                       |
+| Core responsibilities               | Catalog management, circulation, overdue/fine tracking, digital library access, inventory audit, recommendations (`personas.md` §10, `functional_requirements.md` §11) |
+| Primary students-facing counterpart | Student Portal "book library resources" action (`user_journey.md` §4.2, `functional_requirements.md` §7)                                                               |
 
 ---
 
@@ -61,15 +61,15 @@ Because `app-library` is a **standalone** app in the Nx boundary model, none of 
 
 ## 4. Setup — Catalog & Policy Configuration
 
-| Step | Action | Notes |
-|---|---|---|
-| 4.1 | Define catalog taxonomy (subject classification, genre, media type: book / journal / DVD / e-resource) | One-time, revisited periodically |
-| 4.2 | Bulk-import catalog (CSV/Excel) or enter items individually | Mirrors the bulk import pattern used institution-wide (`functional_requirements.md` §1) |
-| 4.3 | Tag each physical item with a barcode or RFID identifier | Required before circulation can use scan-based issue/return |
-| 4.4 | Configure borrowing policy per persona type (Student, Faculty, Research Staff, etc.): loan period, max items, renewal limit | Different persona types typically get different limits |
-| 4.5 | Configure fine policy (per-day rate, grace period, cap) | Feeds directly into the Rules & Monitoring Engine (§7 below) |
-| 4.6 | Configure digital library/e-resource providers and access entitlements | May be scoped by program, batch, or role |
-| 4.7 | Set up library card issuance rules (validity period, replacement fee) | Replacement fee ties into Finance (§6) |
+| Step | Action                                                                                                                      | Notes                                                                                   |
+| ---- | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| 4.1  | Define catalog taxonomy (subject classification, genre, media type: book / journal / DVD / e-resource)                      | One-time, revisited periodically                                                        |
+| 4.2  | Bulk-import catalog (CSV/Excel) or enter items individually                                                                 | Mirrors the bulk import pattern used institution-wide (`functional_requirements.md` §1) |
+| 4.3  | Tag each physical item with a barcode or RFID identifier                                                                    | Required before circulation can use scan-based issue/return                             |
+| 4.4  | Configure borrowing policy per persona type (Student, Faculty, Research Staff, etc.): loan period, max items, renewal limit | Different persona types typically get different limits                                  |
+| 4.5  | Configure fine policy (per-day rate, grace period, cap)                                                                     | Feeds directly into the Rules & Monitoring Engine (§7 below)                            |
+| 4.6  | Configure digital library/e-resource providers and access entitlements                                                      | May be scoped by program, batch, or role                                                |
+| 4.7  | Set up library card issuance rules (validity period, replacement fee)                                                       | Replacement fee ties into Finance (§6)                                                  |
 
 ---
 
@@ -78,6 +78,7 @@ Because `app-library` is a **standalone** app in the Nx boundary model, none of 
 Circulation is the highest-frequency workflow. All four sub-flows are barcode/RFID-driven (`functional_requirements.md` §11).
 
 ### 5.1 Issue
+
 1. Scan (or look up) the borrower's library card.
 2. System checks eligibility: active status, no blocking hold (e.g., disciplinary or fee-related hold flagged elsewhere in the institution), borrowing limit not already reached.
 3. Scan the item's barcode/RFID tag.
@@ -85,17 +86,20 @@ Circulation is the highest-frequency workflow. All four sub-flows are barcode/RF
 5. Confirmation is shown to the borrower (in person) or reflected in their Student/Faculty portal.
 
 ### 5.2 Return
+
 1. Scan the returned item.
 2. Library Staff inspects physical condition; flags damage if present.
 3. System checks the due date — if overdue, a fine is calculated per policy (§7).
 4. If the item has an active reservation queue, the system notifies the next borrower in line.
 
 ### 5.3 Renew
+
 1. Borrower requests renewal (in person, or self-service via Student Portal per `functional_requirements.md` §7).
 2. System checks: no pending reservation from another borrower, renewal-count not exceeded.
 3. Due date is extended; renewal count increments.
 
 ### 5.4 Reserve
+
 1. Student or Faculty places a hold on a currently-issued item via their portal.
 2. Item enters the reservation queue.
 3. On return, the system automatically notifies the next person in queue (via Notification Service, §8) and holds the item for a configured pickup window.
@@ -164,28 +168,28 @@ This is where `app-library` leans most heavily on the cross-cutting **Rules & Mo
 
 ## 12. Exception Flows
 
-| Scenario | Handling |
-|---|---|
-| Damaged or lost item on return | Condition flagged at return; replacement fee charged via event to Finance |
-| Disputed fine | Library Staff reviews circulation history; can waive or adjust fine (subject to institution policy) |
-| End-of-term mass returns | Bulk-return processing window, often paired with a temporary hold on new issues |
-| Multi-campus / shared catalog | Applies only where a Regional/Zonal Administrator's campus cluster shares a single catalog; inter-library loan requests route through that scope |
-| Card lost mid-loan | Temporary card / manual lookup override so circulation isn't blocked while a replacement is issued |
+| Scenario                       | Handling                                                                                                                                         |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Damaged or lost item on return | Condition flagged at return; replacement fee charged via event to Finance                                                                        |
+| Disputed fine                  | Library Staff reviews circulation history; can waive or adjust fine (subject to institution policy)                                              |
+| End-of-term mass returns       | Bulk-return processing window, often paired with a temporary hold on new issues                                                                  |
+| Multi-campus / shared catalog  | Applies only where a Regional/Zonal Administrator's campus cluster shares a single catalog; inter-library loan requests route through that scope |
+| Card lost mid-loan             | Temporary card / manual lookup override so circulation isn't blocked while a replacement is issued                                               |
 
 ---
 
 ## 13. Cross-Persona Touchpoints
 
-| Persona | Interaction with Library Staff's flow |
-|---|---|
-| Student | Reserves/borrows resources via portal; receives overdue/reservation-ready alerts; sees library fines in outstanding-dues view |
-| Guardian | Optionally receives repeated-overdue alerts, per notification policy |
-| Faculty | Reserves resources; may link course reading lists to the catalog |
-| Finance Staff | Consumes fine/replacement-charge events into the student fee ledger; reconciles library-related collections |
-| IT Staff | Provisions Library Staff accounts; configures barcode/RFID hardware and SSO |
-| Notification Service | Dispatches overdue, reservation-ready, and defaulter alerts across email/SMS/WhatsApp/push/in-app |
-| Rules & Monitoring Engine | Evaluates overdue rules, drives escalation, maintains the rule audit trail |
-| Campus/Department Administrator | Receives escalations for chronic defaulters; approves inventory write-offs and audit outcomes |
+| Persona                         | Interaction with Library Staff's flow                                                                                         |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Student                         | Reserves/borrows resources via portal; receives overdue/reservation-ready alerts; sees library fines in outstanding-dues view |
+| Guardian                        | Optionally receives repeated-overdue alerts, per notification policy                                                          |
+| Faculty                         | Reserves resources; may link course reading lists to the catalog                                                              |
+| Finance Staff                   | Consumes fine/replacement-charge events into the student fee ledger; reconciles library-related collections                   |
+| IT Staff                        | Provisions Library Staff accounts; configures barcode/RFID hardware and SSO                                                   |
+| Notification Service            | Dispatches overdue, reservation-ready, and defaulter alerts across email/SMS/WhatsApp/push/in-app                             |
+| Rules & Monitoring Engine       | Evaluates overdue rules, drives escalation, maintains the rule audit trail                                                    |
+| Campus/Department Administrator | Receives escalations for chronic defaulters; approves inventory write-offs and audit outcomes                                 |
 
 ---
 

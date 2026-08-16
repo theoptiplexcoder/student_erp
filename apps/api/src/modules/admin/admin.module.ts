@@ -47,7 +47,7 @@ import { SettingsModule } from './settings/settings.module';
     PermissionsModule,
     AnnouncementsModule,
     ReportsModule,
-    SettingsModule
+    SettingsModule,
   ],
 })
 export class AdminModule {}

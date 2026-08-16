@@ -9,7 +9,7 @@ export class CurriculumCoursesService {
   private async ensureDraft(institutionId: string, termId: string) {
     const term = await this.prisma.curriculumTerm.findFirst({
       where: { id: termId, institutionId },
-      include: { curriculum: true }
+      include: { curriculum: true },
     });
     if (!term) throw new NotFoundException('Term not found');
     if (term.curriculum.status !== CurriculumStatus.DRAFT) {
@@ -24,12 +24,12 @@ export class CurriculumCoursesService {
         ...createCurriculumCourseDto,
         institutionId,
       },
-      include: { course: true }
+      include: { course: true },
     });
   }
 
   async update(institutionId: string, id: string, updateCurriculumCourseDto: any) {
-    const cc = await this.prisma.curriculumCourse.findFirst({ where: { id, institutionId }});
+    const cc = await this.prisma.curriculumCourse.findFirst({ where: { id, institutionId } });
     if (!cc) throw new NotFoundException();
     await this.ensureDraft(institutionId, cc.curriculumTermId);
 
@@ -40,7 +40,7 @@ export class CurriculumCoursesService {
   }
 
   async remove(institutionId: string, id: string) {
-    const cc = await this.prisma.curriculumCourse.findFirst({ where: { id, institutionId }});
+    const cc = await this.prisma.curriculumCourse.findFirst({ where: { id, institutionId } });
     if (!cc) throw new NotFoundException();
     await this.ensureDraft(institutionId, cc.curriculumTermId);
 

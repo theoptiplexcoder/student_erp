@@ -1,63 +1,63 @@
-"use client"
+'use client';
 
-import { Bell, Search, HelpCircle, Menu } from "lucide-react"
-import { Input, Button, Avatar, AvatarFallback } from "@student-erp/ui"
-import { usePathname } from "next/navigation"
+import { Bell, Search, HelpCircle, Menu } from 'lucide-react';
+import { Input, Button, Avatar, AvatarFallback } from '@student-erp/ui';
+import { usePathname } from 'next/navigation';
 
 export function AdminHeader() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   // Simple breadcrumb generator based on pathname
-  const segments = pathname.split("/").filter(Boolean)
-  
+  const segments = pathname.split('/').filter(Boolean);
+
   return (
-    <header className="flex h-16 items-center justify-between border-b border-border bg-background px-4 sm:px-6 z-10 sticky top-0">
-      <div className="flex items-center flex-1">
-        <div className="md:hidden mr-4">
+    <header className="border-border bg-background sticky top-0 z-10 flex h-16 items-center justify-between border-b px-4 sm:px-6">
+      <div className="flex flex-1 items-center">
+        <div className="mr-4 md:hidden">
           <Button variant="ghost" size="icon">
             <Menu className="h-5 w-5" />
           </Button>
         </div>
-        <div className="hidden sm:flex items-center space-x-2 text-sm text-muted-foreground">
+        <div className="text-muted-foreground hidden items-center space-x-2 text-sm sm:flex">
           {segments.map((segment, index) => {
-            const isLast = index === segments.length - 1
-            const text = segment.charAt(0).toUpperCase() + segment.slice(1)
-            
+            const isLast = index === segments.length - 1;
+            const text = segment.charAt(0).toUpperCase() + segment.slice(1);
+
             return (
               <div key={segment} className="flex items-center">
                 {index > 0 && <span className="mx-2">/</span>}
-                <span className={isLast ? "font-medium text-foreground" : ""}>
-                  {text}
-                </span>
+                <span className={isLast ? 'text-foreground font-medium' : ''}>{text}</span>
               </div>
-            )
+            );
           })}
         </div>
       </div>
-      
+
       <div className="flex items-center space-x-4">
         <div className="relative hidden md:block">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
           <Input
             type="search"
             placeholder="Search..."
-            className="w-64 pl-9 bg-muted/50 border-none focus-visible:ring-admin-primary"
+            className="bg-muted/50 focus-visible:ring-admin-primary w-64 border-none pl-9"
           />
         </div>
-        
+
         <Button variant="ghost" size="icon" className="text-muted-foreground">
           <HelpCircle className="h-5 w-5" />
         </Button>
-        
+
         <Button variant="ghost" size="icon" className="text-muted-foreground relative">
           <Bell className="h-5 w-5" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-admin-primary"></span>
+          <span className="bg-admin-primary absolute top-1.5 right-1.5 h-2 w-2 rounded-full"></span>
         </Button>
-        
-        <Avatar className="h-8 w-8 cursor-pointer border border-border">
-          <AvatarFallback className="bg-admin-accent text-admin-accent-foreground text-xs font-medium">AD</AvatarFallback>
+
+        <Avatar className="border-border h-8 w-8 cursor-pointer border">
+          <AvatarFallback className="bg-admin-accent text-admin-accent-foreground text-xs font-medium">
+            AD
+          </AvatarFallback>
         </Avatar>
       </div>
     </header>
-  )
+  );
 }

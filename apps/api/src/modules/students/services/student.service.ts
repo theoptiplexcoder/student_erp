@@ -61,7 +61,7 @@ export class StudentService {
         startAt: { gte: new Date() },
       },
       take: 5,
-      orderBy: { startAt: 'asc' }
+      orderBy: { startAt: 'asc' },
     });
 
     return {

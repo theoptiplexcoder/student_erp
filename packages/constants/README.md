@@ -5,7 +5,7 @@ Shared constants package for Student ERP.
 ## Usage
 
 ```typescript
-import { } from '@student-erp/constants';
+import {} from '@student-erp/constants';
 ```
 
 ## Development

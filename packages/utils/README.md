@@ -5,7 +5,7 @@ Shared utils package for Student ERP.
 ## Usage
 
 ```typescript
-import { } from '@student-erp/utils';
+import {} from '@student-erp/utils';
 ```
 
 ## Development

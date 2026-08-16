@@ -6,14 +6,14 @@
 
 ## Persona Snapshot
 
-| Field | Value |
-|---|---|
-| Persona | Guardian |
-| Category | Guardians (`personas.md` §5) — its own top-level category, not folded into Students |
-| Relationship types | Parent, Guardian, Sponsor (`personas.md`, `user_journey.md` §5.1) |
-| Primary app(s) | `web-student-portal` (guardian view), `mobile` |
-| Underlying libs touched (read-mostly, via API/event bus) | `libs/core/student`, `libs/core/attendance`, `libs/core/examination`, `libs/core/finance`, `libs/core/communication` |
-| Authorization model | Permission-driven and **scoped to the linked student(s) only** — a Guardian is never granted institution-wide visibility (`personas.md`, Design Principle) |
+| Field                                                    | Value                                                                                                                                                      |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Persona                                                  | Guardian                                                                                                                                                   |
+| Category                                                 | Guardians (`personas.md` §5) — its own top-level category, not folded into Students                                                                        |
+| Relationship types                                       | Parent, Guardian, Sponsor (`personas.md`, `user_journey.md` §5.1)                                                                                          |
+| Primary app(s)                                           | `web-student-portal` (guardian view), `mobile`                                                                                                             |
+| Underlying libs touched (read-mostly, via API/event bus) | `libs/core/student`, `libs/core/attendance`, `libs/core/examination`, `libs/core/finance`, `libs/core/communication`                                       |
+| Authorization model                                      | Permission-driven and **scoped to the linked student(s) only** — a Guardian is never granted institution-wide visibility (`personas.md`, Design Principle) |
 
 **Journey shape:** Onboarding → Daily/Routine Monitoring → Notifications (cross-cutting) → Finance → Communication → Periodic/Exception Flows → Offboarding.
 
@@ -100,21 +100,21 @@ Consistent with the Design Principle that authorization is permission-driven and
 - See any student other than the one(s) explicitly linked to their account.
 - Access faculty-only surfaces: the Course Workspace, grading tools, question papers, or internal exam moderation data (`functional_requirements.md` §5, §8).
 - View institution-wide dashboards, reports, or admin consoles (those belong to Institution Administration personas, `user_journey.md` §2).
-- Take actions reserved for the Student themselves — e.g., submitting assignments, taking quizzes, requesting revaluation — the Guardian *monitors*, the Student *acts* (`user_journey.md` §5.1 vs §4.2).
+- Take actions reserved for the Student themselves — e.g., submitting assignments, taking quizzes, requesting revaluation — the Guardian _monitors_, the Student _acts_ (`user_journey.md` §5.1 vs §4.2).
 - Message anyone outside the configured Parent ↔ Faculty DM channel (e.g., cannot freely message other staff roles) (`functional_requirements.md` §9).
 
 ---
 
 ## 9. Cross-Persona & System Touchpoints
 
-| Touchpoint | Counterpart persona / system | Reference |
-|---|---|---|
-| Relationship linkage, record correction | Office Staff, Institution Administrator | `user_journey.md` §2.1, §2.7 |
-| Fee payment processing | Payment Gateway (machine actor) | `user_journey.md` §21.2 |
-| Attendance/fee/result alerts | Rules & Monitoring Engine → Notification Service | `functional_requirements.md` §23; `user_journey.md` §21.3 |
-| Messaging | Faculty | `user_journey.md` §3.1, §5.1 |
-| Medical emergencies | Health Staff | `user_journey.md` §13.1 |
-| Withheld results / revaluation | Examination Staff | `user_journey.md` §7.1 |
+| Touchpoint                              | Counterpart persona / system                     | Reference                                                 |
+| --------------------------------------- | ------------------------------------------------ | --------------------------------------------------------- |
+| Relationship linkage, record correction | Office Staff, Institution Administrator          | `user_journey.md` §2.1, §2.7                              |
+| Fee payment processing                  | Payment Gateway (machine actor)                  | `user_journey.md` §21.2                                   |
+| Attendance/fee/result alerts            | Rules & Monitoring Engine → Notification Service | `functional_requirements.md` §23; `user_journey.md` §21.3 |
+| Messaging                               | Faculty                                          | `user_journey.md` §3.1, §5.1                              |
+| Medical emergencies                     | Health Staff                                     | `user_journey.md` §13.1                                   |
+| Withheld results / revaluation          | Examination Staff                                | `user_journey.md` §7.1                                    |
 
 ---
 
@@ -125,6 +125,6 @@ These are gaps between what `personas.md` / `functional_requirements.md` establi
 - Multi-child dashboard/switcher UX for a single Guardian account.
 - Conflict handling when multiple guardians are linked to one student (e.g., differing notification or payment settings).
 - A distinct, narrower permission set for the "sponsor" relationship type vs. "parent"/"guardian."
-- Whether Guardians can *apply* for scholarships/waivers or only view status.
+- Whether Guardians can _apply_ for scholarships/waivers or only view status.
 - Whether Guardian portal access is revoked or downgraded (vs. read-only historical) once a student becomes Alumni or Withdrawn.
 - Guardian-side data retention policy at the individual (non-tenant) level.

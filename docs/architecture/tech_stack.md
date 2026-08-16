@@ -10,31 +10,31 @@ The Student ERP is designed as a modern, scalable, multi-tenant SaaS platform ca
 
 Use Typescript as your go to language
 
-| Layer | Technology |
-|---------|------------|
-| Frontend | Next.js 16 (React 19, App Router) |
-| Backend API | NestJS |
-| Database | PostgreSQL (Supabase) |
-| Authentication | Supabase Auth |
-| ORM | Prisma ORM |
-| Styling | Tailwind CSS v4 |
-| UI Components | shadcn/ui + Radix UI |
-| Icons | Lucide React |
-| Forms | React Hook Form |
-| Validation | Zod |
-| State Management | TanStack Query + Zustand |
-| File Storage | Supabase Storage |
-| Realtime | Supabase Realtime |
-| Email | Resend |
-| Background Jobs | BullMQ + Redis |
-| Cache | Redis |
-| Search | PostgreSQL Full Text Search (MVP), Meilisearch/OpenSearch (later) |
-| API Documentation | OpenAPI (Swagger) |
-| Testing | Vitest + Playwright |
-| Package Manager | pnpm |
-| Monorepo | Nx |
-| Deployment | Docker + Coolify / Railway / VPS |
-| CI/CD | GitHub Actions |
+| Layer             | Technology                                                        |
+| ----------------- | ----------------------------------------------------------------- |
+| Frontend          | Next.js 16 (React 19, App Router)                                 |
+| Backend API       | NestJS                                                            |
+| Database          | PostgreSQL (Supabase)                                             |
+| Authentication    | Supabase Auth                                                     |
+| ORM               | Prisma ORM                                                        |
+| Styling           | Tailwind CSS v4                                                   |
+| UI Components     | shadcn/ui + Radix UI                                              |
+| Icons             | Lucide React                                                      |
+| Forms             | React Hook Form                                                   |
+| Validation        | Zod                                                               |
+| State Management  | TanStack Query + Zustand                                          |
+| File Storage      | Supabase Storage                                                  |
+| Realtime          | Supabase Realtime                                                 |
+| Email             | Resend                                                            |
+| Background Jobs   | BullMQ + Redis                                                    |
+| Cache             | Redis                                                             |
+| Search            | PostgreSQL Full Text Search (MVP), Meilisearch/OpenSearch (later) |
+| API Documentation | OpenAPI (Swagger)                                                 |
+| Testing           | Vitest + Playwright                                               |
+| Package Manager   | pnpm                                                              |
+| Monorepo          | Nx                                                                |
+| Deployment        | Docker + Coolify / Railway / VPS                                  |
+| CI/CD             | GitHub Actions                                                    |
 
 ---
 

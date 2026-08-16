@@ -10,17 +10,8 @@ import { PolicyFactory } from '../../common/policies/policy.factory';
 
 @Module({
   imports: [DatabaseModule],
-  controllers: [
-    StudentController,
-    StudentAcademicController,
-    StudentAttendanceController,
-  ],
-  providers: [
-    StudentService,
-    StudentAcademicService,
-    StudentAttendanceService,
-    PolicyFactory,
-  ],
+  controllers: [StudentController, StudentAcademicController, StudentAttendanceController],
+  providers: [StudentService, StudentAcademicService, StudentAttendanceService, PolicyFactory],
   exports: [StudentService],
 })
 export class StudentsModule {}

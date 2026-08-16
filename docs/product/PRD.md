@@ -1,7 +1,3 @@
-
-
-
-
 Based on your revised scope, this is no longer a **complete Student ERP**. It becomes a **Core Academic ERP**, focused on the institution's primary academic operations.
 
 Your product should revolve around **five major domains**:
@@ -19,6 +15,7 @@ These align well with the lifecycle and academic management modules already defi
 ---
 
 # Student ERP
+
 ## Product Requirements Document (Academic Core)
 
 Version 1.0
@@ -545,13 +542,13 @@ Retirement
 
 # 8. Development Priority
 
-| Phase | Features |
-|--------|----------|
+| Phase       | Features                                                    |
+| ----------- | ----------------------------------------------------------- |
 | **Phase 1** | Authentication, Roles, Student Lifecycle, Teacher Lifecycle |
-| **Phase 2** | Admissions, Student Records, Faculty Management |
-| **Phase 3** | Timetable, Attendance |
-| **Phase 4** | Examination, Marks, Results |
-| **Phase 5** | Promotion, Certificates, Alumni |
+| **Phase 2** | Admissions, Student Records, Faculty Management             |
+| **Phase 3** | Timetable, Attendance                                       |
+| **Phase 4** | Examination, Marks, Results                                 |
+| **Phase 5** | Promotion, Certificates, Alumni                             |
 
 ---
 

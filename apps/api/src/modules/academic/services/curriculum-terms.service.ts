@@ -8,9 +8,9 @@ export class CurriculumTermsService {
 
   async create(institutionId: string, createCurriculumTermDto: any) {
     const curriculum = await this.prisma.curriculum.findFirst({
-      where: { id: createCurriculumTermDto.curriculumId, institutionId }
+      where: { id: createCurriculumTermDto.curriculumId, institutionId },
     });
-    
+
     if (!curriculum) throw new NotFoundException('Curriculum not found');
     if (curriculum.status !== CurriculumStatus.DRAFT) {
       throw new BadRequestException('Cannot add terms to a non-draft curriculum');
@@ -27,7 +27,7 @@ export class CurriculumTermsService {
   async update(institutionId: string, id: string, updateCurriculumTermDto: any) {
     const term = await this.prisma.curriculumTerm.findFirst({
       where: { id, institutionId },
-      include: { curriculum: true }
+      include: { curriculum: true },
     });
 
     if (!term) throw new NotFoundException('Term not found');

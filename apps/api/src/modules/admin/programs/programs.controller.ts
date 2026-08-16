@@ -23,4 +23,3 @@ export class ProgramsController {
     return this.programsService.getPrograms(user.institutionId, pageNum, sizeNum, search);
   }
 }
-
