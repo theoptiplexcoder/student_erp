@@ -9,7 +9,7 @@ async function main() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
   const supabaseAnonKey =
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
-  const API_URL = 'http://localhost:3333/api';
+  const API_URL = 'http://localhost:4000/api/v1';
 
   if (!supabaseUrl || !supabaseAnonKey) {
     console.error('Supabase credentials not found in env.');
@@ -139,7 +139,6 @@ async function main() {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        institutionId: institution.id,
         programId: b.programId,
         name: b.name,
         admissionYear: b.admissionYear,
@@ -230,7 +229,6 @@ async function main() {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        institutionId: institution.id,
         programId: s.programId,
         batchId: batchMap[s.batchKey],
         academicYearId: currentAy.id,
