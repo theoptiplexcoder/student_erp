@@ -46,9 +46,13 @@ export function RequestCertificateDialog() {
   const [certType, setCertType] = useState('');
   const [purpose, setPurpose] = useState('');
   const [file, setFile] = useState<File | null>(null);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
     if (!certType || !purpose) return;
 
     // Optional file upload mock logic
@@ -63,11 +67,19 @@ export function RequestCertificateDialog() {
       },
       {
         onSuccess: () => {
-          setOpen(false);
-          setCertType('');
-          setPurpose('');
-          setFile(null);
-          // Toast could be added here
+          setSuccessMsg('Certificate request submitted successfully!');
+          setTimeout(() => {
+            setOpen(false);
+            setCertType('');
+            setPurpose('');
+            setFile(null);
+            setSuccessMsg('');
+          }, 1500);
+        },
+        onError: (err: any) => {
+          const message =
+            err.response?.data?.message || err.message || 'Failed to submit certificate request.';
+          setErrorMsg(message);
         },
       },
     );
@@ -154,6 +166,18 @@ export function RequestCertificateDialog() {
             <Label htmlFor="file">Supporting Documents (Optional)</Label>
             <Input id="file" type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
           </div>
+
+          {errorMsg && (
+            <div className="text-destructive bg-destructive/10 mt-2 rounded-md p-2 text-sm font-medium">
+              {errorMsg}
+            </div>
+          )}
+
+          {successMsg && (
+            <div className="mt-2 rounded-md bg-green-50 p-2 text-sm font-medium text-green-600">
+              {successMsg}
+            </div>
+          )}
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>

@@ -58,11 +58,15 @@ export function RaiseGrievanceDialog() {
   const [relatedType, setRelatedType] = useState('');
   const [relatedId, setRelatedId] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   const courses = coursesData?.courses || coursesData || [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
     if (!category || !subject || !description) return;
 
     createGrievance.mutate(
@@ -76,13 +80,22 @@ export function RaiseGrievanceDialog() {
       },
       {
         onSuccess: () => {
-          setOpen(false);
-          setCategory('');
-          setSubject('');
-          setDescription('');
-          setRelatedType('');
-          setRelatedId('');
-          setIsAnonymous(false);
+          setSuccessMsg('Grievance submitted successfully!');
+          setTimeout(() => {
+            setOpen(false);
+            setCategory('');
+            setSubject('');
+            setDescription('');
+            setRelatedType('');
+            setRelatedId('');
+            setIsAnonymous(false);
+            setSuccessMsg('');
+          }, 1500);
+        },
+        onError: (err: any) => {
+          const message =
+            err.response?.data?.message || err.message || 'Failed to submit grievance.';
+          setErrorMsg(message);
         },
       },
     );
@@ -231,6 +244,18 @@ export function RaiseGrievanceDialog() {
               I would like to be anonymous
             </Label>
           </div>
+
+          {errorMsg && (
+            <div className="text-destructive bg-destructive/10 mt-2 rounded-md p-2 text-sm font-medium">
+              {errorMsg}
+            </div>
+          )}
+
+          {successMsg && (
+            <div className="mt-2 rounded-md bg-green-50 p-2 text-sm font-medium text-green-600">
+              {successMsg}
+            </div>
+          )}
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
