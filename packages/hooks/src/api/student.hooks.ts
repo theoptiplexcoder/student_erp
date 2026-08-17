@@ -46,3 +46,10 @@ export const useStudentCourseAttendance = (courseId: string) => {
     enabled: !!courseId,
   });
 };
+
+export const useStudentTimetable = () => {
+  return useQuery({
+    queryKey: ['student', 'timetable'],
+    queryFn: StudentApi.getTimetable,
+  });
+};

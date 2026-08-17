@@ -1,8 +1,15 @@
+'use client';
+
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@student-erp/ui';
-import { currentStudent } from '@/lib/mock/student/data';
+import { Card, CardHeader, CardTitle, CardContent, Skeleton } from '@student-erp/ui';
+import { useStudentProfile } from '@student-erp/hooks';
 
 export function AboutSection() {
+  const { data: student, isPending } = useStudentProfile();
+
+  if (isPending) return <Skeleton className="h-32 w-full" />;
+  if (!student) return null;
+
   return (
     <Card>
       <CardHeader>
@@ -10,11 +17,8 @@ export function AboutSection() {
       </CardHeader>
       <CardContent>
         <p className="text-muted-foreground leading-relaxed">
-          I am a passionate {currentStudent.program} student deeply interested in software
-          engineering and artificial intelligence. Currently focusing on full-stack development and
-          data structures. I enjoy participating in hackathons and building applications that solve
-          real-world problems. Always eager to learn new technologies and collaborate on exciting
-          projects.
+          I am a passionate {student.program?.name} student. Eager to learn and collaborate on
+          exciting projects.
         </p>
       </CardContent>
     </Card>
@@ -22,6 +26,11 @@ export function AboutSection() {
 }
 
 export function AcademicDetailsSection() {
+  const { data: student, isPending } = useStudentProfile();
+
+  if (isPending) return <Skeleton className="h-48 w-full" />;
+  if (!student) return null;
+
   return (
     <Card>
       <CardHeader>
@@ -31,27 +40,29 @@ export function AcademicDetailsSection() {
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <div>
             <p className="text-muted-foreground mb-1 text-sm font-medium">Program</p>
-            <p className="font-medium">{currentStudent.program}</p>
+            <p className="font-medium">{student.program?.name || '-'}</p>
           </div>
           <div>
             <p className="text-muted-foreground mb-1 text-sm font-medium">Department</p>
-            <p className="font-medium">{currentStudent.department}</p>
+            <p className="font-medium">{student.program?.department?.name || '-'}</p>
           </div>
           <div>
             <p className="text-muted-foreground mb-1 text-sm font-medium">Semester</p>
-            <p className="font-medium">{currentStudent.semester}</p>
+            <p className="font-medium">{student.section?.semester || '-'}</p>
           </div>
           <div>
             <p className="text-muted-foreground mb-1 text-sm font-medium">Section</p>
-            <p className="font-medium">{currentStudent.section}</p>
+            <p className="font-medium">{student.section?.name || '-'}</p>
           </div>
           <div>
             <p className="text-muted-foreground mb-1 text-sm font-medium">CGPA</p>
-            <p className="text-primary font-medium">{currentStudent.cgpa}</p>
+            <p className="text-primary font-medium">Not calculated</p>
           </div>
           <div>
-            <p className="text-muted-foreground mb-1 text-sm font-medium">Enrollment Year</p>
-            <p className="font-medium">{currentStudent.enrollmentYear}</p>
+            <p className="text-muted-foreground mb-1 text-sm font-medium">Admission Date</p>
+            <p className="font-medium">
+              {student.admissionDate ? new Date(student.admissionDate).toLocaleDateString() : '-'}
+            </p>
           </div>
         </div>
       </CardContent>

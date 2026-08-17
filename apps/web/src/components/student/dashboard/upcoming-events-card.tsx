@@ -1,11 +1,11 @@
 'use client';
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@student-erp/ui';
-import { useStudentDashboard } from '../../../features/students/api/use-student-dashboard';
+import { useStudentDashboard } from '@student-erp/hooks';
 import { Calendar, MapPin } from 'lucide-react';
 
 export function UpcomingEventsCard() {
-  const { data, isLoading, error } = useStudentDashboard();
+  const { data, isPending: isLoading, isError: error } = useStudentDashboard();
 
   if (isLoading) {
     return (

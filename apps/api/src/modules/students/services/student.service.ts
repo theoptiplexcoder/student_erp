@@ -47,7 +47,7 @@ export class StudentService {
       },
     });
 
-    const enrollments = await this.prisma.enrollment.count({
+    const enrollments = await this.prisma.enrollment.findMany({
       where: {
         institutionId,
         studentId: student.id,
@@ -64,15 +64,68 @@ export class StudentService {
       orderBy: { startAt: 'asc' },
     });
 
+    const recentAnnouncements = await this.prisma.announcement.findMany({
+      where: {
+        institutionId,
+      },
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const upcomingDeadlines = await this.prisma.assignment.findMany({
+      where: {
+        institutionId,
+        courseId: { in: enrollments.map((e) => e.courseId).filter(Boolean) as string[] },
+        dueDate: { gte: new Date() },
+      },
+      include: {
+        course: true,
+      },
+      take: 5,
+      orderBy: { dueDate: 'asc' },
+    });
+
     return {
       student,
       stats: {
-        enrolledCourses: enrollments,
+        enrolledCourses: enrollments.length,
         attendancePercentage: 85.5,
-        upcomingDeadlines: 2,
+        upcomingDeadlines: upcomingDeadlines.length,
       },
       todaySchedule: timetable,
       upcomingEvents,
+      recentAnnouncements,
+      upcomingDeadlines,
     };
+  }
+
+  async getTimetable(authUserId: string, institutionId: string) {
+    const student = await this.getStudentProfile(authUserId, institutionId);
+
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: {
+        institutionId,
+        studentId: student.id,
+        status: 'ACTIVE',
+      },
+    });
+
+    const courseIds = enrollments.map((e) => e.courseId);
+
+    const timetable = await this.prisma.timetableEntry.findMany({
+      where: {
+        institutionId,
+        courseId: { in: courseIds.filter((id) => id !== null) as string[] },
+      },
+      include: {
+        course: true,
+        faculty: {
+          include: { user: true },
+        },
+      },
+      orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
+    });
+
+    return timetable;
   }
 }

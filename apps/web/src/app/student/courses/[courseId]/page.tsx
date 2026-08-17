@@ -1,19 +1,40 @@
-import React from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@student-erp/ui';
-import { enrolledCourses, upcomingDeadlines } from '@/lib/mock/student/data';
+'use client';
+
+import React, { use } from 'react';
+import { Tabs, TabsList, TabsTrigger, TabsContent, Skeleton } from '@student-erp/ui';
 import { ArrowLeft, BookOpen, Clock, FileText, User } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@student-erp/ui';
 import { Card, CardHeader, CardTitle, CardContent } from '@student-erp/ui';
 import { CourseAttendance } from '@/components/student/courses/attendance/CourseAttendance';
+import { useStudentCourse, useStudentCourseAttendance } from '@student-erp/hooks';
 
-export default async function CourseWorkspace({
-  params,
-}: {
-  params: Promise<{ courseId: string }>;
-}) {
-  const { courseId } = await params;
-  const course = enrolledCourses.find((c) => c.id === courseId) || enrolledCourses[0];
+export default function CourseWorkspace({ params }: { params: Promise<{ courseId: string }> }) {
+  const { courseId } = use(params);
+  const { data: course, isPending, isError } = useStudentCourse(courseId);
+  const { data: attendanceData } = useStudentCourseAttendance(courseId);
+
+  if (isPending) {
+    return (
+      <div className="mx-auto flex h-full max-w-7xl flex-col gap-6 pb-10">
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-[400px] w-full" />
+      </div>
+    );
+  }
+
+  if (isError || !course) {
+    return <div className="p-4 text-center text-red-500">Course not found.</div>;
+  }
+
+  // Calculate attendance if available
+  let attendancePercent = 0;
+  if (attendanceData?.records?.length > 0) {
+    const present = attendanceData.records.filter(
+      (r: any) => r.status === 'PRESENT' || r.status === 'LATE',
+    ).length;
+    attendancePercent = Math.round((present / attendanceData.records.length) * 100);
+  }
 
   return (
     <div className="mx-auto flex h-full max-w-7xl flex-col gap-6 pb-10">
@@ -27,10 +48,6 @@ export default async function CourseWorkspace({
           <h1 className="font-display text-3xl font-bold tracking-tight">{course.name}</h1>
           <p className="text-muted-foreground mt-1 flex items-center gap-3">
             <span>{course.code}</span>
-            <span>•</span>
-            <span className="flex items-center">
-              <User className="mr-1 h-3.5 w-3.5" /> {course.faculty}
-            </span>
           </p>
         </div>
       </div>
@@ -44,12 +61,6 @@ export default async function CourseWorkspace({
             Overview
           </TabsTrigger>
           <TabsTrigger
-            value="resources"
-            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:bg-transparent"
-          >
-            Resources
-          </TabsTrigger>
-          <TabsTrigger
             value="assignments"
             className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:bg-transparent"
           >
@@ -60,12 +71,6 @@ export default async function CourseWorkspace({
             className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:bg-transparent"
           >
             Attendance
-          </TabsTrigger>
-          <TabsTrigger
-            value="grades"
-            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:bg-transparent"
-          >
-            Grades
           </TabsTrigger>
         </TabsList>
 
@@ -81,8 +86,8 @@ export default async function CourseWorkspace({
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    This course introduces fundamental concepts and applications. By the end of this
-                    course, students will be able to apply these concepts in real-world scenarios.
+                    {course.description ||
+                      'This course introduces fundamental concepts and applications. By the end of this course, students will be able to apply these concepts in real-world scenarios.'}
                   </p>
                 </CardContent>
               </Card>
@@ -105,25 +110,13 @@ export default async function CourseWorkspace({
                 <CardContent className="space-y-4">
                   <div>
                     <div className="mb-1 flex justify-between text-sm">
-                      <span className="text-muted-foreground">Course Progress</span>
-                      <span className="font-medium">{course.progress}%</span>
-                    </div>
-                    <div className="bg-muted h-2 w-full rounded-full">
-                      <div
-                        className="bg-primary h-2 rounded-full"
-                        style={{ width: `${course.progress}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="mb-1 flex justify-between text-sm">
                       <span className="text-muted-foreground">Attendance</span>
-                      <span className="font-medium">{course.attendance}%</span>
+                      <span className="font-medium">{attendancePercent}%</span>
                     </div>
                     <div className="bg-muted h-2 w-full rounded-full">
                       <div
-                        className={`h-2 rounded-full ${course.attendance < 75 ? 'bg-destructive' : 'bg-green-500'}`}
-                        style={{ width: `${course.attendance}%` }}
+                        className={`h-2 rounded-full ${attendancePercent < 75 ? 'bg-destructive' : 'bg-green-500'}`}
+                        style={{ width: `${attendancePercent}%` }}
                       />
                     </div>
                   </div>
@@ -142,29 +135,28 @@ export default async function CourseWorkspace({
               <CardTitle>Assignments</CardTitle>
             </CardHeader>
             <CardContent>
-              {upcomingDeadlines.filter((d) => d.course === course.code).length > 0 ? (
+              {course.assignments?.length > 0 ? (
                 <div className="space-y-4">
-                  {upcomingDeadlines
-                    .filter((d) => d.course === course.code)
-                    .map((assignment) => (
-                      <div
-                        key={assignment.id}
-                        className="flex items-center justify-between rounded-lg border p-4"
-                      >
-                        <div>
-                          <h4 className="font-medium">{assignment.title}</h4>
-                          <div className="text-muted-foreground mt-1 flex items-center text-xs">
-                            <Clock className="mr-1 h-3 w-3" /> Due: {assignment.dueDate}
-                          </div>
+                  {course.assignments.map((assignment: any) => (
+                    <div
+                      key={assignment.id}
+                      className="flex items-center justify-between rounded-lg border p-4"
+                    >
+                      <div>
+                        <h4 className="font-medium">{assignment.title}</h4>
+                        <div className="text-muted-foreground mt-1 flex items-center text-xs">
+                          <Clock className="mr-1 h-3 w-3" /> Due:{' '}
+                          {new Date(assignment.dueDate).toLocaleDateString()}
                         </div>
-                        <Button
-                          size="sm"
-                          variant={assignment.status === 'SUBMITTED' ? 'outline' : 'default'}
-                        >
-                          {assignment.status === 'SUBMITTED' ? 'View Submission' : 'Submit'}
-                        </Button>
                       </div>
-                    ))}
+                      <Button
+                        size="sm"
+                        variant={assignment.status === 'SUBMITTED' ? 'outline' : 'default'}
+                      >
+                        {assignment.status === 'SUBMITTED' ? 'View Submission' : 'Submit'}
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <p className="text-muted-foreground py-8 text-center text-sm">
@@ -181,8 +173,6 @@ export default async function CourseWorkspace({
         >
           <CourseAttendance courseId={courseId} />
         </TabsContent>
-
-        {/* Other tabs would follow similar patterns */}
       </Tabs>
     </div>
   );

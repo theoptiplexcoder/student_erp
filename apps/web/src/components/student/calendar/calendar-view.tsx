@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@student-erp/ui';
+import { Card, CardHeader, CardTitle, CardContent, Skeleton } from '@student-erp/ui';
 import { Button } from '@student-erp/ui';
-import { upcomingEvents, upcomingDeadlines } from '@/lib/mock/student/data';
+import { useStudentDashboard } from '@student-erp/hooks';
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -15,6 +15,7 @@ import {
 
 export function CalendarView() {
   const [filter, setFilter] = useState('all');
+  const { data, isPending } = useStudentDashboard();
 
   const filters = [
     { id: 'all', label: 'All Events' },
@@ -22,6 +23,12 @@ export function CalendarView() {
     { id: 'exams', label: 'Exams' },
     { id: 'deadlines', label: 'Deadlines' },
   ];
+
+  if (isPending) {
+    return <Skeleton className="h-[600px] w-full" />;
+  }
+
+  const upcomingDeadlines = data?.upcomingDeadlines || [];
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
@@ -49,17 +56,21 @@ export function CalendarView() {
             <CardTitle className="text-lg">Upcoming</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {upcomingDeadlines.slice(0, 2).map((d) => (
-              <div
-                key={`d-${d.id}`}
-                className="border-primary flex flex-col gap-1 border-l-2 pl-3 text-sm"
-              >
-                <span className="font-medium">{d.title}</span>
-                <span className="text-muted-foreground flex items-center text-xs">
-                  <Clock className="mr-1 h-3 w-3" /> {d.dueDate}
-                </span>
-              </div>
-            ))}
+            {upcomingDeadlines.length > 0 ? (
+              upcomingDeadlines.slice(0, 5).map((d: any) => (
+                <div
+                  key={`d-${d.id}`}
+                  className="border-primary flex flex-col gap-1 border-l-2 pl-3 text-sm"
+                >
+                  <span className="font-medium">{d.title}</span>
+                  <span className="text-muted-foreground flex items-center text-xs">
+                    <Clock className="mr-1 h-3 w-3" /> {new Date(d.dueDate).toLocaleDateString()}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-muted-foreground text-sm">No upcoming events.</p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -67,7 +78,9 @@ export function CalendarView() {
       <div className="lg:col-span-3">
         <Card className="h-full">
           <CardHeader className="flex flex-row items-center justify-between py-4">
-            <CardTitle className="text-xl">October 2023</CardTitle>
+            <CardTitle className="text-xl">
+              {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
+            </CardTitle>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="icon">
                 <ChevronLeft className="h-4 w-4" />
@@ -101,34 +114,26 @@ export function CalendarView() {
 
               {/* Current month days */}
               {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => {
-                const hasEvent = d === 20 || d === 15 || d === 18;
+                const isToday = d === new Date().getDate();
+                const deadline = upcomingDeadlines.find(
+                  (ud: any) => new Date(ud.dueDate).getDate() === d,
+                );
+
                 return (
                   <div
                     key={d}
-                    className={`bg-background min-h-[80px] border-t p-2 text-left ${d === 15 ? 'bg-primary/5' : ''}`}
+                    className={`bg-background min-h-[80px] border-t p-2 text-left ${isToday ? 'bg-primary/5' : ''}`}
                   >
                     <span
-                      className={`inline-block h-6 w-6 rounded-full text-center leading-6 ${d === 15 ? 'bg-primary text-primary-foreground font-medium' : ''}`}
+                      className={`inline-block h-6 w-6 rounded-full text-center leading-6 ${isToday ? 'bg-primary text-primary-foreground font-medium' : ''}`}
                     >
                       {d}
                     </span>
-                    {hasEvent && (
+                    {deadline && (
                       <div className="mt-1">
-                        {d === 20 && (
-                          <div className="truncate rounded bg-blue-100 p-1 text-[10px] text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                            Tech Fest 2023
-                          </div>
-                        )}
-                        {d === 15 && (
-                          <div className="truncate rounded bg-orange-100 p-1 text-[10px] text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">
-                            Network Report
-                          </div>
-                        )}
-                        {d === 18 && (
-                          <div className="truncate rounded bg-red-100 p-1 text-[10px] text-red-700 dark:bg-red-900/40 dark:text-red-300">
-                            DB Schema
-                          </div>
-                        )}
+                        <div className="truncate rounded bg-red-100 p-1 text-[10px] text-red-700 dark:bg-red-900/40 dark:text-red-300">
+                          {deadline.title}
+                        </div>
                       </div>
                     )}
                   </div>

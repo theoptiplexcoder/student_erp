@@ -698,6 +698,242 @@ async function main() {
   }
   console.log('Upserted Student Enrollments');
 
+  // Timetable Entries
+  const timetableData = [
+    {
+      day: 'MONDAY',
+      startTime: '09:00:00',
+      endTime: '10:00:00',
+      courseCode: 'CS201',
+      faculty: 'Dr. Rajesh Kumar',
+      room: 'Room 101',
+    },
+    {
+      day: 'MONDAY',
+      startTime: '10:00:00',
+      endTime: '11:00:00',
+      courseCode: 'CS202',
+      faculty: 'Prof. Ananya Sharma',
+      room: 'Room 102',
+    },
+    {
+      day: 'MONDAY',
+      startTime: '11:15:00',
+      endTime: '12:15:00',
+      courseCode: 'CS203',
+      faculty: 'Dr. Vivek Rao',
+      room: 'Lab 1',
+    },
+
+    {
+      day: 'TUESDAY',
+      startTime: '09:00:00',
+      endTime: '10:00:00',
+      courseCode: 'CS204',
+      faculty: 'Dr. Priya Nair',
+      room: 'Room 101',
+    },
+    {
+      day: 'TUESDAY',
+      startTime: '10:00:00',
+      endTime: '11:00:00',
+      courseCode: 'MA201',
+      faculty: 'Prof. Arjun Mehta',
+      room: 'Room 102',
+    },
+
+    {
+      day: 'WEDNESDAY',
+      startTime: '09:00:00',
+      endTime: '10:00:00',
+      courseCode: 'CS202',
+      faculty: 'Prof. Ananya Sharma',
+      room: 'Room 102',
+    },
+    {
+      day: 'WEDNESDAY',
+      startTime: '10:00:00',
+      endTime: '11:00:00',
+      courseCode: 'CS201',
+      faculty: 'Dr. Rajesh Kumar',
+      room: 'Room 101',
+    },
+
+    {
+      day: 'THURSDAY',
+      startTime: '11:15:00',
+      endTime: '12:15:00',
+      courseCode: 'CS203',
+      faculty: 'Dr. Vivek Rao',
+      room: 'Lab 1',
+    },
+    {
+      day: 'THURSDAY',
+      startTime: '13:00:00',
+      endTime: '15:00:00',
+      courseCode: 'CS204',
+      faculty: 'Dr. Priya Nair',
+      room: 'Lab 2',
+    },
+
+    {
+      day: 'FRIDAY',
+      startTime: '09:00:00',
+      endTime: '10:00:00',
+      courseCode: 'MA201',
+      faculty: 'Prof. Arjun Mehta',
+      room: 'Room 102',
+    },
+  ];
+
+  for (const t of timetableData) {
+    const course = courses[t.courseCode];
+    const faculty = faculties[t.faculty];
+    const section = sections['CSE-A'];
+
+    // Parse time strings into Date objects for Prisma
+    const startParts = t.startTime.split(':');
+    const endParts = t.endTime.split(':');
+
+    const startTime = new Date();
+    startTime.setUTCHours(
+      parseInt(startParts[0]),
+      parseInt(startParts[1]),
+      parseInt(startParts[2]),
+      0,
+    );
+
+    const endTime = new Date();
+    endTime.setUTCHours(parseInt(endParts[0]), parseInt(endParts[1]), parseInt(endParts[2]), 0);
+
+    const entry = await prisma.timetableEntry.findFirst({
+      where: {
+        institutionId: institution.id,
+        courseId: course.id,
+        sectionId: section.id,
+        dayOfWeek: t.day as any,
+      },
+    });
+
+    if (!entry) {
+      await prisma.timetableEntry.create({
+        data: {
+          institutionId: institution.id,
+          academicYearId: activeAcademicYear.id,
+          termId: academicTerms['SEM3-2026'].id,
+          courseId: course.id,
+          facultyId: faculty.id,
+          sectionId: section.id,
+          dayOfWeek: t.day as any,
+          startTime: startTime,
+          endTime: endTime,
+          room: t.room,
+        },
+      });
+    }
+  }
+  console.log('Upserted Timetable');
+
+  // Announcements
+  const announcements = [
+    { title: 'Welcome to Semester 3', content: 'Classes begin next week. Check your timetable.' },
+    { title: 'Exam Schedule Published', content: 'Midterm exams will start from the 15th.' },
+  ];
+
+  for (const a of announcements) {
+    const ann = await prisma.announcement.findFirst({
+      where: { institutionId: institution.id, title: a.title },
+    });
+    if (!ann) {
+      await prisma.announcement.create({
+        data: {
+          institutionId: institution.id,
+          title: a.title,
+          content: a.content,
+        },
+      });
+    }
+  }
+  console.log('Upserted Announcements');
+
+  // Deadlines (Assignments)
+  const assignments = [
+    { title: 'Assignment 1 - Data Structures', courseCode: 'CS202' },
+    { title: 'Quiz - Math', courseCode: 'MA201' },
+  ];
+
+  for (const a of assignments) {
+    const ass = await prisma.assignment.findFirst({
+      where: { institutionId: institution.id, title: a.title },
+    });
+    if (!ass) {
+      await prisma.assignment.create({
+        data: {
+          institutionId: institution.id,
+          title: a.title,
+          courseId: courses[a.courseCode].id,
+          termId: academicTerms['SEM3-2026'].id,
+          facultyId: faculties['Dr. Rajesh Kumar'].id, // Simplifying
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // In 7 days
+          status: 'PUBLISHED',
+          maxMarks: 10,
+        },
+      });
+    }
+  }
+  console.log('Upserted Assignments');
+
+  // Attendance Records
+  for (const cCode of sem3Courses) {
+    const course = courses[cCode];
+    const section = sections['CSE-A'];
+
+    // Create 10 sessions for each course
+    for (let i = 1; i <= 10; i++) {
+      const sessionDate = new Date();
+      sessionDate.setDate(sessionDate.getDate() - (10 - i) * 2); // past days
+
+      let session = await prisma.attendanceSession.findFirst({
+        where: {
+          institutionId: institution.id,
+          courseId: course.id,
+          sectionId: section.id,
+        },
+      });
+      // just to simplify, if any session exists, break
+      if (session) break;
+
+      session = await prisma.attendanceSession.create({
+        data: {
+          institutionId: institution.id,
+          termId: academicTerms['SEM3-2026'].id,
+          courseId: course.id,
+          sectionId: section.id,
+          date: sessionDate,
+          facultyId: faculties['Dr. Rajesh Kumar'].id, // simplifying
+          startTime: new Date('2026-07-29T09:00:00Z'),
+          endTime: new Date('2026-07-29T10:00:00Z'),
+        },
+      });
+
+      // Mark attendance for students (80% present)
+      for (const s of students) {
+        if (s.sectionId === section.id) {
+          const isPresent = Math.random() > 0.2;
+          await prisma.attendanceRecord.create({
+            data: {
+              institutionId: institution.id,
+              attendanceSessionId: session.id,
+              studentId: s.id,
+              status: isPresent ? 'PRESENT' : 'ABSENT',
+            },
+          });
+        }
+      }
+    }
+  }
+  console.log('Upserted Attendance Records');
+
   // 18. Secondary demo tenant (login only)
   const secondaryTenantId = 'd9b97b0a-0b2a-4a8f-b9f1-7c980d2215c3';
   const secondaryTenant = await prisma.institution.upsert({

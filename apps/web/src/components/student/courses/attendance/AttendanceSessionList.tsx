@@ -1,11 +1,10 @@
 import React from 'react';
-import { MockAttendanceSession } from '@/lib/mock/student/data';
 import { AttendanceSessionItem } from './AttendanceSessionItem';
 import { FilterStatus } from './AttendanceFilters';
 import { Card, CardContent } from '@student-erp/ui';
 
 interface AttendanceSessionListProps {
-  sessions: MockAttendanceSession[];
+  sessions: any[];
   activeFilter: FilterStatus;
 }
 
@@ -25,13 +24,9 @@ export function AttendanceSessionList({ sessions, activeFilter }: AttendanceSess
       return dateB.getTime() - dateA.getTime();
     }
 
-    // Simple string comparison for time works here assuming format "HH:MM AM/PM"
-    // However, it's safer to convert to a comparable format or use Date objects
-    const getTimeVal = (timeStr: string) => {
-      const [time, period] = timeStr.split(' ');
-      const [h, minutes] = time.split(':').map(Number);
-      const hours = period === 'PM' && h !== 12 ? h + 12 : period === 'AM' && h === 12 ? 0 : h;
-      return hours * 60 + minutes;
+    const getTimeVal = (time: any) => {
+      if (!time) return 0;
+      return new Date(time).getTime();
     };
 
     return getTimeVal(b.startTime) - getTimeVal(a.startTime);

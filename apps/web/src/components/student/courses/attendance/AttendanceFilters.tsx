@@ -2,9 +2,8 @@
 
 import React from 'react';
 import { Button } from '@student-erp/ui';
-import { AttendanceStatus } from '@/lib/mock/student/data';
 
-export type FilterStatus = AttendanceStatus | 'ALL';
+export type FilterStatus = string;
 
 interface AttendanceFiltersProps {
   activeFilter: FilterStatus;

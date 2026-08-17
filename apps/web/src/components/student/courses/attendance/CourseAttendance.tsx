@@ -1,15 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AttendanceSummary } from './AttendanceSummary';
 import { AttendanceFilters, FilterStatus } from './AttendanceFilters';
 import { AttendanceSessionList } from './AttendanceSessionList';
-import {
-  mockSubjectAttendance,
-  MockAttendanceSession,
-  AttendanceStatus,
-} from '@/lib/mock/student/data';
 import { Skeleton } from '@student-erp/ui';
+import { useStudentCourseAttendance } from '@student-erp/hooks';
 
 interface CourseAttendanceProps {
   courseId: string;
@@ -17,36 +13,12 @@ interface CourseAttendanceProps {
 
 export function CourseAttendance({ courseId }: CourseAttendanceProps) {
   const [activeFilter, setActiveFilter] = useState<FilterStatus>('ALL');
-  const [sessions, setSessions] = useState<MockAttendanceSession[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Simulate API fetch
-    setIsLoading(true);
-    setError(null);
-
-    const fetchAttendance = () => {
-      try {
-        // Mock API delay
-        setTimeout(() => {
-          const data = mockSubjectAttendance[courseId] || [];
-          setSessions(data);
-          setIsLoading(false);
-        }, 600);
-      } catch (err) {
-        setError('Unable to load attendance records.');
-        setIsLoading(false);
-      }
-    };
-
-    fetchAttendance();
-  }, [courseId]);
+  const { data, isPending: isLoading, isError: error } = useStudentCourseAttendance(courseId);
 
   if (error) {
     return (
       <div className="bg-card flex flex-col items-center justify-center rounded-lg border p-12 text-center">
-        <p className="text-destructive mb-4">{error}</p>
+        <p className="text-destructive mb-4">Unable to load attendance records.</p>
         <button
           onClick={() => window.location.reload()}
           className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 py-2 text-sm font-medium"
@@ -57,7 +29,7 @@ export function CourseAttendance({ courseId }: CourseAttendanceProps) {
     );
   }
 
-  if (isLoading) {
+  if (isLoading || !data) {
     return (
       <div className="animate-pulse space-y-6">
         <Skeleton className="h-40 w-full rounded-xl" />
@@ -75,16 +47,28 @@ export function CourseAttendance({ courseId }: CourseAttendanceProps) {
     );
   }
 
-  const totalSessions = sessions.length;
-  const present = sessions.filter((s) => s.status === 'PRESENT').length;
-  const absent = sessions.filter((s) => s.status === 'ABSENT').length;
-  const late = sessions.filter((s) => s.status === 'LATE').length;
-  const excused = sessions.filter((s) => s.status === 'EXCUSED').length;
+  const records = data.records || [];
 
-  // Calculate percentage (Present + Late usually count as present in standard calculations, or just Present depending on policy)
-  // We'll use (Present + Late) / (Total - Excused) for standard ERP logic if needed,
-  // but let's just do (Present / Total) for simplicity unless specified otherwise.
-  // Actually, standard is usually (Present + Late) / Total
+  // Map Prisma attendance format to frontend format
+  const sessions = records.map((record: any) => ({
+    id: record.attendanceSession.id,
+    date: record.attendanceSession.date,
+    startTime: record.attendanceSession.startTime,
+    endTime: record.attendanceSession.endTime,
+    status: record.status,
+    facultyName: record.attendanceSession.faculty?.user
+      ? `${record.attendanceSession.faculty.user.firstName} ${record.attendanceSession.faculty.user.lastName}`
+      : 'TBA',
+    topic: record.attendanceSession.topic || '',
+    remarks: record.remarks || '',
+  }));
+
+  const totalSessions = sessions.length;
+  const present = sessions.filter((s: any) => s.status === 'PRESENT').length;
+  const absent = sessions.filter((s: any) => s.status === 'ABSENT').length;
+  const late = sessions.filter((s: any) => s.status === 'LATE').length;
+  const excused = sessions.filter((s: any) => s.status === 'EXCUSED').length;
+
   const percentage = totalSessions > 0 ? Math.round(((present + late) / totalSessions) * 100) : 0;
 
   return (
@@ -96,7 +80,7 @@ export function CourseAttendance({ courseId }: CourseAttendanceProps) {
         absent={absent}
         late={late}
         excused={excused}
-        threshold={75}
+        threshold={data.requiredPercentage || 75}
       />
 
       <div className="mt-8">

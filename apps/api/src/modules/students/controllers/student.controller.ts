@@ -19,4 +19,10 @@ export class StudentController {
     const { id: authUserId, institutionId } = req.user;
     return this.studentService.getDashboardData(authUserId, institutionId);
   }
+
+  @Get('timetable')
+  async getTimetable(@Request() req: any) {
+    const { id: authUserId, institutionId } = req.user;
+    return this.studentService.getTimetable(authUserId, institutionId);
+  }
 }

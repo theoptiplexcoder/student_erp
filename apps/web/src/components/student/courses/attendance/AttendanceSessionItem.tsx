@@ -1,9 +1,8 @@
 import React from 'react';
 import { Badge } from '@student-erp/ui';
-import { MockAttendanceSession } from '@/lib/mock/student/data';
 
 interface AttendanceSessionItemProps {
-  session: MockAttendanceSession;
+  session: any;
 }
 
 export function AttendanceSessionItem({ session }: AttendanceSessionItemProps) {
@@ -60,12 +59,17 @@ export function AttendanceSessionItem({ session }: AttendanceSessionItemProps) {
     year: 'numeric',
   });
 
+  const formatTime = (time: any) => {
+    if (!time) return '';
+    return new Date(time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  };
+
   return (
     <div className="border-muted/60 flex items-center justify-between border-b py-4 last:border-0">
       <div className="flex flex-col gap-1">
         <span className="text-foreground text-lg font-semibold">{formattedDate}</span>
         <span className="text-muted-foreground text-sm">
-          {session.startTime} - {session.endTime}
+          {formatTime(session.startTime)} - {formatTime(session.endTime)}
         </span>
       </div>
       <div>{getStatusBadge(session.status)}</div>

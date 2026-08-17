@@ -3,11 +3,17 @@
 import React from 'react';
 import Link from 'next/link';
 import { Bell, Menu, User, Settings, LogOut } from 'lucide-react';
-import { currentStudent } from '@/lib/mock/student/data';
+import { useStudentProfile } from '@student-erp/hooks';
 import { Button } from '@student-erp/ui';
 import { Avatar, AvatarFallback, AvatarImage } from '@student-erp/ui';
 
 export function StudentNavbar({ toggleSidebar }: { toggleSidebar?: () => void }) {
+  const { data: student } = useStudentProfile();
+
+  const firstName = student?.user?.firstName || 'Student';
+  const lastName = student?.user?.lastName || '';
+  const fullName = `${firstName} ${lastName}`.trim();
+
   return (
     <header className="bg-background sticky top-0 z-30 flex h-14 items-center gap-4 border-b px-4 lg:h-[60px] lg:px-6">
       <Button variant="ghost" size="icon" className="shrink-0 md:hidden" onClick={toggleSidebar}>
@@ -29,12 +35,13 @@ export function StudentNavbar({ toggleSidebar }: { toggleSidebar?: () => void })
         {/* Replace with DropdownMenu when available in ui package or use a standard approach */}
         <div className="hover:bg-muted flex cursor-pointer items-center gap-2 rounded-md p-1 transition-colors">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={currentStudent.avatarUrl} alt={currentStudent.name} />
-            <AvatarFallback>{currentStudent.name.charAt(0)}</AvatarFallback>
+            <AvatarFallback>{firstName.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="hidden flex-col text-sm md:flex">
-            <span className="leading-none font-medium">{currentStudent.name}</span>
-            <span className="text-muted-foreground mt-1 text-xs">{currentStudent.id}</span>
+            <span className="leading-none font-medium">{fullName}</span>
+            <span className="text-muted-foreground mt-1 text-xs">
+              {student?.studentCode || 'N/A'}
+            </span>
           </div>
         </div>
       </div>
