@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   Library,
   MessageSquare,
+  AlertTriangle,
   User,
   Users,
   ChevronLeft,
@@ -29,6 +30,7 @@ export const sidebarNavItems = [
   { title: 'Certificates', href: '/student/certificates', icon: GraduationCap },
   { title: 'Feedback', href: '/student/feedback', icon: MessageSquare },
   { title: 'Clubs', href: '/student/clubs', icon: Users },
+  { title: 'Grievance', href: '/student/grievance', icon: AlertTriangle },
 ];
 
 export function StudentSidebar() {
