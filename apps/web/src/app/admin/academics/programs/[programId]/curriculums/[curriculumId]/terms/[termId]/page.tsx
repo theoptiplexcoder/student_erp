@@ -17,7 +17,11 @@ import { Plus, ArrowLeft, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL || 'https://student-erp-api.onrender.com'}/api/v1`;
+const getApiUrl = () => {
+  const url = process.env.NEXT_PUBLIC_API_URL || 'https://student-erp-api.onrender.com';
+  return url.endsWith('/api/v1') ? url : `${url.replace(/\/$/, '')}/api/v1`;
+};
+const API_URL = getApiUrl();
 
 async function getCurriculum(id: string) {
   try {

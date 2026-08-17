@@ -2,7 +2,12 @@
 
 import axios from 'axios';
 
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/v1`;
+const getApiUrl = () => {
+  const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+  return url.endsWith('/api/v1') ? url : `${url.replace(/\/$/, '')}/api/v1`;
+};
+
+const API_URL = getApiUrl();
 
 type TokenProvider = () => Promise<string | null>;
 
