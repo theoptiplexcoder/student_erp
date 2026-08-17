@@ -189,6 +189,34 @@ export class StudentService {
     });
   }
 
+  async markNotificationAsRead(id: string, userId: string, institutionId: string) {
+    return this.prisma.notification.updateMany({
+      where: {
+        id,
+        userId,
+        institutionId,
+      },
+      data: {
+        isRead: true,
+        readAt: new Date(),
+      },
+    });
+  }
+
+  async markAllNotificationsAsRead(userId: string, institutionId: string) {
+    return this.prisma.notification.updateMany({
+      where: {
+        userId,
+        institutionId,
+        isRead: false,
+      },
+      data: {
+        isRead: true,
+        readAt: new Date(),
+      },
+    });
+  }
+
   async getCalendar(institutionId: string) {
     return this.prisma.calendarEvent.findMany({
       where: { institutionId },

@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { StudentApi } from '@student-erp/sdk';
 
 export const useStudentProfile = () => {
@@ -65,6 +65,26 @@ export const useStudentNotifications = () => {
   return useQuery({
     queryKey: ['student', 'notifications'],
     queryFn: StudentApi.getNotifications,
+  });
+};
+
+export const useMarkNotificationAsRead = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => StudentApi.markNotificationAsRead(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] });
+    },
+  });
+};
+
+export const useMarkAllNotificationsAsRead = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => StudentApi.markAllNotificationsAsRead(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] });
+    },
   });
 };
 

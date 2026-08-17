@@ -2,14 +2,18 @@
 
 import { Bell, Search, HelpCircle } from 'lucide-react';
 import { Input, Button, Avatar, AvatarFallback } from '@student-erp/ui';
-import { usePathname } from 'next/navigation';
 import { AdminMobileNav } from './admin-mobile-nav';
+import { LogoutButton } from '../shared/logout-button';
+import { Breadcrumbs } from '../shared/breadcrumbs';
+import { useCurrentUser } from '@/hooks/use-current-user';
 
 export function AdminHeader() {
-  const pathname = usePathname();
+  const { data } = useCurrentUser();
+  const user = data?.user;
 
-  // Simple breadcrumb generator based on pathname
-  const segments = pathname.split('/').filter(Boolean);
+  const initials = user
+    ? `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase()
+    : 'AD';
 
   return (
     <header className="border-border bg-background sticky top-0 z-10 flex h-16 items-center justify-between border-b px-4 sm:px-6">
@@ -17,18 +21,8 @@ export function AdminHeader() {
         <div className="mr-4 md:hidden">
           <AdminMobileNav />
         </div>
-        <div className="text-muted-foreground hidden items-center space-x-2 text-sm sm:flex">
-          {segments.map((segment, index) => {
-            const isLast = index === segments.length - 1;
-            const text = segment.charAt(0).toUpperCase() + segment.slice(1);
-
-            return (
-              <div key={segment} className="flex items-center">
-                {index > 0 && <span className="mx-2">/</span>}
-                <span className={isLast ? 'text-foreground font-medium' : ''}>{text}</span>
-              </div>
-            );
-          })}
+        <div className="hidden sm:flex">
+          <Breadcrumbs />
         </div>
       </div>
 
@@ -53,9 +47,15 @@ export function AdminHeader() {
 
         <Avatar className="border-border h-8 w-8 cursor-pointer border">
           <AvatarFallback className="bg-admin-accent text-admin-accent-foreground text-xs font-medium">
-            AD
+            {initials}
           </AvatarFallback>
         </Avatar>
+
+        <LogoutButton
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+        />
       </div>
     </header>
   );

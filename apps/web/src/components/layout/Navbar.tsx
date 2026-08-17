@@ -1,8 +1,16 @@
 'use client';
 import React from 'react';
 import { Search, Bell, HelpCircle, ChevronDown, GraduationCap, Menu } from 'lucide-react';
+import { LogoutButton } from '../shared/logout-button';
+import { useCurrentUser } from '@/hooks/use-current-user';
 
 export function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
+  const { data } = useCurrentUser();
+  const user = data?.user;
+  const initials = user
+    ? `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase()
+    : 'TA';
+
   return (
     <header className="border-border bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 h-[64px] w-full border-b backdrop-blur">
       <div className="flex h-full items-center justify-between px-4">
@@ -61,8 +69,14 @@ export function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
           </button>
 
           <div className="bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 ml-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border transition-colors">
-            <span className="text-sm font-semibold">TA</span>
+            <span className="text-sm font-semibold">{initials}</span>
           </div>
+
+          <LogoutButton
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive ml-1"
+          />
         </div>
       </div>
     </header>

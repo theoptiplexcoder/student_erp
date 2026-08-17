@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Patch, Param, UseGuards, Request } from '@nestjs/common';
 import { StudentService } from '../services/student.service';
 import { Roles } from '../../../decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
@@ -42,6 +42,18 @@ export class StudentController {
   async getNotifications(@Request() req: any) {
     const { id: userId, institutionId } = req.user;
     return this.studentService.getNotifications(userId, institutionId);
+  }
+
+  @Patch('notifications/:id/read')
+  async markNotificationAsRead(@Request() req: any, @Param('id') id: string) {
+    const { id: userId, institutionId } = req.user;
+    return this.studentService.markNotificationAsRead(id, userId, institutionId);
+  }
+
+  @Patch('notifications/read-all')
+  async markAllNotificationsAsRead(@Request() req: any) {
+    const { id: userId, institutionId } = req.user;
+    return this.studentService.markAllNotificationsAsRead(userId, institutionId);
   }
 
   @Get('calendar')

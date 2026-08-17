@@ -1,6 +1,6 @@
 'use client';
 
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 const getApiUrl = () => {
   const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -29,9 +29,20 @@ adminApiClient.interceptors.request.use(async (config) => {
       config.headers.Authorization = `Bearer ${token}`;
     }
   }
-
   return config;
 });
+
+adminApiClient.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  },
+);
 
 export const AdminApi = {
   attendance: {

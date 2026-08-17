@@ -8,9 +8,9 @@ export default async function StudentLayout({ children }: { children: React.Reac
   await requireRoleOrRedirect('STUDENT');
 
   return (
-    <div className="grid min-h-screen w-full pb-16 md:grid-cols-[256px_1fr] md:pb-0">
+    <div className="flex min-h-screen w-full flex-col pb-16 md:flex-row md:pb-0">
       <StudentSidebar />
-      <div className="flex w-full flex-col overflow-hidden">
+      <div className="flex w-full min-w-0 flex-1 flex-col overflow-hidden">
         <StudentNavbar />
         <main className="bg-muted/20 flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>

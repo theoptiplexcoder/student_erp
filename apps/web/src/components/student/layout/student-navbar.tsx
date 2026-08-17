@@ -1,14 +1,18 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { Bell, Menu, User, Settings, LogOut } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { useStudentProfile } from '@student-erp/hooks';
 import { Button } from '@student-erp/ui';
-import { Avatar, AvatarFallback, AvatarImage } from '@student-erp/ui';
+import { Avatar, AvatarFallback } from '@student-erp/ui';
+import { LogoutButton } from '../../shared/logout-button';
+import { Breadcrumbs } from '../../shared/breadcrumbs';
+import { useMobileSidebarStore } from '@/hooks/use-sidebar';
+import { NotificationBell } from './notification-bell';
 
-export function StudentNavbar({ toggleSidebar }: { toggleSidebar?: () => void }) {
+export function StudentNavbar() {
   const { data: student } = useStudentProfile();
+  const setIsOpen = useMobileSidebarStore((state) => state.setIsOpen);
 
   const firstName = student?.user?.firstName || 'Student';
   const lastName = student?.user?.lastName || '';
@@ -16,21 +20,24 @@ export function StudentNavbar({ toggleSidebar }: { toggleSidebar?: () => void })
 
   return (
     <header className="bg-background sticky top-0 z-30 flex h-14 items-center gap-4 border-b px-4 lg:h-[60px] lg:px-6">
-      <div className="w-full flex-1 md:hidden">
+      <div className="flex w-full flex-1 items-center gap-2 md:hidden">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsOpen(true)}
+          className="-ml-2 md:hidden"
+        >
+          <Menu className="h-5 w-5" />
+          <span className="sr-only">Toggle menu</span>
+        </Button>
         <span className="font-display text-lg font-bold">Student Portal</span>
       </div>
       <div className="hidden w-full flex-1 md:block">
-        {/* Optional Page Title or Breadcrumb can go here */}
+        <Breadcrumbs />
       </div>
 
       <div className="flex items-center gap-4 md:gap-2 lg:gap-4">
-        <Button variant="ghost" size="icon" className="relative" asChild>
-          <Link href="/student/notifications">
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-2 right-2 flex h-2 w-2 rounded-full bg-red-600"></span>
-            <span className="sr-only">Toggle notifications</span>
-          </Link>
-        </Button>
+        <NotificationBell />
 
         {/* Replace with DropdownMenu when available in ui package or use a standard approach */}
         <div className="hover:bg-muted flex cursor-pointer items-center gap-2 rounded-md p-1 transition-colors">
@@ -44,6 +51,12 @@ export function StudentNavbar({ toggleSidebar }: { toggleSidebar?: () => void })
             </span>
           </div>
         </div>
+
+        <LogoutButton
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+        />
       </div>
     </header>
   );

@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+import { redirect, unauthorized, forbidden } from 'next/navigation';
 import { createClient } from './supabase/server';
 import { prisma } from './prisma';
 
@@ -9,6 +9,9 @@ export interface AuthUser {
   role: string;
   status: string;
   email: string;
+  firstName: string;
+  lastName: string;
+  photoUrl: string | null;
 }
 
 export function getDashboardPath(role: string): string {
@@ -44,6 +47,9 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
       role: true,
       status: true,
       email: true,
+      firstName: true,
+      lastName: true,
+      photoUrl: true,
     },
   });
 
@@ -58,6 +64,9 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     role: dbUser.role,
     status: dbUser.status,
     email: dbUser.email,
+    firstName: dbUser.firstName,
+    lastName: dbUser.lastName,
+    photoUrl: dbUser.photoUrl,
   };
 }
 
@@ -69,7 +78,7 @@ export async function requireAuth(): Promise<AuthUser> {
   }
 
   if (user.status !== 'ACTIVE') {
-    throw new Error('ACCOUNT_INACTIVE');
+    throw new Error('FORBIDDEN: Account inactive');
   }
 
   return user;
@@ -85,8 +94,8 @@ export async function requireRole(...roles: string[]): Promise<AuthUser> {
   return user;
 }
 
-// Server-component guard: redirects to /login when unauthenticated and to the
-// user's own dashboard when they lack one of the allowed roles.
+// Server-component guard: redirects to /login when unauthenticated and returns forbidden
+// when they lack one of the allowed roles.
 export async function requireRoleOrRedirect(...roles: string[]): Promise<AuthUser> {
   const user = await getCurrentUser();
 
@@ -95,7 +104,7 @@ export async function requireRoleOrRedirect(...roles: string[]): Promise<AuthUse
   }
 
   if (!roles.includes(user.role)) {
-    redirect(getDashboardPath(user.role));
+    throw new Error('FORBIDDEN');
   }
 
   return user;

@@ -1,6 +1,6 @@
 'use client';
 
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 const getApiUrl = () => {
   const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -29,9 +29,20 @@ studentApiClient.interceptors.request.use(async (config) => {
       config.headers.Authorization = `Bearer ${token}`;
     }
   }
-
   return config;
 });
+
+studentApiClient.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  },
+);
 
 export const StudentApi = {
   getProfile: () => studentApiClient.get('/me').then((res) => res.data),
@@ -47,6 +58,10 @@ export const StudentApi = {
   getExaminations: () => studentApiClient.get('/examinations').then((res) => res.data),
   getCertificates: () => studentApiClient.get('/certificates').then((res) => res.data),
   getNotifications: () => studentApiClient.get('/notifications').then((res) => res.data),
+  markNotificationAsRead: (id: string) =>
+    studentApiClient.patch(`/notifications/${id}/read`).then((res) => res.data),
+  markAllNotificationsAsRead: () =>
+    studentApiClient.patch('/notifications/read-all').then((res) => res.data),
   getCalendar: () => studentApiClient.get('/calendar').then((res) => res.data),
   getDocuments: () => studentApiClient.get('/documents').then((res) => res.data),
   getFeedback: () => studentApiClient.get('/feedback').then((res) => res.data),
