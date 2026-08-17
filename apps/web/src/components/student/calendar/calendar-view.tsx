@@ -3,19 +3,12 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Skeleton } from '@student-erp/ui';
 import { Button } from '@student-erp/ui';
-import { useStudentDashboard } from '@student-erp/hooks';
-import {
-  Calendar as CalendarIcon,
-  Clock,
-  ChevronLeft,
-  ChevronRight,
-  FileText,
-  MapPin,
-} from 'lucide-react';
+import { useStudentCalendar } from '@student-erp/hooks';
+import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export function CalendarView() {
   const [filter, setFilter] = useState('all');
-  const { data, isPending } = useStudentDashboard();
+  const { data: upcomingDeadlines = [], isPending } = useStudentCalendar();
 
   const filters = [
     { id: 'all', label: 'All Events' },
@@ -27,8 +20,6 @@ export function CalendarView() {
   if (isPending) {
     return <Skeleton className="h-[600px] w-full" />;
   }
-
-  const upcomingDeadlines = data?.upcomingDeadlines || [];
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
@@ -64,7 +55,7 @@ export function CalendarView() {
                 >
                   <span className="font-medium">{d.title}</span>
                   <span className="text-muted-foreground flex items-center text-xs">
-                    <Clock className="mr-1 h-3 w-3" /> {new Date(d.dueDate).toLocaleDateString()}
+                    <Clock className="mr-1 h-3 w-3" /> {new Date(d.startAt).toLocaleDateString()}
                   </span>
                 </div>
               ))
@@ -116,7 +107,7 @@ export function CalendarView() {
               {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => {
                 const isToday = d === new Date().getDate();
                 const deadline = upcomingDeadlines.find(
-                  (ud: any) => new Date(ud.dueDate).getDate() === d,
+                  (ud: any) => new Date(ud.startAt).getDate() === d,
                 );
 
                 return (

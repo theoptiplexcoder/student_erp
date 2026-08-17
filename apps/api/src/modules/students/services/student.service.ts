@@ -128,4 +128,107 @@ export class StudentService {
 
     return timetable;
   }
+
+  async getAssignments(authUserId: string, institutionId: string) {
+    const student = await this.getStudentProfile(authUserId, institutionId);
+
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: {
+        institutionId,
+        studentId: student.id,
+        status: 'ACTIVE',
+      },
+    });
+
+    const courseIds = enrollments.map((e) => e.courseId).filter(Boolean) as string[];
+
+    return this.prisma.assignment.findMany({
+      where: {
+        institutionId,
+        courseId: { in: courseIds },
+      },
+      include: {
+        course: true,
+        submissions: {
+          where: { studentId: student.id },
+        },
+      },
+      orderBy: { dueDate: 'asc' },
+    });
+  }
+
+  async getExaminations(authUserId: string, institutionId: string) {
+    const student = await this.getStudentProfile(authUserId, institutionId);
+
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: {
+        institutionId,
+        studentId: student.id,
+        status: 'ACTIVE',
+      },
+    });
+
+    const courseIds = enrollments.map((e) => e.courseId).filter(Boolean) as string[];
+
+    return this.prisma.examCourse.findMany({
+      where: {
+        courseId: { in: courseIds },
+      },
+      include: {
+        exam: true,
+        course: true,
+      },
+    });
+  }
+
+  async getNotifications(authUserId: string, institutionId: string) {
+    return this.prisma.notification.findMany({
+      where: {
+        institutionId,
+        userId: authUserId,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getCalendar(institutionId: string) {
+    return this.prisma.calendarEvent.findMany({
+      where: { institutionId },
+      orderBy: { startAt: 'asc' },
+    });
+  }
+
+  async getFeedback(authUserId: string, institutionId: string) {
+    const student = await this.getStudentProfile(authUserId, institutionId);
+
+    const forms = await this.prisma.feedbackForm.findMany({
+      where: { institutionId, isActive: true },
+    });
+
+    const grievances = await this.prisma.serviceRequest.findMany({
+      where: { institutionId, studentId: student.id },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return { forms, grievances };
+  }
+
+  async getClubs(authUserId: string, institutionId: string) {
+    const student = await this.getStudentProfile(authUserId, institutionId);
+
+    const myMemberships = await this.prisma.clubMembership.findMany({
+      where: { institutionId, studentId: student.id, status: 'ACTIVE' },
+      include: { club: true },
+    });
+
+    const availableClubs = await this.prisma.club.findMany({
+      where: {
+        institutionId,
+        isActive: true,
+        id: { notIn: myMemberships.map((m) => m.clubId) },
+      },
+    });
+
+    return { myMemberships, availableClubs };
+  }
 }

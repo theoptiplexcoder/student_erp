@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { StudentApi } from '@student-erp/sdk/client/student-api';
+import { StudentApi } from '@student-erp/sdk';
 
 export const useStudentProfile = () => {
   return useQuery({
@@ -51,5 +51,61 @@ export const useStudentTimetable = () => {
   return useQuery({
     queryKey: ['student', 'timetable'],
     queryFn: StudentApi.getTimetable,
+  });
+};
+
+export const useStudentCertificates = () => {
+  return useQuery({
+    queryKey: ['student', 'certificates'],
+    queryFn: StudentApi.getCertificates,
+  });
+};
+
+export const useStudentNotifications = () => {
+  return useQuery({
+    queryKey: ['student', 'notifications'],
+    queryFn: StudentApi.getNotifications,
+  });
+};
+
+export const useStudentCalendar = () => {
+  return useQuery({
+    queryKey: ['student', 'calendar'],
+    queryFn: StudentApi.getCalendar,
+  });
+};
+
+export const useStudentAssignments = () => {
+  return useQuery({
+    queryKey: ['student', 'assignments'],
+    queryFn: StudentApi.getAssignments,
+  });
+};
+
+export const useStudentExaminations = () => {
+  return useQuery({
+    queryKey: ['student', 'examinations'],
+    queryFn: StudentApi.getExaminations,
+  });
+};
+
+export const useStudentDocuments = () => {
+  return useQuery({
+    queryKey: ['student', 'documents'],
+    queryFn: StudentApi.getDocuments,
+  });
+};
+
+export const useStudentFeedback = () => {
+  return useQuery({
+    queryKey: ['student', 'feedback'],
+    queryFn: StudentApi.getFeedback,
+  });
+};
+
+export const useStudentClubs = () => {
+  return useQuery({
+    queryKey: ['student', 'clubs'],
+    queryFn: StudentApi.getClubs,
   });
 };

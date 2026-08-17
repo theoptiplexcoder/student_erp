@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@student-erp/ui';
 import {
@@ -11,35 +13,13 @@ import {
 import { Button } from '@student-erp/ui';
 import { Badge } from '@student-erp/ui';
 import { Users, Code, Cpu, Palette } from 'lucide-react';
+import { useStudentClubs } from '@student-erp/hooks';
 
 export default function ClubsPage() {
-  const myClubs = [
-    {
-      id: 1,
-      name: 'Coding Club',
-      icon: Code,
-      role: 'Member',
-      members: 120,
-      description: 'Official programming and algorithmic club.',
-    },
-  ];
+  const { data, isPending } = useStudentClubs();
 
-  const availableClubs = [
-    {
-      id: 2,
-      name: 'Robotics Society',
-      icon: Cpu,
-      members: 85,
-      description: 'Build and program robots for competitions.',
-    },
-    {
-      id: 3,
-      name: 'Design & Arts',
-      icon: Palette,
-      members: 200,
-      description: 'Creative minds exploring UI/UX and digital art.',
-    },
-  ];
+  const myClubs = data?.myMemberships || [];
+  const availableClubs = data?.availableClubs || [];
 
   return (
     <div className="mx-auto flex h-full max-w-7xl flex-col gap-6 pb-10">
@@ -55,32 +35,34 @@ export default function ClubsPage() {
         </TabsList>
 
         <TabsContent value="my-clubs" className="mt-6">
-          {myClubs.length > 0 ? (
+          {isPending ? (
+            <div className="text-muted-foreground mt-10 text-center">Loading clubs...</div>
+          ) : myClubs.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {myClubs.map((club) => (
-                <Card key={club.id}>
-                  <CardHeader>
-                    <div className="bg-primary/10 text-primary mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
-                      <club.icon className="h-6 w-6" />
-                    </div>
-                    <CardTitle className="text-xl">{club.name}</CardTitle>
-                    <div className="mt-2 flex items-center gap-2">
-                      <Badge variant="default">{club.role}</Badge>
-                      <span className="text-muted-foreground flex items-center text-xs">
-                        <Users className="mr-1 h-3 w-3" /> {club.members} Members
-                      </span>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm">{club.description}</p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="outline" className="w-full">
-                      View Activity
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
+              {myClubs.map((membership: any) => {
+                const club = membership.club;
+                return (
+                  <Card key={membership.id}>
+                    <CardHeader>
+                      <div className="bg-primary/10 text-primary mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
+                        <Users className="h-6 w-6" />
+                      </div>
+                      <CardTitle className="text-xl">{club.name}</CardTitle>
+                      <div className="mt-2 flex items-center gap-2">
+                        <Badge variant="default">{membership.role}</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground text-sm">{club.description}</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button variant="outline" className="w-full">
+                        View Activity
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                );
+              })}
             </div>
           ) : (
             <div className="text-muted-foreground rounded-lg border border-dashed py-12 text-center">
@@ -91,29 +73,32 @@ export default function ClubsPage() {
         </TabsContent>
 
         <TabsContent value="available" className="mt-6">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {availableClubs.map((club) => (
-              <Card key={club.id}>
-                <CardHeader>
-                  <div className="bg-muted mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
-                    <club.icon className="text-muted-foreground h-6 w-6" />
-                  </div>
-                  <CardTitle className="text-xl">{club.name}</CardTitle>
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="text-muted-foreground flex items-center text-xs">
-                      <Users className="mr-1 h-3 w-3" /> {club.members} Members
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground text-sm">{club.description}</p>
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full">Join Club</Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
+          {isPending ? (
+            <div className="text-muted-foreground mt-10 text-center">Loading clubs...</div>
+          ) : availableClubs.length > 0 ? (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {availableClubs.map((club: any) => (
+                <Card key={club.id}>
+                  <CardHeader>
+                    <div className="bg-muted mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
+                      <Users className="text-muted-foreground h-6 w-6" />
+                    </div>
+                    <CardTitle className="text-xl">{club.name}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground text-sm">{club.description}</p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button className="w-full">Join Club</Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-muted-foreground rounded-lg border border-dashed py-12 text-center">
+              <p>No more clubs available to join.</p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

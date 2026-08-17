@@ -1,33 +1,14 @@
+'use client';
+
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@student-erp/ui';
 import { Button } from '@student-erp/ui';
 import { Badge } from '@student-erp/ui';
 import { FileText, Download, Upload, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { useStudentDocuments } from '@student-erp/hooks';
 
 export default function DocumentsPage() {
-  const documents = [
-    {
-      id: 1,
-      name: 'High School Marksheet',
-      type: 'Academic',
-      date: 'Aug 15, 2021',
-      status: 'VERIFIED',
-    },
-    {
-      id: 2,
-      name: 'Identity Proof (Aadhar)',
-      type: 'Identity',
-      date: 'Aug 15, 2021',
-      status: 'VERIFIED',
-    },
-    {
-      id: 3,
-      name: 'Medical Certificate',
-      type: 'Admission',
-      date: 'Sep 10, 2023',
-      status: 'PENDING',
-    },
-  ];
+  const { data: documents = [], isPending } = useStudentDocuments();
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -56,44 +37,51 @@ export default function DocumentsPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {documents.map((doc) => (
-          <Card key={doc.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <CardTitle className="text-base leading-tight">{doc.name}</CardTitle>
-              </div>
-              <div className="mt-2 flex items-center justify-between">
-                <Badge variant="outline">{doc.type}</Badge>
-                <div className="flex items-center text-xs font-medium">
-                  {getStatusIcon(doc.status)}
-                  <span
-                    className={
-                      doc.status === 'VERIFIED'
-                        ? 'text-green-600'
-                        : doc.status === 'PENDING'
-                          ? 'text-orange-600'
-                          : 'text-red-600'
-                    }
-                  >
-                    {doc.status}
-                  </span>
+      {isPending ? (
+        <div className="text-muted-foreground mt-10 text-center">Loading documents...</div>
+      ) : documents.length === 0 ? (
+        <div className="text-muted-foreground mt-10 text-center">No documents uploaded yet.</div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {documents.map((doc: any) => (
+            <Card key={doc.id}>
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <CardTitle className="text-base leading-tight">{doc.title}</CardTitle>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-muted-foreground flex items-center text-sm">
-                <Clock className="mr-2 h-4 w-4" /> Uploaded on {doc.date}
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full">
-                <Download className="mr-2 h-4 w-4" /> Download
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+                <div className="mt-2 flex items-center justify-between">
+                  <Badge variant="outline">{doc.documentType}</Badge>
+                  <div className="flex items-center text-xs font-medium">
+                    {getStatusIcon(doc.verificationStatus)}
+                    <span
+                      className={
+                        doc.verificationStatus === 'VERIFIED'
+                          ? 'text-green-600'
+                          : doc.verificationStatus === 'PENDING'
+                            ? 'text-orange-600'
+                            : 'text-red-600'
+                      }
+                    >
+                      {doc.verificationStatus}
+                    </span>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-muted-foreground flex items-center text-sm">
+                  <Clock className="mr-2 h-4 w-4" /> Uploaded on{' '}
+                  {new Date(doc.uploadedAt).toLocaleDateString()}
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button variant="outline" className="w-full" disabled={!doc.fileUrl}>
+                  <Download className="mr-2 h-4 w-4" /> Download
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

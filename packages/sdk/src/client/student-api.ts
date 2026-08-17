@@ -30,4 +30,7 @@ export const StudentApi = {
   getCertificates: () => studentApiClient.get('/certificates').then((res) => res.data),
   getNotifications: () => studentApiClient.get('/notifications').then((res) => res.data),
   getCalendar: () => studentApiClient.get('/calendar').then((res) => res.data),
+  getDocuments: () => studentApiClient.get('/documents').then((res) => res.data),
+  getFeedback: () => studentApiClient.get('/feedback').then((res) => res.data),
+  getClubs: () => studentApiClient.get('/clubs').then((res) => res.data),
 };
