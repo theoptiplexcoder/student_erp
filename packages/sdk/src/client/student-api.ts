@@ -1,15 +1,16 @@
 'use client';
 
 import axios from 'axios';
-import { createClient } from '@supabase/supabase-js';
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/v1`;
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true },
-});
+type TokenProvider = () => Promise<string | null>;
+
+let tokenProvider: TokenProvider | null = null;
+
+export function configureStudentAuth(provider: TokenProvider) {
+  tokenProvider = provider;
+}
 
 export const studentApiClient = axios.create({
   baseURL: `${API_URL}/student`,
@@ -17,13 +18,10 @@ export const studentApiClient = axios.create({
 });
 
 studentApiClient.interceptors.request.use(async (config) => {
-  if (typeof window !== 'undefined') {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (session?.access_token) {
-      config.headers.Authorization = `Bearer ${session.access_token}`;
+  if (tokenProvider) {
+    const token = await tokenProvider();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
   }
 
