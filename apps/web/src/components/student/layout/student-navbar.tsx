@@ -16,12 +16,12 @@ export function StudentNavbar({ toggleSidebar }: { toggleSidebar?: () => void })
 
   return (
     <header className="bg-background sticky top-0 z-30 flex h-14 items-center gap-4 border-b px-4 lg:h-[60px] lg:px-6">
-      <Button variant="ghost" size="icon" className="shrink-0 md:hidden" onClick={toggleSidebar}>
-        <Menu className="h-5 w-5" />
-        <span className="sr-only">Toggle navigation menu</span>
-      </Button>
-
-      <div className="w-full flex-1">{/* Optional Page Title or Breadcrumb can go here */}</div>
+      <div className="w-full flex-1 md:hidden">
+        <span className="font-display text-lg font-bold">Student Portal</span>
+      </div>
+      <div className="hidden w-full flex-1 md:block">
+        {/* Optional Page Title or Breadcrumb can go here */}
+      </div>
 
       <div className="flex items-center gap-4 md:gap-2 lg:gap-4">
         <Button variant="ghost" size="icon" className="relative" asChild>

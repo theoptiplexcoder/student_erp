@@ -1,8 +1,9 @@
 'use client';
 
-import { Bell, Search, HelpCircle, Menu } from 'lucide-react';
+import { Bell, Search, HelpCircle } from 'lucide-react';
 import { Input, Button, Avatar, AvatarFallback } from '@student-erp/ui';
 import { usePathname } from 'next/navigation';
+import { AdminMobileNav } from './admin-mobile-nav';
 
 export function AdminHeader() {
   const pathname = usePathname();
@@ -14,9 +15,7 @@ export function AdminHeader() {
     <header className="border-border bg-background sticky top-0 z-10 flex h-16 items-center justify-between border-b px-4 sm:px-6">
       <div className="flex flex-1 items-center">
         <div className="mr-4 md:hidden">
-          <Button variant="ghost" size="icon">
-            <Menu className="h-5 w-5" />
-          </Button>
+          <AdminMobileNav />
         </div>
         <div className="text-muted-foreground hidden items-center space-x-2 text-sm sm:flex">
           {segments.map((segment, index) => {

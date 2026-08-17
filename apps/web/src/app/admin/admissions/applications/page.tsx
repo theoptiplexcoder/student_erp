@@ -68,7 +68,8 @@ export default function ApplicationsPage() {
             </div>
           ) : (
             <>
-              <div className="border-border overflow-x-auto rounded-md border">
+              {/* Desktop Table */}
+              <div className="border-border hidden overflow-x-auto rounded-md border md:block">
                 <table className="w-full text-left text-sm">
                   <thead className="text-muted-foreground bg-muted/50 border-border border-b text-xs uppercase">
                     <tr>
@@ -121,8 +122,56 @@ export default function ApplicationsPage() {
                   </tbody>
                 </table>
               </div>
-              <div className="text-muted-foreground mt-4 flex items-center justify-between text-sm">
-                <div>
+
+              {/* Mobile Cards */}
+              <div className="space-y-4 md:hidden">
+                {studentsData.data.map((student) => (
+                  <div
+                    key={student.id}
+                    className="border-border bg-card text-card-foreground rounded-lg border p-4"
+                  >
+                    <div className="mb-2 flex items-start justify-between">
+                      <div>
+                        <div className="font-medium">
+                          {student.user?.firstName} {student.user?.lastName}
+                        </div>
+                        <div className="text-muted-foreground text-xs">
+                          {student.user?.email || '-'}
+                        </div>
+                        <div className="text-muted-foreground mt-1 text-sm">
+                          ID: {student.admissionNumber || student.studentCode || '-'}
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-500">
+                          {student.lifecycleStatus}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="border-border mt-3 flex items-center justify-between border-t pt-3 text-sm">
+                      <div className="text-muted-foreground">
+                        <div>{student.program?.name || '-'}</div>
+                        <div className="text-xs">
+                          {student.createdAt
+                            ? new Date(student.createdAt).toLocaleDateString()
+                            : '-'}
+                        </div>
+                      </div>
+                      <div className="flex items-center">
+                        <Button variant="ghost" size="sm" asChild className="h-8">
+                          <Link href={`/admin/students/${student.id}`}>View</Link>
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="text-muted-foreground mt-4 flex flex-col items-center justify-between gap-4 text-sm md:flex-row">
+                <div className="text-center md:text-left">
                   Showing {Math.min((page - 1) * 50 + 1, studentsData.meta.total)} to{' '}
                   {Math.min(page * 50, studentsData.meta.total)} of{' '}
                   {studentsData.meta.total.toLocaleString()} applications

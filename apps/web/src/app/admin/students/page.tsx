@@ -65,7 +65,8 @@ export default function StudentsPage() {
             </div>
           ) : (
             <>
-              <div className="border-border overflow-x-auto rounded-md border">
+              {/* Desktop Table */}
+              <div className="border-border hidden overflow-x-auto rounded-md border md:block">
                 <table className="w-full text-left text-sm">
                   <thead className="text-muted-foreground bg-muted/50 border-border border-b text-xs uppercase">
                     <tr>
@@ -116,8 +117,49 @@ export default function StudentsPage() {
                   </tbody>
                 </table>
               </div>
-              <div className="text-muted-foreground mt-4 flex items-center justify-between text-sm">
-                <div>
+
+              {/* Mobile Cards */}
+              <div className="space-y-4 md:hidden">
+                {studentsData.data.map((student) => (
+                  <div
+                    key={student.id}
+                    className="border-border bg-card text-card-foreground rounded-lg border p-4"
+                  >
+                    <div className="mb-2 flex items-start justify-between">
+                      <div>
+                        <div className="font-medium">
+                          {student.user?.firstName} {student.user?.lastName}
+                        </div>
+                        <div className="text-muted-foreground text-sm">
+                          {student.admissionNumber}
+                        </div>
+                      </div>
+                      <Link href={`/admin/students/${student.id}`}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="text-muted-foreground">{student.program?.name || '-'}</div>
+                      <span
+                        className={`rounded-full px-2 py-1 text-xs font-medium ${
+                          student.lifecycleStatus === 'ENROLLED'
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-500'
+                            : student.lifecycleStatus === 'APPLICANT'
+                              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-500'
+                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-500'
+                        }`}
+                      >
+                        {student.lifecycleStatus}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="text-muted-foreground mt-4 flex flex-col items-center justify-between gap-4 text-sm md:flex-row">
+                <div className="text-center md:text-left">
                   Showing {Math.min((page - 1) * 50 + 1, studentsData.meta.total)} to{' '}
                   {Math.min(page * 50, studentsData.meta.total)} of{' '}
                   {studentsData.meta.total.toLocaleString()} students

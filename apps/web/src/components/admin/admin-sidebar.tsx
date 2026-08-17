@@ -45,7 +45,7 @@ export function AdminSidebar() {
   return (
     <div
       className={cn(
-        'bg-admin-sidebar border-admin-sidebar-border relative z-20 flex h-screen flex-col border-r transition-all duration-300',
+        'bg-admin-sidebar border-admin-sidebar-border relative z-20 hidden h-screen flex-col border-r transition-all duration-300 md:flex',
         isCollapsed ? 'w-20' : 'w-64',
       )}
     >

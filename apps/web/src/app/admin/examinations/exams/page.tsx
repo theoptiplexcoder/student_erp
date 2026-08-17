@@ -72,7 +72,8 @@ export default function ExamsPage() {
             <div className="text-muted-foreground py-10 text-center">No exams found.</div>
           ) : (
             <>
-              <div className="border-border overflow-x-auto rounded-md border">
+              {/* Desktop Table */}
+              <div className="border-border hidden overflow-x-auto rounded-md border md:block">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -126,8 +127,63 @@ export default function ExamsPage() {
                   </TableBody>
                 </Table>
               </div>
-              <div className="text-muted-foreground mt-4 flex items-center justify-between text-sm">
-                <div>
+
+              {/* Mobile Cards */}
+              <div className="block space-y-4 md:hidden">
+                {examsData.data.map((exam) => (
+                  <div key={exam.id} className="border-border bg-card rounded-lg border p-4">
+                    <div className="mb-3 flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 font-semibold">
+                          <FileText className="text-primary h-4 w-4" />
+                          {exam.name}
+                        </div>
+                        <div className="text-muted-foreground mt-1 text-sm">
+                          Code: {exam.code || '-'}
+                        </div>
+                      </div>
+                      <Badge
+                        variant={
+                          exam.status === 'PUBLISHED'
+                            ? 'default'
+                            : exam.status === 'DRAFT'
+                              ? 'secondary'
+                              : 'outline'
+                        }
+                      >
+                        {exam.status}
+                      </Badge>
+                    </div>
+
+                    <div className="border-border my-3 grid grid-cols-2 gap-3 border-y py-3 text-sm">
+                      <div>
+                        <div className="text-muted-foreground text-xs">Type</div>
+                        <Badge variant="outline" className="mt-1 font-normal">
+                          {exam.examType.replace(/_/g, ' ')}
+                        </Badge>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-xs">Academic Year</div>
+                        <div className="mt-1">{exam.academicYear?.name || '-'}</div>
+                      </div>
+                      <div className="col-span-2">
+                        <div className="text-muted-foreground text-xs">Term</div>
+                        <div className="mt-1">{exam.term?.name || '-'}</div>
+                      </div>
+                    </div>
+
+                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                      <CalendarIcon className="h-4 w-4" />
+                      {exam.startDate ? format(new Date(exam.startDate), 'MMM d') : '-'}
+                      {' - '}
+                      {exam.endDate ? format(new Date(exam.endDate), 'MMM d, yyyy') : '-'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="text-muted-foreground mt-4 flex flex-col items-center justify-between gap-4 text-sm md:flex-row">
+                <div className="text-center md:text-left">
                   Showing {Math.min((page - 1) * 50 + 1, examsData.meta.total)} to{' '}
                   {Math.min(page * 50, examsData.meta.total)} of{' '}
                   {examsData.meta.total.toLocaleString()} exams

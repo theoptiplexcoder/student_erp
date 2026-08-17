@@ -28,9 +28,9 @@ export default function FacultyPage() {
   const { data, isLoading } = useAdminFaculty(page, pageSize, search);
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Faculty Management</h1>
+    <div className="space-y-6 p-4 md:p-6">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Faculty Management</h1>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
           Add Faculty
@@ -54,7 +54,8 @@ export default function FacultyPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
+          {/* Desktop Table */}
+          <div className="hidden rounded-md border md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -129,27 +130,90 @@ export default function FacultyPage() {
             </Table>
           </div>
 
+          {/* Mobile Cards */}
+          <div className="block space-y-4 md:hidden">
+            {isLoading ? (
+              <div className="text-muted-foreground py-10 text-center">Loading faculty data...</div>
+            ) : data?.data.length === 0 ? (
+              <div className="text-muted-foreground py-10 text-center">
+                No faculty members found.
+              </div>
+            ) : (
+              data?.data.map((faculty) => (
+                <div key={faculty.id} className="border-border bg-card rounded-lg border p-4">
+                  <div className="mb-3 flex items-start justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-full">
+                        <User className="text-primary h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="font-semibold">
+                          {faculty.user.firstName} {faculty.user.lastName}
+                        </div>
+                        <div className="text-muted-foreground text-xs">{faculty.user.email}</div>
+                      </div>
+                    </div>
+                    <Badge variant={faculty.status === 'ACTIVE' ? 'default' : 'secondary'}>
+                      {faculty.status}
+                    </Badge>
+                  </div>
+
+                  <div className="mb-3 grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <div className="text-muted-foreground text-xs">Code</div>
+                      <div>{faculty.teacherCode}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground text-xs">Type</div>
+                      <div className="flex items-center capitalize">
+                        <Briefcase className="mr-1 h-3 w-3" />
+                        {faculty.employmentType.toLowerCase()}
+                      </div>
+                    </div>
+                    <div className="col-span-2">
+                      <div className="text-muted-foreground text-xs">Department</div>
+                      <div className="flex items-center">
+                        <Building className="mr-1 h-3 w-3" />
+                        {faculty.department?.name || 'Unassigned'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end border-t pt-3">
+                    <Link href={`/admin/faculty/${faculty.id}`}>
+                      <Button variant="outline" size="sm" className="w-full">
+                        View Details
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
           {data?.meta && data.meta.totalPages > 1 && (
-            <div className="flex items-center justify-end space-x-2 py-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-              >
-                Previous
-              </Button>
-              <div className="text-muted-foreground text-sm">
+            <div className="mt-4 flex flex-col items-center justify-between gap-4 py-4 md:flex-row">
+              <div className="text-muted-foreground order-2 text-sm md:order-1">
                 Page {page} of {data.meta.totalPages}
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.min(data.meta.totalPages, p + 1))}
-                disabled={page === data.meta.totalPages}
-              >
-                Next
-              </Button>
+              <div className="order-1 flex w-full items-center justify-between space-x-2 md:order-2 md:w-auto">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.min(data.meta.totalPages, p + 1))}
+                  disabled={page === data.meta.totalPages}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>

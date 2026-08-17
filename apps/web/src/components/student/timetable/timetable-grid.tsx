@@ -97,94 +97,155 @@ export function TimetableGrid() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="overflow-x-auto">
-          <div className="min-w-[800px]">
-            <table className="border-border w-full border-collapse border text-sm">
-              <thead>
-                <tr>
-                  <th className="bg-muted border-border w-32 border p-3 text-left font-medium">
-                    Time
-                  </th>
-                  {displayDays.map((day) => (
-                    <th
-                      key={day}
-                      className="bg-muted border-border border p-3 text-center font-medium capitalize"
-                    >
-                      {day.toLowerCase()}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {timeSlots.length > 0 ? (
-                  timeSlots.map((slot) => {
-                    const [start, end] = slot.split('-');
-                    return (
-                      <tr key={slot}>
-                        <td className="border-border text-muted-foreground border p-3 align-top font-medium whitespace-nowrap">
-                          {start} - {end}
-                        </td>
-                        {displayDays.map((day) => {
-                          const entry = timetable.find(
-                            (e: any) =>
-                              e.dayOfWeek === day &&
-                              `${formatTime(e.startTime)}-${formatTime(e.endTime)}` === slot,
-                          );
-
-                          return (
-                            <td
-                              key={`${day}-${slot}`}
-                              className="border-border h-24 min-w-[140px] border p-2 align-top"
-                            >
-                              {entry ? (
-                                <div
-                                  className={`flex h-full flex-col justify-between rounded border p-2 ${courseColors[entry.courseId]}`}
-                                >
-                                  <div>
-                                    <div
-                                      className="mb-1 line-clamp-2 text-xs font-semibold"
-                                      title={entry.course?.name}
-                                    >
-                                      {entry.course?.name || 'Unknown'}
-                                    </div>
-                                    <div className="text-[10px] font-medium opacity-80">
-                                      {entry.course?.code}
-                                    </div>
-                                  </div>
-                                  <div className="mt-2 space-y-1">
-                                    <div className="flex items-center gap-1 text-[10px] opacity-90">
-                                      <User className="h-3 w-3" />
-                                      <span className="truncate">
-                                        {entry.faculty?.user?.lastName || 'TBA'}
-                                      </span>
-                                    </div>
-                                    {entry.room && (
-                                      <div className="flex items-center gap-1 text-[10px] opacity-90">
-                                        <MapPin className="h-3 w-3" />
-                                        <span className="truncate">{entry.room}</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              ) : null}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })
-                ) : (
+        <CardContent className="p-0 md:p-6">
+          {/* Desktop View */}
+          <div className="hidden overflow-x-auto md:block">
+            <div className="min-w-[800px]">
+              <table className="border-border w-full border-collapse border text-sm">
+                <thead>
                   <tr>
-                    <td
-                      colSpan={7}
-                      className="text-muted-foreground border-border border p-8 text-center"
-                    >
-                      No timetable entries found for this week.
-                    </td>
+                    <th className="bg-muted border-border w-32 border p-3 text-left font-medium">
+                      Time
+                    </th>
+                    {displayDays.map((day) => (
+                      <th
+                        key={day}
+                        className="bg-muted border-border border p-3 text-center font-medium capitalize"
+                      >
+                        {day.toLowerCase()}
+                      </th>
+                    ))}
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {timeSlots.length > 0 ? (
+                    timeSlots.map((slot) => {
+                      const [start, end] = slot.split('-');
+                      return (
+                        <tr key={slot}>
+                          <td className="border-border text-muted-foreground border p-3 align-top font-medium whitespace-nowrap">
+                            {start} - {end}
+                          </td>
+                          {displayDays.map((day) => {
+                            const entry = timetable.find(
+                              (e: any) =>
+                                e.dayOfWeek === day &&
+                                `${formatTime(e.startTime)}-${formatTime(e.endTime)}` === slot,
+                            );
+
+                            return (
+                              <td
+                                key={`${day}-${slot}`}
+                                className="border-border h-24 min-w-[140px] border p-2 align-top"
+                              >
+                                {entry ? (
+                                  <div
+                                    className={`flex h-full flex-col justify-between rounded border p-2 ${courseColors[entry.courseId]}`}
+                                  >
+                                    <div>
+                                      <div
+                                        className="mb-1 line-clamp-2 text-xs font-semibold"
+                                        title={entry.course?.name}
+                                      >
+                                        {entry.course?.name || 'Unknown'}
+                                      </div>
+                                      <div className="text-[10px] font-medium opacity-80">
+                                        {entry.course?.code}
+                                      </div>
+                                    </div>
+                                    <div className="mt-2 space-y-1">
+                                      <div className="flex items-center gap-1 text-[10px] opacity-90">
+                                        <User className="h-3 w-3" />
+                                        <span className="truncate">
+                                          {entry.faculty?.user?.lastName || 'TBA'}
+                                        </span>
+                                      </div>
+                                      {entry.room && (
+                                        <div className="flex items-center gap-1 text-[10px] opacity-90">
+                                          <MapPin className="h-3 w-3" />
+                                          <span className="truncate">{entry.room}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                ) : null}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="text-muted-foreground border-border border p-8 text-center"
+                      >
+                        No timetable entries found for this week.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile View */}
+          <div className="block md:hidden">
+            {timeSlots.length > 0 ? (
+              <div className="divide-y border-t">
+                {displayDays.map((day) => {
+                  const dayEntries = timetable.filter((e: any) => e.dayOfWeek === day);
+                  if (dayEntries.length === 0) return null;
+
+                  return (
+                    <div key={day} className="p-4">
+                      <h3 className="mb-3 text-lg font-semibold capitalize">{day.toLowerCase()}</h3>
+                      <div className="space-y-3">
+                        {dayEntries
+                          .sort((a: any, b: any) =>
+                            formatTime(a.startTime).localeCompare(formatTime(b.startTime)),
+                          )
+                          .map((entry: any, idx: number) => (
+                            <div
+                              key={idx}
+                              className={`flex flex-col rounded-lg border p-3 ${courseColors[entry.courseId]}`}
+                            >
+                              <div className="mb-2 flex items-start justify-between">
+                                <div>
+                                  <div className="text-sm font-semibold">
+                                    {entry.course?.name || 'Unknown'}
+                                  </div>
+                                  <div className="text-xs opacity-80">{entry.course?.code}</div>
+                                </div>
+                                <div className="bg-background/50 rounded px-2 py-1 text-xs font-medium">
+                                  {formatTime(entry.startTime)} - {formatTime(entry.endTime)}
+                                </div>
+                              </div>
+                              <div className="mt-2 flex items-end justify-between text-xs opacity-90">
+                                <div className="flex items-center gap-1">
+                                  <User className="h-3.5 w-3.5" />
+                                  <span>{entry.faculty?.user?.lastName || 'TBA'}</span>
+                                </div>
+                                {entry.room && (
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="h-3.5 w-3.5" />
+                                    <span>{entry.room}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-muted-foreground p-8 text-center">
+                No timetable entries found for this week.
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

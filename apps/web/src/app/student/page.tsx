@@ -12,10 +12,10 @@ export default function StudentDashboardPage() {
       <StudentWelcomeHeader />
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="md:col-span-2 lg:col-span-2">
           <TodayScheduleCard />
         </div>
-        <div>
+        <div className="md:col-span-2 lg:col-span-1">
           <AttendanceOverviewCard />
         </div>
       </div>
@@ -27,7 +27,7 @@ export default function StudentDashboardPage() {
         <div>
           <UpcomingEventsCard />
         </div>
-        <div>
+        <div className="md:col-span-2 lg:col-span-1">
           <RecentAnnouncements />
         </div>
       </div>
