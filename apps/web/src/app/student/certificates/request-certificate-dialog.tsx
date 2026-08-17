@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useStudentProfile, useCreateCertificateRequest } from '@student-erp/hooks';
+import { useCreateCertificateRequest } from '@student-erp/hooks';
 import {
   Dialog,
   DialogContent,
@@ -40,7 +40,6 @@ const mapUITypeToBackendType = (type: string) => {
 
 export function RequestCertificateDialog() {
   const [open, setOpen] = useState(false);
-  const { data: student } = useStudentProfile();
   const createRequest = useCreateCertificateRequest();
 
   const [certType, setCertType] = useState('');
@@ -92,42 +91,15 @@ export function RequestCertificateDialog() {
           <Plus className="mr-2 h-4 w-4" /> Request Certificate
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Request Certificate</DialogTitle>
+      <DialogContent className="w-[95vw] max-w-lg p-6 sm:w-full sm:max-w-[500px]">
+        <DialogHeader className="mb-2">
+          <DialogTitle className="text-xl font-semibold tracking-tight">
+            Request Certificate
+          </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-          <div className="bg-muted/20 space-y-4 rounded-md border p-4">
-            <h4 className="text-muted-foreground text-sm font-medium">Student Details</h4>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <span className="text-muted-foreground">Name:</span> {student?.user?.firstName}{' '}
-                {student?.user?.lastName}
-              </div>
-              <div>
-                <span className="text-muted-foreground">ID:</span> {student?.studentCode}
-              </div>
-              <div>
-                <span className="text-muted-foreground">USN:</span>{' '}
-                {student?.universityRegNo || 'N/A'}
-              </div>
-              <div>
-                <span className="text-muted-foreground">Program:</span>{' '}
-                {student?.program?.name || 'N/A'}
-              </div>
-              <div>
-                <span className="text-muted-foreground">Department:</span>{' '}
-                {student?.department?.name || 'N/A'}
-              </div>
-              <div>
-                <span className="text-muted-foreground">Section:</span>{' '}
-                {student?.section?.name || 'N/A'}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="certType">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <div className="space-y-2.5">
+            <Label htmlFor="certType" className="font-medium">
               Certificate Type <span className="text-destructive">*</span>
             </Label>
             <select
@@ -148,38 +120,45 @@ export function RequestCertificateDialog() {
             </select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="purpose">
+          <div className="space-y-2.5">
+            <Label htmlFor="purpose" className="font-medium">
               Purpose <span className="text-destructive">*</span>
             </Label>
             <textarea
               id="purpose"
               required
-              className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-base focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[100px] w-full rounded-md border px-3 py-2 text-base focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
               placeholder="Briefly describe why you need this certificate"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="file">Supporting Documents (Optional)</Label>
-            <Input id="file" type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+          <div className="space-y-2.5">
+            <Label htmlFor="file" className="font-medium">
+              Supporting Documents (Optional)
+            </Label>
+            <Input
+              id="file"
+              type="file"
+              className="cursor-pointer"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+            />
           </div>
 
           {errorMsg && (
-            <div className="text-destructive bg-destructive/10 mt-2 rounded-md p-2 text-sm font-medium">
+            <div className="text-destructive bg-destructive/10 rounded-md p-3 text-sm font-medium">
               {errorMsg}
             </div>
           )}
 
           {successMsg && (
-            <div className="mt-2 rounded-md bg-green-50 p-2 text-sm font-medium text-green-600">
+            <div className="rounded-md border border-green-200 bg-green-50/50 p-3 text-sm font-medium text-green-600 dark:border-green-500/20 dark:bg-green-500/10 dark:text-green-400">
               {successMsg}
             </div>
           )}
 
-          <div className="flex justify-end space-x-2 pt-4">
+          <div className="mt-2 flex items-center justify-end gap-3 border-t pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
