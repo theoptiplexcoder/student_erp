@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://student-erp-web.vercel.app/api/v1';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 export const studentApiClient = axios.create({
   baseURL: `${API_URL}/student`,

@@ -17,11 +17,11 @@ import { Plus, ArrowLeft, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://student-erp-web.vercel.app';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 async function getCurriculum(id: string) {
   try {
-    const res = await fetch(`${API_URL}/api/admin/academic/curriculums/${id}`, {
+    const res = await fetch(`${API_URL}/admin/academic/curriculums/${id}`, {
       cache: 'no-store',
     });
     if (!res.ok) return null;
@@ -118,10 +118,9 @@ export default async function TermPage({
                         <form
                           action={async () => {
                             'use server';
-                            await fetch(
-                              `${API_URL}/api/admin/academic/curriculum-courses/${cc.id}`,
-                              { method: 'DELETE' },
-                            );
+                            await fetch(`${API_URL}/admin/academic/curriculum-courses/${cc.id}`, {
+                              method: 'DELETE',
+                            });
                           }}
                         >
                           <Button
