@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, KeyRound, ArrowRight, CheckCircle } from 'lucide-react';
 import { Button, Input, Label } from '@student-erp/ui';
@@ -16,9 +16,12 @@ function ResetPasswordForm() {
   const [success, setSuccess] = useState(false);
   const [hasCode, setHasCode] = useState(false);
 
+  const code = searchParams.get('code');
+  const hasExchangedRef = useRef(false);
+
   useEffect(() => {
-    const code = searchParams.get('code');
-    if (code) {
+    if (code && !hasExchangedRef.current) {
+      hasExchangedRef.current = true;
       const supabase = createClient();
       supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
         if (error) {
@@ -28,7 +31,7 @@ function ResetPasswordForm() {
         }
       });
     }
-  }, [searchParams]);
+  }, [code]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
