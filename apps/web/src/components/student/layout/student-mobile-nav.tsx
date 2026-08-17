@@ -10,11 +10,14 @@ import { useMobileSidebarStore } from '@/hooks/use-sidebar';
 
 export function StudentMobileNav() {
   const pathname = usePathname();
-  const { isOpen, setIsOpen } = useMobileSidebarStore();
+  const isOpen = useMobileSidebarStore((state) => state.isOpen);
+  const setIsOpen = useMobileSidebarStore((state) => state.setIsOpen);
 
   useEffect(() => {
-    setIsOpen(false);
-  }, [pathname, setIsOpen]);
+    if (isOpen) {
+      setIsOpen(false);
+    }
+  }, [pathname]);
 
   // Lock body scroll when open
   useEffect(() => {
