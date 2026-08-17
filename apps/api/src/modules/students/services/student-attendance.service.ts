@@ -9,9 +9,9 @@ export class StudentAttendanceService {
     private policyFactory: PolicyFactory,
   ) {}
 
-  async getAttendanceSummary(authUserId: string, institutionId: string) {
+  async getAttendanceSummary(userId: string, institutionId: string) {
     const student = await this.prisma.student.findFirst({
-      where: { user: { authUserId, institutionId } },
+      where: { userId, institutionId },
       include: { institution: true },
     });
 
@@ -65,9 +65,9 @@ export class StudentAttendanceService {
     return results;
   }
 
-  async getCourseAttendance(authUserId: string, institutionId: string, courseId: string) {
+  async getCourseAttendance(userId: string, institutionId: string, courseId: string) {
     const student = await this.prisma.student.findFirst({
-      where: { user: { authUserId, institutionId } },
+      where: { userId, institutionId },
       include: { institution: true },
     });
 

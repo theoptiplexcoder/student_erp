@@ -5,13 +5,11 @@ import { PrismaService } from '../../../database/prisma.service';
 export class StudentService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getStudentProfile(authUserId: string, institutionId: string) {
+  async getStudentProfile(userId: string, institutionId: string) {
     const student = await this.prisma.student.findFirst({
       where: {
-        user: {
-          authUserId,
-          institutionId,
-        },
+        userId,
+        institutionId,
       },
       include: {
         user: true,
@@ -27,8 +25,8 @@ export class StudentService {
     return student;
   }
 
-  async getDashboardData(authUserId: string, institutionId: string) {
-    const student = await this.getStudentProfile(authUserId, institutionId);
+  async getDashboardData(userId: string, institutionId: string) {
+    const student = await this.getStudentProfile(userId, institutionId);
 
     const today = new Date().getDay();
     const dayMap = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
@@ -99,8 +97,8 @@ export class StudentService {
     };
   }
 
-  async getTimetable(authUserId: string, institutionId: string) {
-    const student = await this.getStudentProfile(authUserId, institutionId);
+  async getTimetable(userId: string, institutionId: string) {
+    const student = await this.getStudentProfile(userId, institutionId);
 
     const enrollments = await this.prisma.enrollment.findMany({
       where: {
@@ -129,8 +127,8 @@ export class StudentService {
     return timetable;
   }
 
-  async getAssignments(authUserId: string, institutionId: string) {
-    const student = await this.getStudentProfile(authUserId, institutionId);
+  async getAssignments(userId: string, institutionId: string) {
+    const student = await this.getStudentProfile(userId, institutionId);
 
     const enrollments = await this.prisma.enrollment.findMany({
       where: {
@@ -157,8 +155,8 @@ export class StudentService {
     });
   }
 
-  async getExaminations(authUserId: string, institutionId: string) {
-    const student = await this.getStudentProfile(authUserId, institutionId);
+  async getExaminations(userId: string, institutionId: string) {
+    const student = await this.getStudentProfile(userId, institutionId);
 
     const enrollments = await this.prisma.enrollment.findMany({
       where: {
@@ -181,11 +179,11 @@ export class StudentService {
     });
   }
 
-  async getNotifications(authUserId: string, institutionId: string) {
+  async getNotifications(userId: string, institutionId: string) {
     return this.prisma.notification.findMany({
       where: {
         institutionId,
-        userId: authUserId,
+        userId: userId,
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -198,8 +196,8 @@ export class StudentService {
     });
   }
 
-  async getFeedback(authUserId: string, institutionId: string) {
-    const student = await this.getStudentProfile(authUserId, institutionId);
+  async getFeedback(userId: string, institutionId: string) {
+    const student = await this.getStudentProfile(userId, institutionId);
 
     const forms = await this.prisma.feedbackForm.findMany({
       where: { institutionId, isActive: true },
@@ -213,8 +211,8 @@ export class StudentService {
     return { forms, grievances };
   }
 
-  async getClubs(authUserId: string, institutionId: string) {
-    const student = await this.getStudentProfile(authUserId, institutionId);
+  async getClubs(userId: string, institutionId: string) {
+    const student = await this.getStudentProfile(userId, institutionId);
 
     const myMemberships = await this.prisma.clubMembership.findMany({
       where: { institutionId, studentId: student.id, status: 'ACTIVE' },

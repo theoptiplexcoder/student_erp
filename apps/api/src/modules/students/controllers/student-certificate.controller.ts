@@ -10,7 +10,7 @@ export class StudentCertificateController {
 
   @Get()
   async getCertificates(@Request() req: any) {
-    const { id: authUserId, institutionId } = req.user;
-    return this.certificateService.getCertificates(authUserId, institutionId);
+    const { id: userId, institutionId } = req.user;
+    return this.certificateService.getCertificates(userId, institutionId);
   }
 }

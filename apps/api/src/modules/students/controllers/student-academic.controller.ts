@@ -10,13 +10,13 @@ export class StudentAcademicController {
 
   @Get('courses')
   async getCourses(@Request() req: any) {
-    const { id: authUserId, institutionId } = req.user;
-    return this.academicService.getCourses(authUserId, institutionId);
+    const { id: userId, institutionId } = req.user;
+    return this.academicService.getCourses(userId, institutionId);
   }
 
   @Get('courses/:courseId')
   async getCourseDetails(@Request() req: any, @Param('courseId') courseId: string) {
-    const { id: authUserId, institutionId } = req.user;
-    return this.academicService.getCourseDetails(authUserId, institutionId, courseId);
+    const { id: userId, institutionId } = req.user;
+    return this.academicService.getCourseDetails(userId, institutionId, courseId);
   }
 }

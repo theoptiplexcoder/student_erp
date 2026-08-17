@@ -5,9 +5,9 @@ import { PrismaService } from '../../../database/prisma.service';
 export class StudentAcademicService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getCourses(authUserId: string, institutionId: string) {
+  async getCourses(userId: string, institutionId: string) {
     const student = await this.prisma.student.findFirst({
-      where: { user: { authUserId, institutionId } },
+      where: { userId, institutionId },
     });
 
     if (!student) {
@@ -37,9 +37,9 @@ export class StudentAcademicService {
     }));
   }
 
-  async getCourseDetails(authUserId: string, institutionId: string, courseId: string) {
+  async getCourseDetails(userId: string, institutionId: string, courseId: string) {
     const student = await this.prisma.student.findFirst({
-      where: { user: { authUserId, institutionId } },
+      where: { userId, institutionId },
     });
 
     if (!student) return null;

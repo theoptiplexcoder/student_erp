@@ -10,13 +10,13 @@ export class StudentAttendanceController {
 
   @Get()
   async getAttendanceSummary(@Request() req: any) {
-    const { id: authUserId, institutionId } = req.user;
-    return this.attendanceService.getAttendanceSummary(authUserId, institutionId);
+    const { id: userId, institutionId } = req.user;
+    return this.attendanceService.getAttendanceSummary(userId, institutionId);
   }
 
   @Get(':courseId')
   async getCourseAttendance(@Request() req: any, @Param('courseId') courseId: string) {
-    const { id: authUserId, institutionId } = req.user;
-    return this.attendanceService.getCourseAttendance(authUserId, institutionId, courseId);
+    const { id: userId, institutionId } = req.user;
+    return this.attendanceService.getCourseAttendance(userId, institutionId, courseId);
   }
 }

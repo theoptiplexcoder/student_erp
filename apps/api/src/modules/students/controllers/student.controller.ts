@@ -10,38 +10,38 @@ export class StudentController {
 
   @Get('me')
   async getProfile(@Request() req: any) {
-    const { id: authUserId, institutionId } = req.user;
-    return this.studentService.getStudentProfile(authUserId, institutionId);
+    const { id: userId, institutionId } = req.user;
+    return this.studentService.getStudentProfile(userId, institutionId);
   }
 
   @Get('dashboard')
   async getDashboard(@Request() req: any) {
-    const { id: authUserId, institutionId } = req.user;
-    return this.studentService.getDashboardData(authUserId, institutionId);
+    const { id: userId, institutionId } = req.user;
+    return this.studentService.getDashboardData(userId, institutionId);
   }
 
   @Get('timetable')
   async getTimetable(@Request() req: any) {
-    const { id: authUserId, institutionId } = req.user;
-    return this.studentService.getTimetable(authUserId, institutionId);
+    const { id: userId, institutionId } = req.user;
+    return this.studentService.getTimetable(userId, institutionId);
   }
 
   @Get('assignments')
   async getAssignments(@Request() req: any) {
-    const { id: authUserId, institutionId } = req.user;
-    return this.studentService.getAssignments(authUserId, institutionId);
+    const { id: userId, institutionId } = req.user;
+    return this.studentService.getAssignments(userId, institutionId);
   }
 
   @Get('examinations')
   async getExaminations(@Request() req: any) {
-    const { id: authUserId, institutionId } = req.user;
-    return this.studentService.getExaminations(authUserId, institutionId);
+    const { id: userId, institutionId } = req.user;
+    return this.studentService.getExaminations(userId, institutionId);
   }
 
   @Get('notifications')
   async getNotifications(@Request() req: any) {
-    const { id: authUserId, institutionId } = req.user;
-    return this.studentService.getNotifications(authUserId, institutionId);
+    const { id: userId, institutionId } = req.user;
+    return this.studentService.getNotifications(userId, institutionId);
   }
 
   @Get('calendar')
@@ -52,13 +52,13 @@ export class StudentController {
 
   @Get('feedback')
   async getFeedback(@Request() req: any) {
-    const { id: authUserId, institutionId } = req.user;
-    return this.studentService.getFeedback(authUserId, institutionId);
+    const { id: userId, institutionId } = req.user;
+    return this.studentService.getFeedback(userId, institutionId);
   }
 
   @Get('clubs')
   async getClubs(@Request() req: any) {
-    const { id: authUserId, institutionId } = req.user;
-    return this.studentService.getClubs(authUserId, institutionId);
+    const { id: userId, institutionId } = req.user;
+    return this.studentService.getClubs(userId, institutionId);
   }
 }

@@ -10,7 +10,7 @@ export class StudentDocumentController {
 
   @Get()
   async getDocuments(@Request() req: any) {
-    const { id: authUserId, institutionId } = req.user;
-    return this.documentService.getDocuments(authUserId, institutionId);
+    const { id: userId, institutionId } = req.user;
+    return this.documentService.getDocuments(userId, institutionId);
   }
 }

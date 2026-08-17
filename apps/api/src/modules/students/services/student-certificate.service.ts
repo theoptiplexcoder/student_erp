@@ -5,9 +5,9 @@ import { PrismaService } from '../../../database/prisma.service';
 export class StudentCertificateService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getCertificates(authUserId: string, institutionId: string) {
+  async getCertificates(userId: string, institutionId: string) {
     const student = await this.prisma.student.findFirst({
-      where: { user: { authUserId, institutionId } },
+      where: { userId, institutionId },
     });
 
     if (!student) return [];
