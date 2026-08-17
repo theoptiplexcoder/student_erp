@@ -46,6 +46,7 @@ studentApiClient.interceptors.response.use(
 
 export const StudentApi = {
   getProfile: () => studentApiClient.get('/me').then((res) => res.data),
+  updateProfile: (data: any) => studentApiClient.patch('/me', data).then((res) => res.data),
   getDashboard: () => studentApiClient.get('/dashboard').then((res) => res.data),
   getCourses: () => studentApiClient.get('/academic/courses').then((res) => res.data),
   getCourseDetails: (courseId: string) =>

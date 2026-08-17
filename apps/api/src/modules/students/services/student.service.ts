@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
+import { UpdateStudentProfileDto } from '../dto/update-student-profile.dto';
 
 @Injectable()
 export class StudentService {
@@ -13,7 +14,11 @@ export class StudentService {
       },
       include: {
         user: true,
-        program: true,
+        program: {
+          include: {
+            department: true,
+          },
+        },
         section: true,
       },
     });
@@ -23,6 +28,32 @@ export class StudentService {
     }
 
     return student;
+  }
+
+  async updateStudentProfile(userId: string, institutionId: string, data: UpdateStudentProfileDto) {
+    const student = await this.getStudentProfile(userId, institutionId);
+
+    const { phone, photoUrl, ...studentData } = data;
+
+    if (phone !== undefined || photoUrl !== undefined) {
+      const userUpdate: any = {};
+      if (phone !== undefined) userUpdate.phone = phone;
+      if (photoUrl !== undefined) userUpdate.photoUrl = photoUrl;
+
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: userUpdate,
+      });
+    }
+
+    if (Object.keys(studentData).length > 0) {
+      await this.prisma.student.update({
+        where: { id: student.id },
+        data: studentData,
+      });
+    }
+
+    return this.getStudentProfile(userId, institutionId);
   }
 
   async getDashboardData(userId: string, institutionId: string) {

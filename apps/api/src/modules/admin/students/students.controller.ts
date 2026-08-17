@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Put, Body, Param, Query, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Body, Param, Query, Request } from '@nestjs/common';
 import { StudentsService } from './students.service';
 import { StudentQueryDto } from './dto/student-query.dto';
+import { UpdateStudentDto } from './dto/update-student.dto';
 import { Roles } from '../../../decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 
@@ -19,6 +20,12 @@ export class StudentsController {
   findOne(@Request() req: any, @Param('id') id: string) {
     const { institutionId } = req.user;
     return this.studentsService.findOne(institutionId, id);
+  }
+
+  @Patch(':id')
+  updateStudent(@Request() req: any, @Param('id') id: string, @Body() data: UpdateStudentDto) {
+    const { institutionId } = req.user;
+    return this.studentsService.updateStudent(institutionId, id, data);
   }
 
   @Post(':id/documents')

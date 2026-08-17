@@ -10,6 +10,16 @@ export const useStudentProfile = () => {
   });
 };
 
+export const useUpdateStudentProfile = () => {
+  const queryClient = useQueryClient();
+  return useMutation<any, Error, any>({
+    mutationFn: StudentApi.updateProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'profile'] });
+    },
+  });
+};
+
 export const useStudentDashboard = () => {
   return useQuery({
     queryKey: ['student', 'dashboard'],

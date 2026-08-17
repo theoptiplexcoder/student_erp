@@ -328,6 +328,9 @@ importers:
         specifier: 19.0.0
         version: 19.0.0
     devDependencies:
+      '@student-erp/sdk':
+        specifier: workspace:^
+        version: link:../sdk
       typescript:
         specifier: ^5.5.0
         version: 5.9.3

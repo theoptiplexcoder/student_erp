@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { StudentQueryDto } from './dto/student-query.dto';
+import { UpdateStudentDto } from './dto/update-student.dto';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -89,6 +90,41 @@ export class StudentsService {
     }
 
     return student;
+  }
+
+  async updateStudent(institutionId: string, id: string, data: UpdateStudentDto) {
+    const student = await this.prisma.student.findFirst({
+      where: { id, institutionId },
+      include: { user: true },
+    });
+    if (!student) throw new NotFoundException('Student not found');
+
+    const { firstName, lastName, phone, ...studentData } = data;
+
+    if (firstName !== undefined || lastName !== undefined || phone !== undefined) {
+      const userUpdate: any = {};
+      if (firstName !== undefined) userUpdate.firstName = firstName;
+      if (lastName !== undefined) userUpdate.lastName = lastName;
+      if (phone !== undefined) userUpdate.phone = phone;
+
+      await this.prisma.user.update({
+        where: { id: student.userId },
+        data: userUpdate,
+      });
+    }
+
+    if (Object.keys(studentData).length > 0) {
+      const mappedData: any = { ...studentData };
+      if (mappedData.dateOfBirth) {
+        mappedData.dateOfBirth = new Date(mappedData.dateOfBirth);
+      }
+      await this.prisma.student.update({
+        where: { id: student.id },
+        data: mappedData,
+      });
+    }
+
+    return this.findOne(institutionId, id);
   }
 
   async addDocument(

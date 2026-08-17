@@ -1,7 +1,8 @@
-import { Controller, Get, Patch, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Patch, Param, UseGuards, Request, Body } from '@nestjs/common';
 import { StudentService } from '../services/student.service';
 import { Roles } from '../../../decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { UpdateStudentProfileDto } from '../dto/update-student-profile.dto';
 
 @Controller('student')
 @Roles(UserRole.STUDENT)
@@ -12,6 +13,12 @@ export class StudentController {
   async getProfile(@Request() req: any) {
     const { id: userId, institutionId } = req.user;
     return this.studentService.getStudentProfile(userId, institutionId);
+  }
+
+  @Patch('me')
+  async updateProfile(@Request() req: any, @Body() updateDto: UpdateStudentProfileDto) {
+    const { id: userId, institutionId } = req.user;
+    return this.studentService.updateStudentProfile(userId, institutionId, updateDto);
   }
 
   @Get('dashboard')

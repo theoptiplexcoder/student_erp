@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@student-erp/sdk": "workspace:^",
     "typescript": "^5.5.0"
   },
   "peerDependencies": {
