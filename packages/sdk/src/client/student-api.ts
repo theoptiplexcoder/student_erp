@@ -57,13 +57,17 @@ export const StudentApi = {
   getAssignments: () => studentApiClient.get('/assignments').then((res) => res.data),
   getExaminations: () => studentApiClient.get('/examinations').then((res) => res.data),
   getCertificates: () => studentApiClient.get('/certificates').then((res) => res.data),
+  createCertificateRequest: (data: any) =>
+    studentApiClient.post('/certificates', data).then((res) => res.data),
+  getGrievances: () => studentApiClient.get('/grievances').then((res) => res.data),
+  createGrievance: (data: any) =>
+    studentApiClient.post('/grievances', data).then((res) => res.data),
   getNotifications: () => studentApiClient.get('/notifications').then((res) => res.data),
   markNotificationAsRead: (id: string) =>
     studentApiClient.patch(`/notifications/${id}/read`).then((res) => res.data),
   markAllNotificationsAsRead: () =>
     studentApiClient.patch('/notifications/read-all').then((res) => res.data),
   getCalendar: () => studentApiClient.get('/calendar').then((res) => res.data),
-  getDocuments: () => studentApiClient.get('/documents').then((res) => res.data),
   getFeedback: () => studentApiClient.get('/feedback').then((res) => res.data),
   getClubs: () => studentApiClient.get('/clubs').then((res) => res.data),
 };

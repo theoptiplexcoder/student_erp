@@ -61,6 +61,33 @@ export const useStudentCertificates = () => {
   });
 };
 
+export const useCreateCertificateRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: StudentApi.createCertificateRequest,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'certificates'] });
+    },
+  });
+};
+
+export const useStudentGrievances = () => {
+  return useQuery({
+    queryKey: ['student', 'grievances'],
+    queryFn: StudentApi.getGrievances,
+  });
+};
+
+export const useCreateGrievance = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: StudentApi.createGrievance,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'grievances'] });
+    },
+  });
+};
+
 export const useStudentNotifications = () => {
   return useQuery({
     queryKey: ['student', 'notifications'],
@@ -106,13 +133,6 @@ export const useStudentExaminations = () => {
   return useQuery({
     queryKey: ['student', 'examinations'],
     queryFn: StudentApi.getExaminations,
-  });
-};
-
-export const useStudentDocuments = () => {
-  return useQuery({
-    queryKey: ['student', 'documents'],
-    queryFn: StudentApi.getDocuments,
   });
 };
 

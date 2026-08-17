@@ -13,13 +13,15 @@ import {
 import { Button } from '@student-erp/ui';
 import { Badge } from '@student-erp/ui';
 import { MessageSquare, AlertCircle, Plus, CheckCircle2 } from 'lucide-react';
-import { useStudentFeedback } from '@student-erp/hooks';
+import { useStudentFeedback, useStudentGrievances } from '@student-erp/hooks';
+import { RaiseGrievanceDialog } from './raise-grievance-dialog';
 
 export default function FeedbackPage() {
-  const { data, isPending } = useStudentFeedback();
+  const { data: feedbackData, isPending: isFeedbackPending } = useStudentFeedback();
+  const { data: grievancesData, isPending: isGrievancesPending } = useStudentGrievances();
 
-  const pendingFeedback = data?.forms || [];
-  const myGrievances = data?.grievances || [];
+  const pendingFeedback = feedbackData?.forms || [];
+  const myGrievances = grievancesData || [];
 
   return (
     <div className="mx-auto flex h-full max-w-7xl flex-col gap-6 pb-10">
@@ -35,7 +37,7 @@ export default function FeedbackPage() {
         </TabsList>
 
         <TabsContent value="feedback" className="mt-6 space-y-6">
-          {isPending ? (
+          {isFeedbackPending ? (
             <div className="text-muted-foreground mt-10 text-center">Loading...</div>
           ) : pendingFeedback.length === 0 ? (
             <div className="text-muted-foreground mt-10 text-center">No active feedback forms.</div>
@@ -58,12 +60,10 @@ export default function FeedbackPage() {
 
         <TabsContent value="grievances" className="mt-6">
           <div className="mb-6 flex justify-end">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> Raise Grievance
-            </Button>
+            <RaiseGrievanceDialog />
           </div>
 
-          {isPending ? (
+          {isGrievancesPending ? (
             <div className="text-muted-foreground mt-10 text-center">Loading...</div>
           ) : myGrievances.length === 0 ? (
             <div className="text-muted-foreground mt-10 text-center">No grievances raised yet.</div>

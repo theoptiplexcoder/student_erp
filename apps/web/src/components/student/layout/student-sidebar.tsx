@@ -28,9 +28,7 @@ export const sidebarNavItems = [
   { title: 'Calendar', href: '/student/calendar', icon: CalendarDays },
   { title: 'Certificates', href: '/student/certificates', icon: GraduationCap },
   { title: 'Feedback', href: '/student/feedback', icon: MessageSquare },
-  { title: 'Documents', href: '/student/documents', icon: FileText },
   { title: 'Clubs', href: '/student/clubs', icon: Users },
-  { title: 'Forums', href: '/student/forums', icon: Library },
 ];
 
 export function StudentSidebar() {

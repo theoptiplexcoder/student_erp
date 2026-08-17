@@ -191,6 +191,52 @@ enum CertificateType {
   MIGRATION
   PROVISIONAL
   DEGREE
+  OTHER
+}
+
+enum GrievanceCategory {
+  ACADEMIC
+  FACULTY_TEACHER
+  EXAMINATION
+  ATTENDANCE
+  TIMETABLE
+  ADMISSION
+  FEES
+  HOSTEL
+  LIBRARY
+  TRANSPORT
+  FACILITIES
+  MISCONDUCT
+  OTHER
+}
+
+enum GrievanceRelatedType {
+  COURSE
+  FACULTY
+  ATTENDANCE
+  MARKS
+}
+
+model Grievance {
+  id                String                @id @default(uuid()) @db.Uuid
+  institutionId     String                @map("institution_id") @db.Uuid
+  studentId         String                @map("student_id") @db.Uuid
+  category          GrievanceCategory
+  subject           String
+  description       String                @db.Text
+  relatedType       GrievanceRelatedType? @map("related_type")
+  relatedId         String?               @map("related_id") @db.Uuid
+  isAnonymous       Boolean               @default(false) @map("is_anonymous")
+  status            String                @default("OPEN")
+  createdAt         DateTime              @default(now()) @map("created_at")
+  updatedAt         DateTime              @updatedAt @map("updated_at")
+
+  institution       Institution @relation(fields: [institutionId], references: [id])
+  student           Student     @relation(fields: [studentId], references: [id])
+
+  @@index([institutionId])
+  @@index([studentId])
+  @@map("grievances")
 }
 
 enum CertificateRequestStatus {
@@ -309,6 +355,7 @@ model Institution {
   announcements          Announcement[]
   notifications          Notification[]
   certificateRequests    CertificateRequest[]
+  grievances             Grievance[]
   certificates           Certificate[]
   studentDocuments       StudentDocument[]
   feedbackForms          FeedbackForm[]
@@ -548,6 +595,7 @@ model Student {
   assignmentSubmissions  AssignmentSubmission[]
   marks                  Mark[]
   certificateRequests    CertificateRequest[]
+  grievances             Grievance[]
   certificates           Certificate[]
   studentDocuments       StudentDocument[]
   feedbackSubmissions    FeedbackSubmission[]
@@ -1058,6 +1106,8 @@ model CertificateRequest {
   institutionId     String                   @map("institution_id") @db.Uuid
   studentId         String                   @map("student_id") @db.Uuid
   certificateType   CertificateType          @map("certificate_type")
+  purpose           String?
+  supportingDocs    String?                  @map("supporting_docs")
   status            CertificateRequestStatus @default(REQUESTED)
   requestedAt       DateTime                 @default(now()) @map("requested_at")
   processedAt       DateTime?                @map("processed_at")

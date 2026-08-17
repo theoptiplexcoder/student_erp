@@ -11,8 +11,9 @@ import {
 } from '@student-erp/ui';
 import { Button } from '@student-erp/ui';
 import { Badge } from '@student-erp/ui';
-import { FileText, Download, Plus, Clock } from 'lucide-react';
+import { FileText, Download, Clock } from 'lucide-react';
 import { useStudentCertificates } from '@student-erp/hooks';
+import { RequestCertificateDialog } from './request-certificate-dialog';
 
 export default function CertificatesPage() {
   const { data: certificates = [], isPending } = useStudentCertificates();
@@ -26,9 +27,7 @@ export default function CertificatesPage() {
             Request and download your official documents.
           </p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> Request Certificate
-        </Button>
+        <RequestCertificateDialog />
       </div>
 
       {isPending ? (

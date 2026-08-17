@@ -10,6 +10,8 @@ import { StudentCertificateController } from './controllers/student-certificate.
 import { StudentCertificateService } from './services/student-certificate.service';
 import { StudentDocumentController } from './controllers/student-document.controller';
 import { StudentDocumentService } from './services/student-document.service';
+import { StudentGrievanceController } from './controllers/student-grievance.controller';
+import { StudentGrievanceService } from './services/student-grievance.service';
 import { PolicyFactory } from '../../common/policies/policy.factory';
 
 @Module({
@@ -20,6 +22,7 @@ import { PolicyFactory } from '../../common/policies/policy.factory';
     StudentAttendanceController,
     StudentCertificateController,
     StudentDocumentController,
+    StudentGrievanceController,
   ],
   providers: [
     StudentService,
@@ -27,6 +30,7 @@ import { PolicyFactory } from '../../common/policies/policy.factory';
     StudentAttendanceService,
     StudentCertificateService,
     StudentDocumentService,
+    StudentGrievanceService,
     PolicyFactory,
   ],
   exports: [StudentService],
