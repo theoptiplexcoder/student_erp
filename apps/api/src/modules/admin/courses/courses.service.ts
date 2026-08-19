@@ -10,12 +10,22 @@ export class CoursesService {
     return this.prisma.course.create({ data });
   }
 
-  async findAll(institutionId?: string, page = 1, pageSize = 50, search?: string) {
+  async findAll(
+    institutionId?: string,
+    page = 1,
+    pageSize = 50,
+    search?: string,
+    programId?: string,
+  ) {
     const skip = (page - 1) * pageSize;
     const where: Prisma.CourseWhereInput = {};
 
     if (institutionId) {
       where.institutionId = institutionId;
+    }
+
+    if (programId) {
+      where.programId = programId;
     }
 
     if (search) {

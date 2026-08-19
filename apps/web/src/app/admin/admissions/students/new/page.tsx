@@ -57,16 +57,14 @@ export default function DirectAdmissionPage() {
   useEffect(() => {
     const loadDropdowns = async () => {
       try {
-        const [ayRes, progRes, secRes, settingsRes] = await Promise.all([
+        const [ayRes, progRes, settingsRes] = await Promise.all([
           apiClient.get('/admin/institution/academic-years'),
           apiClient.get('/admin/programs'),
-          apiClient.get('/admin/sections'),
           apiClient.get('/admin/institution/profile'),
         ]);
         const fetchedAYs = ayRes.data || [];
         setAcademicYears(fetchedAYs);
         setPrograms(progRes.data.data || []);
-        setSections(secRes.data.data || []);
         setInstitutionType(settingsRes.data.institutionType || 'SCHOOL');
 
         // Automatically select the active academic year
@@ -146,10 +144,8 @@ export default function DirectAdmissionPage() {
     const loadSections = async () => {
       try {
         if (formData.batchId) {
-          // If the backend doesn't filter sections by batchId natively yet, we can filter locally from all sections or pass the query
-          const sRes = await apiClient.get(`/admin/sections`);
-          const allSections = sRes.data.data || [];
-          setSections(allSections.filter((s: any) => s.batchId === formData.batchId));
+          const sRes = await apiClient.get(`/admin/sections?batchId=${formData.batchId}`);
+          setSections(sRes.data.data || []);
         } else {
           setSections([]);
         }

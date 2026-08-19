@@ -17,10 +17,11 @@ export class SectionsService {
     });
   }
 
-  async findAll(institutionId: string, page = 1, pageSize = 50, search?: string) {
+  async findAll(institutionId: string, page = 1, pageSize = 50, search?: string, batchId?: string) {
     const skip = (page - 1) * pageSize;
     const where: Prisma.SectionWhereInput = {
       institutionId,
+      ...(batchId ? { batchId } : {}),
       ...(search
         ? {
             OR: [
