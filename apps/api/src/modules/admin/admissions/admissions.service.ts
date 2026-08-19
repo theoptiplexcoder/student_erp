@@ -13,66 +13,75 @@ export class AdmissionsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getStats(institutionId: string) {
-    const [
-      totalApplications,
-      pendingReview,
-      admittedStudents,
-      feeOutstandingResult,
-      availableSeats, // Can be calculated from Section capacity vs enrollment later
-    ] = await Promise.all([
-      this.prisma.student.count({
-        where: { institutionId, lifecycleStatus: 'APPLICANT' },
-      }),
-      this.prisma.student.count({
-        // Assuming profileCompletion or some internal flag marks it pending. For now just use APPLICANT.
-        where: { institutionId, lifecycleStatus: 'APPLICANT' },
-      }),
-      this.prisma.student.count({
-        where: { institutionId, lifecycleStatus: { in: ['ADMITTED', 'ENROLLED'] } },
-      }),
-      this.prisma.studentFeePlan.aggregate({
-        where: { institutionId, status: { in: ['ACTIVE', 'OVERDUE'] } },
-        _sum: { totalAmount: true },
-      }),
-      Promise.resolve(0),
-    ]);
+    try {
+      const [totalApplications, pendingReview, admittedStudents, feeOutstandingResult] =
+        await Promise.all([
+          this.prisma.student.count({
+            where: { institutionId, lifecycleStatus: 'APPLICANT' },
+          }),
+          this.prisma.student.count({
+            where: { institutionId, lifecycleStatus: 'APPLICANT' },
+          }),
+          this.prisma.student.count({
+            where: { institutionId, lifecycleStatus: { in: ['ADMITTED', 'ENROLLED'] } },
+          }),
+          this.prisma.studentFeePlan.aggregate({
+            where: { institutionId, status: { in: ['ACTIVE', 'OVERDUE'] } },
+            _sum: { totalAmount: true },
+          }),
+        ]);
 
-    // calculate paid amount via installments
-    const paidResult = await this.prisma.feeInstallment.aggregate({
-      where: { studentFeePlan: { institutionId } },
-      _sum: { amountPaid: true },
-    });
+      const paidResult = await this.prisma.feeInstallment.aggregate({
+        where: { studentFeePlan: { institutionId } },
+        _sum: { amountPaid: true },
+      });
 
-    const feeOutstanding =
-      (feeOutstandingResult._sum.totalAmount || 0) - (paidResult._sum.amountPaid || 0);
+      const feeOutstanding =
+        (feeOutstandingResult._sum.totalAmount || 0) - (paidResult._sum.amountPaid || 0);
 
-    return {
-      applications: totalApplications,
-      pendingReview,
-      readyForEnrollment: admittedStudents, // Simplify mapping
-      admittedStudents,
-      feeOutstanding,
-      availableSeats,
-    };
+      return {
+        applications: totalApplications,
+        pendingReview,
+        readyForEnrollment: admittedStudents,
+        admittedStudents,
+        feeOutstanding,
+        availableSeats: 0,
+      };
+    } catch (error) {
+      console.error('Error fetching admissions stats:', error);
+      return {
+        applications: 0,
+        pendingReview: 0,
+        readyForEnrollment: 0,
+        admittedStudents: 0,
+        feeOutstanding: 0,
+        availableSeats: 0,
+      };
+    }
   }
 
   async getRecentAdmissions(institutionId: string) {
-    return this.prisma.student.findMany({
-      where: { institutionId, lifecycleStatus: { in: ['ADMITTED', 'ENROLLED'] } },
-      orderBy: { createdAt: 'desc' },
-      take: 10,
-      include: {
-        user: { select: { firstName: true, lastName: true, email: true } },
-        program: { select: { name: true } },
-        feePlans: {
-          select: {
-            totalAmount: true,
-            paymentMode: true,
-            installments: { select: { amountPaid: true } },
+    try {
+      return await this.prisma.student.findMany({
+        where: { institutionId, lifecycleStatus: { in: ['ADMITTED', 'ENROLLED'] } },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        include: {
+          user: { select: { firstName: true, lastName: true, email: true } },
+          program: { select: { name: true } },
+          feePlans: {
+            select: {
+              totalAmount: true,
+              paymentMode: true,
+              installments: { select: { amountPaid: true } },
+            },
           },
         },
-      },
-    });
+      });
+    } catch (error) {
+      console.error('Error fetching recent admissions:', error);
+      return [];
+    }
   }
 
   async createDirectAdmission(

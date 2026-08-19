@@ -74,11 +74,11 @@ export async function requireAuth(): Promise<AuthUser> {
   const user = await getCurrentUser();
 
   if (!user) {
-    throw new Error('UNAUTHORIZED');
+    unauthorized();
   }
 
   if (user.status !== 'ACTIVE') {
-    throw new Error('FORBIDDEN: Account inactive');
+    forbidden();
   }
 
   return user;
@@ -88,7 +88,7 @@ export async function requireRole(...roles: string[]): Promise<AuthUser> {
   const user = await requireAuth();
 
   if (!roles.includes(user.role)) {
-    throw new Error('FORBIDDEN');
+    forbidden();
   }
 
   return user;
@@ -99,12 +99,16 @@ export async function requireRole(...roles: string[]): Promise<AuthUser> {
 export async function requireRoleOrRedirect(...roles: string[]): Promise<AuthUser> {
   const user = await getCurrentUser();
 
-  if (!user || user.status !== 'ACTIVE') {
+  if (!user) {
     redirect('/login');
   }
 
+  if (user.status !== 'ACTIVE') {
+    forbidden();
+  }
+
   if (!roles.includes(user.role)) {
-    throw new Error('FORBIDDEN');
+    forbidden();
   }
 
   return user;
