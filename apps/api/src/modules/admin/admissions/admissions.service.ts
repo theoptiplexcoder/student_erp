@@ -62,6 +62,7 @@ export class AdmissionsService {
       orderBy: { createdAt: 'desc' },
       take: 10,
       include: {
+        user: { select: { firstName: true, lastName: true, email: true } },
         program: { select: { name: true } },
         feePlans: {
           select: {

@@ -223,7 +223,7 @@ export default function AdmissionsDashboard() {
                       {recent.map((student: any) => (
                         <tr key={student.id} className="hover:bg-muted/50 border-b last:border-0">
                           <td className="px-4 py-3 font-medium">
-                            {student.firstName} {student.lastName}
+                            {student.user?.firstName} {student.user?.lastName}
                             <div className="text-muted-foreground text-xs font-normal">
                               {student.admissionNumber || 'N/A'}
                             </div>

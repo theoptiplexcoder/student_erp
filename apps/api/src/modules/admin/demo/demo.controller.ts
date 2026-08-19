@@ -13,4 +13,10 @@ export class DemoController {
     const { institutionId } = req.user;
     return this.demoService.seedData(institutionId);
   }
+
+  @Post('seed-admissions')
+  async seedAdmissions(@Request() req: any) {
+    const { institutionId } = req.user;
+    return this.demoService.seedAdmissionsData(institutionId);
+  }
 }
