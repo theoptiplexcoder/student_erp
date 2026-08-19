@@ -1,14 +1,12 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { createClient } from '@supabase/supabase-js';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { PrismaService } from '../database/prisma.service';
 
 @Injectable()
 export class SupabaseAuthGuard implements CanActivate {
   private supabase;
 
-  constructor() {
+  constructor(private readonly prisma: PrismaService) {
     this.supabase = createClient(
       process.env['SUPABASE_URL']!,
       process.env['SUPABASE_SERVICE_ROLE_KEY']!,
@@ -34,7 +32,7 @@ export class SupabaseAuthGuard implements CanActivate {
       throw new UnauthorizedException('Invalid or expired token');
     }
 
-    const dbUser = await prisma.user.findUnique({
+    const dbUser = await this.prisma.user.findUnique({
       where: { authUserId: supabaseUser.id },
       select: {
         id: true,
