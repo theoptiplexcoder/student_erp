@@ -1,19 +1,55 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, Button, Input } from '@student-erp/ui';
+import { Suspense } from 'react';
+import { Card, CardContent, CardHeader, Button } from '@student-erp/ui';
 import Link from 'next/link';
-import { Search, Filter, Plus, MoreHorizontal, Loader2 } from 'lucide-react';
+import { Plus, MoreHorizontal, Loader2 } from 'lucide-react';
 import { useAdminStudents } from '@/hooks/api/admin/useStudents';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { StudentFilters } from './components/student-filters';
 
-export default function StudentsPage() {
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const { data: studentsData, isLoading, isError } = useAdminStudents(page, 50, search);
+function StudentsList() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
-    setPage(1);
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const search = searchParams.get('search') || '';
+  const departmentId = searchParams.get('departmentId') || '';
+  const programId = searchParams.get('programId') || '';
+  const academicYearId = searchParams.get('academicYearId') || '';
+  const batchId = searchParams.get('batchId') || '';
+  const sectionId = searchParams.get('sectionId') || '';
+  const status = searchParams.get('status') || '';
+  const gender = searchParams.get('gender') || '';
+  const admissionDateFrom = searchParams.get('admissionDateFrom') || '';
+  const admissionDateTo = searchParams.get('admissionDateTo') || '';
+  const guardianLinked = searchParams.get('guardianLinked');
+
+  const {
+    data: studentsData,
+    isLoading,
+    isError,
+  } = useAdminStudents({
+    page,
+    pageSize: 50,
+    search,
+    departmentId,
+    programId,
+    academicYearId,
+    batchId,
+    sectionId,
+    status,
+    gender,
+    admissionDateFrom,
+    admissionDateTo,
+    guardianLinked: guardianLinked ? guardianLinked === 'true' : undefined,
+  });
+
+  const setPage = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', newPage.toString());
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (
@@ -33,24 +69,8 @@ export default function StudentsPage() {
       </div>
 
       <Card>
-        <CardHeader className="pb-3">
-          <div className="flex flex-col justify-between gap-4 sm:flex-row">
-            <div className="relative max-w-sm flex-1">
-              <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-              <Input
-                type="search"
-                placeholder="Search by name, ID, or email..."
-                className="pl-9"
-                value={search}
-                onChange={handleSearch}
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" className="border-border">
-                <Filter className="mr-2 h-4 w-4" /> Filters
-              </Button>
-            </div>
-          </div>
+        <CardHeader className="px-6 pt-6 pb-3">
+          <StudentFilters />
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -87,7 +107,7 @@ export default function StudentsPage() {
                           {student.user?.firstName} {student.user?.lastName}
                         </td>
                         <td className="text-muted-foreground px-4 py-3">
-                          {student.admissionNumber}
+                          {student.studentCode || student.admissionNumber}
                         </td>
                         <td className="text-muted-foreground px-4 py-3">
                           {student.program?.name || '-'}
@@ -106,7 +126,7 @@ export default function StudentsPage() {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <Link href={`/admin/students/${student.id}`}>
+                          <Link href={`/admin/students/${student.studentCode || student.id}`}>
                             <Button variant="ghost" size="icon" className="h-8 w-8">
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
@@ -131,10 +151,10 @@ export default function StudentsPage() {
                           {student.user?.firstName} {student.user?.lastName}
                         </div>
                         <div className="text-muted-foreground text-sm">
-                          {student.admissionNumber}
+                          {student.studentCode || student.admissionNumber}
                         </div>
                       </div>
-                      <Link href={`/admin/students/${student.id}`}>
+                      <Link href={`/admin/students/${student.studentCode || student.id}`}>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
@@ -188,5 +208,19 @@ export default function StudentsPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function StudentsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center p-8">
+          <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+        </div>
+      }
+    >
+      <StudentsList />
+    </Suspense>
   );
 }

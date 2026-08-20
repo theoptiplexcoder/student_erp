@@ -13,10 +13,17 @@ export class StudentsService {
       page = 1,
       pageSize = 20,
       search,
+      departmentId,
       programId,
+      academicYearId,
       batchId,
       sectionId,
+      termId,
       status,
+      gender,
+      admissionDateFrom,
+      admissionDateTo,
+      guardianLinked,
       sortBy = 'createdAt',
       sortOrder = 'desc',
     } = query;
@@ -25,9 +32,43 @@ export class StudentsService {
     const where: Prisma.StudentWhereInput = {
       institutionId,
       ...(status && { lifecycleStatus: status }),
+      ...(gender && { gender }),
       ...(programId && { programId }),
-      ...(batchId && { enrollments: { some: { batchId, status: 'ACTIVE' } } }),
+      ...(departmentId && { program: { departmentId } }),
+      ...((batchId || academicYearId || termId) && {
+        enrollments: {
+          some: {
+            status: 'ACTIVE',
+            ...(batchId && { batchId }),
+            ...(academicYearId && { academicYearId }),
+            ...(termId && { termId }),
+          },
+        },
+      }),
       ...(sectionId && { sectionId }),
+      ...((admissionDateFrom || admissionDateTo) && {
+        admissionDate: {
+          ...(admissionDateFrom && { gte: new Date(admissionDateFrom) }),
+          ...(admissionDateTo && { lte: new Date(admissionDateTo) }),
+        },
+      }),
+      ...(guardianLinked !== undefined && {
+        ...(guardianLinked
+          ? {
+              OR: [
+                { AND: [{ guardianName: { not: null } }, { guardianName: { not: '' } }] },
+                { AND: [{ fatherName: { not: null } }, { fatherName: { not: '' } }] },
+                { AND: [{ motherName: { not: null } }, { motherName: { not: '' } }] },
+              ],
+            }
+          : {
+              AND: [
+                { OR: [{ guardianName: null }, { guardianName: '' }] },
+                { OR: [{ fatherName: null }, { fatherName: '' }] },
+                { OR: [{ motherName: null }, { motherName: '' }] },
+              ],
+            }),
+      }),
       ...(search && {
         OR: [
           { user: { firstName: { contains: search, mode: 'insensitive' } } },
@@ -65,9 +106,17 @@ export class StudentsService {
     };
   }
 
+  private resolveIdentifier(identifier: string) {
+    const isUuid =
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(
+        identifier,
+      );
+    return isUuid ? { id: identifier } : { studentCode: identifier };
+  }
+
   async findOne(institutionId: string, id: string) {
     const student = await this.prisma.student.findFirst({
-      where: { id, institutionId },
+      where: { ...this.resolveIdentifier(id), institutionId },
       include: {
         user: true,
         program: true,
@@ -82,6 +131,8 @@ export class StudentsService {
           take: 5,
           orderBy: { markedAt: 'desc' },
         },
+        studentDocuments: true,
+        studentPreviousEducations: true,
       },
     });
 
@@ -94,7 +145,7 @@ export class StudentsService {
 
   async updateStudent(institutionId: string, id: string, data: UpdateStudentDto) {
     const student = await this.prisma.student.findFirst({
-      where: { id, institutionId },
+      where: { ...this.resolveIdentifier(id), institutionId },
       include: { user: true },
     });
     if (!student) throw new NotFoundException('Student not found');
@@ -133,14 +184,14 @@ export class StudentsService {
     data: { fileName: string; fileUrl: string; mimeType?: string; size?: number },
   ) {
     const student = await this.prisma.student.findFirst({
-      where: { id: studentId, institutionId },
+      where: { ...this.resolveIdentifier(studentId), institutionId },
     });
     if (!student) throw new NotFoundException('Student not found');
 
     return this.prisma.studentDocument.create({
       data: {
         institutionId,
-        studentId,
+        studentId: student.id,
         documentType: 'OTHER',
         title: data.fileName,
         fileUrl: data.fileUrl,
@@ -151,7 +202,7 @@ export class StudentsService {
 
   async updatePhoto(institutionId: string, studentId: string, photoUrl: string) {
     const student = await this.prisma.student.findFirst({
-      where: { id: studentId, institutionId },
+      where: { ...this.resolveIdentifier(studentId), institutionId },
     });
     if (!student) throw new NotFoundException('Student not found');
 

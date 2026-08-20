@@ -254,7 +254,9 @@ export default function AdmissionsDashboard() {
                           </td>
                           <td className="px-4 py-3">
                             <Button variant="ghost" size="sm" asChild>
-                              <Link href={`/admin/students/${student.id}`}>View</Link>
+                              <Link href={`/admin/students/${student.studentCode || student.id}`}>
+                                View
+                              </Link>
                             </Button>
                           </td>
                         </tr>

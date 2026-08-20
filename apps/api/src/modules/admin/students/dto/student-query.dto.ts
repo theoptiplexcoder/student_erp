@@ -1,6 +1,6 @@
-import { IsOptional, IsString, IsEnum, IsInt, Min } from 'class-validator';
-import { Type } from 'class-transformer';
-import { StudentLifecycleStatus } from '@prisma/client';
+import { IsOptional, IsString, IsEnum, IsInt, Min, IsBoolean, IsDateString } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
+import { StudentLifecycleStatus, Gender } from '@prisma/client';
 
 export class StudentQueryDto {
   @IsOptional()
@@ -9,7 +9,15 @@ export class StudentQueryDto {
 
   @IsOptional()
   @IsString()
+  departmentId?: string;
+
+  @IsOptional()
+  @IsString()
   programId?: string;
+
+  @IsOptional()
+  @IsString()
+  academicYearId?: string;
 
   @IsOptional()
   @IsString()
@@ -20,8 +28,29 @@ export class StudentQueryDto {
   sectionId?: string;
 
   @IsOptional()
+  @IsString()
+  termId?: string;
+
+  @IsOptional()
   @IsEnum(StudentLifecycleStatus)
   status?: StudentLifecycleStatus;
+
+  @IsOptional()
+  @IsEnum(Gender)
+  gender?: Gender;
+
+  @IsOptional()
+  @IsDateString()
+  admissionDateFrom?: string;
+
+  @IsOptional()
+  @IsDateString()
+  admissionDateTo?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  guardianLinked?: boolean;
 
   @IsOptional()
   @Type(() => Number)

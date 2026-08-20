@@ -257,6 +257,7 @@ export default function DirectAdmissionPage() {
 
       const result = await createAdmission(payload);
       const studentId = result.id;
+      const studentCode = result.studentCode || result.id;
       const dobStr = formData.dateOfBirth ? formData.dateOfBirth.replace(/-/g, '') : 'nodob';
 
       // Upload Photo
@@ -293,7 +294,7 @@ export default function DirectAdmissionPage() {
         }
       }
 
-      router.push(`/admin/students/${studentId}`);
+      router.push(`/admin/students/${studentCode}`);
     } catch (error) {
       console.error('Failed to create admission', error);
       alert('Failed to create admission. Please try again.');

@@ -14,7 +14,7 @@ export default function ApplicationsPage() {
     data: studentsData,
     isLoading,
     isError,
-  } = useAdminStudents(page, 50, search, 'APPLICANT');
+  } = useAdminStudents({ page, pageSize: 50, search, status: 'APPLICANT' });
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -111,7 +111,9 @@ export default function ApplicationsPage() {
                         </td>
                         <td className="px-4 py-3 text-right">
                           <Button variant="ghost" size="sm" asChild>
-                            <Link href={`/admin/students/${student.id}`}>View</Link>
+                            <Link href={`/admin/students/${student.studentCode || student.id}`}>
+                              View
+                            </Link>
                           </Button>
                           <Button variant="ghost" size="icon" className="ml-1 h-8 w-8">
                             <MoreHorizontal className="h-4 w-4" />
@@ -159,7 +161,9 @@ export default function ApplicationsPage() {
                       </div>
                       <div className="flex items-center">
                         <Button variant="ghost" size="sm" asChild className="h-8">
-                          <Link href={`/admin/students/${student.id}`}>View</Link>
+                          <Link href={`/admin/students/${student.studentCode || student.id}`}>
+                            View
+                          </Link>
                         </Button>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
                           <MoreHorizontal className="h-4 w-4" />

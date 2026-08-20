@@ -33,7 +33,7 @@ import {
 export default function StudentDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const studentId = params.studentId as string;
+  const studentId = (params as Record<string, string>)['studentId'];
 
   const { data: student, isLoading, isError } = useAdminStudent(studentId);
 
@@ -168,26 +168,195 @@ export default function StudentDetailPage() {
                 </TabsList>
               </CardHeader>
               <CardContent>
-                <TabsContent value="overview" className="mt-0 space-y-4">
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div className="space-y-1">
-                      <p className="text-muted-foreground text-sm font-medium">Full Name</p>
-                      <p className="font-medium">
-                        {student.user.firstName} {student.user.lastName}
+                <TabsContent value="overview" className="mt-0 space-y-6">
+                  <div>
+                    <h3 className="mb-4 text-lg font-semibold">Personal Information</h3>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground text-sm font-medium">Full Name</p>
+                        <p className="font-medium">
+                          {student.user.firstName} {student.user.lastName}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground text-sm font-medium">Date of Birth</p>
+                        <p className="font-medium">
+                          {student.dateOfBirth
+                            ? new Date(student.dateOfBirth).toLocaleDateString()
+                            : 'N/A'}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground text-sm font-medium">Gender</p>
+                        <p className="font-medium">{student.gender || 'N/A'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground text-sm font-medium">Blood Group</p>
+                        <p className="font-medium">{student.bloodGroup || 'N/A'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h3 className="mb-4 text-lg font-semibold">Contact Information</h3>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground text-sm font-medium">Email</p>
+                        <p className="font-medium">{student.user.email}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground text-sm font-medium">Phone</p>
+                        <p className="font-medium">{student.user.phone || 'N/A'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h3 className="mb-4 text-lg font-semibold">Address</h3>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground text-sm font-medium">Full Address</p>
+                        <p className="font-medium">
+                          {[
+                            student.address,
+                            student.city,
+                            student.state,
+                            student.country,
+                            student.postalCode,
+                          ]
+                            .filter(Boolean)
+                            .join(', ') || 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h3 className="mb-4 text-lg font-semibold">Guardian Information</h3>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground text-sm font-medium">Father's Name</p>
+                        <p className="font-medium">{student.fatherName || 'N/A'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground text-sm font-medium">Father's Phone</p>
+                        <p className="font-medium">{student.fatherPhone || 'N/A'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground text-sm font-medium">Mother's Name</p>
+                        <p className="font-medium">{student.motherName || 'N/A'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground text-sm font-medium">Mother's Phone</p>
+                        <p className="font-medium">{student.motherPhone || 'N/A'}</p>
+                      </div>
+                      {student.guardianName && (
+                        <>
+                          <div className="space-y-1">
+                            <p className="text-muted-foreground text-sm font-medium">
+                              Local Guardian
+                            </p>
+                            <p className="font-medium">{student.guardianName}</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-muted-foreground text-sm font-medium">
+                              Guardian Phone
+                            </p>
+                            <p className="font-medium">{student.guardianPhone || 'N/A'}</p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h3 className="mb-4 text-lg font-semibold">Admission Details</h3>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground text-sm font-medium">Student ID</p>
+                        <p className="font-medium">{student.studentCode}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground text-sm font-medium">
+                          Admission Number
+                        </p>
+                        <p className="font-medium">{student.admissionNumber}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground text-sm font-medium">Admission Date</p>
+                        <p className="font-medium">
+                          {student.admissionDate
+                            ? new Date(student.admissionDate).toLocaleDateString()
+                            : 'N/A'}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground text-sm font-medium">Status</p>
+                        <p className="font-medium">{student.lifecycleStatus}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h3 className="mb-4 text-lg font-semibold">Academic History</h3>
+                    {student.studentPreviousEducations &&
+                    student.studentPreviousEducations.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        {student.studentPreviousEducations.map((edu) => (
+                          <div key={edu.id} className="rounded-md border p-4">
+                            <p className="font-semibold">{edu.degreeName}</p>
+                            <p className="text-muted-foreground text-sm">{edu.institutionName}</p>
+                            <p className="text-sm">
+                              Graduated: {edu.yearOfPassing} | {edu.percentage}%
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground text-sm">
+                        No academic history available.
                       </p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-muted-foreground text-sm font-medium">Email</p>
-                      <p className="font-medium">{student.user.email}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-muted-foreground text-sm font-medium">Student ID</p>
-                      <p className="font-medium">{student.studentCode}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-muted-foreground text-sm font-medium">Admission Number</p>
-                      <p className="font-medium">{student.admissionNumber}</p>
-                    </div>
+                    )}
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h3 className="mb-4 text-lg font-semibold">Documents</h3>
+                    {student.studentDocuments && student.studentDocuments.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        {student.studentDocuments.map((doc) => (
+                          <div
+                            key={doc.id}
+                            className="flex items-center justify-between rounded-md border p-4"
+                          >
+                            <div>
+                              <p className="font-medium">{doc.title}</p>
+                              <p className="text-muted-foreground text-xs">{doc.documentType}</p>
+                            </div>
+                            <Badge
+                              variant={
+                                doc.verificationStatus === 'VERIFIED' ? 'default' : 'outline'
+                              }
+                            >
+                              {doc.verificationStatus}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground text-sm">No documents available.</p>
+                    )}
                   </div>
                 </TabsContent>
                 <TabsContent value="academics" className="mt-0">
