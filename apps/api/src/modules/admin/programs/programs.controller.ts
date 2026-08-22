@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ProgramsService } from './programs.service';
 import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { SupabaseAuthGuard } from '../../../guards/supabase-auth.guard';
@@ -10,6 +10,11 @@ import { Roles } from '../../../decorators/roles.decorator';
 @Roles('ADMIN')
 export class ProgramsController {
   constructor(private readonly programsService: ProgramsService) {}
+
+  @Get(':id')
+  async getProgramById(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.programsService.getProgramById(user.institutionId, id);
+  }
 
   @Get()
   async getPrograms(

@@ -6,6 +6,21 @@ import { Prisma } from '@prisma/client';
 export class ProgramsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async getProgramById(institutionId: string, id: string) {
+    return this.prisma.program.findFirst({
+      where: { id, institutionId },
+      include: {
+        department: true,
+        curriculums: {
+          orderBy: { versionNumber: 'desc' },
+        },
+        _count: {
+          select: { students: true, courses: true },
+        },
+      },
+    });
+  }
+
   async getPrograms(institutionId: string, page = 1, pageSize = 50, search?: string) {
     const where: Prisma.ProgramWhereInput = {
       institutionId,
