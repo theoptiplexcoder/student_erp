@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "nest start --watch",
-    "build": "nest build",
+    "build": "PRISMA_GENERATE_SKIP_AUTOINSTALL=true prisma generate --schema=../../libs/database/prisma/schema.prisma && nest build",
     "start": "nest start",
     "start:prod": "node dist/main",
     "lint": "eslint src",
