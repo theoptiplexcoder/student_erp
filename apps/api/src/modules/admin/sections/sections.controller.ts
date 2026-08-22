@@ -35,10 +35,18 @@ export class SectionsController {
     @Query('pageSize') pageSize?: string,
     @Query('search') search?: string,
     @Query('batchId') batchId?: string,
+    @Query('programId') programId?: string,
   ) {
     const pageNum = page ? parseInt(page, 10) : 1;
     const sizeNum = pageSize ? parseInt(pageSize, 10) : 50;
-    return this.sectionsService.findAll(user.institutionId, pageNum, sizeNum, search, batchId);
+    return this.sectionsService.findAll(
+      user.institutionId,
+      pageNum,
+      sizeNum,
+      search,
+      batchId,
+      programId,
+    );
   }
 
   @Get(':id')

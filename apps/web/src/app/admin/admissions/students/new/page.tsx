@@ -146,6 +146,9 @@ export default function DirectAdmissionPage() {
         if (formData.batchId) {
           const sRes = await apiClient.get(`/admin/sections?batchId=${formData.batchId}`);
           setSections(sRes.data.data || []);
+        } else if (formData.programId) {
+          const sRes = await apiClient.get(`/admin/sections?programId=${formData.programId}`);
+          setSections(sRes.data.data || []);
         } else {
           setSections([]);
         }
@@ -154,7 +157,7 @@ export default function DirectAdmissionPage() {
       }
     };
     loadSections();
-  }, [formData.batchId]);
+  }, [formData.batchId, formData.programId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -802,24 +805,27 @@ export default function DirectAdmissionPage() {
                       </select>
                     </div>
 
-                    {institutionType === 'COLLEGE' && (
-                      <div className="space-y-2">
-                        <Label>Course</Label>
-                        <select
-                          name="courseId"
-                          value={formData.courseId}
-                          onChange={handleChange}
-                          className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                        >
-                          <option value="">Select Course</option>
-                          {courses.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {c.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
+                    <div className="space-y-2">
+                      <Label>
+                        Section <span className="text-red-500">*</span>
+                      </Label>
+                      <select
+                        name="sectionId"
+                        value={formData.sectionId}
+                        onChange={handleChange}
+                        className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                      >
+                        <option value="">Select Section</option>
+                        {sections.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.name}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.sectionId && (
+                        <span className="text-xs text-red-500">{errors.sectionId}</span>
+                      )}
+                    </div>
 
                     <div className="space-y-2">
                       <Label>
@@ -848,29 +854,7 @@ export default function DirectAdmissionPage() {
 
                     <div className="space-y-2">
                       <Label>
-                        Section <span className="text-red-500">*</span>
-                      </Label>
-                      <select
-                        name="sectionId"
-                        value={formData.sectionId}
-                        onChange={handleChange}
-                        className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                      >
-                        <option value="">Select Section</option>
-                        {sections.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.name}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.sectionId && (
-                        <span className="text-xs text-red-500">{errors.sectionId}</span>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>
-                        USN / Registration No. <span className="text-red-500">*</span>
+                        Registration No. <span className="text-red-500">*</span>
                       </Label>
                       <Input name="usn" value={formData.usn} onChange={handleChange} />
                       {errors.usn && <span className="text-xs text-red-500">{errors.usn}</span>}

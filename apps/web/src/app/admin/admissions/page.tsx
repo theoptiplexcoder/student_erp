@@ -68,7 +68,7 @@ export default function AdmissionsDashboard() {
         <div className="flex gap-3">
           <Button variant="outline" asChild>
             <Link href="/admin/admissions/applications">
-              <FileText className="mr-2 h-4 w-4" /> New Application
+              <FileText className="mr-2 h-4 w-4" /> Review Applications
             </Link>
           </Button>
           <Button
