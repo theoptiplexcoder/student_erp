@@ -7,7 +7,6 @@ export class ProgramsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getPrograms(institutionId: string, page = 1, pageSize = 50, search?: string) {
-    const skip = (page - 1) * pageSize;
     const where: Prisma.ProgramWhereInput = {
       institutionId,
       ...(search
@@ -20,29 +19,24 @@ export class ProgramsService {
         : {}),
     };
 
-    const [total, data] = await Promise.all([
-      this.prisma.program.count({ where }),
-      this.prisma.program.findMany({
-        where,
-        skip,
-        take: pageSize,
-        include: {
-          department: true,
-          _count: {
-            select: { students: true, courses: true },
-          },
+    const data = await this.prisma.program.findMany({
+      where,
+      include: {
+        department: true,
+        _count: {
+          select: { students: true, courses: true },
         },
-        orderBy: { name: 'asc' },
-      }),
-    ]);
+      },
+      orderBy: { name: 'asc' },
+    });
 
     return {
       data,
       meta: {
-        total,
-        page,
-        pageSize,
-        totalPages: Math.ceil(total / pageSize),
+        total: data.length,
+        page: 1,
+        pageSize: data.length,
+        totalPages: 1,
       },
     };
   }
