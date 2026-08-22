@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "PRISMA_GENERATE_SKIP_AUTOINSTALL=true prisma generate --schema=../../libs/database/prisma/schema.prisma && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
