@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { PrismaService } from '../../../database/prisma.service';
 import { CreateDirectAdmissionDto } from './dto/create-direct-admission.dto';
 import {
@@ -104,7 +105,7 @@ export class AdmissionsService {
       const user = await tx.user.create({
         data: {
           institutionId,
-          authUserId: data.email || `tmp_${Date.now()}`,
+          authUserId: randomUUID(),
           email: data.email || `student_${Date.now()}@example.com`,
           firstName: data.firstName,
           lastName: data.lastName || '',
