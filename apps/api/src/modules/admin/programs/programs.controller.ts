@@ -1,15 +1,21 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ProgramsService } from './programs.service';
 import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { SupabaseAuthGuard } from '../../../guards/supabase-auth.guard';
 import { RolesGuard } from '../../../guards/roles.guard';
 import { Roles } from '../../../decorators/roles.decorator';
+import { CreateProgramDto } from './dto/create-program.dto';
 
 @Controller('admin/programs')
 @UseGuards(SupabaseAuthGuard, RolesGuard)
 @Roles('ADMIN')
 export class ProgramsController {
   constructor(private readonly programsService: ProgramsService) {}
+
+  @Post()
+  async createProgram(@CurrentUser() user: any, @Body() dto: CreateProgramDto) {
+    return this.programsService.createProgram(user.institutionId, dto);
+  }
 
   @Get(':id')
   async getProgramById(@CurrentUser() user: any, @Param('id') id: string) {

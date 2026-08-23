@@ -17,10 +17,17 @@ import {
 } from '@student-erp/ui';
 import { Plus, Eye, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { use } from 'react';
 import { useAdminProgram } from '@/hooks/api/admin/usePrograms';
 
-export default function ProgramPage({ params }: { params: { programId: string } }) {
-  const { data: program, isLoading, isError } = useAdminProgram(params.programId);
+export default function ProgramPage({
+  params,
+}: {
+  params: Promise<{ programId: string }> | { programId: string };
+}) {
+  // @ts-expect-error - Next.js 15 params is a Promise, Next.js 14 is not
+  const resolvedParams = params.then ? use(params) : params;
+  const { data: program, isLoading, isError } = useAdminProgram(resolvedParams.programId);
 
   if (isLoading) {
     return (
@@ -56,6 +63,7 @@ export default function ProgramPage({ params }: { params: { programId: string } 
           <h1 className="text-3xl font-bold tracking-tight">{program.name}</h1>
           <p className="text-muted-foreground">
             {program.level?.replace(/_/g, ' ')} • {program.durationYears} Years
+            {program.department && ` • Department: ${program.department.name}`}
           </p>
         </div>
       </div>

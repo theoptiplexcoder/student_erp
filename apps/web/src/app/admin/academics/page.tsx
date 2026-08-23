@@ -70,6 +70,7 @@ export default function AcademicsPage() {
                   <TableHead>Code</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Level</TableHead>
+                  <TableHead>Department</TableHead>
                   <TableHead>Duration</TableHead>
                   <TableHead>Students</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -81,6 +82,7 @@ export default function AcademicsPage() {
                     <TableCell className="font-medium">{program.code}</TableCell>
                     <TableCell>{program.name}</TableCell>
                     <TableCell>{program.level.replace(/_/g, ' ')}</TableCell>
+                    <TableCell>{program.department?.name || '—'}</TableCell>
                     <TableCell>{program.durationYears} Years</TableCell>
                     <TableCell>{program._count?.students || 0}</TableCell>
                     <TableCell className="space-x-2 text-right">
