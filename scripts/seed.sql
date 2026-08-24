@@ -313,7 +313,7 @@ DECLARE
   v_user_id UUID;
   v_student_id UUID;
   v_curr_id UUID;
-  v_counter INT := 1000;
+  v_seq INT;
   names_m TEXT[] := ARRAY['Arjun','Vikram','Rahul','Aditya','Karthik','Rohit','Nikhil','Suresh','Amit','Prakash','Deepak','Manish','Vivek','Sanjay','Ravi'];
   names_f TEXT[] := ARRAY['Priya','Ananya','Deepika','Neha','Kavya','Ishita','Pooja','Sneha','Riya','Tanvi','Meera','Shreya','Divya','Nisha','Anjali'];
   names_l TEXT[] := ARRAY['Sharma','Patel','Kumar','Singh','Reddy','Nair','Gupta','Joshi','Rao','Mishra','Verma','Das','Menon','Iyer','Mehta'];
@@ -323,6 +323,7 @@ DECLARE
   v_email TEXT;
   v_usn TEXT;
   v_adm TEXT;
+  v_dob DATE;
 BEGIN
   SELECT id INTO v_inst FROM institutions LIMIT 1;
   SELECT id INTO v_ay FROM academic_years WHERE is_active = true AND institution_id = v_inst LIMIT 1;
@@ -348,56 +349,88 @@ BEGIN
       CONTINUE;
     END IF;
 
-    RAISE NOTICE 'Section % has % students - adding more', rec.scode, rec.cnt;
+    RAISE NOTICE 'Section % has % students - adding % more', rec.scode, rec.cnt, (3 - rec.cnt);
 
     -- Get curriculum for this program
     SELECT c.id INTO v_curr_id FROM curriculums c
       WHERE c.program_id = rec.program_id AND c.version_number = '2026-V1' LIMIT 1;
 
+    -- Section-scoped sequence: start from 1 each section
+    v_seq := 0;
+
     -- Create students to fill up to 3
     FOR i IN 1..(3 - rec.cnt) LOOP
-      v_counter := v_counter + 1;
+      v_seq := v_seq + 1;
 
-      IF v_counter % 2 = 0 THEN
+      IF v_seq % 2 = 0 THEN
         v_gender := 'MALE';
-        v_first := names_m[1 + (v_counter % array_length(names_m, 1))];
+        v_first := names_m[1 + (abs(hashtext(rec.scode || i::text)) % array_length(names_m, 1))];
       ELSE
         v_gender := 'FEMALE';
-        v_first := names_f[1 + (v_counter % array_length(names_f, 1))];
+        v_first := names_f[1 + (abs(hashtext(rec.scode || i::text)) % array_length(names_f, 1))];
       END IF;
-      v_last := names_l[1 + (v_counter % array_length(names_l, 1))];
+      v_last := names_l[1 + (abs(hashtext(rec.scode || i::text || 'last')) % array_length(names_l, 1))];
 
-      v_adm := 'ADM-2026-' || lpad(v_counter::text, 4, '0');
-      v_usn := upper(substring(rec.pcode from 1 for 3)) || '-2026-' || lpad(v_counter::text, 3, '0');
-      v_email := lower(v_first) || '.' || lower(v_last) || v_counter || '@student.edu';
+      v_adm := 'ADM-' || upper(replace(rec.scode, '-', '')) || '-' || lpad(v_seq::text, 3, '0');
+      v_usn := upper(replace(rec.scode, '-', '')) || '-' || lpad(v_seq::text, 3, '0');
+      v_email := lower(v_first) || '.' || lower(v_last) || lower(replace(rec.scode, '-', '')) || v_seq || '@student.edu';
+      v_dob := ('2003-01-01'::date + (abs(hashtext(rec.scode || v_seq::text)) % 730))::date;
 
       -- Create User
       v_user_id := gen_random_uuid();
-      INSERT INTO users (id, auth_user_id, institution_id, email, first_name, last_name, role, status, created_at, updated_at)
-      VALUES (v_user_id, gen_random_uuid(), v_inst, v_email, v_first, v_last, 'STUDENT', 'ACTIVE', now(), now())
-      ON CONFLICT (auth_user_id) DO NOTHING;
+      BEGIN
+        INSERT INTO users (id, auth_user_id, institution_id, email, first_name, last_name, role, status, created_at, updated_at)
+        VALUES (v_user_id, gen_random_uuid(), v_inst, v_email, v_first, v_last, 'STUDENT', 'ACTIVE', now(), now());
+      EXCEPTION WHEN unique_violation THEN
+        -- User already exists, find it
+        SELECT id INTO v_user_id FROM users WHERE email = v_email AND institution_id = v_inst;
+      END;
 
       -- Create Student
       v_student_id := gen_random_uuid();
-      INSERT INTO students (id, institution_id, user_id, admission_number, student_code, lifecycle_status, date_of_birth, gender, admission_date, roll_number, "programId", "sectionId", curriculum_id, created_at, updated_at)
-      VALUES (
-        v_student_id, v_inst, v_user_id, v_adm, v_usn, 'ENROLLED',
-        ('2004-' || lpad((1 + v_counter % 12)::text, 2, '0') || '-' || lpad((1 + v_counter % 28)::text, 2, '0'))::date,
-        v_gender::"Gender", '2026-06-15'::date, v_usn,
-        rec.program_id, rec.sid, v_curr_id, now(), now()
-      )
-      ON CONFLICT (institution_id, admission_number) DO NOTHING;
+      BEGIN
+        INSERT INTO students (id, institution_id, user_id, admission_number, student_code, lifecycle_status, date_of_birth, gender, admission_date, roll_number, "programId", "sectionId", curriculum_id, created_at, updated_at)
+        VALUES (
+          v_student_id, v_inst, v_user_id, v_adm, v_usn, 'ENROLLED',
+          v_dob, v_gender::"Gender", '2026-06-15'::date, v_usn,
+          rec.program_id, rec.sid, v_curr_id, now(), now()
+        );
+      EXCEPTION WHEN unique_violation THEN
+        -- Student already exists, find it by admission_number in this section
+        SELECT id INTO v_student_id FROM students
+          WHERE institution_id = v_inst AND admission_number = v_adm AND "sectionId" = rec.sid;
+        IF v_student_id IS NULL THEN
+          -- Different section has this admission_number; generate unique one
+          v_adm := v_adm || '-' || v_seq;
+          v_usn := v_usn || '-' || v_seq;
+          BEGIN
+            INSERT INTO students (id, institution_id, user_id, admission_number, student_code, lifecycle_status, date_of_birth, gender, admission_date, roll_number, "programId", "sectionId", curriculum_id, created_at, updated_at)
+            VALUES (
+              v_student_id, v_inst, v_user_id, v_adm, v_usn, 'ENROLLED',
+              v_dob, v_gender::"Gender", '2026-06-15'::date, v_usn,
+              rec.program_id, rec.sid, v_curr_id, now(), now()
+            );
+          EXCEPTION WHEN unique_violation THEN
+            RAISE NOTICE '  Could not create student % % in % - skipping', v_first, v_last, rec.scode;
+            CONTINUE;
+          END;
+        END IF;
+      END;
 
-      -- Create Enrollment
-      INSERT INTO enrollments (id, institution_id, student_id, academic_year_id, program_id, curriculum_id, section_id, batch_id, roll_number, status, enrolled_at, created_at, updated_at)
-      VALUES (
-        gen_random_uuid(), v_inst, v_student_id, v_ay,
-        rec.program_id, v_curr_id, rec.sid, rec.batch_id,
-        v_usn, 'ACTIVE', now(), now(), now()
-      )
-      ON CONFLICT DO NOTHING;
+      -- Create Enrollment (check first to avoid duplicates)
+      IF NOT EXISTS (
+        SELECT 1 FROM enrollments
+        WHERE student_id = v_student_id AND academic_year_id = v_ay AND section_id = rec.sid
+      ) THEN
+        INSERT INTO enrollments (id, institution_id, student_id, academic_year_id, program_id, curriculum_id, section_id, batch_id, roll_number, status, enrolled_at, created_at, updated_at)
+        VALUES (
+          gen_random_uuid(), v_inst, v_student_id, v_ay,
+          rec.program_id, v_curr_id, rec.sid, rec.batch_id,
+          v_usn, 'ACTIVE', now(), now(), now()
+        );
+      END IF;
 
-      RAISE NOTICE '  Created: % % (%)', v_first, v_last, v_usn;
+      RAISE NOTICE '  Created: % % (%) in %', v_first, v_last, v_usn, rec.scode;
     END LOOP;
   END LOOP;
 
@@ -414,7 +447,7 @@ SELECT p.name AS program,
 FROM programs p ORDER BY p.name;
 
 SELECT s.code AS section, p.name AS program,
-  (SELECT count(*) FROM students st WHERE st.section_id = s.id) AS students
+  (SELECT count(*) FROM students st WHERE st."sectionId" = s.id) AS students
 FROM sections s
 JOIN programs p ON p.id = s.program_id
 JOIN academic_years ay ON ay.id = s.academic_year_id AND ay.is_active = true
