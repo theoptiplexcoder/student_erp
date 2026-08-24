@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Card,
@@ -30,9 +30,13 @@ import {
 } from '@/hooks/api/admin/useCurriculums';
 import { useAdminCourses } from '@/hooks/api/admin/useCourses';
 
-export default function CreateCurriculumWizard({ params }: { params: { programId: string } }) {
+export default function CreateCurriculumWizard({
+  params,
+}: {
+  params: Promise<{ programId: string }>;
+}) {
   const router = useRouter();
-  const { programId } = params;
+  const { programId } = use(params);
 
   const { data: programData } = useAdminProgram(programId);
   const program = programData?.data || programData;
@@ -129,7 +133,6 @@ function Step1Details({ programId, onNext }: { programId: string; onNext: (id: s
       name: formData.get('name') as string,
       versionNumber: formData.get('versionNumber') as string,
       effectiveFrom: formData.get('effectiveFrom') as string,
-      description: formData.get('description') as string,
     };
     try {
       const res = await createCurriculum.mutateAsync(data);
@@ -165,10 +168,6 @@ function Step1Details({ programId, onNext }: { programId: string; onNext: (id: s
           <div className="space-y-2">
             <Label className="text-sm font-medium">Effective From</Label>
             <Input name="effectiveFrom" type="date" required />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Description (Optional)</Label>
-            <Input name="description" placeholder="Short description" />
           </div>
         </CardContent>
         <CardFooter className="flex justify-end">
