@@ -190,11 +190,32 @@ export function AddCourseDialog({
                   className="bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm"
                 >
                   <option value="">Select a course...</option>
-                  {coursesData?.data?.map((course: any) => (
-                    <option key={course.id} value={course.id}>
-                      {course.code} - {course.name} ({course.credits || course.creditValue} cr)
-                    </option>
-                  ))}
+                  {coursesData?.data?.map((course: any) => {
+                    let linkText = 'Not linked to any curriculum';
+                    if (course.curriculumCourses && course.curriculumCourses.length > 0) {
+                      const currs = course.curriculumCourses
+                        .map((cc: any) => {
+                          const c = cc.curriculumTerm?.curriculum;
+                          if (!c) return null;
+                          const pName =
+                            c.program?.name || course.program?.name || 'Unknown Program';
+                          return `${pName} (${c.versionNumber || c.name})`;
+                        })
+                        .filter(Boolean);
+                      if (currs.length > 0) {
+                        linkText = Array.from(new Set(currs)).join(', ');
+                      }
+                    } else if (course.program) {
+                      linkText = `${course.program.name} (Directly Linked)`;
+                    }
+
+                    return (
+                      <option key={course.id} value={course.id}>
+                        {course.code} - {course.name} ({course.credits || course.creditValue} cr) -
+                        Linked to: {linkText}
+                      </option>
+                    );
+                  })}
                 </select>
                 {isLoadingCourses && (
                   <div className="text-muted-foreground text-xs">Loading courses...</div>

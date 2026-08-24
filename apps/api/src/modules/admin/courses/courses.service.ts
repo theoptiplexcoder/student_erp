@@ -45,6 +45,19 @@ export class CoursesService {
           program: true,
           department: true,
           classLevel: true,
+          curriculumCourses: {
+            include: {
+              curriculumTerm: {
+                include: {
+                  curriculum: {
+                    include: {
+                      program: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
         orderBy: { code: 'asc' },
       }),

@@ -137,11 +137,6 @@ export default async function CurriculumPage({
           {isDraft && (
             <div className="flex gap-2">
               <Link
-                href={`/admin/academics/programs/${programId}/curriculums/${curriculum.id}/courses`}
-              >
-                <Button size="sm">Manage Courses</Button>
-              </Link>
-              <Link
                 href={`/admin/academics/programs/${programId}/curriculums/${curriculum.id}/terms/new`}
               >
                 <Button size="sm" variant="outline">
@@ -175,7 +170,7 @@ export default async function CurriculumPage({
                     </div>
                     <div className="space-x-2">
                       <Link
-                        href={`/admin/academics/programs/${programId}/curriculums/${curriculum.id}/courses`}
+                        href={`/admin/academics/programs/${programId}/curriculums/${curriculum.id}/terms/${term.id}`}
                       >
                         <Button variant="outline" size="sm">
                           Manage Courses
