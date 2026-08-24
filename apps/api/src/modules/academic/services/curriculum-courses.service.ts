@@ -59,6 +59,14 @@ export class CurriculumCoursesService {
 
     if (!term) throw new NotFoundException('Curriculum term not found');
 
+    if (dto.curriculumId && term.curriculumId !== dto.curriculumId) {
+      throw new BadRequestException('Curriculum term does not belong to the provided curriculum');
+    }
+
+    if (dto.programId && term.curriculum.programId !== dto.programId) {
+      throw new BadRequestException('Curriculum does not belong to the provided program');
+    }
+
     // Check elective group if provided
     if (dto.electiveGroupId) {
       const group = await this.prisma.curriculumElectiveGroup.findFirst({

@@ -16,6 +16,14 @@ export class CreateCurriculumCourseDto {
   @IsNotEmpty()
   curriculumTermId!: string;
 
+  @IsOptional()
+  @IsString()
+  curriculumId?: string;
+
+  @IsOptional()
+  @IsString()
+  programId?: string;
+
   // Either courseId must be provided OR newCourse must be provided
   @IsOptional()
   @IsString()

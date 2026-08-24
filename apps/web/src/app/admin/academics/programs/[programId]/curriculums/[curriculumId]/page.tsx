@@ -19,7 +19,6 @@ import { notFound } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { CurriculumActions } from './curriculum-actions';
-import { AddCourseDialog } from './add-course-dialog';
 
 const getApiUrl = () => {
   const url = process.env['NEXT_PUBLIC_API_URL'] || 'https://student-erp-api.onrender.com';
@@ -138,16 +137,17 @@ export default async function CurriculumPage({
           {isDraft && (
             <div className="flex gap-2">
               <Link
+                href={`/admin/academics/programs/${programId}/curriculums/${curriculum.id}/courses`}
+              >
+                <Button size="sm">Manage Courses</Button>
+              </Link>
+              <Link
                 href={`/admin/academics/programs/${programId}/curriculums/${curriculum.id}/terms/new`}
               >
                 <Button size="sm" variant="outline">
                   <Plus className="mr-2 h-4 w-4" /> Add Term
                 </Button>
               </Link>
-              <AddCourseDialog
-                curriculumId={curriculum.id}
-                curriculumTerms={curriculum.curriculumTerms || []}
-              />
             </div>
           )}
         </CardHeader>
@@ -175,7 +175,7 @@ export default async function CurriculumPage({
                     </div>
                     <div className="space-x-2">
                       <Link
-                        href={`/admin/academics/programs/${programId}/curriculums/${curriculum.id}/terms/${term.id}`}
+                        href={`/admin/academics/programs/${programId}/curriculums/${curriculum.id}/courses`}
                       >
                         <Button variant="outline" size="sm">
                           Manage Courses

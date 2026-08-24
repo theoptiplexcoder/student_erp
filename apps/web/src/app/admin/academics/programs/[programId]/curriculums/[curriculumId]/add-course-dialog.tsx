@@ -22,11 +22,17 @@ import { useCreateCurriculumCourse } from '@/hooks/api/admin/useCurriculums';
 import { useAdminCourses } from '@/hooks/api/admin/useCourses';
 
 export function AddCourseDialog({
+  programId,
   curriculumId,
   curriculumTerms,
+  defaultTermId,
+  triggerButton,
 }: {
+  programId?: string;
   curriculumId: string;
   curriculumTerms: any[];
+  defaultTermId?: string;
+  triggerButton?: React.ReactNode;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -57,6 +63,8 @@ export function AddCourseDialog({
       await createCurriculumCourse.mutateAsync({
         curriculumId,
         data: {
+          programId,
+          curriculumId,
           curriculumTermId,
           courseId,
           sequence: 1, // backend will probably adjust or we provide a default
@@ -92,6 +100,8 @@ export function AddCourseDialog({
       await createCurriculumCourse.mutateAsync({
         curriculumId,
         data: {
+          programId,
+          curriculumId,
           curriculumTermId,
           sequence: 1,
           creditValue: parseFloat(creditValueStr),
@@ -114,9 +124,11 @@ export function AddCourseDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="mr-2 h-4 w-4" /> Add Course
-        </Button>
+        {triggerButton || (
+          <Button size="sm">
+            <Plus className="mr-2 h-4 w-4" /> Add Course
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
@@ -138,22 +150,26 @@ export function AddCourseDialog({
 
           <TabsContent value="existing">
             <form onSubmit={handleSubmitExisting} className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <Label htmlFor="curriculumTermId">Curriculum Term (Semester)</Label>
-                <select
-                  id="curriculumTermId"
-                  name="curriculumTermId"
-                  required
-                  className="bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm"
-                >
-                  <option value="">Select a term...</option>
-                  {curriculumTerms?.map((term) => (
-                    <option key={term.id} value={term.id}>
-                      {term.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {defaultTermId ? (
+                <input type="hidden" name="curriculumTermId" value={defaultTermId} />
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="curriculumTermId">Curriculum Term (Semester)</Label>
+                  <select
+                    id="curriculumTermId"
+                    name="curriculumTermId"
+                    required
+                    className="bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm"
+                  >
+                    <option value="">Select a term...</option>
+                    {curriculumTerms?.map((term) => (
+                      <option key={term.id} value={term.id}>
+                        {term.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="searchCourse">Search Existing Course</Label>
@@ -220,22 +236,26 @@ export function AddCourseDialog({
 
           <TabsContent value="new">
             <form onSubmit={handleSubmitNew} className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <Label htmlFor="new_curriculumTermId">Curriculum Term (Semester)</Label>
-                <select
-                  id="new_curriculumTermId"
-                  name="curriculumTermId"
-                  required
-                  className="bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm"
-                >
-                  <option value="">Select a term...</option>
-                  {curriculumTerms?.map((term) => (
-                    <option key={term.id} value={term.id}>
-                      {term.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {defaultTermId ? (
+                <input type="hidden" name="curriculumTermId" value={defaultTermId} />
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="new_curriculumTermId">Curriculum Term (Semester)</Label>
+                  <select
+                    id="new_curriculumTermId"
+                    name="curriculumTermId"
+                    required
+                    className="bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm"
+                  >
+                    <option value="">Select a term...</option>
+                    {curriculumTerms?.map((term) => (
+                      <option key={term.id} value={term.id}>
+                        {term.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="code">Course Code</Label>
