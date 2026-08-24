@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
 }
 
 // ─── Enums ──────────────────────────────────────────────
@@ -191,6 +191,52 @@ enum CertificateType {
   MIGRATION
   PROVISIONAL
   DEGREE
+  OTHER
+}
+
+enum GrievanceCategory {
+  ACADEMIC
+  FACULTY_TEACHER
+  EXAMINATION
+  ATTENDANCE
+  TIMETABLE
+  ADMISSION
+  FEES
+  HOSTEL
+  LIBRARY
+  TRANSPORT
+  FACILITIES
+  MISCONDUCT
+  OTHER
+}
+
+enum GrievanceRelatedType {
+  COURSE
+  FACULTY
+  ATTENDANCE
+  MARKS
+}
+
+model Grievance {
+  id                String                @id @default(uuid()) @db.Uuid
+  institutionId     String                @map("institution_id") @db.Uuid
+  studentId         String                @map("student_id") @db.Uuid
+  category          GrievanceCategory
+  subject           String
+  description       String                @db.Text
+  relatedType       GrievanceRelatedType? @map("related_type")
+  relatedId         String?               @map("related_id") @db.Uuid
+  isAnonymous       Boolean               @default(false) @map("is_anonymous")
+  status            String                @default("OPEN")
+  createdAt         DateTime              @default(now()) @map("created_at")
+  updatedAt         DateTime              @updatedAt @map("updated_at")
+
+  institution       Institution @relation(fields: [institutionId], references: [id])
+  student           Student     @relation(fields: [studentId], references: [id])
+
+  @@index([institutionId])
+  @@index([studentId])
+  @@map("grievances")
 }
 
 enum CertificateRequestStatus {
@@ -259,6 +305,12 @@ enum SocialPlatform {
   OTHER
 }
 
+enum CurriculumStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
 // ─── Core Models ────────────────────────────────────────
 
 model Institution {
@@ -283,9 +335,14 @@ model Institution {
   academicTerms          AcademicTerm[]
   sections               Section[]
   courses                Course[]
-  programCourses         ProgramCourse[]
+  curriculums            Curriculum[]
+  curriculumTerms        CurriculumTerm[]
+  curriculumElectiveGroups CurriculumElectiveGroup[]
+  curriculumCourses      CurriculumCourse[]
+  coursePrerequisites    CoursePrerequisite[]
   enrollments            Enrollment[]
   courseAssignments      CourseAssignment[]
+  courseOfferings        CourseOffering[]
   timetableEntries       TimetableEntry[]
   attendanceSessions     AttendanceSession[]
   attendanceRecords      AttendanceRecord[]
@@ -299,6 +356,7 @@ model Institution {
   announcements          Announcement[]
   notifications          Notification[]
   certificateRequests    CertificateRequest[]
+  grievances             Grievance[]
   certificates           Certificate[]
   studentDocuments       StudentDocument[]
   feedbackForms          FeedbackForm[]
@@ -309,11 +367,13 @@ model Institution {
   clubEvents             ClubEvent[]
   clubEventRegistrations ClubEventRegistration[]
   studentSkills          StudentSkill[]
+  studentPreviousEducations StudentPreviousEducation[]
   studentInternships     StudentInternship[]
   studentProjects        StudentProject[]
   studentAchievements    StudentAchievement[]
   studentLanguages       StudentLanguage[]
   auditLogs              AuditLog[]
+  studentFeePlans        StudentFeePlan[]
 
   @@map("institutions")
 }
@@ -377,15 +437,16 @@ model Program {
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
 
-  institution    Institution     @relation(fields: [institutionId], references: [id])
-  department     Department      @relation(fields: [departmentId], references: [id])
-  students       Student[]
-  sections       Section[]
-  batches        Batch[]
-  programCourses ProgramCourse[]
-  calendarEvents CalendarEvent[]
-  courses        Course[]
-  enrollments    Enrollment[]
+  institution     Institution      @relation(fields: [institutionId], references: [id])
+  department      Department       @relation(fields: [departmentId], references: [id])
+  students        Student[]
+  sections        Section[]
+  batches         Batch[]
+  curriculums     Curriculum[]
+  calendarEvents  CalendarEvent[]
+  courses         Course[]
+  courseOfferings CourseOffering[]
+  enrollments     Enrollment[]
 
   @@unique([institutionId, code])
   @@index([institutionId])
@@ -409,6 +470,7 @@ model AcademicYear {
   exams            Exam[]
   timetableEntries TimetableEntry[]
   enrollments      Enrollment[]
+  feePlans         StudentFeePlan[]
 
   @@index([institutionId])
   @@index([institutionId, isActive])
@@ -449,10 +511,11 @@ model Batch {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  institution Institution  @relation(fields: [institutionId], references: [id])
-  program     Program      @relation(fields: [programId], references: [id])
-  sections    Section[]
-  enrollments Enrollment[]
+  institution     Institution      @relation(fields: [institutionId], references: [id])
+  program         Program          @relation(fields: [programId], references: [id])
+  sections        Section[]
+  courseOfferings CourseOffering[]
+  enrollments     Enrollment[]
 
   @@index([institutionId])
   @@index([programId])
@@ -511,6 +574,10 @@ model Student {
   motherName        String?   @map("mother_name")
   fatherPhone       String?   @map("father_phone")
   motherPhone       String?   @map("mother_phone")
+  fatherEmail       String?   @map("father_email")
+  motherEmail       String?   @map("mother_email")
+  guardianName      String?   @map("guardian_name")
+  guardianPhone     String?   @map("guardian_phone")
   admissionDate     DateTime? @map("admission_date") @db.Date
   rollNumber        String?   @map("roll_number")
   bio               String?
@@ -527,6 +594,7 @@ model Student {
   assignmentSubmissions  AssignmentSubmission[]
   marks                  Mark[]
   certificateRequests    CertificateRequest[]
+  grievances             Grievance[]
   certificates           Certificate[]
   studentDocuments       StudentDocument[]
   feedbackSubmissions    FeedbackSubmission[]
@@ -534,15 +602,19 @@ model Student {
   clubMemberships        ClubMembership[]
   clubEventRegistrations ClubEventRegistration[]
   studentSkills          StudentSkill[]
+  studentPreviousEducations StudentPreviousEducation[]
   studentInternships     StudentInternship[]
   studentProjects        StudentProject[]
   studentAchievements    StudentAchievement[]
   studentLanguages       StudentLanguage[]
   studentSocialProfiles  StudentSocialProfile[]
+  feePlans               StudentFeePlan[]
   program                Program?                @relation(fields: [programId], references: [id])
   programId              String?                 @db.Uuid
   section                Section?                @relation(fields: [sectionId], references: [id])
   sectionId              String?                 @db.Uuid
+  curriculum             Curriculum?             @relation(fields: [curriculumId], references: [id])
+  curriculumId           String?                 @map("curriculum_id") @db.Uuid
 
   @@unique([institutionId, studentCode])
   @@unique([institutionId, admissionNumber])
@@ -574,6 +646,7 @@ model AcademicTerm {
   timetableEntries   TimetableEntry[]
   attendanceSessions AttendanceSession[]
   assignments        Assignment[]
+  courseOfferings    CourseOffering[]
   exams              Exam[]
 
   @@index([institutionId])
@@ -605,6 +678,7 @@ model Section {
   enrollments        Enrollment[]
   courseAssignments  CourseAssignment[]
   timetableEntries   TimetableEntry[]
+  courseOfferings    CourseOffering[]
   attendanceSessions AttendanceSession[]
   calendarEvents     CalendarEvent[]
 
@@ -616,16 +690,12 @@ model Course {
   id            String       @id @default(uuid()) @db.Uuid
   institutionId String       @map("institution_id") @db.Uuid
   departmentId  String?      @map("department_id") @db.Uuid
-  programId     String?      @map("program_id") @db.Uuid
-  classLevelId  String?      @map("class_level_id") @db.Uuid
   code          String
   name          String
   description   String?
-  credits       Int?
-  semester      Int?
+  creditValue   Float?       @map("credit_value")
   maxMarks      Float?       @map("max_marks")
   passingMarks  Float?       @map("passing_marks")
-  isElective    Boolean      @default(false) @map("is_elective")
   isPractical   Boolean      @default(false) @map("is_practical")
   courseType    String?      @map("course_type")
   status        CourseStatus @default(ACTIVE)
@@ -634,11 +704,12 @@ model Course {
 
   institution Institution @relation(fields: [institutionId], references: [id])
   department  Department? @relation(fields: [departmentId], references: [id])
-  program     Program?    @relation(fields: [programId], references: [id])
-  classLevel  ClassLevel? @relation(fields: [classLevelId], references: [id])
 
-  programCourses     ProgramCourse[]
+  curriculumCourses  CurriculumCourse[]
+  prerequisitesFor   CoursePrerequisite[] @relation("CourseToPrerequisite")
+  prerequisiteOf     CoursePrerequisite[] @relation("PrerequisiteToCourse")
   enrollments        Enrollment[]
+  courseOfferings    CourseOffering[]
   courseAssignments  CourseAssignment[]
   timetableEntries   TimetableEntry[]
   attendanceSessions AttendanceSession[]
@@ -646,58 +717,75 @@ model Course {
   assignments        Assignment[]
   examCourses        ExamCourse[]
   announcements      Announcement[]
+  program            Program?             @relation(fields: [programId], references: [id])
+  programId          String?              @db.Uuid
+  classLevel         ClassLevel?          @relation(fields: [classLevelId], references: [id])
+  classLevelId       String?              @db.Uuid
 
   @@unique([institutionId, code])
   @@index([institutionId])
   @@map("courses")
 }
 
-model ProgramCourse {
-  id            String   @id @default(uuid()) @db.Uuid
-  institutionId String   @map("institution_id") @db.Uuid
-  programId     String   @map("program_id") @db.Uuid
-  courseId      String   @map("course_id") @db.Uuid
-  semester      Int
-  isCore        Boolean  @default(true) @map("is_core")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+model CourseOffering {
+  id            String       @id @default(uuid()) @db.Uuid
+  institutionId String       @map("institution_id") @db.Uuid
+  courseId      String       @map("course_id") @db.Uuid
+  termId        String       @map("term_id") @db.Uuid
+  programId     String?      @map("program_id") @db.Uuid
+  batchId       String?      @map("batch_id") @db.Uuid
+  sectionId     String?      @map("section_id") @db.Uuid
+  capacity      Int          @default(0)
+  status        CourseStatus @default(ACTIVE)
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
 
-  institution Institution @relation(fields: [institutionId], references: [id])
-  program     Program     @relation(fields: [programId], references: [id])
-  course      Course      @relation(fields: [courseId], references: [id])
+  institution Institution  @relation(fields: [institutionId], references: [id])
+  course      Course       @relation(fields: [courseId], references: [id])
+  term        AcademicTerm @relation(fields: [termId], references: [id])
+  program     Program?     @relation(fields: [programId], references: [id])
+  batch       Batch?       @relation(fields: [batchId], references: [id])
+  section     Section?     @relation(fields: [sectionId], references: [id])
 
-  @@unique([programId, courseId])
+  enrollments Enrollment[]
+
   @@index([institutionId])
-  @@map("program_courses")
+  @@index([courseId])
+  @@index([termId])
+  @@map("course_offerings")
 }
 
 model Enrollment {
-  id             String           @id @default(uuid()) @db.Uuid
-  institutionId  String           @map("institution_id") @db.Uuid
-  studentId      String           @map("student_id") @db.Uuid
-  academicYearId String           @map("academic_year_id") @db.Uuid
-  courseId       String?          @map("course_id") @db.Uuid
-  programId      String?          @map("program_id") @db.Uuid
-  classLevelId   String?          @map("class_level_id") @db.Uuid
-  batchId        String?          @map("batch_id") @db.Uuid
-  sectionId      String?          @map("section_id") @db.Uuid
-  termId         String?          @map("term_id") @db.Uuid
-  rollNumber     String?          @map("roll_number")
-  status         EnrollmentStatus @default(ACTIVE)
-  enrolledAt     DateTime         @default(now()) @map("enrolled_at")
-  completedAt    DateTime?        @map("completed_at")
-  createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt      DateTime         @updatedAt @map("updated_at")
+  id               String           @id @default(uuid()) @db.Uuid
+  institutionId    String           @map("institution_id") @db.Uuid
+  studentId        String           @map("student_id") @db.Uuid
+  academicYearId   String           @map("academic_year_id") @db.Uuid
+  courseId         String?          @map("course_id") @db.Uuid
+  courseOfferingId String?          @map("course_offering_id") @db.Uuid
+  programId        String?          @map("program_id") @db.Uuid
+  curriculumId     String?          @map("curriculum_id") @db.Uuid
+  classLevelId     String?          @map("class_level_id") @db.Uuid
+  batchId          String?          @map("batch_id") @db.Uuid
+  sectionId        String?          @map("section_id") @db.Uuid
+  termId           String?          @map("term_id") @db.Uuid
+  rollNumber       String?          @map("roll_number")
+  status           EnrollmentStatus @default(ACTIVE)
+  enrolledAt       DateTime         @default(now()) @map("enrolled_at")
+  completedAt      DateTime?        @map("completed_at")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
 
-  institution  Institution   @relation(fields: [institutionId], references: [id])
-  student      Student       @relation(fields: [studentId], references: [id])
-  academicYear AcademicYear  @relation(fields: [academicYearId], references: [id])
-  course       Course?       @relation(fields: [courseId], references: [id])
-  program      Program?      @relation(fields: [programId], references: [id])
-  classLevel   ClassLevel?   @relation(fields: [classLevelId], references: [id])
-  batch        Batch?        @relation(fields: [batchId], references: [id])
-  section      Section?      @relation(fields: [sectionId], references: [id])
-  term         AcademicTerm? @relation(fields: [termId], references: [id])
+  institution    Institution     @relation(fields: [institutionId], references: [id])
+  student        Student         @relation(fields: [studentId], references: [id])
+  academicYear   AcademicYear    @relation(fields: [academicYearId], references: [id])
+  course         Course?         @relation(fields: [courseId], references: [id])
+  courseOffering CourseOffering? @relation(fields: [courseOfferingId], references: [id])
+  program        Program?        @relation(fields: [programId], references: [id])
+  curriculum     Curriculum?     @relation(fields: [curriculumId], references: [id])
+  classLevel     ClassLevel?     @relation(fields: [classLevelId], references: [id])
+  batch          Batch?          @relation(fields: [batchId], references: [id])
+  section        Section?        @relation(fields: [sectionId], references: [id])
+  term           AcademicTerm?   @relation(fields: [termId], references: [id])
 
   marks Mark[]
 
@@ -1017,6 +1105,8 @@ model CertificateRequest {
   institutionId     String                   @map("institution_id") @db.Uuid
   studentId         String                   @map("student_id") @db.Uuid
   certificateType   CertificateType          @map("certificate_type")
+  purpose           String?
+  supportingDocs    String?                  @map("supporting_docs")
   status            CertificateRequestStatus @default(REQUESTED)
   requestedAt       DateTime                 @default(now()) @map("requested_at")
   processedAt       DateTime?                @map("processed_at")
@@ -1276,6 +1366,22 @@ model StudentAchievement {
   @@map("student_achievements")
 }
 
+model StudentPreviousEducation {
+  id              String   @id @default(uuid()) @db.Uuid
+  institutionId   String   @map("institution_id") @db.Uuid
+  studentId       String   @map("student_id") @db.Uuid
+  institutionName String   @map("institution_name")
+  academicYear    String   @map("academic_year")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  institution Institution @relation(fields: [institutionId], references: [id])
+  student     Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([institutionId])
+  @@map("student_previous_education")
+}
+
 model StudentInternship {
   id             String    @id @default(uuid()) @db.Uuid
   institutionId  String    @map("institution_id") @db.Uuid
@@ -1365,4 +1471,169 @@ model AuditLog {
   @@index([entityType])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ─── Curriculum Models ──────────────────────────────────
+
+model Curriculum {
+  id               String           @id @default(uuid()) @db.Uuid
+  institutionId    String           @map("institution_id") @db.Uuid
+  programId        String           @map("program_id") @db.Uuid
+  versionNumber    String           @map("version_number")
+  name             String
+  status           CurriculumStatus @default(DRAFT)
+  effectiveFrom    DateTime         @map("effective_from") @db.Date
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  institution     Institution      @relation(fields: [institutionId], references: [id])
+  program         Program          @relation(fields: [programId], references: [id])
+  curriculumTerms CurriculumTerm[]
+  students        Student[]
+  enrollments     Enrollment[]
+
+  @@unique([programId, versionNumber])
+  @@index([institutionId])
+  @@map("curriculums")
+}
+
+model CurriculumTerm {
+  id                String   @id @default(uuid()) @db.Uuid
+  institutionId     String   @map("institution_id") @db.Uuid
+  curriculumId      String   @map("curriculum_id") @db.Uuid
+  name              String
+  sequence          Int
+  creditRequirement Float?   @map("credit_requirement")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  institution       Institution        @relation(fields: [institutionId], references: [id])
+  curriculum        Curriculum         @relation(fields: [curriculumId], references: [id], onDelete: Cascade)
+  curriculumCourses CurriculumCourse[]
+  electiveGroups    CurriculumElectiveGroup[]
+
+  @@unique([curriculumId, sequence])
+  @@unique([curriculumId, name])
+  @@index([institutionId])
+  @@map("curriculum_terms")
+}
+
+
+model CurriculumElectiveGroup {
+  id               String   @id @default(uuid()) @db.Uuid
+  institutionId    String   @map("institution_id") @db.Uuid
+  curriculumTermId String   @map("curriculum_term_id") @db.Uuid
+  name             String
+  requiredCredits  Float?   @map("required_credits")
+  requiredCourses  Int?     @map("required_courses")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  institution      Institution      @relation(fields: [institutionId], references: [id])
+  curriculumTerm   CurriculumTerm   @relation(fields: [curriculumTermId], references: [id], onDelete: Cascade)
+  courses          CurriculumCourse[]
+
+  @@unique([curriculumTermId, name])
+  @@index([institutionId])
+  @@map("curriculum_elective_groups")
+}
+
+model CurriculumCourse {
+  id               String   @id @default(uuid()) @db.Uuid
+  institutionId    String   @map("institution_id") @db.Uuid
+  curriculumTermId String   @map("curriculum_term_id") @db.Uuid
+  courseId         String   @map("course_id") @db.Uuid
+  sequence         Int
+  creditValue      Float?   @map("credit_value")
+  isMandatory      Boolean  @default(true) @map("is_mandatory")
+  electiveGroupId  String?  @map("elective_group_id") @db.Uuid
+  electiveGroup    CurriculumElectiveGroup? @relation(fields: [electiveGroupId], references: [id], onDelete: SetNull)
+
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  institution    Institution    @relation(fields: [institutionId], references: [id])
+  curriculumTerm CurriculumTerm @relation(fields: [curriculumTermId], references: [id], onDelete: Cascade)
+  course         Course         @relation(fields: [courseId], references: [id], onDelete: Restrict)
+
+  @@unique([curriculumTermId, courseId])
+  @@unique([curriculumTermId, sequence])
+  @@index([institutionId])
+  @@map("curriculum_courses")
+}
+
+model CoursePrerequisite {
+  id                   String   @id @default(uuid()) @db.Uuid
+  institutionId        String   @map("institution_id") @db.Uuid
+  courseId             String   @map("course_id") @db.Uuid
+  prerequisiteCourseId String   @map("prerequisite_course_id") @db.Uuid
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  institution        Institution @relation(fields: [institutionId], references: [id])
+  course             Course      @relation("CourseToPrerequisite", fields: [courseId], references: [id], onDelete: Cascade)
+  prerequisiteCourse Course      @relation("PrerequisiteToCourse", fields: [prerequisiteCourseId], references: [id], onDelete: Restrict)
+
+  @@unique([courseId, prerequisiteCourseId])
+  @@index([institutionId])
+  @@map("course_prerequisites")
+}
+
+enum PaymentMode {
+  ANNUAL
+  INSTALLMENTS
+}
+
+enum FeePlanStatus {
+  ACTIVE
+  COMPLETED
+  OVERDUE
+  CANCELLED
+}
+
+enum InstallmentStatus {
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+}
+
+model StudentFeePlan {
+  id             String        @id @default(uuid()) @db.Uuid
+  institutionId  String        @map("institution_id") @db.Uuid
+  studentId      String        @map("student_id") @db.Uuid
+  academicYearId String        @map("academic_year_id") @db.Uuid
+  totalAmount    Float         @map("total_amount")
+  currency       String        @default("INR")
+  paymentMode    PaymentMode   @default(ANNUAL) @map("payment_mode")
+  status         FeePlanStatus @default(ACTIVE)
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  institution  Institution  @relation(fields: [institutionId], references: [id])
+  student      Student      @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+
+  installments FeeInstallment[]
+
+  @@index([institutionId])
+  @@index([studentId])
+  @@map("student_fee_plans")
+}
+
+model FeeInstallment {
+  id                String            @id @default(uuid()) @db.Uuid
+  studentFeePlanId  String            @map("student_fee_plan_id") @db.Uuid
+  installmentNumber Int               @map("installment_number")
+  amount            Float
+  amountPaid        Float             @default(0) @map("amount_paid")
+  dueDate           DateTime          @map("due_date") @db.Date
+  status            InstallmentStatus @default(PENDING)
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  studentFeePlan StudentFeePlan @relation(fields: [studentFeePlanId], references: [id], onDelete: Cascade)
+
+  @@index([studentFeePlanId])
+  @@map("fee_installments")
 }

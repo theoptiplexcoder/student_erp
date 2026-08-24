@@ -39,10 +39,10 @@ export class DashboardService {
         where: { institutionId, lifecycleStatus: 'ENROLLED' },
       }),
       // 4. Open grievances
-      this.prisma.serviceRequest.count({
+      this.prisma.grievance.count({
         where: { institutionId, status: { in: ['OPEN', 'IN_REVIEW', 'IN_PROGRESS'] } },
       }),
-      this.prisma.serviceRequest.count({
+      this.prisma.grievance.count({
         where: {
           institutionId,
           status: { in: ['OPEN', 'IN_REVIEW'] },
@@ -64,7 +64,7 @@ export class DashboardService {
         where: { institutionId, status: 'COMPLETED' },
       }),
       // 8. Grievance list (recent and critical)
-      this.prisma.serviceRequest.findMany({
+      this.prisma.grievance.findMany({
         where: { institutionId, status: { in: ['OPEN', 'IN_REVIEW', 'IN_PROGRESS'] } },
         orderBy: [
           { priority: 'desc' }, // Need to handle ENUM sorting carefully in Prisma. For now, order by createdAt
@@ -141,7 +141,7 @@ export class DashboardService {
         title: `${openGrievancesCount} unresolved grievances (${criticalGrievancesCount} critical/high)`,
         count: openGrievancesCount,
         actionText: 'Review grievances →',
-        link: '/admin/reports', // Usually there's a grievance/service-desk route, fallback to reports
+        link: '/admin/grievances',
       });
     }
 

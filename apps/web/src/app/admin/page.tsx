@@ -105,7 +105,7 @@ export default function AdminDashboard() {
       icon: AlertTriangle,
       color: kpis.openGrievances.current > 0 ? 'text-red-500' : 'text-gray-500',
       bg: kpis.openGrievances.current > 0 ? 'bg-red-500/10' : 'bg-gray-500/10',
-      href: '/admin/reports',
+      href: '/admin/grievances',
     },
   ];
 
@@ -310,7 +310,10 @@ export default function AdminDashboard() {
                   ))}
                   {kpis.openGrievances.current > 5 && (
                     <div className="bg-gray-50 p-2 text-center dark:bg-gray-800/50">
-                      <Link href="/admin/reports" className="text-primary text-sm hover:underline">
+                      <Link
+                        href="/admin/grievances"
+                        className="text-primary text-sm hover:underline"
+                      >
                         View all {kpis.openGrievances.current} grievances &rarr;
                       </Link>
                     </div>
