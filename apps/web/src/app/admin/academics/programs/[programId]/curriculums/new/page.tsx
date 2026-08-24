@@ -342,7 +342,6 @@ function TermCoursesManager({ curriculumId, term }: { curriculumId: string; term
 
     try {
       const payload: any = {
-        curriculumId,
         curriculumTermId: term.id,
         sequence: term.curriculumCourses?.length + 1 || 1,
         creditValue: parseFloat(formData.get('creditValue') as string),

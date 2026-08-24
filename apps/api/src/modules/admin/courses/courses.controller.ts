@@ -24,8 +24,9 @@ export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
   @Post()
-  create(@Body() createCourseDto: CreateCourseDto) {
-    return this.coursesService.create(createCourseDto as any);
+  create(@Request() req: any, @Body() createCourseDto: CreateCourseDto) {
+    const data = { ...createCourseDto, institutionId: req.user.institutionId };
+    return this.coursesService.create(data as any);
   }
 
   @Get()

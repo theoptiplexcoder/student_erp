@@ -1,9 +1,9 @@
 import { IsString, IsNotEmpty, IsOptional, IsNumber, IsBoolean } from 'class-validator';
 
 export class CreateCourseDto {
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  institutionId!: string;
+  institutionId?: string;
 
   @IsString()
   @IsNotEmpty()
