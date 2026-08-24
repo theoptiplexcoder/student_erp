@@ -30,11 +30,15 @@ const navigation = [
   { name: 'Academics', href: '/admin/academics', icon: BookOpen },
   { name: 'Faculty', href: '/admin/faculty', icon: Users },
   { name: 'Examinations', href: '/admin/examinations', icon: FileText },
-  { name: 'Timetable', href: '/admin/timetable', icon: CalendarCheck },
+  {
+    name: 'Timetable',
+    href: '/admin/timetable',
+    icon: CalendarCheck,
+    children: [{ name: 'Rooms', href: '/admin/administration/rooms', icon: DoorOpen }],
+  },
   { name: 'Reports', href: '/admin/reports', icon: PieChart },
   { name: 'Grievances', href: '/admin/grievances', icon: AlertCircle },
   { name: 'Announcements', href: '/admin/communication/announcements', icon: Megaphone },
-  { name: 'Rooms', href: '/admin/administration/rooms', icon: DoorOpen },
   { name: 'Institution', href: '/admin/administration/institution', icon: Building2 },
 ];
 
@@ -71,28 +75,60 @@ export function AdminSidebar() {
             const isActive =
               pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
             return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  'group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-colors',
-                  isActive
-                    ? 'bg-admin-sidebar-active text-admin-primary'
-                    : 'text-admin-sidebar-foreground hover:bg-admin-sidebar-active/50',
-                  isCollapsed ? 'justify-center' : '',
-                )}
-                title={isCollapsed ? item.name : undefined}
-              >
-                <item.icon
+              <div key={item.name} className="flex flex-col space-y-1">
+                <Link
+                  href={item.href}
                   className={cn(
-                    'h-5 w-5 flex-shrink-0',
-                    isActive ? 'text-admin-primary' : 'text-admin-sidebar-foreground/70',
-                    isCollapsed ? '' : 'mr-3',
+                    'group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-colors',
+                    isActive
+                      ? 'bg-admin-sidebar-active text-admin-primary'
+                      : 'text-admin-sidebar-foreground hover:bg-admin-sidebar-active/50',
+                    isCollapsed ? 'justify-center' : '',
                   )}
-                  aria-hidden="true"
-                />
-                {!isCollapsed && <span>{item.name}</span>}
-              </Link>
+                  title={isCollapsed ? item.name : undefined}
+                >
+                  <item.icon
+                    className={cn(
+                      'h-5 w-5 flex-shrink-0',
+                      isActive ? 'text-admin-primary' : 'text-admin-sidebar-foreground/70',
+                      isCollapsed ? '' : 'mr-3',
+                    )}
+                    aria-hidden="true"
+                  />
+                  {!isCollapsed && <span>{item.name}</span>}
+                </Link>
+                {!isCollapsed && item.children && (
+                  <div className="border-admin-sidebar-border ml-6 space-y-1 border-l pl-2">
+                    {item.children.map((child) => {
+                      const isChildActive =
+                        pathname === child.href || pathname.startsWith(child.href);
+                      return (
+                        <Link
+                          key={child.name}
+                          href={child.href}
+                          className={cn(
+                            'group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-colors',
+                            isChildActive
+                              ? 'bg-admin-sidebar-active text-admin-primary'
+                              : 'text-admin-sidebar-foreground hover:bg-admin-sidebar-active/50',
+                          )}
+                        >
+                          <child.icon
+                            className={cn(
+                              'mr-3 h-4 w-4 flex-shrink-0',
+                              isChildActive
+                                ? 'text-admin-primary'
+                                : 'text-admin-sidebar-foreground/70',
+                            )}
+                            aria-hidden="true"
+                          />
+                          <span>{child.name}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
