@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const useAdminCurriculumsByProgram = (programId: string) => {
   return useQuery({
     queryKey: ['admin', 'curriculums', 'program', programId],
@@ -8,7 +10,7 @@ export const useAdminCurriculumsByProgram = (programId: string) => {
       const response = await apiClient.get<any[]>(`/academic/curriculums/program/${programId}`);
       return response.data;
     },
-    enabled: !!programId,
+    enabled: !!programId && UUID_RE.test(programId),
   });
 };
 
@@ -19,7 +21,7 @@ export const useAdminCurriculum = (id: string) => {
       const response = await apiClient.get<any>(`/academic/curriculums/${id}`);
       return response.data;
     },
-    enabled: !!id,
+    enabled: !!id && UUID_RE.test(id),
   });
 };
 

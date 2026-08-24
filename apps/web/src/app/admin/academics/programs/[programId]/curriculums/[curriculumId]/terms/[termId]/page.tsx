@@ -52,12 +52,13 @@ async function getCurriculum(id: string) {
 export default async function TermPage({
   params,
 }: {
-  params: { programId: string; curriculumId: string; termId: string };
+  params: Promise<{ programId: string; curriculumId: string; termId: string }>;
 }) {
-  const curriculum = await getCurriculum(params.curriculumId);
+  const { programId, curriculumId, termId } = await params;
+  const curriculum = await getCurriculum(curriculumId);
   if (!curriculum) notFound();
 
-  const term = curriculum.curriculumTerms.find((t: any) => t.id === params.termId);
+  const term = curriculum.curriculumTerms.find((t: any) => t.id === termId);
   if (!term) notFound();
 
   const isDraft = curriculum.status === 'DRAFT';
@@ -66,7 +67,7 @@ export default async function TermPage({
     <div className="space-y-6 p-6">
       <div className="mb-2 flex items-center gap-2">
         <Link
-          href={`/admin/academics/programs/${params.programId}/curriculums/${params.curriculumId}`}
+          href={`/admin/academics/programs/${programId}/curriculums/${curriculumId}`}
           className="text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -93,7 +94,7 @@ export default async function TermPage({
           {isDraft && (
             <div className="space-x-2">
               <Link
-                href={`/admin/academics/programs/${params.programId}/curriculums/${curriculum.id}/terms/${term.id}/courses/add`}
+                href={`/admin/academics/programs/${programId}/curriculums/${curriculum.id}/terms/${term.id}/courses/add`}
               >
                 <Button size="sm">
                   <Plus className="mr-2 h-4 w-4" /> Add Existing Course
@@ -144,7 +145,7 @@ export default async function TermPage({
                               },
                             });
                             revalidatePath(
-                              `/admin/academics/programs/${params.programId}/curriculums/${params.curriculumId}/terms/${params.termId}`,
+                              `/admin/academics/programs/${programId}/curriculums/${curriculumId}/terms/${termId}`,
                             );
                           }}
                         >

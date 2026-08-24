@@ -55,9 +55,10 @@ async function getCurriculum(id: string) {
 export default async function CurriculumPage({
   params,
 }: {
-  params: { programId: string; curriculumId: string };
+  params: Promise<{ programId: string; curriculumId: string }>;
 }) {
-  const curriculum = await getCurriculum(params.curriculumId);
+  const { programId, curriculumId } = await params;
+  const curriculum = await getCurriculum(curriculumId);
   if (!curriculum) notFound();
 
   const isDraft = curriculum.status === 'DRAFT';
@@ -78,7 +79,7 @@ export default async function CurriculumPage({
         <div>
           <div className="mb-2 flex items-center gap-2">
             <Link
-              href={`/admin/academics/programs/${params.programId}`}
+              href={`/admin/academics/programs/${programId}`}
               className="text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -103,20 +104,20 @@ export default async function CurriculumPage({
         </div>
 
         <div className="flex gap-2">
-          <CurriculumActions curriculumId={curriculum.id} programId={params.programId} />
+          <CurriculumActions curriculumId={curriculum.id} programId={programId} />
           {isDraft && (
             <form
               action={async () => {
                 'use server';
                 const token = await getAuthToken();
-                await fetch(`${API_URL}/academic/curriculums/${params.curriculumId}/activate`, {
+                await fetch(`${API_URL}/academic/curriculums/${curriculumId}/activate`, {
                   method: 'POST',
                   headers: {
                     ...(token ? { Authorization: `Bearer ${token}` } : {}),
                   },
                 });
                 revalidatePath(
-                  `/admin/academics/programs/${params.programId}/curriculums/${params.curriculumId}`,
+                  `/admin/academics/programs/${programId}/curriculums/${curriculumId}`,
                 );
               }}
             >
@@ -137,7 +138,7 @@ export default async function CurriculumPage({
           {isDraft && (
             <div className="flex gap-2">
               <Link
-                href={`/admin/academics/programs/${params.programId}/curriculums/${curriculum.id}/terms/new`}
+                href={`/admin/academics/programs/${programId}/curriculums/${curriculum.id}/terms/new`}
               >
                 <Button size="sm" variant="outline">
                   <Plus className="mr-2 h-4 w-4" /> Add Term
@@ -174,7 +175,7 @@ export default async function CurriculumPage({
                     </div>
                     <div className="space-x-2">
                       <Link
-                        href={`/admin/academics/programs/${params.programId}/curriculums/${curriculum.id}/terms/${term.id}`}
+                        href={`/admin/academics/programs/${programId}/curriculums/${curriculum.id}/terms/${term.id}`}
                       >
                         <Button variant="outline" size="sm">
                           Manage Courses

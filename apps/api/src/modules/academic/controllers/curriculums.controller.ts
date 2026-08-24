@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { CurriculumsService } from '../services/curriculums.service';
 import { SupabaseAuthGuard } from '../../../guards/supabase-auth.guard';
 import { RolesGuard } from '../../../guards/roles.guard';
@@ -23,18 +33,18 @@ export class CurriculumsController {
   }
 
   @Get('program/:programId')
-  findByProgram(@CurrentUser() user: any, @Param('programId') programId: string) {
+  findByProgram(@CurrentUser() user: any, @Param('programId', ParseUUIDPipe) programId: string) {
     const institutionId = user.institutionId;
     return this.curriculumsService.findByProgram(institutionId, programId);
   }
 
   @Get(':id/export')
-  exportCurriculum(@CurrentUser() user: any, @Param('id') id: string) {
+  exportCurriculum(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) {
     return this.curriculumsService.exportCurriculum(user.institutionId, id);
   }
 
   @Get(':id')
-  findOne(@CurrentUser() user: any, @Param('id') id: string) {
+  findOne(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) {
     const institutionId = user.institutionId;
     return this.curriculumsService.findOne(institutionId, id);
   }
@@ -42,7 +52,7 @@ export class CurriculumsController {
   @Patch(':id')
   update(
     @CurrentUser() user: any,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCurriculumDto: UpdateCurriculumDto,
   ) {
     const institutionId = user.institutionId;
@@ -52,26 +62,26 @@ export class CurriculumsController {
   @Post(':id/duplicate')
   duplicate(
     @CurrentUser() user: any,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: DuplicateCurriculumDto,
   ) {
     return this.curriculumsService.duplicate(user.institutionId, id, dto);
   }
 
   @Post(':id/validate')
-  validate(@CurrentUser() user: any, @Param('id') id: string) {
+  validate(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) {
     const institutionId = user.institutionId;
     return this.curriculumsService.validateCurriculum(institutionId, id);
   }
 
   @Post(':id/activate')
-  activate(@CurrentUser() user: any, @Param('id') id: string) {
+  activate(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) {
     const institutionId = user.institutionId;
     return this.curriculumsService.activateCurriculum(institutionId, id);
   }
 
   @Delete(':id')
-  remove(@CurrentUser() user: any, @Param('id') id: string) {
+  remove(@CurrentUser() user: any, @Param('id', ParseUUIDPipe) id: string) {
     const institutionId = user.institutionId;
     return this.curriculumsService.remove(institutionId, id);
   }
