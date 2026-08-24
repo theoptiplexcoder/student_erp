@@ -12,6 +12,41 @@ import { CreateCurriculumTermDto, UpdateCurriculumTermDto } from '../dto/curricu
 export class CurriculumTermsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async getSections(institutionId: string, id: string) {
+    const term = await this.prisma.curriculumTerm.findFirst({
+      where: { id, institutionId },
+      include: { curriculum: true },
+    });
+    if (!term) throw new NotFoundException('Curriculum term not found');
+
+    const sections = await this.prisma.section.findMany({
+      where: {
+        institutionId,
+        programId: term.curriculum.programId,
+        semester: term.sequence,
+      },
+      include: {
+        batch: true,
+        courseAssignments: {
+          include: {
+            course: true,
+            faculty: {
+              include: {
+                user: true,
+                department: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: { students: true },
+        },
+      },
+    });
+
+    return sections;
+  }
+
   async create(institutionId: string, dto: CreateCurriculumTermDto) {
     const curriculum = await this.prisma.curriculum.findFirst({
       where: { id: dto.curriculumId, institutionId },

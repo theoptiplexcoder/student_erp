@@ -75,6 +75,20 @@ export class SectionsService {
         batch: true,
         classLevel: true,
         academicYear: true,
+        courseAssignments: {
+          include: {
+            course: true,
+            faculty: {
+              include: {
+                user: true,
+                department: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: { students: true },
+        },
       },
     });
     if (!section) {

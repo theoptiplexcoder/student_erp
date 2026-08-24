@@ -15,12 +15,42 @@ export interface Section {
     id: string;
     name: string;
   };
+  classLevel?: {
+    id: string;
+    name: string;
+  };
   academicYear?: {
     id: string;
     name: string;
   };
+  courseAssignments?: CourseAssignment[];
   _count?: {
     students?: number;
+  };
+}
+
+export interface CourseAssignment {
+  id: string;
+  course: {
+    id: string;
+    code: string;
+    name: string;
+    creditValue?: number | null;
+  };
+  faculty: {
+    id: string;
+    teacherCode: string;
+    department: {
+      id: string;
+      name: string;
+      code: string;
+    } | null;
+    user: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+    };
   };
 }
 
@@ -50,7 +80,7 @@ export const useAdminSection = (id: string) => {
   return useQuery({
     queryKey: ['admin', 'sections', id],
     queryFn: async () => {
-      const response = await apiClient.get<any>(`/admin/sections/${id}`);
+      const response = await apiClient.get<Section>(`/admin/sections/${id}`);
       return response.data;
     },
     enabled: !!id,

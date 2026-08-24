@@ -51,24 +51,6 @@ async function getCurriculum(id: string) {
   }
 }
 
-async function getSections(programId: string) {
-  try {
-    const token = await getAuthToken();
-    const res = await fetch(`${API_URL}/admin/sections?programId=${programId}&pageSize=1000`, {
-      cache: 'no-store',
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.data || [];
-  } catch (e) {
-    console.error('Failed to fetch sections', e);
-    return [];
-  }
-}
-
 export default async function CurriculumPage({
   params,
 }: {
@@ -77,8 +59,6 @@ export default async function CurriculumPage({
   const { programId, curriculumId } = await params;
   const curriculum = await getCurriculum(curriculumId);
   if (!curriculum) notFound();
-
-  const sections = await getSections(programId);
 
   const isDraft = curriculum.status === 'DRAFT';
 
@@ -187,34 +167,22 @@ export default async function CurriculumPage({
                           0,
                         )}
                       </p>
-                      {sections.filter((s: any) => s.semester === term.sequence).length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {sections
-                            .filter((s: any) => s.semester === term.sequence)
-                            .map((s: any) => (
-                              <Button
-                                key={s.id}
-                                asChild
-                                variant="secondary"
-                                size="sm"
-                                className="h-7 text-xs"
-                              >
-                                <Link href={`/admin/academics/sections/${s.id}`}>
-                                  {s.name} ({s.code})
-                                </Link>
-                              </Button>
-                            ))}
-                        </div>
-                      )}
                     </div>
                     <div className="space-x-2">
-                      <Link
-                        href={`/admin/academics/programs/${programId}/curriculums/${curriculum.id}/terms/${term.id}`}
-                      >
-                        <Button variant="outline" size="sm">
+                      <Button asChild variant="outline" size="sm">
+                        <Link
+                          href={`/admin/academics/programs/${programId}/curriculums/${curriculum.id}/terms/${term.id}/sections`}
+                        >
+                          Sections
+                        </Link>
+                      </Button>
+                      <Button asChild variant="outline" size="sm">
+                        <Link
+                          href={`/admin/academics/programs/${programId}/curriculums/${curriculum.id}/terms/${term.id}`}
+                        >
                           Manage Courses
-                        </Button>
-                      </Link>
+                        </Link>
+                      </Button>
                     </div>
                   </div>
 
