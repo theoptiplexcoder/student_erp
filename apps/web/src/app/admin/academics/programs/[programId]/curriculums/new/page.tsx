@@ -131,7 +131,6 @@ function Step1Details({ programId, onNext }: { programId: string; onNext: (id: s
     const data = {
       programId,
       name: formData.get('name') as string,
-      versionNumber: formData.get('versionNumber') as string,
       effectiveFrom: formData.get('effectiveFrom') as string,
     };
     try {
@@ -160,10 +159,6 @@ function Step1Details({ programId, onNext }: { programId: string; onNext: (id: s
           <div className="space-y-2">
             <Label className="text-sm font-medium">Curriculum Name</Label>
             <Input name="name" required placeholder="e.g. 2026 Core Tech" />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Version Number</Label>
-            <Input name="versionNumber" required placeholder="e.g. V1-2026" />
           </div>
           <div className="space-y-2">
             <Label className="text-sm font-medium">Effective From</Label>
