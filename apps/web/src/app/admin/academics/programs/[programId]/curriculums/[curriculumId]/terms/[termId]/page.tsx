@@ -16,17 +16,31 @@ import {
 import { Plus, ArrowLeft, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
+import { createClient } from '@/lib/supabase/server';
 
 const getApiUrl = () => {
-  const url = process.env.NEXT_PUBLIC_API_URL || 'https://student-erp-api.onrender.com';
+  const url = process.env['NEXT_PUBLIC_API_URL'] || 'https://student-erp-api.onrender.com';
   return url.endsWith('/api/v1') ? url : `${url.replace(/\/$/, '')}/api/v1`;
 };
 const API_URL = getApiUrl();
 
+async function getAuthToken() {
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.access_token;
+}
+
 async function getCurriculum(id: string) {
   try {
-    const res = await fetch(`${API_URL}/admin/academic/curriculums/${id}`, {
+    const token = await getAuthToken();
+    const res = await fetch(`${API_URL}/academic/curriculums/${id}`, {
       cache: 'no-store',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
     });
     if (!res.ok) return null;
     return res.json();
@@ -122,9 +136,16 @@ export default async function TermPage({
                         <form
                           action={async () => {
                             'use server';
-                            await fetch(`${API_URL}/admin/academic/curriculum-courses/${cc.id}`, {
+                            const token = await getAuthToken();
+                            await fetch(`${API_URL}/academic/curriculum-courses/${cc.id}`, {
                               method: 'DELETE',
+                              headers: {
+                                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                              },
                             });
+                            revalidatePath(
+                              `/admin/academics/programs/${params.programId}/curriculums/${params.curriculumId}/terms/${params.termId}`,
+                            );
                           }}
                         >
                           <Button

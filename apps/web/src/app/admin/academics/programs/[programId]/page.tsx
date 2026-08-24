@@ -19,6 +19,7 @@ import { Plus, Eye, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { use } from 'react';
 import { useAdminProgram } from '@/hooks/api/admin/usePrograms';
+import { ImportCurriculumButton } from './import-curriculum-button';
 
 export default function ProgramPage({
   params,
@@ -74,11 +75,14 @@ export default function ProgramPage({
             <CardTitle>Curriculums</CardTitle>
             <CardDescription>Manage curriculum versions for this program</CardDescription>
           </div>
-          <Link href={`/admin/academics/programs/${program.id}/curriculums/new`}>
-            <Button size="sm">
-              <Plus className="mr-2 h-4 w-4" /> Create Curriculum
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <ImportCurriculumButton programId={program.id} />
+            <Link href={`/admin/academics/programs/${program.id}/curriculums/new`}>
+              <Button size="sm">
+                <Plus className="mr-2 h-4 w-4" /> Create Curriculum
+              </Button>
+            </Link>
+          </div>
         </CardHeader>
         <CardContent>
           {!program.curriculums || program.curriculums.length === 0 ? (

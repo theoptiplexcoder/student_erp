@@ -1,19 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Request } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { CurriculumTermsService } from '../services/curriculum-terms.service';
+import { SupabaseAuthGuard } from '../../../guards/supabase-auth.guard';
+import { RolesGuard } from '../../../guards/roles.guard';
+import { CurrentUser } from '../../../decorators/current-user.decorator';
+import { CreateCurriculumTermDto, UpdateCurriculumTermDto } from '../dto/curriculum-term.dto';
 
 @Controller('academic/curriculum-terms')
+@UseGuards(SupabaseAuthGuard, RolesGuard)
 export class CurriculumTermsController {
   constructor(private readonly curriculumTermsService: CurriculumTermsService) {}
 
   @Post()
-  create(@Request() req: any, @Body() createCurriculumTermDto: any) {
-    const institutionId = req.user?.institutionId || 'dummy-institution-id';
-    return this.curriculumTermsService.create(institutionId, createCurriculumTermDto);
+  create(@CurrentUser() user: any, @Body() dto: CreateCurriculumTermDto) {
+    return this.curriculumTermsService.create(user.institutionId, dto);
   }
 
   @Patch(':id')
-  update(@Request() req: any, @Param('id') id: string, @Body() updateCurriculumTermDto: any) {
-    const institutionId = req.user?.institutionId || 'dummy-institution-id';
-    return this.curriculumTermsService.update(institutionId, id, updateCurriculumTermDto);
+  update(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: UpdateCurriculumTermDto) {
+    return this.curriculumTermsService.update(user.institutionId, id, dto);
+  }
+
+  @Delete(':id')
+  remove(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.curriculumTermsService.remove(user.institutionId, id);
   }
 }

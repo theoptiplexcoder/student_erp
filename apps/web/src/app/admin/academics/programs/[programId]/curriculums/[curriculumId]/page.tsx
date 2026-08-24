@@ -16,17 +16,32 @@ import {
 import { Plus, Eye, ArrowLeft, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
+import { createClient } from '@/lib/supabase/server';
+import { CurriculumActions } from './curriculum-actions';
 
 const getApiUrl = () => {
-  const url = process.env.NEXT_PUBLIC_API_URL || 'https://student-erp-api.onrender.com';
+  const url = process.env['NEXT_PUBLIC_API_URL'] || 'https://student-erp-api.onrender.com';
   return url.endsWith('/api/v1') ? url : `${url.replace(/\/$/, '')}/api/v1`;
 };
 const API_URL = getApiUrl();
 
+async function getAuthToken() {
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.access_token;
+}
+
 async function getCurriculum(id: string) {
   try {
-    const res = await fetch(`${API_URL}/admin/academic/curriculums/${id}`, {
+    const token = await getAuthToken();
+    const res = await fetch(`${API_URL}/academic/curriculums/${id}`, {
       cache: 'no-store',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
     });
     if (!res.ok) return null;
     return res.json();
@@ -70,20 +85,30 @@ export default async function CurriculumPage({
           </div>
         </div>
 
-        {isDraft && (
-          <form
-            action={async () => {
-              'use server';
-              await fetch(`${API_URL}/admin/academic/curriculums/${params.curriculumId}/publish`, {
-                method: 'PATCH',
-              });
-            }}
-          >
-            <Button>
-              <CheckCircle className="mr-2 h-4 w-4" /> Publish Curriculum
-            </Button>
-          </form>
-        )}
+        <div className="flex gap-2">
+          <CurriculumActions curriculumId={curriculum.id} programId={params.programId} />
+          {isDraft && (
+            <form
+              action={async () => {
+                'use server';
+                const token = await getAuthToken();
+                await fetch(`${API_URL}/academic/curriculums/${params.curriculumId}/activate`, {
+                  method: 'POST',
+                  headers: {
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                  },
+                });
+                revalidatePath(
+                  `/admin/academics/programs/${params.programId}/curriculums/${params.curriculumId}`,
+                );
+              }}
+            >
+              <Button>
+                <CheckCircle className="mr-2 h-4 w-4" /> Activate Curriculum
+              </Button>
+            </form>
+          )}
+        </div>
       </div>
 
       <Card>
@@ -129,6 +154,19 @@ export default async function CurriculumPage({
                     </div>
                   </div>
 
+                  {term.electiveGroups?.length > 0 && (
+                    <div className="mb-4 space-y-2">
+                      <h4 className="text-sm font-semibold">Elective Groups</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {term.electiveGroups.map((eg: any) => (
+                          <Badge key={eg.id} variant="secondary">
+                            {eg.name}
+                            {eg.requiredCredits > 0 ? ` (${eg.requiredCredits}cr)` : ''}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {term.curriculumCourses?.length > 0 ? (
                     <Table>
                       <TableHeader>
@@ -137,6 +175,7 @@ export default async function CurriculumPage({
                           <TableHead>Course Name</TableHead>
                           <TableHead>Credits</TableHead>
                           <TableHead>Type</TableHead>
+                          <TableHead>Group</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -149,6 +188,12 @@ export default async function CurriculumPage({
                               <Badge variant="outline">
                                 {cc.isMandatory ? 'Mandatory' : 'Elective'}
                               </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {cc.electiveGroupId
+                                ? term.electiveGroups?.find((g: any) => g.id === cc.electiveGroupId)
+                                    ?.name
+                                : '-'}
                             </TableCell>
                           </TableRow>
                         ))}

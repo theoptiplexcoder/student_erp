@@ -338,6 +338,7 @@ model Institution {
   courses                Course[]
   curriculums            Curriculum[]
   curriculumTerms        CurriculumTerm[]
+  curriculumElectiveGroups CurriculumElectiveGroup[]
   curriculumCourses      CurriculumCourse[]
   coursePrerequisites    CoursePrerequisite[]
   enrollments            Enrollment[]
@@ -1519,11 +1520,32 @@ model CurriculumTerm {
   institution       Institution        @relation(fields: [institutionId], references: [id])
   curriculum        Curriculum         @relation(fields: [curriculumId], references: [id], onDelete: Cascade)
   curriculumCourses CurriculumCourse[]
+  electiveGroups    CurriculumElectiveGroup[]
 
   @@unique([curriculumId, sequence])
   @@unique([curriculumId, name])
   @@index([institutionId])
   @@map("curriculum_terms")
+}
+
+
+model CurriculumElectiveGroup {
+  id               String   @id @default(uuid()) @db.Uuid
+  institutionId    String   @map("institution_id") @db.Uuid
+  curriculumTermId String   @map("curriculum_term_id") @db.Uuid
+  name             String
+  requiredCredits  Float?   @map("required_credits")
+  requiredCourses  Int?     @map("required_courses")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  institution      Institution      @relation(fields: [institutionId], references: [id])
+  curriculumTerm   CurriculumTerm   @relation(fields: [curriculumTermId], references: [id], onDelete: Cascade)
+  courses          CurriculumCourse[]
+
+  @@unique([curriculumTermId, name])
+  @@index([institutionId])
+  @@map("curriculum_elective_groups")
 }
 
 model CurriculumCourse {
@@ -1534,6 +1556,9 @@ model CurriculumCourse {
   sequence         Int
   creditValue      Float?   @map("credit_value")
   isMandatory      Boolean  @default(true) @map("is_mandatory")
+  electiveGroupId  String?  @map("elective_group_id") @db.Uuid
+  electiveGroup    CurriculumElectiveGroup? @relation(fields: [electiveGroupId], references: [id], onDelete: SetNull)
+
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
