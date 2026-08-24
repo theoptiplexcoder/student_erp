@@ -16,14 +16,6 @@ export class CreateCurriculumDto {
 
   @IsDateString()
   effectiveFrom!: string;
-
-  @IsOptional()
-  @IsDateString()
-  effectiveTo?: string;
-
-  @IsOptional()
-  @IsString()
-  documentUrl?: string;
 }
 
 export class UpdateCurriculumDto {
@@ -38,14 +30,6 @@ export class UpdateCurriculumDto {
   @IsOptional()
   @IsDateString()
   effectiveFrom?: string;
-
-  @IsOptional()
-  @IsDateString()
-  effectiveTo?: string;
-
-  @IsOptional()
-  @IsString()
-  documentUrl?: string;
 
   @IsOptional()
   @IsEnum(CurriculumStatus)

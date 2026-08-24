@@ -30,8 +30,6 @@ export class CurriculumsService {
           versionNumber: dto.versionNumber,
           name: dto.name,
           effectiveFrom: new Date(dto.effectiveFrom),
-          effectiveTo: dto.effectiveTo ? new Date(dto.effectiveTo) : undefined,
-          documentUrl: dto.documentUrl,
           status: CurriculumStatus.DRAFT,
         },
       });
@@ -98,8 +96,6 @@ export class CurriculumsService {
           name: dto.name,
           versionNumber: dto.versionNumber,
           effectiveFrom: dto.effectiveFrom ? new Date(dto.effectiveFrom) : undefined,
-          effectiveTo: dto.effectiveTo ? new Date(dto.effectiveTo) : undefined,
-          documentUrl: dto.documentUrl,
           status: dto.status,
         },
       });
@@ -188,7 +184,6 @@ export class CurriculumsService {
             versionNumber: dto.versionNumber,
             effectiveFrom: new Date(dto.effectiveFrom),
             status: CurriculumStatus.DRAFT,
-            documentUrl: existing.documentUrl,
           },
         });
 
