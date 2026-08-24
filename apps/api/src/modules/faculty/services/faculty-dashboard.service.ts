@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
-import { startOfDay, endOfDay } from 'date-fns';
 
 @Injectable()
 export class FacultyDashboardService {
@@ -18,8 +17,10 @@ export class FacultyDashboardService {
     if (!faculty) throw new NotFoundException('Faculty not found');
 
     const today = new Date();
-    const todayStart = startOfDay(today);
-    const todayEnd = endOfDay(today);
+    const todayStart = new Date(today);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(today);
+    todayEnd.setHours(23, 59, 59, 999);
     const days = [
       'SUNDAY',
       'MONDAY',

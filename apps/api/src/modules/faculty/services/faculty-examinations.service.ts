@@ -29,7 +29,7 @@ export class FacultyExaminationsService {
       include: {
         exam: {
           include: {
-            academicTerm: true,
+            term: true,
           },
         },
         course: true,
