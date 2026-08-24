@@ -93,21 +93,19 @@ export default async function TermPage({
             <CardTitle>Curriculum Courses</CardTitle>
             <CardDescription>Courses associated with this term in the curriculum</CardDescription>
           </div>
-          {isDraft && (
-            <div className="space-x-2">
-              <AddCourseDialog
-                programId={programId}
-                curriculumId={curriculum.id}
-                curriculumTerms={curriculum.curriculumTerms}
-                defaultTermId={term.id}
-                triggerButton={
-                  <Button size="sm">
-                    <Plus className="mr-2 h-4 w-4" /> Add Course
-                  </Button>
-                }
-              />
-            </div>
-          )}
+          <div className="space-x-2">
+            <AddCourseDialog
+              programId={programId}
+              curriculumId={curriculum.id}
+              curriculumTerms={curriculum.curriculumTerms}
+              defaultTermId={term.id}
+              triggerButton={
+                <Button size="sm">
+                  <Plus className="mr-2 h-4 w-4" /> Add Course
+                </Button>
+              }
+            />
+          </div>
         </CardHeader>
         <CardContent>
           {!term.curriculumCourses || term.curriculumCourses.length === 0 ? (
@@ -123,7 +121,7 @@ export default async function TermPage({
                   <TableHead>Course Name</TableHead>
                   <TableHead>Credits</TableHead>
                   <TableHead>Type</TableHead>
-                  {isDraft && <TableHead className="text-right">Actions</TableHead>}
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -138,33 +136,31 @@ export default async function TermPage({
                         {cc.isMandatory ? 'Mandatory' : 'Elective'}
                       </Badge>
                     </TableCell>
-                    {isDraft && (
-                      <TableCell className="text-right">
-                        <form
-                          action={async () => {
-                            'use server';
-                            const token = await getAuthToken();
-                            await fetch(`${API_URL}/academic/curriculum-courses/${cc.id}`, {
-                              method: 'DELETE',
-                              headers: {
-                                ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                              },
-                            });
-                            revalidatePath(
-                              `/admin/academics/programs/${programId}/curriculums/${curriculumId}/terms/${termId}`,
-                            );
-                          }}
+                    <TableCell className="text-right">
+                      <form
+                        action={async () => {
+                          'use server';
+                          const token = await getAuthToken();
+                          await fetch(`${API_URL}/academic/curriculum-courses/${cc.id}`, {
+                            method: 'DELETE',
+                            headers: {
+                              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                            },
+                          });
+                          revalidatePath(
+                            `/admin/academics/programs/${programId}/curriculums/${curriculumId}/terms/${termId}`,
+                          );
+                        }}
+                      >
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:bg-destructive/10"
                         >
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </form>
-                      </TableCell>
-                    )}
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </form>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
