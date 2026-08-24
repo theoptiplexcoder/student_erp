@@ -194,6 +194,11 @@ enum CertificateType {
   OTHER
 }
 
+enum GrievanceSource {
+  STUDENT
+  FACULTY
+}
+
 enum GrievanceCategory {
   ACADEMIC
   FACULTY_TEACHER
@@ -220,7 +225,9 @@ enum GrievanceRelatedType {
 model Grievance {
   id                String                @id @default(uuid()) @db.Uuid
   institutionId     String                @map("institution_id") @db.Uuid
-  studentId         String                @map("student_id") @db.Uuid
+  studentId         String?               @map("student_id") @db.Uuid
+  facultyId         String?               @map("faculty_id") @db.Uuid
+  source            GrievanceSource       @default(STUDENT)
   category          GrievanceCategory
   subject           String
   description       String                @db.Text
@@ -228,14 +235,17 @@ model Grievance {
   relatedId         String?               @map("related_id") @db.Uuid
   isAnonymous       Boolean               @default(false) @map("is_anonymous")
   status            String                @default("OPEN")
+  priority          ServiceRequestPriority @default(MEDIUM)
   createdAt         DateTime              @default(now()) @map("created_at")
   updatedAt         DateTime              @updatedAt @map("updated_at")
 
   institution       Institution @relation(fields: [institutionId], references: [id])
-  student           Student     @relation(fields: [studentId], references: [id])
+  student           Student?    @relation(fields: [studentId], references: [id])
+  faculty           Faculty?    @relation(fields: [facultyId], references: [id])
 
   @@index([institutionId])
   @@index([studentId])
+  @@index([facultyId])
   @@map("grievances")
 }
 
@@ -374,6 +384,8 @@ model Institution {
   studentLanguages       StudentLanguage[]
   auditLogs              AuditLog[]
   studentFeePlans        StudentFeePlan[]
+  buildings              Building[]
+  rooms                  Room[]
 
   @@map("institutions")
 }
@@ -543,6 +555,7 @@ model Faculty {
   timetableEntries   TimetableEntry[]
   attendanceSessions AttendanceSession[]
   courseResources    CourseResource[]
+  grievances         Grievance[]
   assignments        Assignment[]
   announcements      Announcement[]
 
@@ -843,6 +856,56 @@ model TimetableEntry {
 
   @@index([institutionId])
   @@map("timetable_entries")
+}
+
+enum RoomType {
+  CLASSROOM
+  LAB
+  LECTURE_HALL
+  OFFICE
+  CONFERENCE
+  OTHER
+
+  @@map("room_type")
+}
+
+model Building {
+  id            String   @id @default(uuid()) @db.Uuid
+  institutionId String   @map("institution_id") @db.Uuid
+  name          String
+  code          String
+  address       String?
+  floors        Int?     @default(1)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  institution Institution @relation(fields: [institutionId], references: [id])
+  rooms       Room[]
+
+  @@unique([institutionId, code])
+  @@index([institutionId])
+  @@map("buildings")
+}
+
+model Room {
+  id            String   @id @default(uuid()) @db.Uuid
+  institutionId String   @map("institution_id") @db.Uuid
+  buildingId    String   @map("building_id") @db.Uuid
+  name          String
+  number        String
+  floor         Int?     @default(0)
+  capacity      Int?
+  roomType      RoomType @default(CLASSROOM) @map("room_type")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  institution Institution @relation(fields: [institutionId], references: [id])
+  building    Building    @relation(fields: [buildingId], references: [id])
+
+  @@unique([buildingId, number])
+  @@index([institutionId])
+  @@index([buildingId])
+  @@map("rooms")
 }
 
 model AttendanceSession {

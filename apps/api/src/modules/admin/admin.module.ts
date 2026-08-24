@@ -23,6 +23,9 @@ import { AnnouncementsModule } from './announcements/announcements.module';
 import { ReportsModule } from './reports/reports.module';
 import { SettingsModule } from './settings/settings.module';
 import { DemoModule } from './demo/demo.module';
+import { GrievancesModule } from './grievances/grievances.module';
+import { BuildingsModule } from './buildings/buildings.module';
+import { RoomsModule } from './rooms/rooms.module';
 
 @Module({
   imports: [
@@ -50,6 +53,9 @@ import { DemoModule } from './demo/demo.module';
     ReportsModule,
     SettingsModule,
     DemoModule,
+    GrievancesModule,
+    BuildingsModule,
+    RoomsModule,
   ],
 })
 export class AdminModule {}

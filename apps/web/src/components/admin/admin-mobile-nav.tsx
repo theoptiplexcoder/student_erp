@@ -16,6 +16,8 @@ import {
   PieChart,
   Megaphone,
   Settings,
+  AlertCircle,
+  DoorOpen,
 } from 'lucide-react';
 import { Button } from '@student-erp/ui';
 import { cn } from '@student-erp/utils';
@@ -26,15 +28,13 @@ const navigation = [
   { name: 'Students', href: '/admin/students', icon: Users },
   { name: 'Academics', href: '/admin/academics', icon: BookOpen },
   { name: 'Faculty', href: '/admin/faculty', icon: Users },
-  { name: 'Attendance', href: '/admin/attendance', icon: CalendarCheck },
   { name: 'Examinations', href: '/admin/examinations', icon: FileText },
-  { name: 'Promotions', href: '/admin/promotions', icon: Award },
   { name: 'Timetable', href: '/admin/timetable', icon: CalendarCheck },
-  { name: 'Certificates', href: '/admin/certificates', icon: Award },
   { name: 'Reports', href: '/admin/reports', icon: PieChart },
+  { name: 'Grievances', href: '/admin/grievances', icon: AlertCircle },
   { name: 'Announcements', href: '/admin/communication/announcements', icon: Megaphone },
+  { name: 'Rooms', href: '/admin/administration/rooms', icon: DoorOpen },
   { name: 'Institution', href: '/admin/administration/institution', icon: Building2 },
-  { name: 'Settings', href: '/admin/administration/settings', icon: Settings },
 ];
 
 export function AdminMobileNav() {
