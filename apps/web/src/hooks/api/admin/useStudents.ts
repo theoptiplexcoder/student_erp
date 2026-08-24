@@ -36,6 +36,7 @@ export interface Student {
   guardianName?: string;
   guardianPhone?: string;
   admissionDate?: string;
+  createdAt?: string;
   studentDocuments?: Array<{
     id: string;
     title: string;

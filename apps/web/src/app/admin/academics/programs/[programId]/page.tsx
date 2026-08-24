@@ -26,8 +26,7 @@ export default function ProgramPage({
 }: {
   params: Promise<{ programId: string }> | { programId: string };
 }) {
-  // @ts-expect-error - Next.js 15 params is a Promise, Next.js 14 is not
-  const resolvedParams = params.then ? use(params) : params;
+  const resolvedParams = 'then' in params ? use(params as Promise<{ programId: string }>) : params;
   const { data: program, isLoading, isError } = useAdminProgram(resolvedParams.programId);
 
   if (isLoading) {

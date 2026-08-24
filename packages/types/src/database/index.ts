@@ -37,4 +37,5 @@ export interface Student {
   studentCode?: string;
   lifecycleStatus: string;
   programId?: string;
+  createdAt?: string;
 }

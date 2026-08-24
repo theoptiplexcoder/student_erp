@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
+import { adminApiClient } from '@student-erp/sdk';
 
 export const useAdminGrievances = (
   page = 1,
@@ -20,7 +20,7 @@ export const useAdminGrievances = (
       if (status && status !== 'ALL') params.append('status', status);
       if (search) params.append('search', search);
 
-      const response = await apiClient.get(`/admin/grievances?${params.toString()}`);
+      const response = await adminApiClient.get(`/grievances?${params.toString()}`);
       return response.data;
     },
   });
@@ -30,7 +30,7 @@ export const useAdminGrievance = (id: string) => {
   return useQuery({
     queryKey: ['admin', 'grievances', id],
     queryFn: async () => {
-      const response = await apiClient.get(`/admin/grievances/${id}`);
+      const response = await adminApiClient.get(`/grievances/${id}`);
       return response.data;
     },
     enabled: !!id,
@@ -41,11 +41,14 @@ export const useUpdateGrievanceStatus = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const response = await apiClient.patch(`/admin/grievances/${id}/status`, { status });
+      const response = await adminApiClient.patch(`/grievances/${id}/status`, { status });
       return response.data;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'grievances'] });
+    },
+    onError: (error) => {
+      console.error('Failed to update grievance status', error);
     },
   });
 };

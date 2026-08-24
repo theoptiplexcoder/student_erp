@@ -380,8 +380,8 @@ export default function DirectAdmissionPage() {
                         First Name <span className="text-red-500">*</span>
                       </Label>
                       <Input name="firstName" value={formData.firstName} onChange={handleChange} />
-                      {errors.firstName && (
-                        <span className="text-xs text-red-500">{errors.firstName}</span>
+                      {errors['firstName'] && (
+                        <span className="text-xs text-red-500">{errors['firstName']}</span>
                       )}
                     </div>
                     <div className="space-y-2">
@@ -481,8 +481,8 @@ export default function DirectAdmissionPage() {
 
                 <section>
                   <h2 className="mb-4 text-xl font-semibold">Family Information</h2>
-                  {errors.parentEmail && (
-                    <p className="mb-2 text-xs text-red-500">{errors.parentEmail}</p>
+                  {errors['parentEmail'] && (
+                    <p className="mb-2 text-xs text-red-500">{errors['parentEmail']}</p>
                   )}
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div className="space-y-2">
@@ -780,8 +780,8 @@ export default function DirectAdmissionPage() {
                           </option>
                         ))}
                       </select>
-                      {errors.academicYearId && (
-                        <span className="text-xs text-red-500">{errors.academicYearId}</span>
+                      {errors['academicYearId'] && (
+                        <span className="text-xs text-red-500">{errors['academicYearId']}</span>
                       )}
                     </div>
 
@@ -822,8 +822,8 @@ export default function DirectAdmissionPage() {
                           </option>
                         ))}
                       </select>
-                      {errors.sectionId && (
-                        <span className="text-xs text-red-500">{errors.sectionId}</span>
+                      {errors['sectionId'] && (
+                        <span className="text-xs text-red-500">{errors['sectionId']}</span>
                       )}
                     </div>
 
@@ -847,8 +847,8 @@ export default function DirectAdmissionPage() {
                           </option>
                         ))}
                       </select>
-                      {errors.batchId && (
-                        <span className="text-xs text-red-500">{errors.batchId}</span>
+                      {errors['batchId'] && (
+                        <span className="text-xs text-red-500">{errors['batchId']}</span>
                       )}
                     </div>
 
@@ -857,7 +857,9 @@ export default function DirectAdmissionPage() {
                         Registration No. <span className="text-red-500">*</span>
                       </Label>
                       <Input name="usn" value={formData.usn} onChange={handleChange} />
-                      {errors.usn && <span className="text-xs text-red-500">{errors.usn}</span>}
+                      {errors['usn'] && (
+                        <span className="text-xs text-red-500">{errors['usn']}</span>
+                      )}
                     </div>
                   </div>
                 </section>
@@ -868,8 +870,8 @@ export default function DirectAdmissionPage() {
             {currentStep === 3 && (
               <div className="animate-in fade-in slide-in-from-right-4 space-y-8 duration-300">
                 <h2 className="mb-4 text-xl font-semibold">Fee Configuration</h2>
-                {errors.totalFee && (
-                  <p className="text-sm font-semibold text-red-500">{errors.totalFee}</p>
+                {errors['totalFee'] && (
+                  <p className="text-sm font-semibold text-red-500">{errors['totalFee']}</p>
                 )}
                 <div className="grid max-w-md grid-cols-1 gap-6">
                   <div className="space-y-2">

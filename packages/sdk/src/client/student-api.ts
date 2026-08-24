@@ -3,7 +3,7 @@
 import axios, { AxiosError } from 'axios';
 
 const getApiUrl = () => {
-  const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+  const url = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:4000';
   return url.endsWith('/api/v1') ? url : `${url.replace(/\/$/, '')}/api/v1`;
 };
 
