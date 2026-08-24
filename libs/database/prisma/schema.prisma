@@ -401,8 +401,6 @@ model User {
   certificateRequestsProcessed CertificateRequest[] @relation("ProcessedBy")
   verifiedDocuments            StudentDocument[]    @relation("VerifiedBy")
   serviceRequestsAssigned      ServiceRequest[]     @relation("AssignedTo")
-  proposedCurriculums          Curriculum[]         @relation("CurriculumProposedBy")
-  approvedCurriculums          Curriculum[]         @relation("CurriculumApprovedBy")
 
   @@index([institutionId])
   @@index([institutionId, role])
@@ -1486,18 +1484,11 @@ model Curriculum {
   name             String
   status           CurriculumStatus @default(DRAFT)
   effectiveFrom    DateTime         @map("effective_from") @db.Date
-  effectiveTo      DateTime?        @map("effective_to") @db.Date
-  documentUrl      String?          @map("document_url")
-  proposedByUserId String?          @map("proposed_by_user_id") @db.Uuid
-  approvedByUserId String?          @map("approved_by_user_id") @db.Uuid
-  approvedAt       DateTime?        @map("approved_at")
   createdAt        DateTime         @default(now()) @map("created_at")
   updatedAt        DateTime         @updatedAt @map("updated_at")
 
   institution     Institution      @relation(fields: [institutionId], references: [id])
   program         Program          @relation(fields: [programId], references: [id])
-  proposedByUser  User?            @relation("CurriculumProposedBy", fields: [proposedByUserId], references: [id])
-  approvedByUser  User?            @relation("CurriculumApprovedBy", fields: [approvedByUserId], references: [id])
   curriculumTerms CurriculumTerm[]
   students        Student[]
   enrollments     Enrollment[]
