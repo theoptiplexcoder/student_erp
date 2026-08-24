@@ -19,6 +19,7 @@ import { notFound } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { CurriculumActions } from './curriculum-actions';
+import { AddCourseDialog } from './add-course-dialog';
 
 const getApiUrl = () => {
   const url = process.env['NEXT_PUBLIC_API_URL'] || 'https://student-erp-api.onrender.com';
@@ -61,6 +62,16 @@ export default async function CurriculumPage({
 
   const isDraft = curriculum.status === 'DRAFT';
 
+  let totalCourses = 0;
+  let totalCredits = 0;
+
+  curriculum.curriculumTerms?.forEach((term: any) => {
+    term.curriculumCourses?.forEach((cc: any) => {
+      totalCourses++;
+      totalCredits += cc.creditValue || cc.course?.creditValue || 0;
+    });
+  });
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
@@ -81,6 +92,12 @@ export default async function CurriculumPage({
             <Badge variant={isDraft ? 'secondary' : 'default'}>{curriculum.status}</Badge>
             <span className="text-muted-foreground text-sm">
               Effective: {new Date(curriculum.effectiveFrom).toLocaleDateString()}
+            </span>
+            <span className="text-muted-foreground border-l pl-2 text-sm">
+              Total Courses: {totalCourses}
+            </span>
+            <span className="text-muted-foreground border-l pl-2 text-sm">
+              Total Credits: {totalCredits}
             </span>
           </div>
         </div>
@@ -118,13 +135,19 @@ export default async function CurriculumPage({
             <CardDescription>Manage terms and courses for this curriculum</CardDescription>
           </div>
           {isDraft && (
-            <Link
-              href={`/admin/academics/programs/${params.programId}/curriculums/${curriculum.id}/terms/new`}
-            >
-              <Button size="sm">
-                <Plus className="mr-2 h-4 w-4" /> Add Term
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <Link
+                href={`/admin/academics/programs/${params.programId}/curriculums/${curriculum.id}/terms/new`}
+              >
+                <Button size="sm" variant="outline">
+                  <Plus className="mr-2 h-4 w-4" /> Add Term
+                </Button>
+              </Link>
+              <AddCourseDialog
+                curriculumId={curriculum.id}
+                curriculumTerms={curriculum.curriculumTerms || []}
+              />
+            </div>
           )}
         </CardHeader>
         <CardContent>
@@ -140,7 +163,13 @@ export default async function CurriculumPage({
                     <div>
                       <h3 className="text-lg font-semibold">{term.name}</h3>
                       <p className="text-muted-foreground text-sm">
-                        Sequence: {term.sequence} • Credits: {term.creditRequirement || 0}
+                        Sequence: {term.sequence} • Required Credits: {term.creditRequirement || 0}{' '}
+                        • Term Credits:{' '}
+                        {term.curriculumCourses?.reduce(
+                          (sum: number, cc: any) =>
+                            sum + (cc.creditValue || cc.course?.creditValue || 0),
+                          0,
+                        )}
                       </p>
                     </div>
                     <div className="space-x-2">
