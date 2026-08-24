@@ -5,7 +5,7 @@ services:
     repo: https://github.com/theoptiplexcoder/student_erp
     rootDir: apps/api
     plan: free
-    buildCommand: NODE_ENV=development pnpm install --frozen-lockfile && pnpm exec prisma db push --schema=../../libs/database/prisma/schema.prisma --skip-generate && pnpm exec prisma generate --schema=../../libs/database/prisma/schema.prisma && pnpm run build
+    buildCommand: NODE_ENV=development pnpm install --frozen-lockfile && pnpm exec prisma generate --schema=../../libs/database/prisma/schema.prisma && pnpm run build
     startCommand: node dist/main
     healthCheckPath: /health
     envVars:
