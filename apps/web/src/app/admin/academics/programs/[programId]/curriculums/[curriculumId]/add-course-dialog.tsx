@@ -59,6 +59,14 @@ export function AddCourseDialog({
       return;
     }
 
+    const term = curriculumTerms?.find((t: any) => t.id === curriculumTermId);
+    const maxSeq =
+      term?.curriculumCourses?.reduce(
+        (max: number, cc: any) => Math.max(max, cc.sequence || 0),
+        0,
+      ) || 0;
+    const sequence = maxSeq + 1;
+
     try {
       await createCurriculumCourse.mutateAsync({
         curriculumId,
@@ -67,7 +75,7 @@ export function AddCourseDialog({
           curriculumId,
           curriculumTermId,
           courseId,
-          sequence: 1, // backend will probably adjust or we provide a default
+          sequence,
           creditValue: creditValueStr ? parseFloat(creditValueStr) : undefined,
           isMandatory,
         },
@@ -96,6 +104,14 @@ export function AddCourseDialog({
       return;
     }
 
+    const term = curriculumTerms?.find((t: any) => t.id === curriculumTermId);
+    const maxSeq =
+      term?.curriculumCourses?.reduce(
+        (max: number, cc: any) => Math.max(max, cc.sequence || 0),
+        0,
+      ) || 0;
+    const sequence = maxSeq + 1;
+
     try {
       await createCurriculumCourse.mutateAsync({
         curriculumId,
@@ -103,7 +119,7 @@ export function AddCourseDialog({
           programId,
           curriculumId,
           curriculumTermId,
-          sequence: 1,
+          sequence,
           creditValue: parseFloat(creditValueStr),
           isMandatory,
           newCourse: {
