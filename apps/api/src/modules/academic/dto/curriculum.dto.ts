@@ -6,9 +6,9 @@ export class CreateCurriculumDto {
   @IsNotEmpty()
   programId!: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  versionNumber!: string;
+  versionNumber?: string;
 
   @IsString()
   @IsNotEmpty()

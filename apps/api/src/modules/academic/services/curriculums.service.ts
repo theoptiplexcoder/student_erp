@@ -22,12 +22,20 @@ export class CurriculumsService {
       throw new BadRequestException('Program not found or does not belong to your institution.');
     }
 
+    let versionNumber = dto.versionNumber;
+    if (!versionNumber) {
+      const existingCount = await this.prisma.curriculum.count({
+        where: { programId: dto.programId, institutionId },
+      });
+      versionNumber = `v${existingCount + 1}.0`;
+    }
+
     try {
       return await this.prisma.curriculum.create({
         data: {
           institutionId,
           programId: dto.programId,
-          versionNumber: dto.versionNumber,
+          versionNumber,
           name: dto.name,
           effectiveFrom: new Date(dto.effectiveFrom),
           status: CurriculumStatus.DRAFT,
