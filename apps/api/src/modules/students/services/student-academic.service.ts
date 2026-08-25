@@ -17,7 +17,7 @@ export class StudentAcademicService {
     const whereClause: any = {
       institutionId,
       studentId: student.id,
-      status: 'ACTIVE',
+      status: { in: ['ACTIVE', 'COMPLETED'] },
     };
 
     if (termId) {
@@ -58,7 +58,7 @@ export class StudentAcademicService {
         enrollments: {
           some: {
             studentId: student.id,
-            status: 'ACTIVE',
+            status: { in: ['ACTIVE', 'COMPLETED'] },
           },
         },
       },

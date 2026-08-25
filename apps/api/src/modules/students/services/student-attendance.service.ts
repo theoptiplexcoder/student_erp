@@ -23,7 +23,7 @@ export class StudentAttendanceService {
       where: {
         institutionId,
         studentId: student.id,
-        status: 'ACTIVE',
+        status: { in: ['ACTIVE', 'COMPLETED'] },
       },
       include: {
         course: true,
