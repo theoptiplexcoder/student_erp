@@ -5,7 +5,7 @@ import { PrismaService } from '../../../database/prisma.service';
 export class StudentAcademicService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getCourses(userId: string, institutionId: string) {
+  async getCourses(userId: string, institutionId: string, termId?: string) {
     const student = await this.prisma.student.findFirst({
       where: { userId, institutionId },
     });
@@ -14,12 +14,18 @@ export class StudentAcademicService {
       return [];
     }
 
+    const whereClause: any = {
+      institutionId,
+      studentId: student.id,
+      status: 'ACTIVE',
+    };
+
+    if (termId) {
+      whereClause.termId = termId;
+    }
+
     const enrollments = await this.prisma.enrollment.findMany({
-      where: {
-        institutionId,
-        studentId: student.id,
-        status: 'ACTIVE',
-      },
+      where: whereClause,
       include: {
         course: {
           include: {
@@ -35,6 +41,31 @@ export class StudentAcademicService {
       enrollmentId: e.id,
       term: e.term,
     }));
+  }
+
+  async getTerms(userId: string, institutionId: string) {
+    const student = await this.prisma.student.findFirst({
+      where: { userId, institutionId },
+    });
+
+    if (!student) {
+      return [];
+    }
+
+    return this.prisma.academicTerm.findMany({
+      where: {
+        institutionId,
+        enrollments: {
+          some: {
+            studentId: student.id,
+            status: 'ACTIVE',
+          },
+        },
+      },
+      orderBy: {
+        startDate: 'desc',
+      },
+    });
   }
 
   async getCourseDetails(userId: string, institutionId: string, courseId: string) {

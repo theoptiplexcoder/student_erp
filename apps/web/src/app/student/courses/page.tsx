@@ -1,24 +1,55 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, Skeleton } from '@student-erp/ui';
-import { useStudentCourses, useStudentAttendanceSummary } from '@student-erp/hooks';
+import {
+  useStudentCourses,
+  useStudentAttendanceSummary,
+  useStudentTerms,
+} from '@student-erp/hooks';
 import { BookOpen, User, ArrowRight } from 'lucide-react';
 import { Button } from '@student-erp/ui';
 import Link from 'next/link';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
-export default function MyCoursesPage() {
-  const { data: courses, isPending: isCoursesPending } = useStudentCourses();
+function MyCoursesContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const selectedTermId = searchParams.get('termId') || undefined;
+
+  const { data: terms, isPending: isTermsPending } = useStudentTerms();
+
+  // Use the first term as default if no termId is in the URL and terms are loaded
+  const effectiveTermId = selectedTermId || (terms?.length ? terms[0].id : undefined);
+
+  const { data: courses, isPending: isCoursesPending } = useStudentCourses(effectiveTermId);
   const { data: attendanceSummary, isPending: isAttendancePending } = useStudentAttendanceSummary();
 
-  const isPending = isCoursesPending || isAttendancePending;
+  const isPending = isTermsPending || isCoursesPending || isAttendancePending;
 
-  if (isPending) {
+  const handleTermChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newTermId = e.target.value;
+    const params = new URLSearchParams(searchParams.toString());
+    if (newTermId) {
+      params.set('termId', newTermId);
+    } else {
+      params.delete('termId');
+    }
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  if (isPending && !courses) {
     return (
       <div className="mx-auto flex h-full max-w-7xl flex-col gap-6 pb-10">
-        <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">My Courses</h1>
-          <p className="text-muted-foreground mt-1">Overview of all your enrolled courses.</p>
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h1 className="font-display text-3xl font-bold tracking-tight">My Courses</h1>
+            <p className="text-muted-foreground mt-1">
+              View and manage the courses associated with your academic term.
+            </p>
+          </div>
+          <Skeleton className="h-10 w-full sm:w-64" />
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {[...Array(4)].map((_, i) => (
@@ -33,9 +64,31 @@ export default function MyCoursesPage() {
 
   return (
     <div className="mx-auto flex h-full max-w-7xl flex-col gap-6 pb-10">
-      <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight">My Courses</h1>
-        <p className="text-muted-foreground mt-1">Overview of all your enrolled courses.</p>
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="font-display text-3xl font-bold tracking-tight">My Courses</h1>
+          <p className="text-muted-foreground mt-1">
+            View and manage the courses associated with your academic term.
+          </p>
+        </div>
+
+        {terms && terms.length > 0 ? (
+          <div className="w-full sm:w-64">
+            <select
+              value={effectiveTermId || ''}
+              onChange={handleTermChange}
+              className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {terms.map((term: any) => (
+                <option key={term.id} value={term.id}>
+                  {term.name} ({term.code})
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : terms && terms.length === 0 ? (
+          <div className="text-muted-foreground text-sm">No academic terms available.</div>
+        ) : null}
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -98,10 +151,39 @@ export default function MyCoursesPage() {
           })
         ) : (
           <div className="text-muted-foreground col-span-full rounded-lg border border-dashed py-12 text-center">
-            You are not enrolled in any courses.
+            No courses found for this term.
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+export default function MyCoursesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto flex h-full max-w-7xl flex-col gap-6 pb-10">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div>
+              <h1 className="font-display text-3xl font-bold tracking-tight">My Courses</h1>
+              <p className="text-muted-foreground mt-1">
+                View and manage the courses associated with your academic term.
+              </p>
+            </div>
+            <Skeleton className="h-10 w-full sm:w-64" />
+          </div>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i} className="flex flex-col">
+                <Skeleton className="h-40 w-full" />
+              </Card>
+            ))}
+          </div>
+        </div>
+      }
+    >
+      <MyCoursesContent />
+    </Suspense>
   );
 }

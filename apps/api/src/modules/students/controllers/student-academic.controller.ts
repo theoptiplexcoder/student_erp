@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Request, Query } from '@nestjs/common';
 import { StudentAcademicService } from '../services/student-academic.service';
 import { Roles } from '../../../decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
@@ -9,9 +9,15 @@ export class StudentAcademicController {
   constructor(private readonly academicService: StudentAcademicService) {}
 
   @Get('courses')
-  async getCourses(@Request() req: any) {
+  async getCourses(@Request() req: any, @Query('termId') termId?: string) {
     const { id: userId, institutionId } = req.user;
-    return this.academicService.getCourses(userId, institutionId);
+    return this.academicService.getCourses(userId, institutionId, termId);
+  }
+
+  @Get('terms')
+  async getTerms(@Request() req: any) {
+    const { id: userId, institutionId } = req.user;
+    return this.academicService.getTerms(userId, institutionId);
   }
 
   @Get('courses/:courseId')

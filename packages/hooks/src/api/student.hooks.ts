@@ -27,10 +27,17 @@ export const useStudentDashboard = () => {
   });
 };
 
-export const useStudentCourses = () => {
+export const useStudentCourses = (termId?: string) => {
   return useQuery({
-    queryKey: ['student', 'courses'],
-    queryFn: StudentApi.getCourses,
+    queryKey: ['student', 'courses', termId],
+    queryFn: () => StudentApi.getCourses(termId),
+  });
+};
+
+export const useStudentTerms = () => {
+  return useQuery({
+    queryKey: ['student', 'terms'],
+    queryFn: StudentApi.getTerms,
   });
 };
 

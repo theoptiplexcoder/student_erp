@@ -48,7 +48,11 @@ export const StudentApi = {
   getProfile: () => studentApiClient.get('/me').then((res) => res.data),
   updateProfile: (data: any) => studentApiClient.patch('/me', data).then((res) => res.data),
   getDashboard: () => studentApiClient.get('/dashboard').then((res) => res.data),
-  getCourses: () => studentApiClient.get('/academic/courses').then((res) => res.data),
+  getCourses: (termId?: string) =>
+    studentApiClient
+      .get('/academic/courses' + (termId ? `?termId=${termId}` : ''))
+      .then((res) => res.data),
+  getTerms: () => studentApiClient.get('/academic/terms').then((res) => res.data),
   getCourseDetails: (courseId: string) =>
     studentApiClient.get(`/academic/courses/${courseId}`).then((res) => res.data),
   getAttendanceSummary: () => studentApiClient.get('/attendance').then((res) => res.data),
