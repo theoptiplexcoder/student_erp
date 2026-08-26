@@ -19,37 +19,38 @@ export class FacultyStudentsService {
 
     const sectionIds = assignments.map((a) => a.sectionId);
 
-    const enrollments = await this.prisma.enrollment.findMany({
+    const students = await this.prisma.student.findMany({
       where: {
         institutionId,
-        sectionId: { in: sectionIds },
-        status: 'ACTIVE',
-      },
-      include: {
-        student: {
-          include: {
-            user: true,
-            program: true,
-            section: true,
+        enrollments: {
+          some: {
+            sectionId: { in: sectionIds },
+            status: 'ACTIVE',
           },
         },
-        course: true,
+      },
+      include: {
+        user: true,
+        program: true,
+        section: true,
+        enrollments: {
+          where: {
+            sectionId: { in: sectionIds },
+            status: 'ACTIVE',
+          },
+          include: {
+            course: true,
+          },
+        },
       },
     });
 
-    // Deduplicate students
-    const studentMap = new Map();
-    for (const e of enrollments) {
-      if (!studentMap.has(e.studentId)) {
-        studentMap.set(e.studentId, {
-          ...e.student,
-          enrolledCourses: [e.course],
-        });
-      } else {
-        studentMap.get(e.studentId).enrolledCourses.push(e.course);
-      }
-    }
-
-    return Array.from(studentMap.values());
+    return students.map((student) => {
+      const { enrollments, ...rest } = student;
+      return {
+        ...rest,
+        enrolledCourses: enrollments.map((e) => e.course),
+      };
+    });
   }
 }

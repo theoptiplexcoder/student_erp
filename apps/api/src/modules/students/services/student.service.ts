@@ -62,44 +62,43 @@ export class StudentService {
     const today = new Date().getDay();
     const dayMap = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 
-    const timetable = await this.prisma.timetableEntry.findMany({
-      where: {
-        institutionId,
-        sectionId: student.sectionId ?? undefined,
-        dayOfWeek: dayMap[today] as any,
-      },
-      include: {
-        course: true,
-        faculty: {
-          include: { user: true },
+    const [enrollments, upcomingEvents, recentAnnouncements, timetable] = await Promise.all([
+      this.prisma.enrollment.findMany({
+        where: {
+          institutionId,
+          studentId: student.id,
+          status: 'ACTIVE',
         },
-      },
-    });
-
-    const enrollments = await this.prisma.enrollment.findMany({
-      where: {
-        institutionId,
-        studentId: student.id,
-        status: 'ACTIVE',
-      },
-    });
-
-    const upcomingEvents = await this.prisma.calendarEvent.findMany({
-      where: {
-        institutionId,
-        startAt: { gte: new Date() },
-      },
-      take: 5,
-      orderBy: { startAt: 'asc' },
-    });
-
-    const recentAnnouncements = await this.prisma.announcement.findMany({
-      where: {
-        institutionId,
-      },
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-    });
+      }),
+      this.prisma.calendarEvent.findMany({
+        where: {
+          institutionId,
+          startAt: { gte: new Date() },
+        },
+        take: 5,
+        orderBy: { startAt: 'asc' },
+      }),
+      this.prisma.announcement.findMany({
+        where: {
+          institutionId,
+        },
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.timetableEntry.findMany({
+        where: {
+          institutionId,
+          sectionId: student.sectionId ?? undefined,
+          dayOfWeek: dayMap[today] as any,
+        },
+        include: {
+          course: true,
+          faculty: {
+            include: { user: true },
+          },
+        },
+      }),
+    ]);
 
     const upcomingDeadlines = await this.prisma.assignment.findMany({
       where: {

@@ -24,7 +24,7 @@ export class CourseOfferingsService {
         program: true,
         batch: true,
         section: true,
-        enrollments: true,
+        _count: { select: { enrollments: true } },
       },
     });
   }
@@ -38,7 +38,7 @@ export class CourseOfferingsService {
         program: true,
         batch: true,
         section: true,
-        enrollments: true,
+        _count: { select: { enrollments: true } },
       },
     });
     if (!offering) {

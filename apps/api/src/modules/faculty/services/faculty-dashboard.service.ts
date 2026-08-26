@@ -32,39 +32,41 @@ export class FacultyDashboardService {
     ] as const;
     const dayOfWeekEnum = days[today.getDay()];
 
-    // 1. Assigned Courses
-    const courseAssignments = await this.prisma.courseAssignment.findMany({
-      where: { facultyId: faculty.id, institutionId },
-      include: {
-        course: true,
-        section: {
-          include: {
-            program: true,
-            batch: true,
+    const [courseAssignments, todaysClasses] = await Promise.all([
+      // 1. Assigned Courses
+      this.prisma.courseAssignment.findMany({
+        where: { facultyId: faculty.id, institutionId },
+        include: {
+          course: true,
+          section: {
+            include: {
+              program: true,
+              batch: true,
+            },
+          },
+          term: true,
+        },
+      }),
+
+      // 2. Today's Classes (Timetable)
+      this.prisma.timetableEntry.findMany({
+        where: {
+          facultyId: faculty.id,
+          institutionId,
+          dayOfWeek: dayOfWeekEnum,
+          term: {
+            startDate: { lte: todayEnd },
+            endDate: { gte: todayStart },
           },
         },
-        term: true,
-      },
-    });
-
-    // 2. Today's Classes (Timetable)
-    const todaysClasses = await this.prisma.timetableEntry.findMany({
-      where: {
-        facultyId: faculty.id,
-        institutionId,
-        dayOfWeek: dayOfWeekEnum,
-        term: {
-          startDate: { lte: todayEnd },
-          endDate: { gte: todayStart },
+        include: {
+          course: true,
+          section: true,
+          room: true,
         },
-      },
-      include: {
-        course: true,
-        section: true,
-        room: true,
-      },
-      orderBy: { startTime: 'asc' },
-    });
+        orderBy: { startTime: 'asc' },
+      }),
+    ]);
 
     // 3. Recent Announcements
     const announcements = await this.prisma.announcement.findMany({
