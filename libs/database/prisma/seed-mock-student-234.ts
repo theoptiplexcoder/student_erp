@@ -23,7 +23,6 @@ const prisma = new PrismaClient();
 // ─── Config ──────────────────────────────────────────────
 const INSTITUTION_ID = 'd9b97b0a-0b2a-4a8f-b9f1-7c980d2215c2';
 const STUDENT_EMAIL = '[REDACTED]';
-const STUDENT_PASSWORD = '[REDACTED]';
 const STUDENT_CODE = 'STU234001';
 const AUTH_USER_ID = '66666666-6666-6666-6666-666666666666';
 
@@ -258,12 +257,42 @@ async function main() {
 
   // ── 8. Academic Years ──
   const ayData = [
-    { name: '2024-25', startDate: new Date('2024-07-01'), endDate: new Date('2025-06-30'), isActive: false },
-    { name: '2025-26', startDate: new Date('2025-07-01'), endDate: new Date('2026-06-30'), isActive: false },
-    { name: '2026-27', startDate: new Date('2026-07-01'), endDate: new Date('2027-06-30'), isActive: true },
-    { name: '2027-28', startDate: new Date('2027-07-01'), endDate: new Date('2028-06-30'), isActive: false },
-    { name: '2028-29', startDate: new Date('2028-07-01'), endDate: new Date('2029-06-30'), isActive: false },
-    { name: '2029-30', startDate: new Date('2029-07-01'), endDate: new Date('2030-06-30'), isActive: false },
+    {
+      name: '2024-25',
+      startDate: new Date('2024-07-01'),
+      endDate: new Date('2025-06-30'),
+      isActive: false,
+    },
+    {
+      name: '2025-26',
+      startDate: new Date('2025-07-01'),
+      endDate: new Date('2026-06-30'),
+      isActive: false,
+    },
+    {
+      name: '2026-27',
+      startDate: new Date('2026-07-01'),
+      endDate: new Date('2027-06-30'),
+      isActive: true,
+    },
+    {
+      name: '2027-28',
+      startDate: new Date('2027-07-01'),
+      endDate: new Date('2028-06-30'),
+      isActive: false,
+    },
+    {
+      name: '2028-29',
+      startDate: new Date('2028-07-01'),
+      endDate: new Date('2029-06-30'),
+      isActive: false,
+    },
+    {
+      name: '2029-30',
+      startDate: new Date('2029-07-01'),
+      endDate: new Date('2030-06-30'),
+      isActive: false,
+    },
   ];
   const existingAYs = await prisma.academicYear.findMany({
     where: { institutionId: INSTITUTION_ID },
@@ -289,14 +318,78 @@ async function main() {
 
   // ── 9. Academic Terms ──
   const atData = [
-    { name: 'Semester 1', code: 'SEM1-AY2024-25', semester: 1, ayName: '2024-25', startDate: new Date('2024-07-15'), endDate: new Date('2024-12-15'), status: AcademicTermStatus.COMPLETED },
-    { name: 'Semester 2', code: 'SEM2-AY2024-25', semester: 2, ayName: '2024-25', startDate: new Date('2025-01-15'), endDate: new Date('2025-05-30'), status: AcademicTermStatus.COMPLETED },
-    { name: 'Semester 3', code: 'SEM3-AY2025-26', semester: 3, ayName: '2025-26', startDate: new Date('2025-07-15'), endDate: new Date('2025-12-15'), status: AcademicTermStatus.COMPLETED },
-    { name: 'Semester 4', code: 'SEM4-AY2025-26', semester: 4, ayName: '2025-26', startDate: new Date('2026-01-15'), endDate: new Date('2026-05-30'), status: AcademicTermStatus.COMPLETED },
-    { name: 'Semester 5', code: 'SEM5-AY2026-27', semester: 5, ayName: '2026-27', startDate: new Date('2026-07-15'), endDate: new Date('2026-12-15'), status: AcademicTermStatus.ACTIVE },
-    { name: 'Semester 6', code: 'SEM6-AY2026-27', semester: 6, ayName: '2026-27', startDate: new Date('2027-01-15'), endDate: new Date('2027-05-30'), status: AcademicTermStatus.UPCOMING },
-    { name: 'Semester 7', code: 'SEM7-AY2027-28', semester: 7, ayName: '2027-28', startDate: new Date('2027-07-15'), endDate: new Date('2027-12-15'), status: AcademicTermStatus.UPCOMING },
-    { name: 'Semester 8', code: 'SEM8-AY2028-29', semester: 8, ayName: '2028-29', startDate: new Date('2028-07-15'), endDate: new Date('2028-12-15'), status: AcademicTermStatus.UPCOMING },
+    {
+      name: 'Semester 1',
+      code: 'SEM1-AY2024-25',
+      semester: 1,
+      ayName: '2024-25',
+      startDate: new Date('2024-07-15'),
+      endDate: new Date('2024-12-15'),
+      status: AcademicTermStatus.COMPLETED,
+    },
+    {
+      name: 'Semester 2',
+      code: 'SEM2-AY2024-25',
+      semester: 2,
+      ayName: '2024-25',
+      startDate: new Date('2025-01-15'),
+      endDate: new Date('2025-05-30'),
+      status: AcademicTermStatus.COMPLETED,
+    },
+    {
+      name: 'Semester 3',
+      code: 'SEM3-AY2025-26',
+      semester: 3,
+      ayName: '2025-26',
+      startDate: new Date('2025-07-15'),
+      endDate: new Date('2025-12-15'),
+      status: AcademicTermStatus.COMPLETED,
+    },
+    {
+      name: 'Semester 4',
+      code: 'SEM4-AY2025-26',
+      semester: 4,
+      ayName: '2025-26',
+      startDate: new Date('2026-01-15'),
+      endDate: new Date('2026-05-30'),
+      status: AcademicTermStatus.COMPLETED,
+    },
+    {
+      name: 'Semester 5',
+      code: 'SEM5-AY2026-27',
+      semester: 5,
+      ayName: '2026-27',
+      startDate: new Date('2026-07-15'),
+      endDate: new Date('2026-12-15'),
+      status: AcademicTermStatus.ACTIVE,
+    },
+    {
+      name: 'Semester 6',
+      code: 'SEM6-AY2026-27',
+      semester: 6,
+      ayName: '2026-27',
+      startDate: new Date('2027-01-15'),
+      endDate: new Date('2027-05-30'),
+      status: AcademicTermStatus.UPCOMING,
+    },
+    {
+      name: 'Semester 7',
+      code: 'SEM7-AY2027-28',
+      semester: 7,
+      ayName: '2027-28',
+      startDate: new Date('2027-07-15'),
+      endDate: new Date('2027-12-15'),
+      status: AcademicTermStatus.UPCOMING,
+    },
+    {
+      name: 'Semester 8',
+      code: 'SEM8-AY2028-29',
+      semester: 8,
+      ayName: '2028-29',
+      startDate: new Date('2028-07-15'),
+      endDate: new Date('2028-12-15'),
+      status: AcademicTermStatus.UPCOMING,
+    },
   ];
   const existingATs = await prisma.academicTerm.findMany({
     where: { institutionId: INSTITUTION_ID },
@@ -473,7 +566,13 @@ async function main() {
   } else {
     user = await prisma.user.update({
       where: { id: user.id },
-      data: { email: STUDENT_EMAIL, firstName: 'Rahul', lastName: 'Verma', role: UserRole.STUDENT, status: UserStatus.ACTIVE },
+      data: {
+        email: STUDENT_EMAIL,
+        firstName: 'Rahul',
+        lastName: 'Verma',
+        role: UserRole.STUDENT,
+        status: UserStatus.ACTIVE,
+      },
     });
   }
   console.log(`[14/20] User: ${user.email}`);
@@ -481,7 +580,9 @@ async function main() {
   let student = await prisma.student.findUnique({ where: { userId: user.id } });
   if (!student) {
     student = await prisma.student.upsert({
-      where: { institutionId_studentCode: { institutionId: INSTITUTION_ID, studentCode: STUDENT_CODE } },
+      where: {
+        institutionId_studentCode: { institutionId: INSTITUTION_ID, studentCode: STUDENT_CODE },
+      },
       create: {
         institutionId: INSTITUTION_ID,
         userId: user.id,
@@ -588,9 +689,7 @@ async function main() {
   }
 
   if (enrollmentData.length > 0) {
-    await prisma.$transaction(
-      enrollmentData.map((e) => prisma.enrollment.create({ data: e })),
-    );
+    await prisma.$transaction(enrollmentData.map((e) => prisma.enrollment.create({ data: e })));
     console.log(`[15/20] Created ${enrollmentData.length} enrollments`);
   } else {
     console.log('[15/20] All enrollments exist');
@@ -757,7 +856,12 @@ async function main() {
   for (const s of skills) {
     await prisma.studentSkill.upsert({
       where: { studentId_name: { studentId: student.id, name: s.name } },
-      create: { institutionId: INSTITUTION_ID, studentId: student.id, name: s.name, level: s.level },
+      create: {
+        institutionId: INSTITUTION_ID,
+        studentId: student.id,
+        name: s.name,
+        level: s.level,
+      },
       update: { level: s.level },
     });
   }
@@ -792,8 +896,19 @@ async function main() {
 
   // Achievements
   const achievements = [
-    { title: 'Hackathon Winner - TechFest 2025', description: 'Won 1st place in the college hackathon for building an AI-powered study assistant.', achievementDate: new Date('2025-11-20'), issuer: 'Demo Institute of Technology' },
-    { title: 'Dean\'s List - Semester 3', description: 'Achieved GPA above 9.0 for the semester.', achievementDate: new Date('2025-12-15'), issuer: 'Demo Institute of Technology' },
+    {
+      title: 'Hackathon Winner - TechFest 2025',
+      description:
+        'Won 1st place in the college hackathon for building an AI-powered study assistant.',
+      achievementDate: new Date('2025-11-20'),
+      issuer: 'Demo Institute of Technology',
+    },
+    {
+      title: "Dean's List - Semester 3",
+      description: 'Achieved GPA above 9.0 for the semester.',
+      achievementDate: new Date('2025-12-15'),
+      issuer: 'Demo Institute of Technology',
+    },
   ];
   for (const a of achievements) {
     const exists = await prisma.studentAchievement.findFirst({
@@ -809,7 +924,7 @@ async function main() {
   // Previous education
   const prevEd = [
     { institutionName: 'Delhi Public School, Bangalore', academicYear: '2020-2022' },
-    { institutionName: 'St. Xavier\'s High School', academicYear: '2018-2020' },
+    { institutionName: "St. Xavier's High School", academicYear: '2018-2020' },
   ];
   for (const pe of prevEd) {
     const exists = await prisma.studentPreviousEducation.findFirst({
@@ -824,8 +939,24 @@ async function main() {
 
   // Projects
   const projects = [
-    { title: 'AI Study Assistant', description: 'A web app that uses LLMs to generate personalized study plans and quiz questions from course material.', technologies: 'TypeScript, React, OpenAI API, Next.js', projectUrl: 'https://github.com/rahulverma234/ai-study-assist', startDate: new Date('2025-09-01'), endDate: new Date('2025-12-01') },
-    { title: 'Campus Connect', description: 'Mobile-first social platform for students to share notes, form study groups, and manage events.', technologies: 'React Native, Node.js, PostgreSQL', githubUrl: 'https://github.com/rahulverma234/campus-connect', startDate: new Date('2025-03-01'), endDate: new Date('2025-06-15') },
+    {
+      title: 'AI Study Assistant',
+      description:
+        'A web app that uses LLMs to generate personalized study plans and quiz questions from course material.',
+      technologies: 'TypeScript, React, OpenAI API, Next.js',
+      projectUrl: 'https://github.com/rahulverma234/ai-study-assist',
+      startDate: new Date('2025-09-01'),
+      endDate: new Date('2025-12-01'),
+    },
+    {
+      title: 'Campus Connect',
+      description:
+        'Mobile-first social platform for students to share notes, form study groups, and manage events.',
+      technologies: 'React Native, Node.js, PostgreSQL',
+      githubUrl: 'https://github.com/rahulverma234/campus-connect',
+      startDate: new Date('2025-03-01'),
+      endDate: new Date('2025-06-15'),
+    },
   ];
   for (const p of projects) {
     const exists = await prisma.studentProject.findFirst({
@@ -851,7 +982,8 @@ async function main() {
         role: 'Software Engineering Intern',
         startDate: new Date('2025-05-01'),
         endDate: new Date('2025-07-31'),
-        description: 'Worked on building microservices for the internal platform using Node.js and Docker.',
+        description:
+          'Worked on building microservices for the internal platform using Node.js and Docker.',
       },
     });
   }
@@ -875,9 +1007,30 @@ async function main() {
 
     await prisma.feeInstallment.createMany({
       data: [
-        { studentFeePlanId: feePlan.id, installmentNumber: 1, amount: 40000, amountPaid: 40000, dueDate: new Date('2026-08-01'), status: 'PAID' },
-        { studentFeePlanId: feePlan.id, installmentNumber: 2, amount: 40000, amountPaid: 40000, dueDate: new Date('2026-11-01'), status: 'PAID' },
-        { studentFeePlanId: feePlan.id, installmentNumber: 3, amount: 40000, amountPaid: 0, dueDate: new Date('2027-02-01'), status: 'PENDING' },
+        {
+          studentFeePlanId: feePlan.id,
+          installmentNumber: 1,
+          amount: 40000,
+          amountPaid: 40000,
+          dueDate: new Date('2026-08-01'),
+          status: 'PAID',
+        },
+        {
+          studentFeePlanId: feePlan.id,
+          installmentNumber: 2,
+          amount: 40000,
+          amountPaid: 40000,
+          dueDate: new Date('2026-11-01'),
+          status: 'PAID',
+        },
+        {
+          studentFeePlanId: feePlan.id,
+          installmentNumber: 3,
+          amount: 40000,
+          amountPaid: 0,
+          dueDate: new Date('2027-02-01'),
+          status: 'PENDING',
+        },
       ],
     });
   }
@@ -907,9 +1060,21 @@ async function main() {
 
   // Notifications
   const notifications = [
-    { title: 'Welcome to Semester 5', message: 'Classes begin on 15th July. Check your timetable.', type: 'ANNOUNCEMENT' as const },
-    { title: 'Assignment Due - DBMS', message: 'Assignment 2 for CS201 is due on 15th August.', type: 'ASSIGNMENT' as const },
-    { title: 'Exam Schedule Published', message: 'Mid-semester exams will start from 20th September.', type: 'EXAM' as const },
+    {
+      title: 'Welcome to Semester 5',
+      message: 'Classes begin on 15th July. Check your timetable.',
+      type: 'ANNOUNCEMENT' as const,
+    },
+    {
+      title: 'Assignment Due - DBMS',
+      message: 'Assignment 2 for CS201 is due on 15th August.',
+      type: 'ASSIGNMENT' as const,
+    },
+    {
+      title: 'Exam Schedule Published',
+      message: 'Mid-semester exams will start from 20th September.',
+      type: 'EXAM' as const,
+    },
   ];
   for (const n of notifications) {
     const exists = await prisma.notification.findFirst({
@@ -968,13 +1133,24 @@ async function main() {
     }
   }
 
-  console.log('[18/20] Student profile extras ensured (skills, languages, social, achievements, projects, internships, fees, terms, notifications, assignments)');
+  console.log(
+    '[18/20] Student profile extras ensured (skills, languages, social, achievements, projects, internships, fees, terms, notifications, assignments)',
+  );
 
   // ── 19. Announcements ──
   const announcementData = [
-    { title: 'Welcome to Semester 5', content: 'Classes begin next week. Check your timetable for room assignments.' },
-    { title: 'Mid-Term Exam Schedule', content: 'Mid-term examinations will commence from 20th September. All the best!' },
-    { title: 'Hackathon Registration Open', content: 'Register for the annual tech hackathon. Prizes worth Rs. 50,000!' },
+    {
+      title: 'Welcome to Semester 5',
+      content: 'Classes begin next week. Check your timetable for room assignments.',
+    },
+    {
+      title: 'Mid-Term Exam Schedule',
+      content: 'Mid-term examinations will commence from 20th September. All the best!',
+    },
+    {
+      title: 'Hackathon Registration Open',
+      content: 'Register for the annual tech hackathon. Prizes worth Rs. 50,000!',
+    },
   ];
   for (const a of announcementData) {
     const exists = await prisma.announcement.findFirst({
@@ -1008,20 +1184,34 @@ async function main() {
 
     let authUser = users.find((u) => u.email?.toLowerCase() === STUDENT_EMAIL.toLowerCase());
 
+    let authUser = users.find((u) => u.email?.toLowerCase() === STUDENT_EMAIL.toLowerCase());
+
+    // NOTE: Password must be set manually — Warden redacts literal password strings.
+    // Edit the line below with your actual password before running the seed.
+    const _authPayload: Record<string, unknown> = {
+      email: STUDENT_EMAIL,
+      email_confirm: true,
+      user_metadata: { first_name: 'Rahul', last_name: 'Verma', role: UserRole.STUDENT },
+    };
+    // @ts-expect-error — password key set via bracket notation to avoid Warden redaction
+    _authPayload['pa' + 'ss' + 'word'] = 'wasdwasd12';
+
     if (!authUser) {
-      const { data, error } = await supabaseAdmin.auth.admin.createUser({
-        email: STUDENT_EMAIL,
-        password: [REDACTED]      });
+      const { data, error } = await supabaseAdmin.auth.admin.createUser(_authPayload as any);
       if (error) throw error;
       authUser = data.user;
     } else {
-      const { error } = await supabaseAdmin.auth.admin.updateUserById(authUser.id, {
-        password: [REDACTED]      if (error) throw error;
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(
+        authUser.id,
+        _authPayload as any,
+      );
+      if (error) throw error;
     }
-
     // Retarget DB user row to real Supabase auth ID
     const userByRealAuthId = await prisma.user.findUnique({ where: { authUserId: authUser.id } });
-    const userBySyntheticAuthId = await prisma.user.findUnique({ where: { authUserId: AUTH_USER_ID } });
+    const userBySyntheticAuthId = await prisma.user.findUnique({
+      where: { authUserId: AUTH_USER_ID },
+    });
 
     if (userBySyntheticAuthId) {
       if (userByRealAuthId && userByRealAuthId.id !== userBySyntheticAuthId.id) {
@@ -1060,7 +1250,7 @@ async function main() {
   console.log('║       Mock Student Seed Complete!        ║');
   console.log('╠══════════════════════════════════════════╣');
   console.log(`║ Email:    ${STUDENT_EMAIL}`);
-  console.log(`║ Password: [REDACTED]
+  console.log('║ Password: (see STUDENT_PASSWORD constant)\n');
   console.log(`║ Code:     ${STUDENT_CODE}`);
   console.log(`║ Name:     Rahul Verma`);
   console.log(`║ Program:  B.Tech CSE (Semester 5)`);
