@@ -1,0 +1,1081 @@
+import 'dotenv/config';
+import {
+  PrismaClient,
+  ProgramLevel,
+  TermType,
+  UserRole,
+  UserStatus,
+  StudentLifecycleStatus,
+  AcademicTermStatus,
+  CourseStatus,
+  EnrollmentStatus,
+  CurriculumStatus,
+  ResultStatus,
+  ExamType,
+  ExamStatus,
+  Gender,
+  AttendanceStatus,
+} from '@prisma/client';
+import { createClient } from '@supabase/supabase-js';
+
+const prisma = new PrismaClient();
+
+// ─── Config ──────────────────────────────────────────────
+const INSTITUTION_ID = 'd9b97b0a-0b2a-4a8f-b9f1-7c980d2215c2';
+const STUDENT_EMAIL = '[REDACTED]';
+const STUDENT_PASSWORD = '[REDACTED]';
+const STUDENT_CODE = 'STU234001';
+const AUTH_USER_ID = '66666666-6666-6666-6666-666666666666';
+
+// ─── Course Data ─────────────────────────────────────────
+const coursesData = [
+  { code: 'CS101', name: 'Programming in C', creditValue: 4, sem: 1 },
+  { code: 'MA101', name: 'Mathematics I', creditValue: 4, sem: 1 },
+  { code: 'PH101', name: 'Engineering Physics', creditValue: 4, sem: 1 },
+  { code: 'EC101', name: 'Basic Electronics', creditValue: 4, sem: 1 },
+  { code: 'HS101', name: 'Communication Skills', creditValue: 4, sem: 1 },
+  { code: 'CS102', name: 'Data Structures', creditValue: 4, sem: 2 },
+  { code: 'MA102', name: 'Mathematics II', creditValue: 4, sem: 2 },
+  { code: 'CS103', name: 'Object Oriented Programming', creditValue: 4, sem: 2 },
+  { code: 'EC102', name: 'Digital Logic', creditValue: 4, sem: 2 },
+  { code: 'HS102', name: 'Professional Communication', creditValue: 4, sem: 2 },
+  { code: 'CS201', name: 'Database Management Systems', creditValue: 4, sem: 3 },
+  { code: 'CS202', name: 'Operating Systems', creditValue: 4, sem: 3 },
+  { code: 'CS203', name: 'Computer Networks', creditValue: 4, sem: 3 },
+  { code: 'CS204', name: 'Computer Organization', creditValue: 4, sem: 3 },
+  { code: 'MA201', name: 'Discrete Mathematics', creditValue: 4, sem: 3 },
+  { code: 'CS205', name: 'Software Engineering', creditValue: 4, sem: 4 },
+  { code: 'CS206', name: 'Theory of Computation', creditValue: 4, sem: 4 },
+  { code: 'CS207', name: 'Design and Analysis of Algorithms', creditValue: 4, sem: 4 },
+  { code: 'CS208', name: 'Web Technologies', creditValue: 4, sem: 4 },
+  { code: 'CS209', name: 'Microprocessors', creditValue: 4, sem: 4 },
+  { code: 'CS301', name: 'Artificial Intelligence', creditValue: 4, sem: 5 },
+  { code: 'CS302', name: 'Machine Learning', creditValue: 4, sem: 5 },
+  { code: 'CS303', name: 'Compiler Design', creditValue: 4, sem: 5 },
+  { code: 'CS304', name: 'Distributed Systems', creditValue: 4, sem: 5 },
+  { code: 'CS305', name: 'Cloud Computing', creditValue: 4, sem: 5 },
+  { code: 'CS306', name: 'Data Mining', creditValue: 4, sem: 6 },
+  { code: 'CS307', name: 'Cyber Security', creditValue: 4, sem: 6 },
+  { code: 'CS308', name: 'Mobile Application Development', creditValue: 4, sem: 6 },
+  { code: 'CS309', name: 'Big Data Analytics', creditValue: 4, sem: 6 },
+  { code: 'CS310', name: 'Internet of Things', creditValue: 4, sem: 6 },
+  { code: 'CS401', name: 'Deep Learning', creditValue: 4, sem: 7 },
+  { code: 'CS402', name: 'Natural Language Processing', creditValue: 4, sem: 7 },
+  { code: 'CS403', name: 'Advanced Database Systems', creditValue: 4, sem: 7 },
+  { code: 'CS404', name: 'Software Project Management', creditValue: 4, sem: 7 },
+  { code: 'CS405', name: 'Major Project', creditValue: 10, sem: 8 },
+  { code: 'CS406', name: 'Internship', creditValue: 6, sem: 8 },
+  { code: 'CS407', name: 'Seminar', creditValue: 2, sem: 8 },
+];
+
+// ─── Helpers ─────────────────────────────────────────────
+function generateGrade(marks: number): { grade: string; gradePoint: number } {
+  if (marks >= 90) return { grade: 'A+', gradePoint: 10 };
+  if (marks >= 80) return { grade: 'A', gradePoint: 9 };
+  if (marks >= 70) return { grade: 'B+', gradePoint: 8 };
+  if (marks >= 60) return { grade: 'B', gradePoint: 7 };
+  if (marks >= 50) return { grade: 'C+', gradePoint: 6 };
+  if (marks >= 40) return { grade: 'C', gradePoint: 5 };
+  return { grade: 'F', gradePoint: 0 };
+}
+
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+function time(str: string) {
+  const [h, m, s] = str.split(':').map(Number);
+  const d = new Date();
+  d.setUTCHours(h, m, s || 0, 0);
+  return d;
+}
+
+// ─── Main ────────────────────────────────────────────────
+async function main() {
+  console.log('Starting mock student seed ([REDACTED])...\n');
+
+  // ── 1. Institution ──
+  await prisma.institution.upsert({
+    where: { id: INSTITUTION_ID },
+    create: {
+      id: INSTITUTION_ID,
+      institutionType: 'COLLEGE',
+      legalName: 'Demo Institute of Technology',
+      displayName: 'Demo Institute of Technology',
+    },
+    update: {},
+  });
+  console.log('[1/20] Institution ensured');
+
+  // ── 2. Department ──
+  const dept = await prisma.department.upsert({
+    where: { institutionId_code: { institutionId: INSTITUTION_ID, code: 'CSE' } },
+    create: {
+      institutionId: INSTITUTION_ID,
+      name: 'Computer Science and Engineering',
+      code: 'CSE',
+    },
+    update: {},
+  });
+
+  const mathDept = await prisma.department.upsert({
+    where: { institutionId_code: { institutionId: INSTITUTION_ID, code: 'MATH' } },
+    create: {
+      institutionId: INSTITUTION_ID,
+      name: 'Mathematics',
+      code: 'MATH',
+    },
+    update: {},
+  });
+  console.log('[2/20] Departments ensured');
+
+  // ── 3. Program ──
+  let program = await prisma.program.findFirst({
+    where: { institutionId: INSTITUTION_ID, code: 'BTECH-CSE' },
+  });
+  if (!program) {
+    program = await prisma.program.create({
+      data: {
+        institutionId: INSTITUTION_ID,
+        departmentId: dept.id,
+        name: 'B.Tech Computer Science and Engineering',
+        code: 'BTECH-CSE',
+        level: ProgramLevel.UNDERGRADUATE,
+        durationYears: 4,
+      },
+    });
+  }
+  console.log(`[3/20] Program: ${program.code}`);
+
+  // ── 4. Curriculum ──
+  let curriculum = await prisma.curriculum.findFirst({
+    where: { programId: program.id, status: 'ACTIVE' },
+  });
+  if (!curriculum) {
+    curriculum = await prisma.curriculum.create({
+      data: {
+        institutionId: INSTITUTION_ID,
+        programId: program.id,
+        versionNumber: '2026-V1',
+        name: '2026 CSE Curriculum',
+        status: CurriculumStatus.ACTIVE,
+        effectiveFrom: new Date('2026-07-01'),
+      },
+    });
+  }
+  console.log(`[4/20] Curriculum: ${curriculum.name}`);
+
+  // ── 5. Curriculum Terms ──
+  const ctData = [
+    { name: 'Semester 1', sequence: 1, creditRequirement: 20 },
+    { name: 'Semester 2', sequence: 2, creditRequirement: 20 },
+    { name: 'Semester 3', sequence: 3, creditRequirement: 22 },
+    { name: 'Semester 4', sequence: 4, creditRequirement: 22 },
+    { name: 'Semester 5', sequence: 5, creditRequirement: 20 },
+    { name: 'Semester 6', sequence: 6, creditRequirement: 20 },
+    { name: 'Semester 7', sequence: 7, creditRequirement: 18 },
+    { name: 'Semester 8', sequence: 8, creditRequirement: 18 },
+  ];
+
+  const existingCTs = await prisma.curriculumTerm.findMany({
+    where: { curriculumId: curriculum.id },
+    select: { sequence: true },
+  });
+  const existingCTSeqs = new Set(existingCTs.map((ct) => ct.sequence));
+  const newCTs = ctData.filter((ct) => !existingCTSeqs.has(ct.sequence));
+  if (newCTs.length > 0) {
+    await prisma.curriculumTerm.createMany({
+      data: newCTs.map((ct) => ({
+        institutionId: INSTITUTION_ID,
+        curriculumId: curriculum.id,
+        name: ct.name,
+        sequence: ct.sequence,
+        creditRequirement: ct.creditRequirement,
+      })),
+    });
+  }
+  const allCTs = await prisma.curriculumTerm.findMany({
+    where: { curriculumId: curriculum.id },
+    orderBy: { sequence: 'asc' },
+  });
+  const curriculumTermsMap = new Map(allCTs.map((ct) => [ct.sequence, ct]));
+  console.log('[5/20] Curriculum terms ensured');
+
+  // ── 6. Courses ──
+  const existingCourses = await prisma.course.findMany({
+    where: { institutionId: INSTITUTION_ID },
+    select: { code: true },
+  });
+  const existingCourseCodes = new Set(existingCourses.map((c) => c.code));
+  const newCourses = coursesData.filter((c) => !existingCourseCodes.has(c.code));
+  if (newCourses.length > 0) {
+    await prisma.course.createMany({
+      data: newCourses.map((c) => ({
+        institutionId: INSTITUTION_ID,
+        departmentId: dept.id,
+        code: c.code,
+        name: c.name,
+        creditValue: c.creditValue,
+        maxMarks: 100,
+        passingMarks: 40,
+        status: CourseStatus.ACTIVE,
+      })),
+    });
+  }
+  const allCourses = await prisma.course.findMany({
+    where: { institutionId: INSTITUTION_ID },
+  });
+  const coursesMap = new Map(allCourses.map((c) => [c.code, c]));
+  console.log('[6/20] Courses ensured');
+
+  // ── 7. Curriculum Courses ──
+  const existingCCs = await prisma.curriculumCourse.findMany({
+    where: { curriculumTermId: { in: allCTs.map((ct) => ct.id) } },
+    select: { curriculumTermId: true, courseId: true },
+  });
+  const existingCCKeys = new Set(existingCCs.map((cc) => `${cc.curriculumTermId}-${cc.courseId}`));
+  const newCCs: any[] = [];
+  for (let i = 0; i < coursesData.length; i++) {
+    const cd = coursesData[i];
+    const ct = curriculumTermsMap.get(cd.sem)!;
+    const course = coursesMap.get(cd.code)!;
+    if (!existingCCKeys.has(`${ct.id}-${course.id}`)) {
+      newCCs.push({
+        institutionId: INSTITUTION_ID,
+        curriculumTermId: ct.id,
+        courseId: course.id,
+        sequence: i + 1,
+        creditValue: cd.creditValue,
+        isMandatory: true,
+      });
+    }
+  }
+  if (newCCs.length > 0) {
+    await prisma.curriculumCourse.createMany({ data: newCCs });
+  }
+  console.log('[7/20] Curriculum courses ensured');
+
+  // ── 8. Academic Years ──
+  const ayData = [
+    { name: '2024-25', startDate: new Date('2024-07-01'), endDate: new Date('2025-06-30'), isActive: false },
+    { name: '2025-26', startDate: new Date('2025-07-01'), endDate: new Date('2026-06-30'), isActive: false },
+    { name: '2026-27', startDate: new Date('2026-07-01'), endDate: new Date('2027-06-30'), isActive: true },
+    { name: '2027-28', startDate: new Date('2027-07-01'), endDate: new Date('2028-06-30'), isActive: false },
+    { name: '2028-29', startDate: new Date('2028-07-01'), endDate: new Date('2029-06-30'), isActive: false },
+    { name: '2029-30', startDate: new Date('2029-07-01'), endDate: new Date('2030-06-30'), isActive: false },
+  ];
+  const existingAYs = await prisma.academicYear.findMany({
+    where: { institutionId: INSTITUTION_ID },
+    select: { name: true },
+  });
+  const existingAYNames = new Set(existingAYs.map((ay) => ay.name));
+  const newAYs = ayData.filter((ay) => !existingAYNames.has(ay.name));
+  if (newAYs.length > 0) {
+    await prisma.academicYear.createMany({
+      data: newAYs.map((ay) => ({ institutionId: INSTITUTION_ID, ...ay })),
+    });
+  }
+  // Ensure isActive flags are correct
+  for (const ay of ayData) {
+    await prisma.academicYear.updateMany({
+      where: { institutionId: INSTITUTION_ID, name: ay.name },
+      data: { isActive: ay.isActive },
+    });
+  }
+  const allAYs = await prisma.academicYear.findMany({ where: { institutionId: INSTITUTION_ID } });
+  const ayMap = new Map(allAYs.map((ay) => [ay.name, ay]));
+  console.log('[8/20] Academic years ensured');
+
+  // ── 9. Academic Terms ──
+  const atData = [
+    { name: 'Semester 1', code: 'SEM1-AY2024-25', semester: 1, ayName: '2024-25', startDate: new Date('2024-07-15'), endDate: new Date('2024-12-15'), status: AcademicTermStatus.COMPLETED },
+    { name: 'Semester 2', code: 'SEM2-AY2024-25', semester: 2, ayName: '2024-25', startDate: new Date('2025-01-15'), endDate: new Date('2025-05-30'), status: AcademicTermStatus.COMPLETED },
+    { name: 'Semester 3', code: 'SEM3-AY2025-26', semester: 3, ayName: '2025-26', startDate: new Date('2025-07-15'), endDate: new Date('2025-12-15'), status: AcademicTermStatus.COMPLETED },
+    { name: 'Semester 4', code: 'SEM4-AY2025-26', semester: 4, ayName: '2025-26', startDate: new Date('2026-01-15'), endDate: new Date('2026-05-30'), status: AcademicTermStatus.COMPLETED },
+    { name: 'Semester 5', code: 'SEM5-AY2026-27', semester: 5, ayName: '2026-27', startDate: new Date('2026-07-15'), endDate: new Date('2026-12-15'), status: AcademicTermStatus.ACTIVE },
+    { name: 'Semester 6', code: 'SEM6-AY2026-27', semester: 6, ayName: '2026-27', startDate: new Date('2027-01-15'), endDate: new Date('2027-05-30'), status: AcademicTermStatus.UPCOMING },
+    { name: 'Semester 7', code: 'SEM7-AY2027-28', semester: 7, ayName: '2027-28', startDate: new Date('2027-07-15'), endDate: new Date('2027-12-15'), status: AcademicTermStatus.UPCOMING },
+    { name: 'Semester 8', code: 'SEM8-AY2028-29', semester: 8, ayName: '2028-29', startDate: new Date('2028-07-15'), endDate: new Date('2028-12-15'), status: AcademicTermStatus.UPCOMING },
+  ];
+  const existingATs = await prisma.academicTerm.findMany({
+    where: { institutionId: INSTITUTION_ID },
+    select: { code: true },
+  });
+  const existingATCodes = new Set(existingATs.map((at) => at.code));
+  const newATs = atData.filter((at) => !existingATCodes.has(at.code));
+  if (newATs.length > 0) {
+    await prisma.academicTerm.createMany({
+      data: newATs.map((at) => ({
+        institutionId: INSTITUTION_ID,
+        academicYearId: ayMap.get(at.ayName)!.id,
+        name: at.name,
+        code: at.code,
+        semester: at.semester,
+        termType: TermType.SEMESTER,
+        startDate: at.startDate,
+        endDate: at.endDate,
+        status: at.status,
+      })),
+    });
+  }
+  const allATs = await prisma.academicTerm.findMany({
+    where: { institutionId: INSTITUTION_ID },
+    orderBy: { semester: 'asc' },
+  });
+  const atMap = new Map(allATs.map((at) => [at.code, at]));
+  console.log('[9/20] Academic terms ensured');
+
+  // ── 10. Batch ──
+  let batch = await prisma.batch.findFirst({
+    where: { institutionId: INSTITUTION_ID, programId: program.id, admissionYear: 2024 },
+  });
+  if (!batch) {
+    batch = await prisma.batch.create({
+      data: {
+        institutionId: INSTITUTION_ID,
+        programId: program.id,
+        name: '2024 Intake',
+        admissionYear: 2024,
+        startDate: new Date('2024-07-01'),
+        expectedEndDate: new Date('2028-06-30'),
+      },
+    });
+  }
+  console.log('[10/20] Batch ensured');
+
+  // ── 11. Sections ──
+  const existingSections = await prisma.section.findMany({
+    where: { institutionId: INSTITUTION_ID, batchId: batch.id },
+    select: { code: true },
+  });
+  const existingSectionCodes = new Set(existingSections.map((s) => s.code));
+  const sectionCodesToCreate = Array.from({ length: 8 }, (_, i) => `CSE-A-SEM${i + 1}`);
+  const newSections = sectionCodesToCreate.filter((code) => !existingSectionCodes.has(code));
+  if (newSections.length > 0) {
+    await prisma.section.createMany({
+      data: newSections.map((code) => {
+        const sem = parseInt(code.slice(-1));
+        const at = atData.find((a) => a.semester === sem)!;
+        return {
+          institutionId: INSTITUTION_ID,
+          programId: program.id,
+          batchId: batch.id,
+          academicYearId: ayMap.get(at.ayName)!.id,
+          name: `CSE-A Semester ${sem}`,
+          code,
+          semester: sem,
+          capacity: 60,
+        };
+      }),
+    });
+  }
+  const allSections = await prisma.section.findMany({
+    where: { institutionId: INSTITUTION_ID, batchId: batch.id },
+    orderBy: { semester: 'asc' },
+  });
+  const sectionMap = new Map(allSections.map((s) => [s.semester!, s]));
+  console.log('[11/20] Sections ensured');
+
+  // ── 12. Buildings & Rooms ──
+  const building = await prisma.building.upsert({
+    where: { institutionId_code: { institutionId: INSTITUTION_ID, code: 'BLK-A' } },
+    create: {
+      institutionId: INSTITUTION_ID,
+      name: 'Main Academic Block',
+      code: 'BLK-A',
+      address: '42 University Road',
+      floors: 4,
+    },
+    update: {},
+  });
+
+  const rooms = ['101', '102', '201', '202', '301', 'LAB-1', 'LAB-2'];
+  for (const r of rooms) {
+    await prisma.room.upsert({
+      where: { buildingId_number: { buildingId: building.id, number: r } },
+      create: {
+        institutionId: INSTITUTION_ID,
+        buildingId: building.id,
+        name: `Room ${r}`,
+        number: r,
+        floor: r.startsWith('LAB') ? 0 : parseInt(r[0]),
+        capacity: r.startsWith('LAB') ? 40 : 60,
+        roomType: r.startsWith('LAB') ? 'LAB' : 'CLASSROOM',
+      },
+      update: {},
+    });
+  }
+  console.log('[12/20] Buildings & rooms ensured');
+
+  // ── 13. Faculty ──
+  const facultyData = [
+    { firstName: 'Rajesh', lastName: 'Kumar', code: 'FAC001' },
+    { firstName: 'Ananya', lastName: 'Sharma', code: 'FAC002' },
+    { firstName: 'Vivek', lastName: 'Rao', code: 'FAC003' },
+    { firstName: 'Priya', lastName: 'Nair', code: 'FAC004' },
+    { firstName: 'Arjun', lastName: 'Mehta', code: 'FAC005' },
+  ];
+
+  const faculties: Record<string, any> = {};
+  for (let i = 0; i < facultyData.length; i++) {
+    const fd = facultyData[i];
+    const email = `${fd.firstName.toLowerCase()}.${fd.lastName.toLowerCase()}@demo-institute.test`;
+    const authId = `22222222-2222-2222-2222-${String(i + 1).padStart(4, '0')}00000000`;
+
+    let user = await prisma.user.findFirst({ where: { email } });
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          authUserId: authId,
+          institutionId: INSTITUTION_ID,
+          email,
+          firstName: fd.firstName,
+          lastName: fd.lastName,
+          role: UserRole.FACULTY,
+          status: UserStatus.ACTIVE,
+        },
+      });
+    }
+
+    const fac = await prisma.faculty.upsert({
+      where: { institutionId_teacherCode: { institutionId: INSTITUTION_ID, teacherCode: fd.code } },
+      create: {
+        institutionId: INSTITUTION_ID,
+        userId: user.id,
+        departmentId: dept.id,
+        teacherCode: fd.code,
+        employmentType: 'FULL_TIME',
+        hireDate: new Date('2020-01-15'),
+        status: 'ACTIVE',
+      },
+      update: {},
+    });
+    faculties[fd.code] = fac;
+  }
+  console.log('[13/20] Faculty ensured');
+
+  // ── 14. User + Student (the main target) ──
+  let user = await prisma.user.findUnique({ where: { authUserId: AUTH_USER_ID } });
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        authUserId: AUTH_USER_ID,
+        institutionId: INSTITUTION_ID,
+        email: STUDENT_EMAIL,
+        firstName: 'Rahul',
+        lastName: 'Verma',
+        phone: '[REDACTED]',
+        role: UserRole.STUDENT,
+        status: UserStatus.ACTIVE,
+      },
+    });
+  } else {
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { email: STUDENT_EMAIL, firstName: 'Rahul', lastName: 'Verma', role: UserRole.STUDENT, status: UserStatus.ACTIVE },
+    });
+  }
+  console.log(`[14/20] User: ${user.email}`);
+
+  let student = await prisma.student.findUnique({ where: { userId: user.id } });
+  if (!student) {
+    student = await prisma.student.upsert({
+      where: { institutionId_studentCode: { institutionId: INSTITUTION_ID, studentCode: STUDENT_CODE } },
+      create: {
+        institutionId: INSTITUTION_ID,
+        userId: user.id,
+        studentCode: STUDENT_CODE,
+        admissionNumber: STUDENT_CODE,
+        lifecycleStatus: StudentLifecycleStatus.ACTIVE,
+        admissionDate: new Date('2024-08-01'),
+        dateOfBirth: new Date('2003-03-15'),
+        gender: Gender.MALE,
+        bloodGroup: 'B+',
+        address: '42 MG Road, Sector 15',
+        city: 'Bangalore',
+        state: 'Karnataka',
+        country: 'India',
+        postalCode: '560078',
+        fatherName: 'Suresh Verma',
+        motherName: 'Meena Verma',
+        fatherPhone: '[REDACTED]',
+        motherPhone: '[REDACTED]',
+        fatherEmail: '[REDACTED]',
+        motherEmail: '[REDACTED]',
+        guardianName: 'Suresh Verma',
+        guardianPhone: '[REDACTED]',
+        rollNumber: 'CSE-A-2024-001',
+        bio: 'Passionate about AI and full-stack development. Active member of the coding club.',
+        profileCompletion: 85,
+        programId: program.id,
+        sectionId: sectionMap.get(5)!.id,
+        curriculumId: curriculum.id,
+      },
+      update: {
+        lifecycleStatus: StudentLifecycleStatus.ACTIVE,
+        programId: program.id,
+        sectionId: sectionMap.get(5)!.id,
+        curriculumId: curriculum.id,
+      },
+    });
+  } else {
+    student = await prisma.student.update({
+      where: { id: student.id },
+      data: {
+        lifecycleStatus: StudentLifecycleStatus.ACTIVE,
+        dateOfBirth: new Date('2003-03-15'),
+        gender: Gender.MALE,
+        bloodGroup: 'B+',
+        address: '42 MG Road, Sector 15',
+        city: 'Bangalore',
+        state: 'Karnataka',
+        country: 'India',
+        postalCode: '560078',
+        fatherName: 'Suresh Verma',
+        motherName: 'Meena Verma',
+        fatherPhone: '[REDACTED]',
+        motherPhone: '[REDACTED]',
+        fatherEmail: '[REDACTED]',
+        motherEmail: '[REDACTED]',
+        guardianName: 'Suresh Verma',
+        guardianPhone: '[REDACTED]',
+        rollNumber: 'CSE-A-2024-001',
+        bio: 'Passionate about AI and full-stack development. Active member of the coding club.',
+        profileCompletion: 85,
+        programId: program.id,
+        sectionId: sectionMap.get(5)!.id,
+        curriculumId: curriculum.id,
+      },
+    });
+  }
+  console.log(`[14/20] Student: ${student.studentCode}`);
+
+  // ── 15. Enrollments ──
+  const existingEnrollments = await prisma.enrollment.findMany({
+    where: { institutionId: INSTITUTION_ID, studentId: student.id },
+    select: { termId: true, courseId: true },
+  });
+  const existingEnrollKeys = new Set(existingEnrollments.map((e) => `${e.termId}-${e.courseId}`));
+
+  const enrollmentData: any[] = [];
+  for (let sem = 1; sem <= 5; sem++) {
+    const atEntry = atData.find((a) => a.semester === sem)!;
+    const term = atMap.get(atEntry.code)!;
+    const year = ayMap.get(atEntry.ayName)!;
+    const semCourses = coursesData.filter((c) => c.sem === sem);
+
+    for (const cd of semCourses) {
+      const course = coursesMap.get(cd.code)!;
+      if (!existingEnrollKeys.has(`${term.id}-${course.id}`)) {
+        const enrolledAt = new Date(year.startDate);
+        enrolledAt.setDate(enrolledAt.getDate() + 14);
+        enrollmentData.push({
+          institutionId: INSTITUTION_ID,
+          studentId: student.id,
+          academicYearId: year.id,
+          courseId: course.id,
+          programId: program.id,
+          curriculumId: curriculum.id,
+          sectionId: sectionMap.get(sem)!.id,
+          termId: term.id,
+          status: sem <= 4 ? EnrollmentStatus.COMPLETED : EnrollmentStatus.ACTIVE,
+          enrolledAt,
+          completedAt: sem <= 4 ? new Date(term.endDate) : null,
+        });
+      }
+    }
+  }
+
+  if (enrollmentData.length > 0) {
+    await prisma.$transaction(
+      enrollmentData.map((e) => prisma.enrollment.create({ data: e })),
+    );
+    console.log(`[15/20] Created ${enrollmentData.length} enrollments`);
+  } else {
+    console.log('[15/20] All enrollments exist');
+  }
+
+  const allEnrollments = await prisma.enrollment.findMany({
+    where: { institutionId: INSTITUTION_ID, studentId: student.id },
+  });
+  const enrollmentMap = new Map(allEnrollments.map((e) => [`${e.termId}-${e.courseId}`, e]));
+
+  // ── 16. Exams + Marks ──
+  let examCount = 0;
+  let markCount = 0;
+
+  for (let sem = 1; sem <= 4; sem++) {
+    const atEntry = atData.find((a) => a.semester === sem)!;
+    const term = atMap.get(atEntry.code)!;
+    const year = ayMap.get(atEntry.ayName)!;
+    const semCourses = coursesData.filter((c) => c.sem === sem);
+
+    const examCode = `FINAL-SEM${sem}-AY${atEntry.ayName}`;
+    let exam = await prisma.exam.findFirst({
+      where: { institutionId: INSTITUTION_ID, termId: term.id, code: examCode },
+    });
+    if (!exam) {
+      exam = await prisma.exam.create({
+        data: {
+          institutionId: INSTITUTION_ID,
+          academicYearId: year.id,
+          termId: term.id,
+          name: `Final Exam - Semester ${sem}`,
+          code: examCode,
+          examType: ExamType.FINAL,
+          status: ExamStatus.COMPLETED,
+          startDate: term.endDate,
+          endDate: term.endDate,
+        },
+      });
+      examCount++;
+    }
+
+    for (const cd of semCourses) {
+      const course = coursesMap.get(cd.code)!;
+
+      let ec = await prisma.examCourse.findFirst({
+        where: { examId: exam.id, courseId: course.id },
+      });
+      if (!ec) {
+        ec = await prisma.examCourse.create({
+          data: {
+            institutionId: INSTITUTION_ID,
+            examId: exam.id,
+            courseId: course.id,
+            examDate: term.endDate,
+            startTime: time('09:00:00'),
+            endTime: time('12:00:00'),
+            maxMarks: 100,
+            passingMarks: 40,
+          },
+        });
+      }
+
+      const enrollment = enrollmentMap.get(`${term.id}-${course.id}`);
+      if (!enrollment) continue;
+
+      const existingMark = await prisma.mark.findFirst({
+        where: { examCourseId: ec.id, studentId: student.id },
+      });
+      if (!existingMark) {
+        const seed =
+          parseInt(student.id.replace(/-/g, '').slice(0, 8), 16) +
+          cd.code.charCodeAt(1) * 100 +
+          sem * 10;
+        const baseMarks = 55 + Math.floor(seededRandom(seed) * 40);
+        const { grade, gradePoint } = generateGrade(baseMarks);
+
+        await prisma.mark.create({
+          data: {
+            institutionId: INSTITUTION_ID,
+            examCourseId: ec.id,
+            studentId: student.id,
+            enrollmentId: enrollment.id,
+            marksObtained: baseMarks,
+            percentage: baseMarks,
+            grade,
+            gradePoint,
+            resultStatus: grade === 'F' ? ResultStatus.FAIL : ResultStatus.PASS,
+          },
+        });
+        markCount++;
+      }
+    }
+  }
+  console.log(`[16/20] Created ${examCount} exams, ${markCount} marks`);
+
+  // ── 17. Attendance ──
+  let attendanceCount = 0;
+  for (let sem = 1; sem <= 5; sem++) {
+    const atEntry = atData.find((a) => a.semester === sem)!;
+    const term = atMap.get(atEntry.code)!;
+    const semCourses = coursesData.filter((c) => c.sem === sem);
+
+    for (const cd of semCourses) {
+      const course = coursesMap.get(cd.code)!;
+      const sec = sectionMap.get(sem)!;
+      const fac = faculties['FAC001'];
+
+      // Create 8 attendance sessions per course
+      for (let i = 0; i < 8; i++) {
+        const sessionDate = new Date(term.startDate);
+        sessionDate.setDate(sessionDate.getDate() + i * 7);
+
+        const existingSession = await prisma.attendanceSession.findFirst({
+          where: {
+            institutionId: INSTITUTION_ID,
+            courseId: course.id,
+            sectionId: sec.id,
+            date: sessionDate,
+          },
+        });
+        if (existingSession) continue;
+
+        const session = await prisma.attendanceSession.create({
+          data: {
+            institutionId: INSTITUTION_ID,
+            termId: term.id,
+            courseId: course.id,
+            sectionId: sec.id,
+            facultyId: fac.id,
+            date: sessionDate,
+            startTime: time('09:00:00'),
+            endTime: time('10:00:00'),
+            topic: `Session ${i + 1} - ${cd.name}`,
+          },
+        });
+
+        // 85% attendance rate for this student
+        const isPresent = seededRandom(attendanceCount + i) > 0.15;
+        await prisma.attendanceRecord.create({
+          data: {
+            institutionId: INSTITUTION_ID,
+            attendanceSessionId: session.id,
+            studentId: student.id,
+            status: isPresent ? AttendanceStatus.PRESENT : AttendanceStatus.ABSENT,
+          },
+        });
+        attendanceCount++;
+      }
+    }
+  }
+  console.log(`[17/20] Created ${attendanceCount} attendance records`);
+
+  // ── 18. Student Profile Extras ──
+  // Skills
+  const skills = [
+    { name: 'TypeScript', level: 'ADVANCED' as const },
+    { name: 'React', level: 'ADVANCED' as const },
+    { name: 'Node.js', level: 'INTERMEDIATE' as const },
+    { name: 'Python', level: 'INTERMEDIATE' as const },
+    { name: 'Machine Learning', level: 'BEGINNER' as const },
+    { name: 'PostgreSQL', level: 'INTERMEDIATE' as const },
+    { name: 'Docker', level: 'BEGINNER' as const },
+  ];
+  for (const s of skills) {
+    await prisma.studentSkill.upsert({
+      where: { studentId_name: { studentId: student.id, name: s.name } },
+      create: { institutionId: INSTITUTION_ID, studentId: student.id, name: s.name, level: s.level },
+      update: { level: s.level },
+    });
+  }
+
+  // Languages
+  const languages = [
+    { language: 'English', proficiency: 'FLUENT' as const },
+    { language: 'Hindi', proficiency: 'NATIVE' as const },
+    { language: 'Kannada', proficiency: 'CONVERSATIONAL' as const },
+  ];
+  for (const l of languages) {
+    await prisma.studentLanguage.upsert({
+      where: { studentId_language: { studentId: student.id, language: l.language } },
+      create: { institutionId: INSTITUTION_ID, studentId: student.id, ...l },
+      update: { proficiency: l.proficiency },
+    });
+  }
+
+  // Social profiles
+  const socialProfiles = [
+    { platform: 'LINKEDIN' as const, profileUrl: 'https://linkedin.com/in/rahul-verma-dev' },
+    { platform: 'GITHUB' as const, profileUrl: 'https://github.com/rahulverma234' },
+    { platform: 'PORTFOLIO' as const, profileUrl: 'https://rahulverma.dev' },
+  ];
+  for (const sp of socialProfiles) {
+    await prisma.studentSocialProfile.upsert({
+      where: { studentId_platform: { studentId: student.id, platform: sp.platform } },
+      create: { studentId: student.id, ...sp },
+      update: { profileUrl: sp.profileUrl },
+    });
+  }
+
+  // Achievements
+  const achievements = [
+    { title: 'Hackathon Winner - TechFest 2025', description: 'Won 1st place in the college hackathon for building an AI-powered study assistant.', achievementDate: new Date('2025-11-20'), issuer: 'Demo Institute of Technology' },
+    { title: 'Dean\'s List - Semester 3', description: 'Achieved GPA above 9.0 for the semester.', achievementDate: new Date('2025-12-15'), issuer: 'Demo Institute of Technology' },
+  ];
+  for (const a of achievements) {
+    const exists = await prisma.studentAchievement.findFirst({
+      where: { studentId: student.id, title: a.title },
+    });
+    if (!exists) {
+      await prisma.studentAchievement.create({
+        data: { institutionId: INSTITUTION_ID, studentId: student.id, ...a },
+      });
+    }
+  }
+
+  // Previous education
+  const prevEd = [
+    { institutionName: 'Delhi Public School, Bangalore', academicYear: '2020-2022' },
+    { institutionName: 'St. Xavier\'s High School', academicYear: '2018-2020' },
+  ];
+  for (const pe of prevEd) {
+    const exists = await prisma.studentPreviousEducation.findFirst({
+      where: { studentId: student.id, institutionName: pe.institutionName },
+    });
+    if (!exists) {
+      await prisma.studentPreviousEducation.create({
+        data: { institutionId: INSTITUTION_ID, studentId: student.id, ...pe },
+      });
+    }
+  }
+
+  // Projects
+  const projects = [
+    { title: 'AI Study Assistant', description: 'A web app that uses LLMs to generate personalized study plans and quiz questions from course material.', technologies: 'TypeScript, React, OpenAI API, Next.js', projectUrl: 'https://github.com/rahulverma234/ai-study-assist', startDate: new Date('2025-09-01'), endDate: new Date('2025-12-01') },
+    { title: 'Campus Connect', description: 'Mobile-first social platform for students to share notes, form study groups, and manage events.', technologies: 'React Native, Node.js, PostgreSQL', githubUrl: 'https://github.com/rahulverma234/campus-connect', startDate: new Date('2025-03-01'), endDate: new Date('2025-06-15') },
+  ];
+  for (const p of projects) {
+    const exists = await prisma.studentProject.findFirst({
+      where: { studentId: student.id, title: p.title },
+    });
+    if (!exists) {
+      await prisma.studentProject.create({
+        data: { institutionId: INSTITUTION_ID, studentId: student.id, ...p },
+      });
+    }
+  }
+
+  // Internships
+  const internship = await prisma.studentInternship.findFirst({
+    where: { studentId: student.id, organization: 'TechCorp Solutions' },
+  });
+  if (!internship) {
+    await prisma.studentInternship.create({
+      data: {
+        institutionId: INSTITUTION_ID,
+        studentId: student.id,
+        organization: 'TechCorp Solutions',
+        role: 'Software Engineering Intern',
+        startDate: new Date('2025-05-01'),
+        endDate: new Date('2025-07-31'),
+        description: 'Worked on building microservices for the internal platform using Node.js and Docker.',
+      },
+    });
+  }
+
+  // Fee plan
+  let feePlan = await prisma.studentFeePlan.findFirst({
+    where: { studentId: student.id, academicYearId: ayMap.get('2026-27')!.id },
+  });
+  if (!feePlan) {
+    feePlan = await prisma.studentFeePlan.create({
+      data: {
+        institutionId: INSTITUTION_ID,
+        studentId: student.id,
+        academicYearId: ayMap.get('2026-27')!.id,
+        totalAmount: 120000,
+        currency: 'INR',
+        paymentMode: 'INSTALLMENTS',
+        status: 'ACTIVE',
+      },
+    });
+
+    await prisma.feeInstallment.createMany({
+      data: [
+        { studentFeePlanId: feePlan.id, installmentNumber: 1, amount: 40000, amountPaid: 40000, dueDate: new Date('2026-08-01'), status: 'PAID' },
+        { studentFeePlanId: feePlan.id, installmentNumber: 2, amount: 40000, amountPaid: 40000, dueDate: new Date('2026-11-01'), status: 'PAID' },
+        { studentFeePlanId: feePlan.id, installmentNumber: 3, amount: 40000, amountPaid: 0, dueDate: new Date('2027-02-01'), status: 'PENDING' },
+      ],
+    });
+  }
+
+  // Student Terms
+  for (let sem = 1; sem <= 5; sem++) {
+    const atEntry = atData.find((a) => a.semester === sem)!;
+    const term = atMap.get(atEntry.code)!;
+    const ct = curriculumTermsMap.get(sem)!;
+
+    const exists = await prisma.studentTerm.findFirst({
+      where: { studentId: student.id, academicTermId: term.id },
+    });
+    if (!exists) {
+      await prisma.studentTerm.create({
+        data: {
+          institutionId: INSTITUTION_ID,
+          studentId: student.id,
+          academicTermId: term.id,
+          curriculumTermId: ct.id,
+          status: sem <= 4 ? 'COMPLETED' : 'ACTIVE',
+          termGPA: sem <= 4 ? 7.5 + seededRandom(sem * 7) * 2 : null,
+        },
+      });
+    }
+  }
+
+  // Notifications
+  const notifications = [
+    { title: 'Welcome to Semester 5', message: 'Classes begin on 15th July. Check your timetable.', type: 'ANNOUNCEMENT' as const },
+    { title: 'Assignment Due - DBMS', message: 'Assignment 2 for CS201 is due on 15th August.', type: 'ASSIGNMENT' as const },
+    { title: 'Exam Schedule Published', message: 'Mid-semester exams will start from 20th September.', type: 'EXAM' as const },
+  ];
+  for (const n of notifications) {
+    const exists = await prisma.notification.findFirst({
+      where: { userId: user.id, title: n.title },
+    });
+    if (!exists) {
+      await prisma.notification.create({
+        data: {
+          institutionId: INSTITUTION_ID,
+          userId: user.id,
+          title: n.title,
+          message: n.message,
+          type: n.type,
+        },
+      });
+    }
+  }
+
+  // Assignments + Submissions
+  const assignmentData = [
+    { title: 'Assignment 1 - DBMS Normalization', courseCode: 'CS201', maxMarks: 10 },
+    { title: 'Assignment 2 - OS Process Scheduling', courseCode: 'CS202', maxMarks: 10 },
+    { title: 'Assignment 3 - Networks TCP/IP', courseCode: 'CS203', maxMarks: 10 },
+  ];
+  for (const a of assignmentData) {
+    const exists = await prisma.assignment.findFirst({
+      where: { institutionId: INSTITUTION_ID, title: a.title },
+    });
+    if (!exists) {
+      const assignment = await prisma.assignment.create({
+        data: {
+          institutionId: INSTITUTION_ID,
+          courseId: coursesMap.get(a.courseCode)!.id,
+          facultyId: faculties['FAC001'].id,
+          termId: atMap.get('SEM5-AY2026-27')!.id,
+          title: a.title,
+          description: `Complete the exercises for ${a.courseCode}.`,
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          maxMarks: a.maxMarks,
+          status: 'PUBLISHED',
+        },
+      });
+
+      await prisma.assignmentSubmission.create({
+        data: {
+          institutionId: INSTITUTION_ID,
+          assignmentId: assignment.id,
+          studentId: student.id,
+          submittedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+          status: 'GRADED',
+          marks: 8,
+          feedback: 'Good work on the normalization steps.',
+          gradedAt: new Date(),
+        },
+      });
+    }
+  }
+
+  console.log('[18/20] Student profile extras ensured (skills, languages, social, achievements, projects, internships, fees, terms, notifications, assignments)');
+
+  // ── 19. Announcements ──
+  const announcementData = [
+    { title: 'Welcome to Semester 5', content: 'Classes begin next week. Check your timetable for room assignments.' },
+    { title: 'Mid-Term Exam Schedule', content: 'Mid-term examinations will commence from 20th September. All the best!' },
+    { title: 'Hackathon Registration Open', content: 'Register for the annual tech hackathon. Prizes worth Rs. 50,000!' },
+  ];
+  for (const a of announcementData) {
+    const exists = await prisma.announcement.findFirst({
+      where: { institutionId: INSTITUTION_ID, title: a.title },
+    });
+    if (!exists) {
+      await prisma.announcement.create({
+        data: {
+          institutionId: INSTITUTION_ID,
+          ...a,
+          isPublished: true,
+          publishedAt: new Date(),
+        },
+      });
+    }
+  }
+  console.log('[19/20] Announcements ensured');
+
+  // ── 20. Supabase Auth Account ──
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (supabaseUrl && supabaseServiceRoleKey) {
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    const {
+      data: { users },
+      error: listError,
+    } = await supabaseAdmin.auth.admin.listUsers();
+    if (listError) throw listError;
+
+    let authUser = users.find((u) => u.email?.toLowerCase() === STUDENT_EMAIL.toLowerCase());
+
+    if (!authUser) {
+      const { data, error } = await supabaseAdmin.auth.admin.createUser({
+        email: STUDENT_EMAIL,
+        password: [REDACTED]      });
+      if (error) throw error;
+      authUser = data.user;
+    } else {
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(authUser.id, {
+        password: [REDACTED]      if (error) throw error;
+    }
+
+    // Retarget DB user row to real Supabase auth ID
+    const userByRealAuthId = await prisma.user.findUnique({ where: { authUserId: authUser.id } });
+    const userBySyntheticAuthId = await prisma.user.findUnique({ where: { authUserId: AUTH_USER_ID } });
+
+    if (userBySyntheticAuthId) {
+      if (userByRealAuthId && userByRealAuthId.id !== userBySyntheticAuthId.id) {
+        await prisma.user.delete({ where: { id: userBySyntheticAuthId.id } });
+      } else {
+        await prisma.user.update({
+          where: { id: userBySyntheticAuthId.id },
+          data: { authUserId: authUser.id },
+        });
+      }
+    } else if (!userByRealAuthId) {
+      await prisma.user.create({
+        data: {
+          authUserId: authUser.id,
+          institutionId: INSTITUTION_ID,
+          email: STUDENT_EMAIL,
+          firstName: 'Rahul',
+          lastName: 'Verma',
+          role: UserRole.STUDENT,
+          status: UserStatus.ACTIVE,
+        },
+      });
+    }
+
+    console.log(`[20/20] Supabase auth ensured for ${STUDENT_EMAIL}`);
+  } else {
+    console.warn('[20/20] Supabase not configured — skipping auth account creation');
+  }
+
+  // ── Summary ──
+  const totalEnrollments = await prisma.enrollment.count({ where: { studentId: student.id } });
+  const totalMarks = await prisma.mark.count({ where: { studentId: student.id } });
+  const totalAttendance = await prisma.attendanceRecord.count({ where: { studentId: student.id } });
+
+  console.log('\n╔══════════════════════════════════════════╗');
+  console.log('║       Mock Student Seed Complete!        ║');
+  console.log('╠══════════════════════════════════════════╣');
+  console.log(`║ Email:    ${STUDENT_EMAIL}`);
+  console.log(`║ Password: [REDACTED]
+  console.log(`║ Code:     ${STUDENT_CODE}`);
+  console.log(`║ Name:     Rahul Verma`);
+  console.log(`║ Program:  B.Tech CSE (Semester 5)`);
+  console.log('╠══════════════════════════════════════════╣');
+  console.log(`║ Enrollments:  ${totalEnrollments}`);
+  console.log(`║ Marks:        ${totalMarks}`);
+  console.log(`║ Attendance:   ${totalAttendance} records`);
+  console.log('╚══════════════════════════════════════════╝');
+}
+
+main()
+  .catch((e) => {
+    console.error('Mock student seed failed:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
