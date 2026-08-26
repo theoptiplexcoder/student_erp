@@ -1,7 +1,15 @@
 'use client';
 
 import React, { Suspense } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter, Skeleton } from '@student-erp/ui';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+  Skeleton,
+  Badge,
+} from '@student-erp/ui';
 import {
   useStudentCourses,
   useStudentAttendanceSummary,
@@ -22,6 +30,9 @@ function MyCoursesContent() {
 
   // Use the first term as default if no termId is in the URL and terms are loaded
   const effectiveTermId = selectedTermId || (terms?.length ? terms[0].id : undefined);
+
+  const selectedTerm = terms?.find((t: any) => t.id === effectiveTermId);
+  const isCurrentTerm = selectedTerm?.status === 'ACTIVE';
 
   const { data: courses, isPending: isCoursesPending } = useStudentCourses(effectiveTermId);
   const { data: attendanceSummary, isPending: isAttendancePending } = useStudentAttendanceSummary();
@@ -73,18 +84,21 @@ function MyCoursesContent() {
         </div>
 
         {terms && terms.length > 0 ? (
-          <div className="w-full sm:w-64">
+          <div className="flex w-full items-center gap-2 sm:w-64">
             <select
               value={effectiveTermId || ''}
               onChange={handleTermChange}
-              className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 flex-1 rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
             >
               {terms.map((term: any) => (
                 <option key={term.id} value={term.id}>
-                  {term.name} ({term.code})
+                  {term.name} ({term.code}) — {term.status === 'ACTIVE' ? 'CURRENT' : 'PREVIOUS'}
                 </option>
               ))}
             </select>
+            <Badge variant={isCurrentTerm ? 'default' : 'secondary'} className="shrink-0">
+              {isCurrentTerm ? 'CURRENT' : 'PREVIOUS'}
+            </Badge>
           </div>
         ) : terms && terms.length === 0 ? (
           <div className="text-muted-foreground text-sm">No academic terms available.</div>

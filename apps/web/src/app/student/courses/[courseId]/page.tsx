@@ -72,6 +72,12 @@ export default function CourseWorkspace({ params }: { params: Promise<{ courseId
           >
             Attendance
           </TabsTrigger>
+          <TabsTrigger
+            value="marks"
+            className="data-[state=active]:border-primary rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:bg-transparent"
+          >
+            Marks
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent
