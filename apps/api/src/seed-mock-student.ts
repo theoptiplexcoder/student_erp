@@ -267,6 +267,26 @@ async function bootstrap() {
         });
       }
     }
+
+    let studentTerm = await prisma.studentTerm.findFirst({
+      where: { studentId: student!.id, academicTermId: term.id },
+    });
+    if (!studentTerm) {
+      studentTerm = await prisma.studentTerm.create({
+        data: {
+          institutionId: institution!.id,
+          studentId: student!.id,
+          academicTermId: term.id,
+          curriculumTermId: currTerm!.id,
+          status: isCompleted ? 'COMPLETED' : 'ACTIVE',
+        },
+      });
+    } else {
+      await prisma.studentTerm.update({
+        where: { id: studentTerm.id },
+        data: { status: isCompleted ? 'COMPLETED' : 'ACTIVE' },
+      });
+    }
   }
 
   await setupTerm(sem1Term, 1, true);

@@ -32,7 +32,12 @@ function MyCoursesContent() {
   const effectiveTermId = selectedTermId || (terms?.length ? terms[0].id : undefined);
 
   const selectedTerm = terms?.find((t: any) => t.id === effectiveTermId);
-  const isCurrentTerm = selectedTerm?.status === 'ACTIVE';
+  const isCurrentTerm = selectedTerm?.studentStatus === 'ACTIVE';
+
+  const formatStatus = (status: string) => {
+    if (status === 'ACTIVE') return 'Current';
+    return 'Previous';
+  };
 
   const { data: courses, isPending: isCoursesPending } = useStudentCourses(effectiveTermId);
   const { data: attendanceSummary, isPending: isAttendancePending } = useStudentAttendanceSummary();
@@ -92,12 +97,12 @@ function MyCoursesContent() {
             >
               {terms.map((term: any) => (
                 <option key={term.id} value={term.id}>
-                  {term.name} ({term.code}) — {term.status === 'ACTIVE' ? 'CURRENT' : 'PREVIOUS'}
+                  {term.name} ({term.code}) — {formatStatus(term.studentStatus)}
                 </option>
               ))}
             </select>
             <Badge variant={isCurrentTerm ? 'default' : 'secondary'} className="shrink-0">
-              {isCurrentTerm ? 'CURRENT' : 'PREVIOUS'}
+              {formatStatus(selectedTerm?.studentStatus)}
             </Badge>
           </div>
         ) : terms && terms.length === 0 ? (

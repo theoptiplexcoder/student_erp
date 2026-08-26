@@ -78,6 +78,17 @@ enum FacultyStatus {
   EXITED
 }
 
+enum StudentTermStatus {
+  ACTIVE
+  COMPLETED
+  PROMOTED
+  PROMOTED_WITH_BACKLOG
+  FAILED
+  REPEATING
+  ON_LEAVE
+  WITHDRAWN
+}
+
 enum AcademicTermStatus {
   UPCOMING
   ACTIVE
@@ -384,6 +395,7 @@ model Institution {
   studentLanguages       StudentLanguage[]
   auditLogs              AuditLog[]
   studentFeePlans        StudentFeePlan[]
+  studentTerms           StudentTerm[]
   buildings              Building[]
   rooms                  Room[]
 
@@ -622,6 +634,7 @@ model Student {
   studentLanguages       StudentLanguage[]
   studentSocialProfiles  StudentSocialProfile[]
   feePlans               StudentFeePlan[]
+  studentTerms           StudentTerm[]
   program                Program?                @relation(fields: [programId], references: [id])
   programId              String?                 @db.Uuid
   section                Section?                @relation(fields: [sectionId], references: [id])
@@ -661,6 +674,7 @@ model AcademicTerm {
   assignments        Assignment[]
   courseOfferings    CourseOffering[]
   exams              Exam[]
+  studentTerms       StudentTerm[]
 
   @@index([institutionId])
   @@index([academicYearId])
@@ -1574,6 +1588,7 @@ model CurriculumTerm {
   curriculum        Curriculum         @relation(fields: [curriculumId], references: [id], onDelete: Cascade)
   curriculumCourses CurriculumCourse[]
   electiveGroups    CurriculumElectiveGroup[]
+  studentTerms      StudentTerm[]
 
   @@unique([curriculumId, sequence])
   @@unique([curriculumId, name])
@@ -1699,4 +1714,28 @@ model FeeInstallment {
 
   @@index([studentFeePlanId])
   @@map("fee_installments")
+}
+
+model StudentTerm {
+  id               String            @id @default(uuid()) @db.Uuid
+  institutionId    String            @map("institution_id") @db.Uuid
+  studentId        String            @map("student_id") @db.Uuid
+  academicTermId   String            @map("academic_term_id") @db.Uuid
+  curriculumTermId String?           @map("curriculum_term_id") @db.Uuid
+  status           StudentTermStatus
+  termGPA          Float?            @map("term_gpa")
+  remarks          String?
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+
+  institution    Institution     @relation(fields: [institutionId], references: [id])
+  student        Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  academicTerm   AcademicTerm    @relation(fields: [academicTermId], references: [id], onDelete: Restrict)
+  curriculumTerm CurriculumTerm? @relation(fields: [curriculumTermId], references: [id], onDelete: SetNull)
+
+  @@unique([studentId, academicTermId])
+  @@index([institutionId])
+  @@index([studentId])
+  @@index([academicTermId])
+  @@map("student_terms")
 }

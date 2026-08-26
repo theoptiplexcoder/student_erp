@@ -52,20 +52,18 @@ export class StudentAcademicService {
       return [];
     }
 
-    return this.prisma.academicTerm.findMany({
-      where: {
-        institutionId,
-        enrollments: {
-          some: {
-            studentId: student.id,
-            status: { in: ['ACTIVE', 'COMPLETED'] },
-          },
-        },
-      },
-      orderBy: {
-        startDate: 'desc',
-      },
+    const studentTerms = await this.prisma.studentTerm.findMany({
+      where: { studentId: student.id, institutionId },
+      include: { academicTerm: true },
+      orderBy: { academicTerm: { startDate: 'desc' } },
     });
+
+    return studentTerms.map((st) => ({
+      ...st.academicTerm,
+      studentStatus: st.status,
+      termGPA: st.termGPA,
+      studentTermId: st.id,
+    }));
   }
 
   async getCourseDetails(userId: string, institutionId: string, courseId: string) {
