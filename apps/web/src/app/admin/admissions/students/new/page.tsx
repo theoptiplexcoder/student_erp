@@ -501,7 +501,7 @@ export default function DirectAdmissionPage() {
         }
       }
 
-      router.push(`/admin/students/${studentCode}`);
+      router.push(`/admin/students/${studentId}`);
     } catch (error) {
       console.error('Failed to create admission', error);
       alert('Failed to create admission. Please try again.');
