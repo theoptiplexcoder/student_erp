@@ -9,11 +9,13 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     let url = process.env['DATABASE_URL'];
 
     // Supabase session-mode pool: max 15 connections shared across ALL services.
-    // Keep our ceiling low (3) so other services and leftover connections from
+    // Keep our ceiling very low (2) so other services and leftover connections from
     // crashed/deploying instances don't push us past the server-side limit.
+    // During deploys, old + new instances run briefly in parallel — 2 per instance
+    // keeps the worst-case at 4 from this service, leaving room for the others.
     if (url && !url.includes('connection_limit')) {
       const separator = url.includes('?') ? '&' : '?';
-      url = `${url}${separator}connection_limit=3&pool_timeout=10000`;
+      url = `${url}${separator}connection_limit=2&pool_timeout=15000`;
     }
 
     super({
@@ -28,7 +30,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   async onModuleInit() {
     // Retry $connect with backoff — during deploys, old instances still hold
     // server-side pool slots. Waiting lets them drain naturally.
-    const maxRetries = 5;
+    const maxRetries = 8;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         await this.$connect();
@@ -38,7 +40,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
           this.logger.error(`Failed to connect to database after ${maxRetries} attempts`, err);
           throw err;
         }
-        const delay = attempt * 2000;
+        const delay = Math.min(attempt * 3000, 30000);
         this.logger.warn(
           `DB connection attempt ${attempt}/${maxRetries} failed, retrying in ${delay}ms...`,
         );
