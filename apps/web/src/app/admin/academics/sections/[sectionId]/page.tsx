@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -8,10 +9,19 @@ import {
   Button,
   Badge,
   Skeleton,
+  Input,
 } from '@student-erp/ui';
-import { ArrowLeft, MapPin, Users, BookOpen, GraduationCap } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, BookOpen, GraduationCap, Plus, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useAdminSection, CourseAssignment } from '@/hooks/api/admin/useSections';
+import { useAdminFaculty } from '@/hooks/api/admin/useFaculty';
+import { useAdminCourses } from '@/hooks/api/admin/useCourses';
+import { useAcademicTerms } from '@/hooks/api/admin/useAcademicTerms';
+import {
+  useAdminCreateCourseAssignment,
+  useAdminDeleteCourseAssignment,
+} from '@/hooks/api/admin/useCourseAssignments';
+import { Trash2 } from 'lucide-react';
 
 // Aggregate faculty from course assignments into a unique map keyed by faculty ID
 function aggregateFaculty(assignments: CourseAssignment[] | undefined) {
@@ -51,6 +61,36 @@ function aggregateFaculty(assignments: CourseAssignment[] | undefined) {
 export default function SectionDetailPage({ params }: { params: { sectionId: string } }) {
   const { sectionId } = params;
   const { data: section, isLoading, isError, error } = useAdminSection(sectionId);
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [assignForm, setAssignForm] = useState({ facultyId: '', courseId: '', termId: '' });
+
+  const { data: facultyData } = useAdminFaculty(1, 100);
+  const { data: coursesData } = useAdminCourses(1, 100);
+  const { data: termsData } = useAcademicTerms(section?.academicYearId || '');
+  const createAssignment = useAdminCreateCourseAssignment();
+  const deleteAssignment = useAdminDeleteCourseAssignment();
+
+  const handleAssign = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!assignForm.termId) {
+      alert('Please select an academic term.');
+      return;
+    }
+
+    try {
+      await createAssignment.mutateAsync({
+        facultyId: assignForm.facultyId,
+        courseId: assignForm.courseId,
+        sectionId: section.id,
+        termId: assignForm.termId,
+        isPrimary: true,
+      });
+      setAssignForm({ facultyId: '', courseId: '', termId: '' });
+      setIsAssigning(false);
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to assign faculty');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -243,19 +283,95 @@ export default function SectionDetailPage({ params }: { params: { sectionId: str
 
       {/* Faculty assignments card */}
       <Card>
-        <CardHeader>
-          <CardTitle>Faculty Assignments</CardTitle>
-          <CardDescription>
-            {facultyCount} faculty member{facultyCount === 1 ? '' : 's'} teaching in this section
-            {departmentSet.size > 0 && (
-              <span className="ml-2 text-xs">
-                Across {departmentSet.size} department{departmentSet.size === 1 ? '' : 's'}:{' '}
-                {Array.from(departmentSet).join(', ')}
-              </span>
-            )}
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Faculty Assignments</CardTitle>
+            <CardDescription>
+              {facultyCount} faculty member{facultyCount === 1 ? '' : 's'} teaching in this section
+              {departmentSet.size > 0 && (
+                <span className="ml-2 text-xs">
+                  Across {departmentSet.size} department{departmentSet.size === 1 ? '' : 's'}:{' '}
+                  {Array.from(departmentSet).join(', ')}
+                </span>
+              )}
+            </CardDescription>
+          </div>
+          <Button onClick={() => setIsAssigning(!isAssigning)} variant="outline" size="sm">
+            <Plus className="mr-2 h-4 w-4" /> Assign Faculty
+          </Button>
         </CardHeader>
         <CardContent>
+          {isAssigning && (
+            <div className="bg-muted/50 mb-6 rounded-md border p-4">
+              <h3 className="mb-3 font-semibold">Assign Faculty to Course</h3>
+              <form onSubmit={handleAssign} className="flex flex-wrap items-end gap-4">
+                <div className="min-w-[200px] flex-1 space-y-2">
+                  <label className="text-sm font-medium">Faculty Member</label>
+                  <select
+                    required
+                    className="border-input bg-background ring-offset-background flex h-10 w-full rounded-md border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                    value={assignForm.facultyId}
+                    onChange={(e) =>
+                      setAssignForm((prev) => ({ ...prev, facultyId: e.target.value }))
+                    }
+                  >
+                    <option value="">Select Faculty...</option>
+                    {facultyData?.data.map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.user?.firstName} {f.user?.lastName} ({f.teacherCode})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="min-w-[200px] flex-1 space-y-2">
+                  <label className="text-sm font-medium">Course</label>
+                  <select
+                    required
+                    className="border-input bg-background ring-offset-background flex h-10 w-full rounded-md border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                    value={assignForm.courseId}
+                    onChange={(e) =>
+                      setAssignForm((prev) => ({ ...prev, courseId: e.target.value }))
+                    }
+                  >
+                    <option value="">Select Course...</option>
+                    {coursesData?.data.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.code} - {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="min-w-[200px] flex-1 space-y-2">
+                  <label className="text-sm font-medium">Term</label>
+                  <select
+                    required
+                    className="border-input bg-background ring-offset-background flex h-10 w-full rounded-md border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                    value={assignForm.termId}
+                    onChange={(e) => setAssignForm((prev) => ({ ...prev, termId: e.target.value }))}
+                  >
+                    <option value="">Select Term...</option>
+                    {termsData?.map((t: any) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name} ({t.code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Button
+                  type="submit"
+                  disabled={createAssignment.isPending}
+                  className="bg-admin-primary text-admin-primary-foreground min-w-[150px]"
+                >
+                  {createAssignment.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    'Save Assignment'
+                  )}
+                </Button>
+              </form>
+            </div>
+          )}
+
           {facultyList.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10">
               <Users className="text-muted-foreground mb-2 h-8 w-8" />
@@ -295,13 +411,38 @@ export default function SectionDetailPage({ params }: { params: { sectionId: str
 
                   <div className="mt-1">
                     <p className="text-muted-foreground text-xs">Teaching:</p>
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {courses.map((course) => (
-                        <span key={course.id} className="text-muted-foreground text-xs">
-                          {course.code} — {course.name}
-                          {course.creditValue != null && ` (${course.creditValue}cr)`}
-                        </span>
-                      ))}
+                    <div className="mt-1 flex flex-col gap-2">
+                      {courses.map((course) => {
+                        // Find the specific assignment ID to allow deletion
+                        const assignmentRecord = section.courseAssignments.find(
+                          (ca: any) => ca.facultyId === faculty.id && ca.courseId === course.id,
+                        );
+                        return (
+                          <div
+                            key={course.id}
+                            className="bg-muted/30 flex items-center justify-between rounded-md p-2"
+                          >
+                            <span className="text-muted-foreground text-sm">
+                              {course.code} — {course.name}
+                              {course.creditValue != null && ` (${course.creditValue}cr)`}
+                            </span>
+                            {assignmentRecord && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive h-6 w-6 p-0"
+                                onClick={() => {
+                                  if (confirm('Remove this assignment?')) {
+                                    deleteAssignment.mutate(assignmentRecord.id);
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

@@ -1,32 +1,33 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, UseGuards } from '@nestjs/common';
 import { ProgramsService } from '../services/programs.service';
+import { SupabaseAuthGuard } from '../../../guards/supabase-auth.guard';
+import { RolesGuard } from '../../../guards/roles.guard';
+import { Roles } from '../../../decorators/roles.decorator';
+import { CurrentUser } from '../../../decorators/current-user.decorator';
 
 @Controller('academic/programs')
+@UseGuards(SupabaseAuthGuard, RolesGuard)
+@Roles('ADMIN')
 export class ProgramsController {
   constructor(private readonly programsService: ProgramsService) {}
 
   @Post()
-  create(@Request() req: any, @Body() createProgramDto: any) {
-    // Assuming institutionId is injected by a middleware/guard into req.user or req.tenant
-    const institutionId = req.user?.institutionId || 'dummy-institution-id';
-    return this.programsService.create(institutionId, createProgramDto);
+  create(@CurrentUser() user: any, @Body() createProgramDto: any) {
+    return this.programsService.create(user.institutionId, createProgramDto);
   }
 
   @Get()
-  findAll(@Request() req: any) {
-    const institutionId = req.user?.institutionId || 'dummy-institution-id';
-    return this.programsService.findAll(institutionId);
+  findAll(@CurrentUser() user: any) {
+    return this.programsService.findAll(user.institutionId);
   }
 
   @Get(':id')
-  findOne(@Request() req: any, @Param('id') id: string) {
-    const institutionId = req.user?.institutionId || 'dummy-institution-id';
-    return this.programsService.findOne(institutionId, id);
+  findOne(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.programsService.findOne(user.institutionId, id);
   }
 
   @Patch(':id')
-  update(@Request() req: any, @Param('id') id: string, @Body() updateProgramDto: any) {
-    const institutionId = req.user?.institutionId || 'dummy-institution-id';
-    return this.programsService.update(institutionId, id, updateProgramDto);
+  update(@CurrentUser() user: any, @Param('id') id: string, @Body() updateProgramDto: any) {
+    return this.programsService.update(user.institutionId, id, updateProgramDto);
   }
 }

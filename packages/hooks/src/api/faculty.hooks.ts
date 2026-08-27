@@ -151,3 +151,70 @@ export const useFacultyCalendar = () => {
     queryFn: FacultyApi.getCalendar,
   });
 };
+
+export const useFacultyResources = (courseId: string) => {
+  return useQuery({
+    queryKey: ['faculty', 'resources', courseId],
+    queryFn: () => FacultyApi.getResources(courseId),
+    enabled: !!courseId,
+  });
+};
+
+export const useCreateFacultyResource = (courseId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => FacultyApi.createResource(courseId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['faculty', 'resources', courseId] });
+    },
+  });
+};
+
+export const useDeleteFacultyResource = (courseId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => FacultyApi.deleteResource(courseId, id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['faculty', 'resources', courseId] });
+    },
+  });
+};
+
+export const useFacultyAssignments = (courseId: string) => {
+  return useQuery({
+    queryKey: ['faculty', 'assignments', courseId],
+    queryFn: () => FacultyApi.getAssignments(courseId),
+    enabled: !!courseId,
+  });
+};
+
+export const useCreateFacultyAssignment = (courseId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => FacultyApi.createAssignment(courseId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['faculty', 'assignments', courseId] });
+    },
+  });
+};
+
+export const useFacultyAssignmentSubmissions = (courseId: string, assignmentId: string) => {
+  return useQuery({
+    queryKey: ['faculty', 'assignments', courseId, 'submissions', assignmentId],
+    queryFn: () => FacultyApi.getAssignmentSubmissions(courseId, assignmentId),
+    enabled: !!courseId && !!assignmentId,
+  });
+};
+
+export const useGradeFacultySubmission = (courseId: string, assignmentId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ submissionId, data }: { submissionId: string; data: any }) =>
+      FacultyApi.gradeSubmission(courseId, assignmentId, submissionId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['faculty', 'assignments', courseId, 'submissions', assignmentId],
+      });
+    },
+  });
+};

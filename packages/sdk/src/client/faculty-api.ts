@@ -78,4 +78,28 @@ export const FacultyApi = {
   getGrievances: () => facultyApiClient.get('/grievances').then((res) => res.data),
   createGrievance: (data: any) =>
     facultyApiClient.post('/grievances', data).then((res) => res.data),
+
+  // Workspace
+  getResources: (courseId: string) =>
+    facultyApiClient.get(`/workspace/${courseId}/resources`).then((res) => res.data),
+  createResource: (courseId: string, data: any) =>
+    facultyApiClient.post(`/workspace/${courseId}/resources`, data).then((res) => res.data),
+  deleteResource: (courseId: string, id: string) =>
+    facultyApiClient.delete(`/workspace/${courseId}/resources/${id}`).then((res) => res.data),
+
+  getAssignments: (courseId: string) =>
+    facultyApiClient.get(`/workspace/${courseId}/assignments`).then((res) => res.data),
+  createAssignment: (courseId: string, data: any) =>
+    facultyApiClient.post(`/workspace/${courseId}/assignments`, data).then((res) => res.data),
+  getAssignmentSubmissions: (courseId: string, assignmentId: string) =>
+    facultyApiClient
+      .get(`/workspace/${courseId}/assignments/${assignmentId}/submissions`)
+      .then((res) => res.data),
+  gradeSubmission: (courseId: string, assignmentId: string, submissionId: string, data: any) =>
+    facultyApiClient
+      .post(
+        `/workspace/${courseId}/assignments/${assignmentId}/submissions/${submissionId}/grade`,
+        data,
+      )
+      .then((res) => res.data),
 };

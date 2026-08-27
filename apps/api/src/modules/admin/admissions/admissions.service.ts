@@ -1,7 +1,8 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { PrismaService } from '../../../database/prisma.service';
 import { CreateDirectAdmissionDto } from './dto/create-direct-admission.dto';
+import { CreateApplicationDto } from './dto/create-application.dto';
+import { UpdateApplicationDto } from './dto/update-application.dto';
 import {
   PaymentMode,
   FeePlanStatus,
@@ -85,6 +86,142 @@ export class AdmissionsService {
     }
   }
 
+  async createApplication(institutionId: string, data: CreateApplicationDto) {
+    const [program, academicYear] = await Promise.all([
+      this.prisma.program.findUnique({ where: { id: data.programId } }),
+      this.prisma.academicYear.findUnique({ where: { id: data.academicYearId } }),
+    ]);
+
+    if (!program || program.institutionId !== institutionId)
+      throw new BadRequestException('Program not found in this institution');
+    if (!academicYear || academicYear.institutionId !== institutionId)
+      throw new BadRequestException('Academic Year not found in this institution');
+
+    return this.prisma.application.create({
+      data: {
+        institutionId,
+        programId: data.programId,
+        academicYearId: data.academicYearId,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        phone: data.phone,
+        status: 'SUBMITTED',
+      },
+    });
+  }
+
+  async getApplications(institutionId: string) {
+    return this.prisma.application.findMany({
+      where: { institutionId },
+      include: {
+        program: true,
+        academicYear: true,
+      },
+      orderBy: { submittedAt: 'desc' },
+    });
+  }
+
+  async updateApplicationStatus(institutionId: string, id: string, data: UpdateApplicationDto) {
+    if (data.status === 'ENROLLED') {
+      throw new BadRequestException(
+        'Cannot manually set status to ENROLLED. Use conversion endpoint instead.',
+      );
+    }
+
+    const updateData: any = { ...data };
+    const now = new Date();
+
+    if (data.status === 'UNDER_REVIEW') updateData.reviewedAt = now;
+    if (data.status === 'OFFERED') updateData.offeredAt = now;
+    if (data.status === 'ACCEPTED') updateData.acceptedAt = now;
+    if (data.status === 'REJECTED') updateData.rejectedAt = now;
+    if (data.status === 'ENROLLED') updateData.enrolledAt = now;
+
+    return this.prisma.application.update({
+      where: { id, institutionId },
+      data: updateData,
+    });
+  }
+
+  async convertApplicantToStudent(
+    institutionId: string,
+    authUserId: string,
+    applicationId: string,
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      const app = await tx.application.findUnique({
+        where: { id: applicationId, institutionId },
+      });
+
+      if (!app) {
+        throw new BadRequestException('Application not found');
+      }
+
+      if (app.status !== 'ACCEPTED') {
+        throw new BadRequestException('Application must be ACCEPTED before conversion');
+      }
+
+      if (app.studentId) {
+        throw new BadRequestException('Application already converted');
+      }
+
+      const existingUser = await tx.user.findFirst({
+        where: { institutionId, email: app.email },
+      });
+      if (existingUser) {
+        throw new BadRequestException('A user with this email already exists.');
+      }
+
+      // 1. Create User
+      const user = await tx.user.create({
+        data: {
+          institutionId,
+          email: app.email,
+          firstName: app.firstName,
+          lastName: app.lastName,
+          phone: app.phone,
+          role: 'STUDENT',
+          status: 'ACTIVE',
+        },
+      });
+
+      // 2. Create Student
+      const student = await tx.student.create({
+        data: {
+          institutionId,
+          userId: user.id,
+          lifecycleStatus: 'ENROLLED',
+          programId: app.programId,
+          admissionDate: new Date(),
+        },
+      });
+
+      // 3. Create Enrollment
+      await tx.enrollment.create({
+        data: {
+          institutionId,
+          studentId: student.id,
+          academicYearId: app.academicYearId,
+          programId: app.programId,
+          status: 'ACTIVE',
+        },
+      });
+
+      // 4. Update Application
+      await tx.application.update({
+        where: { id: app.id },
+        data: {
+          status: 'ENROLLED',
+          enrolledAt: new Date(),
+          studentId: student.id,
+        },
+      });
+
+      return student;
+    });
+  }
+
   async createDirectAdmission(
     institutionId: string,
     authUserId: string,
@@ -105,7 +242,6 @@ export class AdmissionsService {
       const user = await tx.user.create({
         data: {
           institutionId,
-          authUserId: randomUUID(),
           email: data.email || `student_${Date.now()}@example.com`,
           firstName: data.firstName,
           lastName: data.lastName || '',

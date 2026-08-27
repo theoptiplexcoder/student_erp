@@ -89,13 +89,65 @@ export class StudentAcademicService {
       where: { id: courseId },
       include: {
         department: true,
-        courseResources: true,
+        courseResources: {
+          where: { isPublished: true },
+        },
         assignments: {
           where: { status: 'PUBLISHED' },
+          include: {
+            assignmentSubmissions: {
+              where: { studentId: student.id },
+            },
+          },
         },
       },
     });
 
     return course;
+  }
+
+  async submitAssignment(
+    userId: string,
+    institutionId: string,
+    courseId: string,
+    assignmentId: string,
+    data: any,
+  ) {
+    const student = await this.prisma.student.findFirst({
+      where: { userId, institutionId },
+    });
+    if (!student) throw new Error('Student not found');
+
+    const enrollment = await this.prisma.enrollment.findFirst({
+      where: { institutionId, studentId: student.id, courseId },
+    });
+    if (!enrollment) throw new Error('Not enrolled in this course');
+
+    const assignment = await this.prisma.assignment.findFirst({
+      where: { id: assignmentId, courseId, institutionId, status: 'PUBLISHED' },
+    });
+    if (!assignment) throw new Error('Assignment not found or not published');
+
+    return this.prisma.assignmentSubmission.upsert({
+      where: {
+        assignmentId_studentId: {
+          assignmentId,
+          studentId: student.id,
+        },
+      },
+      update: {
+        submissionUrl: data.submissionUrl,
+        submittedAt: new Date(),
+        status: 'SUBMITTED',
+      },
+      create: {
+        institutionId,
+        assignmentId,
+        studentId: student.id,
+        submissionUrl: data.submissionUrl,
+        submittedAt: new Date(),
+        status: 'SUBMITTED',
+      },
+    });
   }
 }

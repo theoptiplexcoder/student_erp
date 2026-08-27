@@ -55,6 +55,10 @@ export const StudentApi = {
   getTerms: () => studentApiClient.get('/academic/terms').then((res) => res.data),
   getCourseDetails: (courseId: string) =>
     studentApiClient.get(`/academic/courses/${courseId}`).then((res) => res.data),
+  submitAssignment: (courseId: string, assignmentId: string, data: any) =>
+    studentApiClient
+      .post(`/academic/courses/${courseId}/assignments/${assignmentId}/submissions`, data)
+      .then((res) => res.data),
   getAttendanceSummary: () => studentApiClient.get('/attendance').then((res) => res.data),
   getCourseAttendance: (courseId: string) =>
     studentApiClient.get(`/attendance/${courseId}`).then((res) => res.data),

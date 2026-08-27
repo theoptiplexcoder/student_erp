@@ -5,8 +5,8 @@ import { PrismaService } from '../../../database/prisma.service';
 export class EnrollmentsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async enrollStudent(courseOfferingId: string, data: any) {
-    const { studentId, institutionId, academicYearId } = data;
+  async enrollStudent(institutionId: string, courseOfferingId: string, data: any) {
+    const { studentId, academicYearId } = data;
 
     const offering = await this.prisma.courseOffering.findUnique({
       where: { id: courseOfferingId },
@@ -15,8 +15,13 @@ export class EnrollmentsService {
       },
     });
 
-    if (!offering) {
+    if (!offering || offering.institutionId !== institutionId) {
       throw new BadRequestException('Course offering not found');
+    }
+
+    const student = await this.prisma.student.findUnique({ where: { id: studentId } });
+    if (!student || student.institutionId !== institutionId) {
+      throw new BadRequestException('Student not found in this institution');
     }
 
     if (offering.capacity > 0 && offering._count.enrollments >= offering.capacity) {
@@ -24,7 +29,7 @@ export class EnrollmentsService {
     }
 
     const existing = await this.prisma.enrollment.findFirst({
-      where: { courseOfferingId, studentId },
+      where: { courseOfferingId, studentId, institutionId },
     });
 
     if (existing) {
@@ -33,7 +38,7 @@ export class EnrollmentsService {
 
     return this.prisma.enrollment.create({
       data: {
-        institutionId: institutionId || offering.institutionId,
+        institutionId,
         studentId,
         academicYearId: academicYearId || offering.termId,
         courseOfferingId,
@@ -47,9 +52,9 @@ export class EnrollmentsService {
     });
   }
 
-  async removeEnrollment(courseOfferingId: string, studentId: string) {
+  async removeEnrollment(institutionId: string, courseOfferingId: string, studentId: string) {
     const existing = await this.prisma.enrollment.findFirst({
-      where: { courseOfferingId, studentId },
+      where: { courseOfferingId, studentId, institutionId },
     });
 
     if (!existing) {

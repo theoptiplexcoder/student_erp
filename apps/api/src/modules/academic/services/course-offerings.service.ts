@@ -6,13 +6,25 @@ export class CourseOfferingsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createCourseOfferingDto: any) {
+    const { courseId, termId, institutionId } = createCourseOfferingDto;
+
+    const [course, term] = await Promise.all([
+      this.prisma.course.findUnique({ where: { id: courseId } }),
+      this.prisma.academicTerm.findUnique({ where: { id: termId } }),
+    ]);
+
+    if (!course || course.institutionId !== institutionId)
+      throw new NotFoundException('Course not found in this institution');
+    if (!term || term.institutionId !== institutionId)
+      throw new NotFoundException('Term not found in this institution');
+
     return this.prisma.courseOffering.create({
       data: createCourseOfferingDto,
     });
   }
 
-  async findAll(courseId?: string, termId?: string) {
-    const where: any = {};
+  async findAll(institutionId: string, courseId?: string, termId?: string) {
+    const where: any = { institutionId };
     if (courseId) where.courseId = courseId;
     if (termId) where.termId = termId;
 
@@ -29,7 +41,7 @@ export class CourseOfferingsService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(institutionId: string, id: string) {
     const offering = await this.prisma.courseOffering.findUnique({
       where: { id },
       include: {
@@ -41,22 +53,24 @@ export class CourseOfferingsService {
         _count: { select: { enrollments: true } },
       },
     });
-    if (!offering) {
+    if (!offering || offering.institutionId !== institutionId) {
       throw new NotFoundException(`CourseOffering with ID ${id} not found`);
     }
     return offering;
   }
 
-  async update(id: string, updateCourseOfferingDto: any) {
+  async update(institutionId: string, id: string, updateCourseOfferingDto: any) {
+    const offering = await this.findOne(institutionId, id);
     return this.prisma.courseOffering.update({
-      where: { id },
+      where: { id: offering.id },
       data: updateCourseOfferingDto,
     });
   }
 
-  async remove(id: string) {
+  async remove(institutionId: string, id: string) {
+    const offering = await this.findOne(institutionId, id);
     return this.prisma.courseOffering.delete({
-      where: { id },
+      where: { id: offering.id },
     });
   }
 }

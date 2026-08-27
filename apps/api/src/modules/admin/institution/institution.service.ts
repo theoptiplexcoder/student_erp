@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { UpdateInstitutionDto } from './dto/update-institution.dto';
 import { UpdateInstitutionSettingsDto } from './dto/update-institution-settings.dto';
 import { CreateAcademicYearDto, UpdateAcademicYearDto } from './dto/academic-year.dto';
+import { CreateAcademicTermDto, UpdateAcademicTermDto } from './dto/academic-term.dto';
 import { CreateCalendarEventDto, UpdateCalendarEventDto } from './dto/calendar-event.dto';
 
 @Injectable()
@@ -81,6 +82,95 @@ export class InstitutionService {
   async deleteAcademicYear(institutionId: string, id: string) {
     return this.prisma.academicYear.delete({
       where: { id },
+    });
+  }
+
+  // Academic Term
+  async getAcademicTerms(institutionId: string, academicYearId: string) {
+    return this.prisma.academicTerm.findMany({
+      where: { institutionId, academicYearId },
+      orderBy: { startDate: 'asc' },
+    });
+  }
+
+  private validateTermDates(
+    ayStartDate: Date,
+    ayEndDate: Date,
+    termStartDate: Date,
+    termEndDate: Date,
+  ) {
+    if (termStartDate >= termEndDate) {
+      throw new BadRequestException('Term start date must be before end date.');
+    }
+    if (termStartDate < ayStartDate || termEndDate > ayEndDate) {
+      throw new BadRequestException('Term dates must fall within the academic year dates.');
+    }
+  }
+
+  async createAcademicTerm(
+    institutionId: string,
+    academicYearId: string,
+    dto: CreateAcademicTermDto,
+  ) {
+    const ay = await this.getAcademicYear(institutionId, academicYearId);
+
+    const termStartDate = new Date(dto.startDate);
+    const termEndDate = new Date(dto.endDate);
+    this.validateTermDates(ay.startDate, ay.endDate, termStartDate, termEndDate);
+
+    return this.prisma.academicTerm.create({
+      data: {
+        ...dto,
+        institutionId,
+        academicYearId,
+        startDate: termStartDate,
+        endDate: termEndDate,
+      },
+    });
+  }
+
+  async updateAcademicTerm(
+    institutionId: string,
+    academicYearId: string,
+    termId: string,
+    dto: UpdateAcademicTermDto,
+  ) {
+    const term = await this.prisma.academicTerm.findFirst({
+      where: { id: termId, institutionId, academicYearId },
+      include: { academicYear: true },
+    });
+    if (!term) throw new NotFoundException('Academic term not found');
+
+    const newStartDate = dto.startDate ? new Date(dto.startDate) : term.startDate;
+    const newEndDate = dto.endDate ? new Date(dto.endDate) : term.endDate;
+
+    if (dto.startDate || dto.endDate) {
+      this.validateTermDates(
+        term.academicYear.startDate,
+        term.academicYear.endDate,
+        newStartDate,
+        newEndDate,
+      );
+    }
+
+    return this.prisma.academicTerm.update({
+      where: { id: termId },
+      data: {
+        ...dto,
+        startDate: newStartDate,
+        endDate: newEndDate,
+      },
+    });
+  }
+
+  async deleteAcademicTerm(institutionId: string, academicYearId: string, termId: string) {
+    const term = await this.prisma.academicTerm.findFirst({
+      where: { id: termId, institutionId, academicYearId },
+    });
+    if (!term) throw new NotFoundException('Academic term not found');
+
+    return this.prisma.academicTerm.delete({
+      where: { id: termId },
     });
   }
 

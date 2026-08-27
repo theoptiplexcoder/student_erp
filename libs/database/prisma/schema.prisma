@@ -38,6 +38,7 @@ enum UserRole {
   ADMIN
   FACULTY
   STUDENT
+  GUARDIAN
 }
 
 enum UserStatus {
@@ -347,6 +348,7 @@ model Institution {
   users         User[]
   faculty       Faculty[]
   students      Student[]
+  guardians     Guardian[]
   departments   Department[]
   programs      Program[]
   academicYears AcademicYear[]
@@ -398,13 +400,14 @@ model Institution {
   studentTerms              StudentTerm[]
   buildings                 Building[]
   rooms                     Room[]
+  applications              Application[]
 
   @@map("institutions")
 }
 
 model User {
   id            String     @id @default(uuid()) @db.Uuid
-  authUserId    String     @unique @map("auth_user_id") @db.Uuid
+  authUserId    String?    @unique @map("auth_user_id") @db.Uuid
   institutionId String     @map("institution_id") @db.Uuid
   email         String
   firstName     String     @map("first_name")
@@ -419,6 +422,7 @@ model User {
   institution Institution @relation(fields: [institutionId], references: [id])
   faculty     Faculty?
   student     Student?
+  guardian    Guardian?
 
   notifications                Notification[]
   certificateRequestsProcessed CertificateRequest[] @relation("ProcessedBy")
@@ -471,6 +475,7 @@ model Program {
   courses         Course[]
   courseOfferings CourseOffering[]
   enrollments     Enrollment[]
+  applications    Application[]
 
   @@unique([institutionId, code])
   @@index([institutionId])
@@ -495,6 +500,7 @@ model AcademicYear {
   timetableEntries TimetableEntry[]
   enrollments      Enrollment[]
   feePlans         StudentFeePlan[]
+  applications     Application[]
 
   @@index([institutionId])
   @@index([institutionId, isActive])
@@ -578,6 +584,24 @@ model Faculty {
   @@map("faculty")
 }
 
+model Guardian {
+  id            String   @id @default(uuid()) @db.Uuid
+  institutionId String   @map("institution_id") @db.Uuid
+  userId        String   @unique @map("user_id") @db.Uuid
+  occupation    String?
+  relationship  String?  @default("Parent")
+
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  students      Student[]
+
+  @@index([institutionId])
+  @@map("guardians")
+}
+
 model Student {
   id              String                 @id @default(uuid()) @db.Uuid
   institutionId   String                 @map("institution_id") @db.Uuid
@@ -635,12 +659,15 @@ model Student {
   studentSocialProfiles     StudentSocialProfile[]
   feePlans                  StudentFeePlan[]
   studentTerms              StudentTerm[]
+  guardian                  Guardian?                  @relation(fields: [guardianId], references: [id])
+  guardianId                String?                    @db.Uuid
   program                   Program?                   @relation(fields: [programId], references: [id])
   programId                 String?                    @db.Uuid
   section                   Section?                   @relation(fields: [sectionId], references: [id])
   sectionId                 String?                    @db.Uuid
   curriculum                Curriculum?                @relation(fields: [curriculumId], references: [id])
   curriculumId              String?                    @map("curriculum_id") @db.Uuid
+  application               Application?
 
   @@unique([institutionId, studentCode])
   @@unique([institutionId, admissionNumber])
@@ -1739,4 +1766,48 @@ model StudentTerm {
   @@index([studentId])
   @@index([academicTermId])
   @@map("student_terms")
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  OFFERED
+  ACCEPTED
+  REJECTED
+  ENROLLED
+}
+
+model Application {
+  id              String            @id @default(uuid()) @db.Uuid
+  institutionId   String            @map("institution_id") @db.Uuid
+  programId       String            @map("program_id") @db.Uuid
+  academicYearId  String            @map("academic_year_id") @db.Uuid
+  
+  firstName       String            @map("first_name")
+  lastName        String            @map("last_name")
+  email           String
+  phone           String?
+  
+  status          ApplicationStatus @default(SUBMITTED)
+  applicationFee  Float?            @map("application_fee")
+  isFeePaid       Boolean           @default(false) @map("is_fee_paid")
+  
+  submittedAt     DateTime          @default(now()) @map("submitted_at")
+  reviewedAt      DateTime?         @map("reviewed_at")
+  offeredAt       DateTime?         @map("offered_at")
+  acceptedAt      DateTime?         @map("accepted_at")
+  rejectedAt      DateTime?         @map("rejected_at")
+  enrolledAt      DateTime?         @map("enrolled_at")
+  
+  studentId       String?           @unique @map("student_id") @db.Uuid
+  
+  institution     Institution       @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  program         Program           @relation(fields: [programId], references: [id], onDelete: Cascade)
+  academicYear    AcademicYear      @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  student         Student?          @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  
+  @@index([institutionId])
+  @@index([programId])
+  @@index([status])
+  @@map("applications")
 }

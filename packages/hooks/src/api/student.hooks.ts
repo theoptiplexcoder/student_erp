@@ -49,6 +49,17 @@ export const useStudentCourse = (courseId: string) => {
   });
 };
 
+export const useSubmitStudentAssignment = (courseId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ assignmentId, data }: { assignmentId: string; data: any }) =>
+      StudentApi.submitAssignment(courseId, assignmentId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'courses', courseId] });
+    },
+  });
+};
+
 export const useStudentAttendanceSummary = () => {
   return useQuery({
     queryKey: ['student', 'attendance'],

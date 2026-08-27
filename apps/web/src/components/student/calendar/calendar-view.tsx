@@ -1,25 +1,111 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Skeleton } from '@student-erp/ui';
-import { Button } from '@student-erp/ui';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { Card, CardHeader, CardTitle, CardContent, Skeleton, Button } from '@student-erp/ui';
 import { useStudentCalendar } from '@student-erp/hooks';
-import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Clock } from 'lucide-react';
+import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { format, parse, startOfWeek, getDay } from 'date-fns';
+import { enUS } from 'date-fns/locale/en-US';
+import { createClient } from '@/lib/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales: { 'en-US': enUS },
+});
+
+const EVENT_COLORS: Record<string, { bg: string; border: string; text: string; legend: string }> = {
+  HOLIDAY: { bg: '#f43f5e', border: '#e11d48', text: '#fff', legend: 'bg-rose-500' },
+  EXAM: { bg: '#f59e0b', border: '#d97706', text: '#fff', legend: 'bg-amber-500' },
+  ACADEMIC: { bg: '#3b82f6', border: '#2563eb', text: '#fff', legend: 'bg-blue-500' },
+  EVENT: { bg: '#8b5cf6', border: '#7c3aed', text: '#fff', legend: 'bg-violet-500' },
+  DEADLINE: { bg: '#ef4444', border: '#dc2626', text: '#fff', legend: 'bg-red-500' },
+  GENERAL: { bg: '#6b7280', border: '#4b5563', text: '#fff', legend: 'bg-gray-500' },
+};
+
+type BigCalendarEvent = {
+  id?: string | number;
+  title?: string;
+  start?: Date;
+  end?: Date;
+  allDay?: boolean;
+  resource?: any;
+};
 
 export function CalendarView() {
   const [filter, setFilter] = useState('all');
-  const { data: upcomingDeadlines = [], isPending } = useStudentCalendar();
+  const { data: events = [], isPending } = useStudentCalendar();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel('public:calendar_events')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'calendar_events' },
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: ['student', 'calendar'] });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const filters = [
     { id: 'all', label: 'All Events' },
-    { id: 'academic', label: 'Academic' },
-    { id: 'exams', label: 'Exams' },
-    { id: 'deadlines', label: 'Deadlines' },
+    { id: 'ACADEMIC', label: 'Academic' },
+    { id: 'EXAM', label: 'Exams' },
+    { id: 'DEADLINE', label: 'Deadlines' },
+    { id: 'HOLIDAY', label: 'Holidays' },
+    { id: 'EVENT', label: 'General Events' },
   ];
+
+  const filteredEvents = useMemo(() => {
+    if (filter === 'all') return events;
+    return events.filter((e: any) => e.eventType === filter);
+  }, [events, filter]);
+
+  const calEvents = useMemo<BigCalendarEvent[]>(() => {
+    return filteredEvents.map((e: any) => ({
+      id: e.id,
+      title: e.title,
+      start: new Date(e.startAt),
+      end: new Date(e.endAt),
+      allDay: e.isAllDay,
+      resource: e,
+    }));
+  }, [filteredEvents]);
+
+  const eventPropGetter = useCallback((event: BigCalendarEvent) => {
+    const colors = EVENT_COLORS[event.resource?.eventType || 'GENERAL'];
+    return {
+      style: {
+        backgroundColor: colors.bg,
+        borderColor: colors.border,
+        color: colors.text,
+        borderRadius: '4px',
+        fontSize: '0.8125rem',
+      },
+    };
+  }, []);
 
   if (isPending) {
     return <Skeleton className="h-[600px] w-full" />;
   }
+
+  // Find upcoming deadlines specifically for the side panel
+  const upcomingDeadlines = events
+    .filter((e: any) => e.startAt && new Date(e.startAt) >= new Date())
+    .sort((a: any, b: any) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
@@ -68,68 +154,17 @@ export function CalendarView() {
 
       <div className="lg:col-span-3">
         <Card className="h-full">
-          <CardHeader className="flex flex-row items-center justify-between py-4">
-            <CardTitle className="text-xl">
-              {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon">
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="sm">
-                Today
-              </Button>
-              <Button variant="outline" size="icon">
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {/* Simple mock calendar view */}
-            <div className="bg-muted grid grid-cols-7 gap-px overflow-hidden rounded-md text-center text-sm">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                <div key={day} className="bg-background text-muted-foreground py-2 font-medium">
-                  {day}
-                </div>
-              ))}
-
-              {/* Padding days */}
-              {[27, 28, 29, 30].map((d) => (
-                <div
-                  key={`p-${d}`}
-                  className="bg-muted/30 text-muted-foreground min-h-[80px] p-2 opacity-50"
-                >
-                  {d}
-                </div>
-              ))}
-
-              {/* Current month days */}
-              {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => {
-                const isToday = d === new Date().getDate();
-                const deadline = upcomingDeadlines.find(
-                  (ud: any) => new Date(ud.startAt).getDate() === d,
-                );
-
-                return (
-                  <div
-                    key={d}
-                    className={`bg-background min-h-[80px] border-t p-2 text-left ${isToday ? 'bg-primary/5' : ''}`}
-                  >
-                    <span
-                      className={`inline-block h-6 w-6 rounded-full text-center leading-6 ${isToday ? 'bg-primary text-primary-foreground font-medium' : ''}`}
-                    >
-                      {d}
-                    </span>
-                    {deadline && (
-                      <div className="mt-1">
-                        <div className="truncate rounded bg-red-100 p-1 text-[10px] text-red-700 dark:bg-red-900/40 dark:text-red-300">
-                          {deadline.title}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+          <CardContent className="p-4">
+            <div className="rbc-calendar min-h-[500px] md:min-h-[600px]">
+              <Calendar
+                localizer={localizer}
+                events={calEvents}
+                views={['month', 'week', 'day', 'agenda']}
+                eventPropGetter={eventPropGetter}
+                startAccessor="start"
+                endAccessor="end"
+                style={{ minHeight: 600 }}
+              />
             </div>
           </CardContent>
         </Card>

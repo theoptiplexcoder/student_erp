@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '../../../../../lib/api-client';
 import { Card, CardHeader, CardTitle, CardContent } from '@student-erp/ui';
 import { Button } from '@student-erp/ui';
-import { BookMarked, Plus, Calendar as CalIcon } from 'lucide-react';
+import Link from 'next/link';
+import { BookMarked, Plus, Calendar as CalIcon, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function AcademicYear() {
@@ -12,47 +13,16 @@ export default function AcademicYear() {
 
   useEffect(() => {
     apiClient
-      .get('/admin/institution/academic-year')
+      .get('/admin/institution/academic-years')
       .then((res) => {
-        if (Array.isArray(res.data)) {
+        if (Array.isArray(res.data) && res.data.length > 0) {
           setYears(res.data);
-        } else {
-          setYears([
-            {
-              id: 1,
-              name: '2023-2024',
-              startDate: '2023-08-01',
-              endDate: '2024-05-31',
-              status: 'Completed',
-            },
-            {
-              id: 2,
-              name: '2024-2025',
-              startDate: '2024-08-01',
-              endDate: '2025-05-31',
-              status: 'Active',
-            },
-          ]);
+        } else if (res.data?.data) {
+          setYears(res.data.data);
         }
       })
       .catch((err) => {
         console.error(err);
-        setYears([
-          {
-            id: 1,
-            name: '2023-2024',
-            startDate: '2023-08-01',
-            endDate: '2024-05-31',
-            status: 'Completed',
-          },
-          {
-            id: 2,
-            name: '2024-2025',
-            startDate: '2024-08-01',
-            endDate: '2025-05-31',
-            status: 'Active',
-          },
-        ]);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -87,7 +57,7 @@ export default function AcademicYear() {
                   <div className="space-y-1">
                     <h3 className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white">
                       {year.name}
-                      {year.status === 'Active' && (
+                      {year.isActive && (
                         <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
                           Active
                         </span>
@@ -96,14 +66,17 @@ export default function AcademicYear() {
                     <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
                       <CalIcon className="h-4 w-4" />
                       <span>
-                        {year.startDate} to {year.endDate}
+                        {new Date(year.startDate).toLocaleDateString()} to{' '}
+                        {new Date(year.endDate).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
                   <div className="opacity-0 transition-opacity group-hover:opacity-100">
-                    <Button variant="outline" className="rounded-full">
-                      Edit Details
-                    </Button>
+                    <Link href={`/admin/administration/institution/academic-year/${year.id}`}>
+                      <Button variant="outline" className="flex items-center gap-2 rounded-full">
+                        Manage Terms <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>

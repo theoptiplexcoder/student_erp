@@ -3,6 +3,7 @@ import { InstitutionService } from './institution.service';
 import { UpdateInstitutionDto } from './dto/update-institution.dto';
 import { UpdateInstitutionSettingsDto } from './dto/update-institution-settings.dto';
 import { CreateAcademicYearDto, UpdateAcademicYearDto } from './dto/academic-year.dto';
+import { CreateAcademicTermDto, UpdateAcademicTermDto } from './dto/academic-term.dto';
 import { CreateCalendarEventDto, UpdateCalendarEventDto } from './dto/calendar-event.dto';
 import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { SupabaseAuthGuard } from '../../../guards/supabase-auth.guard';
@@ -63,6 +64,45 @@ export class InstitutionController {
   @Delete('academic-years/:id')
   deleteAcademicYear(@CurrentUser() user: any, @Param('id') id: string) {
     return this.institutionService.deleteAcademicYear(user.institutionId, id);
+  }
+
+  // Academic Term Endpoints
+  @Get('academic-years/:academicYearId/terms')
+  getAcademicTerms(@CurrentUser() user: any, @Param('academicYearId') academicYearId: string) {
+    return this.institutionService.getAcademicTerms(user.institutionId, academicYearId);
+  }
+
+  @Post('academic-years/:academicYearId/terms')
+  createAcademicTerm(
+    @CurrentUser() user: any,
+    @Param('academicYearId') academicYearId: string,
+    @Body() dto: CreateAcademicTermDto,
+  ) {
+    return this.institutionService.createAcademicTerm(user.institutionId, academicYearId, dto);
+  }
+
+  @Put('academic-years/:academicYearId/terms/:termId')
+  updateAcademicTerm(
+    @CurrentUser() user: any,
+    @Param('academicYearId') academicYearId: string,
+    @Param('termId') termId: string,
+    @Body() dto: UpdateAcademicTermDto,
+  ) {
+    return this.institutionService.updateAcademicTerm(
+      user.institutionId,
+      academicYearId,
+      termId,
+      dto,
+    );
+  }
+
+  @Delete('academic-years/:academicYearId/terms/:termId')
+  deleteAcademicTerm(
+    @CurrentUser() user: any,
+    @Param('academicYearId') academicYearId: string,
+    @Param('termId') termId: string,
+  ) {
+    return this.institutionService.deleteAcademicTerm(user.institutionId, academicYearId, termId);
   }
 
   // Calendar Event Endpoints
