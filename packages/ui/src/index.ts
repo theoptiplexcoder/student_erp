@@ -22,4 +22,5 @@ export { Label } from './label';
 export { Separator } from './separator';
 export { Skeleton } from './skeleton';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
+export { Textarea } from './textarea';
 export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from './table';
