@@ -237,6 +237,37 @@ export class AdmissionsService {
     }
 
     return this.prisma.$transaction(async (tx) => {
+      // 0. Auto-generate Registration No. (usn)
+      const academicYear = await tx.academicYear.findUnique({
+        where: { id: data.academicYearId },
+      });
+      if (!academicYear) {
+        throw new BadRequestException('Academic Year not found');
+      }
+      const yearOfAdmission = academicYear.startDate.getFullYear();
+      const enrollmentCount = await tx.enrollment.count({
+        where: { institutionId, academicYearId: data.academicYearId },
+      });
+      let incrementalNumber = enrollmentCount + 1;
+      let generatedUsn = `${incrementalNumber}/${yearOfAdmission}`;
+
+      // Ensure uniqueness for the registration number
+      let isUnique = false;
+      while (!isUnique) {
+        const existingStudent = await tx.student.findFirst({
+          where: {
+            institutionId,
+            OR: [{ admissionNumber: generatedUsn }, { studentCode: generatedUsn }],
+          },
+        });
+        if (existingStudent) {
+          incrementalNumber++;
+          generatedUsn = `${incrementalNumber}/${yearOfAdmission}`;
+        } else {
+          isUnique = true;
+        }
+      }
+
       // 1. Create User
       const user = await tx.user.create({
         data: {
@@ -269,8 +300,9 @@ export class AdmissionsService {
           motherEmail: data.motherEmail,
           guardianName: data.guardianName,
           guardianPhone: data.guardianPhone,
-          rollNumber: data.usn,
-          admissionNumber: data.usn, // Might act as both or need specific generator
+          rollNumber: generatedUsn,
+          admissionNumber: generatedUsn,
+          studentCode: generatedUsn,
           admissionDate: data.admissionDate ? new Date(data.admissionDate) : new Date(),
           programId: data.programId,
           sectionId: data.sectionId,
@@ -355,7 +387,7 @@ export class AdmissionsService {
           courseId: data.courseId,
           batchId: data.batchId,
           sectionId: data.sectionId,
-          rollNumber: data.usn,
+          rollNumber: generatedUsn,
           status: 'ACTIVE',
         },
       });

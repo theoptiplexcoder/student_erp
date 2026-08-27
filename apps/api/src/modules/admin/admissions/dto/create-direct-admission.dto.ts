@@ -206,8 +206,8 @@ export class CreateDirectAdmissionDto {
   sectionId?: string;
 
   @IsString()
-  @IsNotEmpty()
-  usn!: string;
+  @IsOptional()
+  usn?: string;
 
   @IsDateString()
   @IsOptional()

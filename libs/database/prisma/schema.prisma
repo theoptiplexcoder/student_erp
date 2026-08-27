@@ -670,8 +670,8 @@ model Student {
   curriculumId              String?                    @map("curriculum_id") @db.Uuid
   application               Application?
 
-  @@unique([institutionId, studentCode])
   @@unique([institutionId, admissionNumber])
+  @@unique([institutionId, studentCode])
   @@index([institutionId])
   @@index([institutionId, status])
   @@index([institutionId, lifecycleStatus])

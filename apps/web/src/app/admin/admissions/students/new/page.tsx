@@ -12,6 +12,11 @@ import {
   Label,
   Separator,
   Badge,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from '@student-erp/ui';
 import {
   CheckCircle2,
@@ -48,6 +53,148 @@ export default function DirectAdmissionPage() {
   const supabase = createClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Quick Add States
+  const [isAyDialogOpen, setIsAyDialogOpen] = useState(false);
+  const [ayFormData, setAyFormData] = useState({
+    name: '',
+    startDate: '',
+    endDate: '',
+    isActive: false,
+  });
+  const [isAySubmitting, setIsAySubmitting] = useState(false);
+
+  const [isProgDialogOpen, setIsProgDialogOpen] = useState(false);
+  const [progFormData, setProgFormData] = useState({
+    name: '',
+    code: '',
+    level: 'UG',
+    durationYears: 3,
+    departmentId: '',
+  });
+  const [isProgSubmitting, setIsProgSubmitting] = useState(false);
+
+  const [isBatchDialogOpen, setIsBatchDialogOpen] = useState(false);
+  const [batchFormData, setBatchFormData] = useState({
+    name: '',
+    admissionYear: new Date().getFullYear(),
+    programId: '',
+  });
+  const [isBatchSubmitting, setIsBatchSubmitting] = useState(false);
+
+  const [isSectionDialogOpen, setIsSectionDialogOpen] = useState(false);
+  const [sectionFormData, setSectionFormData] = useState({
+    name: '',
+    code: '',
+    capacity: 60,
+    academicYearId: '',
+    programId: '',
+    batchId: '',
+  });
+  const [isSectionSubmitting, setIsSectionSubmitting] = useState(false);
+
+  const handleCreateAy = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsAySubmitting(true);
+    try {
+      const res = await apiClient.post('/admin/institution/academic-years', ayFormData);
+      const newAy = res.data;
+      setAcademicYears((prev) => [...prev, newAy]);
+      setFormData((prev) => ({ ...prev, academicYearId: newAy.id }));
+      setIsAyDialogOpen(false);
+      setAyFormData({ name: '', startDate: '', endDate: '', isActive: false });
+    } catch (e) {
+      console.error(e);
+      alert('Failed to create Academic Year');
+    } finally {
+      setIsAySubmitting(false);
+    }
+  };
+
+  const handleCreateProg = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsProgSubmitting(true);
+    try {
+      const payload = {
+        ...progFormData,
+        durationYears: Number(progFormData.durationYears),
+      };
+      const res = await apiClient.post('/admin/programs', payload);
+      const newProg = res.data;
+      setPrograms((prev) => [...prev, newProg]);
+      setFormData((prev) => ({
+        ...prev,
+        programId: newProg.id,
+        courseId: '',
+        batchId: '',
+        sectionId: '',
+      }));
+      setIsProgDialogOpen(false);
+      setProgFormData({ name: '', code: '', level: 'UG', durationYears: 3, departmentId: '' });
+    } catch (e) {
+      console.error(e);
+      alert('Failed to create Program');
+    } finally {
+      setIsProgSubmitting(false);
+    }
+  };
+
+  const handleCreateBatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsBatchSubmitting(true);
+    try {
+      const payload = {
+        ...batchFormData,
+        admissionYear: Number(batchFormData.admissionYear),
+        programId: formData.programId || batchFormData.programId,
+      };
+      if (!payload.programId) throw new Error('Program is required for batch');
+      const res = await apiClient.post('/admin/batches', payload);
+      const newBatch = res.data;
+      setBatches((prev) => [...prev, newBatch]);
+      setFormData((prev) => ({ ...prev, batchId: newBatch.id, sectionId: '' }));
+      setIsBatchDialogOpen(false);
+      setBatchFormData({ name: '', admissionYear: new Date().getFullYear(), programId: '' });
+    } catch (e) {
+      console.error(e);
+      alert('Failed to create Batch');
+    } finally {
+      setIsBatchSubmitting(false);
+    }
+  };
+
+  const handleCreateSection = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSectionSubmitting(true);
+    try {
+      const payload = {
+        ...sectionFormData,
+        capacity: Number(sectionFormData.capacity),
+        academicYearId: formData.academicYearId || sectionFormData.academicYearId,
+        programId: formData.programId || sectionFormData.programId || undefined,
+        batchId: formData.batchId || sectionFormData.batchId || undefined,
+      };
+      if (!payload.academicYearId) throw new Error('Academic Year is required');
+      const res = await apiClient.post('/admin/sections', payload);
+      const newSection = res.data;
+      setSections((prev) => [...prev, newSection]);
+      setFormData((prev) => ({ ...prev, sectionId: newSection.id }));
+      setIsSectionDialogOpen(false);
+      setSectionFormData({
+        name: '',
+        code: '',
+        capacity: 60,
+        academicYearId: '',
+        programId: '',
+        batchId: '',
+      });
+    } catch (e) {
+      console.error(e);
+      alert('Failed to create Section');
+    } finally {
+      setIsSectionSubmitting(false);
+    }
+  };
+
   // Fetched data
   const [academicYears, setAcademicYears] = useState<any[]>([]);
   const [programs, setPrograms] = useState<any[]>([]);
@@ -55,19 +202,22 @@ export default function DirectAdmissionPage() {
   const [sections, setSections] = useState<any[]>([]);
   const [batches, setBatches] = useState<any[]>([]);
   const [institutionType, setInstitutionType] = useState<'SCHOOL' | 'COLLEGE'>('SCHOOL');
+  const [departments, setDepartments] = useState<any[]>([]);
 
   useEffect(() => {
     const loadDropdowns = async () => {
       try {
-        const [ayRes, progRes, settingsRes] = await Promise.all([
+        const [ayRes, progRes, settingsRes, depRes] = await Promise.all([
           apiClient.get('/admin/institution/academic-years'),
           apiClient.get('/admin/programs'),
           apiClient.get('/admin/institution/profile'),
+          apiClient.get('/admin/departments?pageSize=100'),
         ]);
         const fetchedAYs = ayRes.data || [];
         setAcademicYears(fetchedAYs);
         setPrograms(progRes.data.data || []);
         setInstitutionType(settingsRes.data.institutionType || 'SCHOOL');
+        setDepartments(depRes.data.data || []);
 
         // Automatically select the active academic year
         const activeAy = fetchedAYs.find((ay: any) => ay.isActive);
@@ -112,7 +262,6 @@ export default function DirectAdmissionPage() {
     courseId: '',
     sectionId: '',
     batchId: '',
-    usn: '',
 
     totalFee: 0,
     installmentsCount: 1,
@@ -209,7 +358,6 @@ export default function DirectAdmissionPage() {
       if (!formData.academicYearId) newErrors['academicYearId'] = 'Academic Year is required';
       if (!formData.batchId) newErrors['batchId'] = 'Batch is required';
       if (!formData.sectionId) newErrors['sectionId'] = 'Section is required';
-      if (!formData.usn) newErrors['usn'] = 'USN / Registration No. is required';
     }
     if (step === 3) {
       const sum = formData.installments.reduce((acc, curr) => acc + Number(curr.amount), 0);
@@ -266,7 +414,6 @@ export default function DirectAdmissionPage() {
         courseId: formData.courseId || undefined,
         batchId: formData.batchId || undefined,
         sectionId: formData.sectionId || undefined,
-        usn: formData.usn || undefined,
 
         feePlan:
           formData.totalFee > 0
@@ -811,19 +958,86 @@ export default function DirectAdmissionPage() {
                       <Label>
                         Academic Year <span className="text-red-500">*</span>
                       </Label>
-                      <select
-                        name="academicYearId"
-                        value={formData.academicYearId}
-                        onChange={handleChange}
-                        className="border-input bg-background ring-offset-background w-full rounded-md border px-3 py-2 text-sm"
-                      >
-                        <option value="">Select Academic Year</option>
-                        {academicYears.map((y) => (
-                          <option key={y.id} value={y.id}>
-                            {y.name}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="flex items-center gap-2">
+                        <select
+                          name="academicYearId"
+                          value={formData.academicYearId}
+                          onChange={handleChange}
+                          className="border-input bg-background ring-offset-background w-full rounded-md border px-3 py-2 text-sm"
+                        >
+                          <option value="">Select Academic Year</option>
+                          {academicYears.map((y) => (
+                            <option key={y.id} value={y.id}>
+                              {y.name}
+                            </option>
+                          ))}
+                        </select>
+                        <Dialog open={isAyDialogOpen} onOpenChange={setIsAyDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="shrink-0"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Add Academic Year</DialogTitle>
+                            </DialogHeader>
+                            <form onSubmit={handleCreateAy} className="space-y-4">
+                              <div className="space-y-2">
+                                <Label>Name (e.g. 2024-2025)</Label>
+                                <Input
+                                  required
+                                  value={ayFormData.name}
+                                  onChange={(e) =>
+                                    setAyFormData((p) => ({ ...p, name: e.target.value }))
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Start Date</Label>
+                                <Input
+                                  required
+                                  type="date"
+                                  value={ayFormData.startDate}
+                                  onChange={(e) =>
+                                    setAyFormData((p) => ({ ...p, startDate: e.target.value }))
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>End Date</Label>
+                                <Input
+                                  required
+                                  type="date"
+                                  value={ayFormData.endDate}
+                                  onChange={(e) =>
+                                    setAyFormData((p) => ({ ...p, endDate: e.target.value }))
+                                  }
+                                />
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  id="ay-active"
+                                  checked={ayFormData.isActive}
+                                  onChange={(e) =>
+                                    setAyFormData((p) => ({ ...p, isActive: e.target.checked }))
+                                  }
+                                />
+                                <Label htmlFor="ay-active">Is Active?</Label>
+                              </div>
+                              <Button type="submit" disabled={isAySubmitting}>
+                                {isAySubmitting ? 'Saving...' : 'Save'}
+                              </Button>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
                       {errors['academicYearId'] && (
                         <span className="text-xs text-red-500">{errors['academicYearId']}</span>
                       )}
@@ -831,41 +1045,196 @@ export default function DirectAdmissionPage() {
 
                     <div className="space-y-2">
                       <Label>Program</Label>
-                      <select
-                        name="programId"
-                        value={formData.programId}
-                        onChange={(e) => {
-                          handleChange(e);
-                          setFormData((p) => ({ ...p, courseId: '', batchId: '', sectionId: '' }));
-                        }}
-                        className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                      >
-                        <option value="">Select Program</option>
-                        {programs.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name} ({p.code})
-                          </option>
-                        ))}
-                      </select>
+                      <div className="flex items-center gap-2">
+                        <select
+                          name="programId"
+                          value={formData.programId}
+                          onChange={(e) => {
+                            handleChange(e);
+                            setFormData((p) => ({
+                              ...p,
+                              courseId: '',
+                              batchId: '',
+                              sectionId: '',
+                            }));
+                          }}
+                          className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                        >
+                          <option value="">Select Program</option>
+                          {programs.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name} ({p.code})
+                            </option>
+                          ))}
+                        </select>
+                        <Dialog open={isProgDialogOpen} onOpenChange={setIsProgDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="shrink-0"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Add Program</DialogTitle>
+                            </DialogHeader>
+                            <form onSubmit={handleCreateProg} className="space-y-4">
+                              <div className="space-y-2">
+                                <Label>Name</Label>
+                                <Input
+                                  required
+                                  value={progFormData.name}
+                                  onChange={(e) =>
+                                    setProgFormData((p) => ({ ...p, name: e.target.value }))
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Code</Label>
+                                <Input
+                                  required
+                                  value={progFormData.code}
+                                  onChange={(e) =>
+                                    setProgFormData((p) => ({ ...p, code: e.target.value }))
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Level</Label>
+                                <select
+                                  required
+                                  className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                                  value={progFormData.level}
+                                  onChange={(e) =>
+                                    setProgFormData((p) => ({ ...p, level: e.target.value }))
+                                  }
+                                >
+                                  <option value="UG">Undergraduate</option>
+                                  <option value="PG">Postgraduate</option>
+                                  <option value="DIPLOMA">Diploma</option>
+                                </select>
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Duration (Years)</Label>
+                                <Input
+                                  required
+                                  type="number"
+                                  value={progFormData.durationYears}
+                                  onChange={(e) =>
+                                    setProgFormData((p) => ({
+                                      ...p,
+                                      durationYears: Number(e.target.value),
+                                    }))
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Department</Label>
+                                <select
+                                  required
+                                  className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                                  value={progFormData.departmentId}
+                                  onChange={(e) =>
+                                    setProgFormData((p) => ({ ...p, departmentId: e.target.value }))
+                                  }
+                                >
+                                  <option value="">Select Department</option>
+                                  {departments.map((d: any) => (
+                                    <option key={d.id} value={d.id}>
+                                      {d.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <Button type="submit" disabled={isProgSubmitting}>
+                                {isProgSubmitting ? 'Saving...' : 'Save'}
+                              </Button>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
                     </div>
 
                     <div className="space-y-2">
                       <Label>
                         Section <span className="text-red-500">*</span>
                       </Label>
-                      <select
-                        name="sectionId"
-                        value={formData.sectionId}
-                        onChange={handleChange}
-                        className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                      >
-                        <option value="">Select Section</option>
-                        {sections.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.name}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="flex items-center gap-2">
+                        <select
+                          name="sectionId"
+                          value={formData.sectionId}
+                          onChange={handleChange}
+                          className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                        >
+                          <option value="">Select Section</option>
+                          {sections.map((s) => (
+                            <option key={s.id} value={s.id}>
+                              {s.name}
+                            </option>
+                          ))}
+                        </select>
+                        <Dialog open={isSectionDialogOpen} onOpenChange={setIsSectionDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="shrink-0"
+                              disabled={!formData.academicYearId}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Add Section</DialogTitle>
+                            </DialogHeader>
+                            <form onSubmit={handleCreateSection} className="space-y-4">
+                              <div className="space-y-2">
+                                <Label>Name (e.g. A, B)</Label>
+                                <Input
+                                  required
+                                  value={sectionFormData.name}
+                                  onChange={(e) =>
+                                    setSectionFormData((p) => ({ ...p, name: e.target.value }))
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Code (e.g. SEC-A)</Label>
+                                <Input
+                                  required
+                                  value={sectionFormData.code}
+                                  onChange={(e) =>
+                                    setSectionFormData((p) => ({ ...p, code: e.target.value }))
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Capacity</Label>
+                                <Input
+                                  required
+                                  type="number"
+                                  value={sectionFormData.capacity}
+                                  onChange={(e) =>
+                                    setSectionFormData((p) => ({
+                                      ...p,
+                                      capacity: Number(e.target.value),
+                                    }))
+                                  }
+                                />
+                              </div>
+                              <Button type="submit" disabled={isSectionSubmitting}>
+                                {isSectionSubmitting ? 'Saving...' : 'Save'}
+                              </Button>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
                       {errors['sectionId'] && (
                         <span className="text-xs text-red-500">{errors['sectionId']}</span>
                       )}
@@ -875,34 +1244,74 @@ export default function DirectAdmissionPage() {
                       <Label>
                         Batch <span className="text-red-500">*</span>
                       </Label>
-                      <select
-                        name="batchId"
-                        value={formData.batchId}
-                        onChange={(e) => {
-                          handleChange(e);
-                          setFormData((p) => ({ ...p, sectionId: '' }));
-                        }}
-                        className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                      >
-                        <option value="">Select Batch</option>
-                        {batches.map((b) => (
-                          <option key={b.id} value={b.id}>
-                            {b.name}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="flex items-center gap-2">
+                        <select
+                          name="batchId"
+                          value={formData.batchId}
+                          onChange={(e) => {
+                            handleChange(e);
+                            setFormData((p) => ({ ...p, sectionId: '' }));
+                          }}
+                          className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                        >
+                          <option value="">Select Batch</option>
+                          {batches.map((b) => (
+                            <option key={b.id} value={b.id}>
+                              {b.name}
+                            </option>
+                          ))}
+                        </select>
+                        <Dialog open={isBatchDialogOpen} onOpenChange={setIsBatchDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="shrink-0"
+                              disabled={!formData.programId}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Add Batch</DialogTitle>
+                            </DialogHeader>
+                            <form onSubmit={handleCreateBatch} className="space-y-4">
+                              <div className="space-y-2">
+                                <Label>Name</Label>
+                                <Input
+                                  required
+                                  placeholder="e.g. 2024-2028"
+                                  value={batchFormData.name}
+                                  onChange={(e) =>
+                                    setBatchFormData((p) => ({ ...p, name: e.target.value }))
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Admission Year</Label>
+                                <Input
+                                  required
+                                  type="number"
+                                  value={batchFormData.admissionYear}
+                                  onChange={(e) =>
+                                    setBatchFormData((p) => ({
+                                      ...p,
+                                      admissionYear: Number(e.target.value),
+                                    }))
+                                  }
+                                />
+                              </div>
+                              <Button type="submit" disabled={isBatchSubmitting}>
+                                {isBatchSubmitting ? 'Saving...' : 'Save'}
+                              </Button>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
                       {errors['batchId'] && (
                         <span className="text-xs text-red-500">{errors['batchId']}</span>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>
-                        Registration No. <span className="text-red-500">*</span>
-                      </Label>
-                      <Input name="usn" value={formData.usn} onChange={handleChange} />
-                      {errors['usn'] && (
-                        <span className="text-xs text-red-500">{errors['usn']}</span>
                       )}
                     </div>
                   </div>
@@ -1031,9 +1440,6 @@ export default function DirectAdmissionPage() {
                     </p>
                     <p>
                       <strong>Batch ID:</strong> {formData.batchId}
-                    </p>
-                    <p>
-                      <strong>USN:</strong> {formData.usn}
                     </p>
                   </div>
                   <div className="space-y-2 rounded-md border p-4 text-sm md:col-span-2">
