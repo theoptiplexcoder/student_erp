@@ -608,6 +608,7 @@ model Student {
   userId          String                 @unique @map("user_id") @db.Uuid
   admissionNumber String?                @map("admission_number")
   studentCode     String?                @map("student_code")
+  status          UserStatus             @default(ACTIVE)
   lifecycleStatus StudentLifecycleStatus @default(APPLICANT) @map("lifecycle_status")
 
   // Extended fields
@@ -672,6 +673,7 @@ model Student {
   @@unique([institutionId, studentCode])
   @@unique([institutionId, admissionNumber])
   @@index([institutionId])
+  @@index([institutionId, status])
   @@index([institutionId, lifecycleStatus])
   @@index([userId])
   @@map("students")
