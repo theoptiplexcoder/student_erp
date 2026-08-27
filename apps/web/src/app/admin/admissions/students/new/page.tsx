@@ -11,6 +11,7 @@ import {
   Input,
   Label,
   Separator,
+  Badge,
 } from '@student-erp/ui';
 import {
   CheckCircle2,
@@ -24,6 +25,7 @@ import {
   Plus,
   Trash2,
   UploadCloud,
+  X,
 } from 'lucide-react';
 import { useCreateDirectAdmission } from '@/hooks/api/admin/useAdmissions';
 import PhoneInput from 'react-phone-number-input';
@@ -89,7 +91,7 @@ export default function DirectAdmissionPage() {
     phone: '',
     address: '',
     about: '',
-    skills: '' as string,
+    skills: [] as string[],
 
     fatherName: '',
     motherName: '',
@@ -116,6 +118,29 @@ export default function DirectAdmissionPage() {
     installmentsCount: 1,
     installments: [] as { amount: number; dueDate: string }[],
   });
+
+  const [skillInput, setSkillInput] = useState('');
+
+  const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = skillInput.trim().toLowerCase();
+      if (val && !formData.skills.includes(val)) {
+        setFormData((prev) => ({
+          ...prev,
+          skills: [...prev.skills, val],
+        }));
+      }
+      setSkillInput('');
+    }
+  };
+
+  const removeSkill = (skillToRemove: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((s) => s !== skillToRemove),
+    }));
+  };
 
   useEffect(() => {
     const loadCoursesAndBatches = async () => {
@@ -221,7 +246,7 @@ export default function DirectAdmissionPage() {
         phone: formData.phone || undefined,
         address: formData.address || undefined,
         about: formData.about || undefined,
-        skills: formData.skills ? formData.skills.split(',').map((s) => s.trim()) : undefined,
+        skills: formData.skills.length > 0 ? formData.skills : undefined,
 
         fatherName: formData.fatherName || undefined,
         motherName: formData.motherName || undefined,
@@ -463,16 +488,32 @@ export default function DirectAdmissionPage() {
                       />
                     </div>
                     <div className="space-y-2 md:col-span-3">
-                      <Label>
-                        {institutionType === 'SCHOOL' ? 'Skills' : 'Technical Skills'} (Comma
-                        separated)
-                      </Label>
-                      <Input
-                        name="skills"
-                        value={formData.skills}
-                        onChange={handleChange}
-                        placeholder="e.g. Communication, Drawing"
-                      />
+                      <Label>Skills</Label>
+                      <div className="flex flex-col gap-2">
+                        <Input
+                          placeholder="e.g. communication, drawing (Press Enter to add)"
+                          value={skillInput}
+                          onChange={(e) => setSkillInput(e.target.value)}
+                          onKeyDown={handleSkillKeyDown}
+                        />
+                        {formData.skills.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {formData.skills.map((skill) => (
+                              <Badge
+                                key={skill}
+                                variant="secondary"
+                                className="flex items-center gap-1"
+                              >
+                                {skill}
+                                <X
+                                  className="h-3 w-3 cursor-pointer hover:text-red-500"
+                                  onClick={() => removeSkill(skill)}
+                                />
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </section>
