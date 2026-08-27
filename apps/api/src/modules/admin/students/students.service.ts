@@ -132,7 +132,9 @@ export class StudentsService {
           orderBy: { markedAt: 'desc' },
         },
         studentDocuments: true,
-        studentPreviousEducations: true,
+        studentPreviousEducations: {
+          orderBy: { sequence: 'asc' },
+        },
       },
     });
 

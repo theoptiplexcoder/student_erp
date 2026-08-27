@@ -335,11 +335,12 @@ export class AdmissionsService {
       // 2d. Create Previous Education
       if (data.previousEducation && data.previousEducation.length > 0) {
         await tx.studentPreviousEducation.createMany({
-          data: data.previousEducation.map((edu) => ({
+          data: data.previousEducation.map((edu, index) => ({
             institutionId,
             studentId: student.id,
             institutionName: edu.institutionName,
             academicYear: edu.academicYear,
+            sequence: index + 1,
           })),
         });
       }

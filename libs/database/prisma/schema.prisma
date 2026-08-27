@@ -1480,6 +1480,7 @@ model StudentPreviousEducation {
   studentId       String   @map("student_id") @db.Uuid
   institutionName String   @map("institution_name")
   academicYear    String   @map("academic_year")
+  sequence        Int      @default(0)
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 

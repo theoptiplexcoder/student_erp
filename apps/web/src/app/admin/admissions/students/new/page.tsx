@@ -704,6 +704,9 @@ export default function DirectAdmissionPage() {
                   <div className="space-y-4">
                     {formData.previousEducation.map((edu, index) => (
                       <div key={index} className="flex items-end gap-4 rounded-md border p-4">
+                        <div className="bg-muted mb-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
+                          {index + 1}
+                        </div>
                         <div className="flex-1 space-y-2">
                           <Label>Institution Name</Label>
                           <Input
