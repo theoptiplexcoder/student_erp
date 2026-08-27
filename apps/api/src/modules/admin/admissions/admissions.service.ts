@@ -136,7 +136,6 @@ export class AdmissionsService {
     if (data.status === 'OFFERED') updateData.offeredAt = now;
     if (data.status === 'ACCEPTED') updateData.acceptedAt = now;
     if (data.status === 'REJECTED') updateData.rejectedAt = now;
-    if (data.status === 'ENROLLED') updateData.enrolledAt = now;
 
     return this.prisma.application.update({
       where: { id, institutionId },
