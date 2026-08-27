@@ -1,6 +1,5 @@
 import { redirect, unauthorized, forbidden } from 'next/navigation';
 import { createClient } from './supabase/server';
-import { prisma } from './prisma';
 
 export interface AuthUser {
   id: string;
@@ -31,43 +30,36 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   const supabase = await createClient();
 
   const {
-    data: { user: supabaseUser },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (!supabaseUser) {
+  if (!session) {
     return null;
   }
 
-  const dbUser = await prisma.user.findUnique({
-    where: { authUserId: supabaseUser.id },
-    select: {
-      id: true,
-      authUserId: true,
-      institutionId: true,
-      role: true,
-      status: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-      photoUrl: true,
-    },
-  });
+  // Instead of querying the database directly using Prisma and creating duplicate connections,
+  // we centralize database access by proxying to the NestJS API which securely resolves the user
+  // role based on the provided auth token.
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      next: {
+        revalidate: 0, // Avoid caching stale user data across sessions
+      },
+    });
 
-  if (!dbUser) {
+    if (!res.ok) {
+      return null;
+    }
+
+    const data = await res.json();
+    return data.user || null;
+  } catch (error) {
+    console.error('Failed to fetch user from API:', error);
     return null;
   }
-
-  return {
-    id: dbUser.id,
-    authUserId: dbUser.authUserId,
-    institutionId: dbUser.institutionId,
-    role: dbUser.role,
-    status: dbUser.status,
-    email: dbUser.email,
-    firstName: dbUser.firstName,
-    lastName: dbUser.lastName,
-    photoUrl: dbUser.photoUrl,
-  };
 }
 
 export async function requireAuth(): Promise<AuthUser> {
