@@ -422,7 +422,7 @@ export default function DirectAdmissionPage() {
                     <div className="space-y-2">
                       <Label>Student Phone</Label>
                       <PhoneInput
-                        international
+                        international={false}
                         defaultCountry="IN"
                         value={formData.phone}
                         onChange={(v) => handlePhoneChange('phone', v)}
@@ -496,7 +496,7 @@ export default function DirectAdmissionPage() {
                     <div className="space-y-2">
                       <Label>Father Phone</Label>
                       <PhoneInput
-                        international
+                        international={false}
                         defaultCountry="IN"
                         value={formData.fatherPhone}
                         onChange={(v) => handlePhoneChange('fatherPhone', v)}
@@ -524,7 +524,7 @@ export default function DirectAdmissionPage() {
                     <div className="space-y-2">
                       <Label>Mother Phone</Label>
                       <PhoneInput
-                        international
+                        international={false}
                         defaultCountry="IN"
                         value={formData.motherPhone}
                         onChange={(v) => handlePhoneChange('motherPhone', v)}
@@ -552,7 +552,7 @@ export default function DirectAdmissionPage() {
                     <div className="space-y-2">
                       <Label>Guardian Phone (Optional)</Label>
                       <PhoneInput
-                        international
+                        international={false}
                         defaultCountry="IN"
                         value={formData.guardianPhone}
                         onChange={(v) => handlePhoneChange('guardianPhone', v)}

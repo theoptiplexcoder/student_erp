@@ -17,6 +17,8 @@ import {
   Label,
 } from '@student-erp/ui';
 import { useStudentProfile, useUpdateStudentProfile } from '@student-erp/hooks';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 import { Pencil } from 'lucide-react';
 
 function EditDialog({
@@ -180,10 +182,13 @@ export function ContactInformationSection() {
         >
           <div className="grid gap-2">
             <Label htmlFor="phone">Phone</Label>
-            <Input
+            <PhoneInput
               id="phone"
+              international={false}
+              defaultCountry="IN"
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(v) => setFormData({ ...formData, phone: v || '' })}
+              className="border-input bg-background ring-offset-background focus-within:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-offset-2"
             />
           </div>
         </EditDialog>
@@ -434,10 +439,13 @@ export function GuardianSection() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="guardianPhone">Guardian Phone</Label>
-              <Input
+              <PhoneInput
                 id="guardianPhone"
+                international={false}
+                defaultCountry="IN"
                 value={formData.guardianPhone}
-                onChange={(e) => setFormData({ ...formData, guardianPhone: e.target.value })}
+                onChange={(v) => setFormData({ ...formData, guardianPhone: v || '' })}
+                className="border-input bg-background ring-offset-background focus-within:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-offset-2"
               />
             </div>
           </div>

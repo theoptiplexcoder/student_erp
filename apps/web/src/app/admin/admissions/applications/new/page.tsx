@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input } from '@student-erp/ui';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
 import { apiClient } from '@/lib/api-client';
 import { ArrowLeft, Loader2, Save } from 'lucide-react';
@@ -94,9 +96,12 @@ export default function NewApplicationPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Phone Number</label>
-              <Input
+              <PhoneInput
+                international={false}
+                defaultCountry="IN"
                 value={formData.phone}
-                onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
+                onChange={(v) => setFormData((prev) => ({ ...prev, phone: v || '' }))}
+                className="border-input bg-background ring-offset-background focus-within:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-offset-2"
               />
             </div>
 

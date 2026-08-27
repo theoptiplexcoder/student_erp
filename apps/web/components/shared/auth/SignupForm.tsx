@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { Button, Input, Label, Checkbox } from '@student-erp/ui';
 import { AuthDivider } from './AuthDivider';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 import { SocialLoginButtons } from './SocialLoginButtons';
 import { PasswordStrength } from './PasswordStrength';
 import { createClient } from '../../../src/lib/supabase/client';
@@ -11,6 +13,7 @@ import { createClient } from '../../../src/lib/supabase/client';
 export function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState<string>();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -97,12 +100,14 @@ export function SignupForm() {
 
         <div className="space-y-2">
           <Label htmlFor="phone">Phone Number</Label>
-          <Input
+          <PhoneInput
             id="phone"
             name="phone"
-            type="tel"
-            className="h-11"
-            placeholder="+1 (555) 000-0000"
+            international={false}
+            defaultCountry="IN"
+            value={phone}
+            onChange={setPhone}
+            className="border-input bg-background ring-offset-background focus-within:ring-ring flex h-11 w-full rounded-md border px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-offset-2"
           />
         </div>
 

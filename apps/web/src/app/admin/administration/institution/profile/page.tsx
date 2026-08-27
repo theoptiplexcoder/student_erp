@@ -5,6 +5,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@student-erp/ui';
 import { Input } from '@student-erp/ui';
 import { Label } from '@student-erp/ui';
 import { Button } from '@student-erp/ui';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 import { motion } from 'framer-motion';
 import { Save, Building2 } from 'lucide-react';
 
@@ -78,12 +80,13 @@ export default function InstitutionProfile() {
                   </div>
                   <div className="grid gap-3">
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input
+                    <PhoneInput
                       id="phone"
+                      international={false}
+                      defaultCountry="IN"
                       value={profile.phone}
-                      onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                      className="h-12"
-                      placeholder="+1 (555) 000-0000"
+                      onChange={(v) => setProfile({ ...profile, phone: v || '' })}
+                      className="border-input bg-background ring-offset-background focus-within:ring-ring flex h-12 w-full rounded-md border px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-offset-2"
                     />
                   </div>
                 </div>
