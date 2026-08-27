@@ -54,6 +54,35 @@ export default function DirectAdmissionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Quick Add States
+  const [isDeptDialogOpen, setIsDeptDialogOpen] = useState(false);
+  const [deptFormData, setDeptFormData] = useState({ name: '', code: '' });
+  const [isDeptSubmitting, setIsDeptSubmitting] = useState(false);
+
+  const handleCreateDept = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsDeptSubmitting(true);
+    try {
+      const res = await apiClient.post('/admin/departments', deptFormData);
+      const newDept = res.data;
+      setDepartments((prev) => [...prev, newDept]);
+      setFormData((prev) => ({
+        ...prev,
+        departmentId: newDept.id,
+        programId: '',
+        courseId: '',
+        batchId: '',
+        sectionId: '',
+      }));
+      setIsDeptDialogOpen(false);
+      setDeptFormData({ name: '', code: '' });
+    } catch (e) {
+      console.error(e);
+      alert('Failed to create Department');
+    } finally {
+      setIsDeptSubmitting(false);
+    }
+  };
+
   const [isAyDialogOpen, setIsAyDialogOpen] = useState(false);
   const [ayFormData, setAyFormData] = useState({
     name: '',
@@ -87,6 +116,7 @@ export default function DirectAdmissionPage() {
     code: '',
     capacity: 60,
     academicYearId: '',
+    departmentId: '',
     programId: '',
     batchId: '',
   });
@@ -184,6 +214,7 @@ export default function DirectAdmissionPage() {
         code: '',
         capacity: 60,
         academicYearId: '',
+        departmentId: '',
         programId: '',
         batchId: '',
       });
@@ -258,6 +289,7 @@ export default function DirectAdmissionPage() {
     photo: null as File | null,
 
     academicYearId: '',
+    departmentId: '',
     programId: '',
     courseId: '',
     sectionId: '',
@@ -492,6 +524,10 @@ export default function DirectAdmissionPage() {
     });
   };
 
+  const filteredPrograms = formData.departmentId
+    ? programs.filter((p) => p.departmentId === formData.departmentId)
+    : programs;
+
   return (
     <div className="mx-auto max-w-5xl space-y-8 pb-12">
       <div className="flex items-center gap-4">
@@ -510,6 +546,10 @@ export default function DirectAdmissionPage() {
           {steps.map((step) => {
             const isCompleted = currentStep > step.id;
             const isCurrent = currentStep === step.id;
+            const filteredPrograms = formData.departmentId
+              ? programs.filter((p) => p.departmentId === formData.departmentId)
+              : programs;
+
             return (
               <div key={step.id} className="bg-background flex flex-col items-center gap-2 px-2">
                 <div
@@ -1044,6 +1084,76 @@ export default function DirectAdmissionPage() {
                     </div>
 
                     <div className="space-y-2">
+                      <Label>Department</Label>
+                      <div className="flex items-center gap-2">
+                        <select
+                          name="departmentId"
+                          value={formData.departmentId}
+                          onChange={(e) => {
+                            handleChange(e);
+                            setFormData((p) => ({
+                              ...p,
+                              programId: '',
+                              courseId: '',
+                              batchId: '',
+                              sectionId: '',
+                            }));
+                          }}
+                          className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                        >
+                          <option value="">Select Department (Optional)</option>
+                          {departments.map((d: any) => (
+                            <option key={d.id} value={d.id}>
+                              {d.name} ({d.code})
+                            </option>
+                          ))}
+                        </select>
+                        <Dialog open={isDeptDialogOpen} onOpenChange={setIsDeptDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="shrink-0"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Add Department</DialogTitle>
+                            </DialogHeader>
+                            <form onSubmit={handleCreateDept} className="space-y-4">
+                              <div className="space-y-2">
+                                <Label>Name</Label>
+                                <Input
+                                  required
+                                  value={deptFormData.name}
+                                  onChange={(e) =>
+                                    setDeptFormData((p) => ({ ...p, name: e.target.value }))
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Code</Label>
+                                <Input
+                                  required
+                                  value={deptFormData.code}
+                                  onChange={(e) =>
+                                    setDeptFormData((p) => ({ ...p, code: e.target.value }))
+                                  }
+                                />
+                              </div>
+                              <Button type="submit" disabled={isDeptSubmitting}>
+                                {isDeptSubmitting ? 'Saving...' : 'Save'}
+                              </Button>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
                       <Label>Program</Label>
                       <div className="flex items-center gap-2">
                         <select
@@ -1061,7 +1171,7 @@ export default function DirectAdmissionPage() {
                           className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
                         >
                           <option value="">Select Program</option>
-                          {programs.map((p) => (
+                          {filteredPrograms.map((p) => (
                             <option key={p.id} value={p.id}>
                               {p.name} ({p.code})
                             </option>
