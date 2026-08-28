@@ -34,7 +34,7 @@ export default function AdmissionsDashboard() {
   const [drafts, setDrafts] = useState<AdmissionDraft[]>([]);
 
   useEffect(() => {
-    setDrafts(getDrafts());
+    getDrafts().then(setDrafts);
   }, []);
 
   const kpis = [

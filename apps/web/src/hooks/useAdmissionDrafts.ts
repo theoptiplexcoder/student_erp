@@ -1,47 +1,42 @@
-import { useState, useEffect } from 'react';
+import { apiClient } from '@/lib/api-client';
 
 export interface AdmissionDraft {
   id: string;
-  updatedAt: number;
+  updatedAt: string | number;
   data: any;
 }
 
-export function getDrafts(): AdmissionDraft[] {
-  if (typeof window === 'undefined') return [];
-  const stored = localStorage.getItem('admissions_drafts');
-  if (!stored) return [];
+export async function getDrafts(): Promise<AdmissionDraft[]> {
   try {
-    return JSON.parse(stored);
+    const res = await apiClient.get('/admin/admissions/drafts');
+    return res.data;
   } catch (e) {
     return [];
   }
 }
 
-export function saveDraft(id: string, data: any) {
-  if (typeof window === 'undefined') return;
-  const drafts = getDrafts();
-
-  // Exclude File objects before saving to prevent quota issues
-  const cleanData = { ...data, documents: [], photo: null };
-
-  const existingIndex = drafts.findIndex((d) => d.id === id);
-  if (existingIndex >= 0) {
-    drafts[existingIndex].data = cleanData;
-    drafts[existingIndex].updatedAt = Date.now();
-  } else {
-    drafts.push({
-      id,
-      data: cleanData,
-      updatedAt: Date.now(),
-    });
+export async function getDraft(id: string): Promise<AdmissionDraft | null> {
+  try {
+    const res = await apiClient.get(`/admin/admissions/drafts/${id}`);
+    return res.data;
+  } catch (e) {
+    return null;
   }
-
-  localStorage.setItem('admissions_drafts', JSON.stringify(drafts));
 }
 
-export function removeDraft(id: string) {
-  if (typeof window === 'undefined') return;
-  const drafts = getDrafts();
-  const newDrafts = drafts.filter((d) => d.id !== id);
-  localStorage.setItem('admissions_drafts', JSON.stringify(newDrafts));
+export async function saveDraft(id: string, data: any) {
+  const cleanData = { ...data, documents: [], photo: null };
+  try {
+    await apiClient.put(`/admin/admissions/drafts/${id}`, cleanData);
+  } catch (e) {
+    console.error('Failed to save draft', e);
+  }
+}
+
+export async function removeDraft(id: string) {
+  try {
+    await apiClient.delete(`/admin/admissions/drafts/${id}`);
+  } catch (e) {
+    console.error('Failed to remove draft', e);
+  }
 }

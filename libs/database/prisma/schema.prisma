@@ -585,18 +585,18 @@ model Faculty {
 }
 
 model Guardian {
-  id            String   @id @default(uuid()) @db.Uuid
-  institutionId String   @map("institution_id") @db.Uuid
-  userId        String   @unique @map("user_id") @db.Uuid
+  id            String  @id @default(uuid()) @db.Uuid
+  institutionId String  @map("institution_id") @db.Uuid
+  userId        String  @unique @map("user_id") @db.Uuid
   occupation    String?
-  relationship  String?  @default("Parent")
+  relationship  String? @default("Parent")
 
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  students      Student[]
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  students    Student[]
 
   @@index([institutionId])
   @@map("guardians")
@@ -1781,36 +1781,49 @@ enum ApplicationStatus {
 }
 
 model Application {
-  id              String            @id @default(uuid()) @db.Uuid
-  institutionId   String            @map("institution_id") @db.Uuid
-  programId       String            @map("program_id") @db.Uuid
-  academicYearId  String            @map("academic_year_id") @db.Uuid
-  
-  firstName       String            @map("first_name")
-  lastName        String            @map("last_name")
-  email           String
-  phone           String?
-  
-  status          ApplicationStatus @default(SUBMITTED)
-  applicationFee  Float?            @map("application_fee")
-  isFeePaid       Boolean           @default(false) @map("is_fee_paid")
-  
-  submittedAt     DateTime          @default(now()) @map("submitted_at")
-  reviewedAt      DateTime?         @map("reviewed_at")
-  offeredAt       DateTime?         @map("offered_at")
-  acceptedAt      DateTime?         @map("accepted_at")
-  rejectedAt      DateTime?         @map("rejected_at")
-  enrolledAt      DateTime?         @map("enrolled_at")
-  
-  studentId       String?           @unique @map("student_id") @db.Uuid
-  
-  institution     Institution       @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  program         Program           @relation(fields: [programId], references: [id], onDelete: Cascade)
-  academicYear    AcademicYear      @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
-  student         Student?          @relation(fields: [studentId], references: [id], onDelete: SetNull)
-  
+  id             String @id @default(uuid()) @db.Uuid
+  institutionId  String @map("institution_id") @db.Uuid
+  programId      String @map("program_id") @db.Uuid
+  academicYearId String @map("academic_year_id") @db.Uuid
+
+  firstName String  @map("first_name")
+  lastName  String  @map("last_name")
+  email     String
+  phone     String?
+
+  status         ApplicationStatus @default(SUBMITTED)
+  applicationFee Float?            @map("application_fee")
+  isFeePaid      Boolean           @default(false) @map("is_fee_paid")
+
+  submittedAt DateTime  @default(now()) @map("submitted_at")
+  reviewedAt  DateTime? @map("reviewed_at")
+  offeredAt   DateTime? @map("offered_at")
+  acceptedAt  DateTime? @map("accepted_at")
+  rejectedAt  DateTime? @map("rejected_at")
+  enrolledAt  DateTime? @map("enrolled_at")
+
+  studentId String? @unique @map("student_id") @db.Uuid
+
+  institution  Institution  @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  program      Program      @relation(fields: [programId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  student      Student?     @relation(fields: [studentId], references: [id], onDelete: SetNull)
+
   @@index([institutionId])
   @@index([programId])
   @@index([status])
   @@map("applications")
+}
+
+model AdmissionDraft {
+  id            String   @id @default(uuid()) @db.Uuid
+  institutionId String   @map("institution_id") @db.Uuid
+  userId        String?  @map("user_id") @db.Uuid
+  data          Json
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([institutionId])
+  @@index([userId])
+  @@map("admission_drafts")
 }

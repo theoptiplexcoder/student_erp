@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Patch,
+  Param,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { AdmissionsService } from './admissions.service';
 import { CreateDirectAdmissionDto } from './dto/create-direct-admission.dto';
 import { CreateApplicationDto } from './dto/create-application.dto';
@@ -26,6 +37,26 @@ export class AdmissionsController {
   @Post('applications')
   async createApplication(@Request() req: any, @Body() data: CreateApplicationDto) {
     return this.admissionsService.createApplication(req.user.institutionId, data);
+  }
+
+  @Get('drafts')
+  async getDrafts(@Request() req: any) {
+    return this.admissionsService.getDrafts(req.user.institutionId, req.user.id);
+  }
+
+  @Get('drafts/:id')
+  async getDraft(@Request() req: any, @Param('id') id: string) {
+    return this.admissionsService.getDraft(req.user.institutionId, req.user.id, id);
+  }
+
+  @Put('drafts/:id')
+  async upsertDraft(@Request() req: any, @Param('id') id: string, @Body() data: any) {
+    return this.admissionsService.upsertDraft(req.user.institutionId, req.user.id, id, data);
+  }
+
+  @Delete('drafts/:id')
+  async deleteDraft(@Request() req: any, @Param('id') id: string) {
+    return this.admissionsService.deleteDraft(req.user.institutionId, req.user.id, id);
   }
 
   @Get('applications')

@@ -14,6 +14,51 @@ import {
 export class AdmissionsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async getDrafts(institutionId: string, userId: string) {
+    return this.prisma.admissionDraft.findMany({
+      where: { institutionId, userId },
+      orderBy: { updatedAt: 'desc' },
+    });
+  }
+
+  async getDraft(institutionId: string, userId: string, id: string) {
+    const draft = await this.prisma.admissionDraft.findFirst({
+      where: { id, institutionId, userId },
+    });
+    if (!draft) {
+      throw new BadRequestException('Draft not found');
+    }
+    return draft;
+  }
+
+  async upsertDraft(institutionId: string, userId: string, id: string, data: any) {
+    const existing = await this.prisma.admissionDraft.findUnique({ where: { id } });
+    if (existing) {
+      if (existing.institutionId !== institutionId || existing.userId !== userId) {
+        throw new BadRequestException('Draft not found or access denied');
+      }
+      return this.prisma.admissionDraft.update({
+        where: { id },
+        data: { data },
+      });
+    }
+    return this.prisma.admissionDraft.create({
+      data: { id, institutionId, userId, data },
+    });
+  }
+
+  async deleteDraft(institutionId: string, userId: string, id: string) {
+    const draft = await this.prisma.admissionDraft.findFirst({
+      where: { id, institutionId, userId },
+    });
+    if (!draft) {
+      throw new BadRequestException('Draft not found');
+    }
+    return this.prisma.admissionDraft.delete({
+      where: { id },
+    });
+  }
+
   async getStats(institutionId: string) {
     try {
       const [totalApplications, pendingReview, admittedStudents, feeOutstandingResult] =

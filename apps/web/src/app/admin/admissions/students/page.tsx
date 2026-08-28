@@ -11,13 +11,13 @@ export default function DraftAdmissionsPage() {
   const [drafts, setDrafts] = useState<AdmissionDraft[]>([]);
 
   useEffect(() => {
-    setDrafts(getDrafts());
+    getDrafts().then(setDrafts);
   }, []);
 
-  const handleDeleteDraft = (id: string) => {
+  const handleDeleteDraft = async (id: string) => {
     if (confirm('Are you sure you want to delete this draft?')) {
-      removeDraft(id);
-      setDrafts(getDrafts());
+      await removeDraft(id);
+      getDrafts().then(setDrafts);
     }
   };
 

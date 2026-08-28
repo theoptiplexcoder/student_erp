@@ -38,7 +38,7 @@ import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { createClient } from '@/lib/supabase/client';
 import { apiClient } from '@/lib/api-client';
-import { getDrafts, saveDraft, removeDraft } from '@/hooks/useAdmissionDrafts';
+import { getDrafts, getDraft, saveDraft, removeDraft } from '@/hooks/useAdmissionDrafts';
 
 const PROGRAM_LEVELS = [
   'PRIMARY',
@@ -331,17 +331,17 @@ function DirectAdmissionForm() {
   // Load Draft
   useEffect(() => {
     if (draftIdParam) {
-      const drafts = getDrafts();
-      const existingDraft = drafts.find((d) => d.id === draftIdParam);
-      if (existingDraft && existingDraft.data) {
-        setFormData((prev) => ({
-          ...prev,
-          ...existingDraft.data,
-          // Explicitly keep empty arrays/nulls for files since they can't be saved in localStorage
-          documents: [],
-          photo: null,
-        }));
-      }
+      getDraft(draftIdParam).then((existingDraft) => {
+        if (existingDraft && existingDraft.data) {
+          setFormData((prev) => ({
+            ...prev,
+            ...existingDraft.data,
+            // Explicitly keep empty arrays/nulls for files since they can't be saved in localStorage
+            documents: [],
+            photo: null,
+          }));
+        }
+      });
     }
   }, [draftIdParam]);
 
@@ -558,7 +558,7 @@ function DirectAdmissionForm() {
         }
       }
 
-      removeDraft(draftId);
+      await removeDraft(draftId);
       router.push(`/admin/students/${studentId}`);
     } catch (error) {
       console.error('Failed to create admission', error);
