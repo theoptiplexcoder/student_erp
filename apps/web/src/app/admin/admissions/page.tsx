@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useEffect, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -21,13 +22,20 @@ import {
   CheckCircle2,
   ChevronRight,
   AlertCircle,
+  Edit,
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { getDrafts, AdmissionDraft } from '@/hooks/useAdmissionDrafts';
 
 export default function AdmissionsDashboard() {
   const { data: stats, isLoading: statsLoading } = useAdmissionsStats();
   const { data: recent, isLoading: recentLoading } = useRecentAdmissions();
+  const [drafts, setDrafts] = useState<AdmissionDraft[]>([]);
+
+  useEffect(() => {
+    setDrafts(getDrafts());
+  }, []);
 
   const kpis = [
     {
@@ -182,6 +190,45 @@ export default function AdmissionsDashboard() {
               </div>
             </CardContent>
           </Card>
+
+          {/* DRAFTS */}
+          {drafts.length > 0 && (
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle>Incomplete Drafts</CardTitle>
+                <Badge variant="secondary">{drafts.length}</Badge>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="space-y-4">
+                  {drafts.slice(0, 3).map((draft) => {
+                    const name =
+                      [draft.data.firstName, draft.data.lastName].filter(Boolean).join(' ') ||
+                      'Unnamed Student';
+                    return (
+                      <div key={draft.id} className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <p className="text-sm leading-none font-medium">{name}</p>
+                          <p className="text-muted-foreground text-xs">
+                            {draft.data.phone || draft.data.email || 'No contact provided'}
+                          </p>
+                        </div>
+                        <Button variant="ghost" size="sm" asChild className="h-8 px-2">
+                          <Link href={`/admin/admissions/students/new?draftId=${draft.id}`}>
+                            <Edit className="mr-2 h-3 w-3" /> Resume
+                          </Link>
+                        </Button>
+                      </div>
+                    );
+                  })}
+                  {drafts.length > 3 && (
+                    <Button variant="outline" size="sm" className="w-full text-xs" asChild>
+                      <Link href="/admin/admissions/students">View All {drafts.length} Drafts</Link>
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* RECENT ADMISSIONS */}
