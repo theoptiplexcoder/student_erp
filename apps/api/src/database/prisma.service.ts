@@ -8,14 +8,17 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   constructor() {
     let url = process.env['DATABASE_URL'];
 
-    // Supabase session-mode pool: max 15 connections shared across ALL services.
-    // Keep our ceiling very low (2) so other services and leftover connections from
-    // crashed/deploying instances don't push us past the server-side limit.
-    // During deploys, old + new instances run briefly in parallel — 2 per instance
-    // keeps the worst-case at 4 from this service, leaving room for the others.
-    if (url && !url.includes('connection_limit')) {
-      const separator = url.includes('?') ? '&' : '?';
-      url = `${url}${separator}connection_limit=2&pool_timeout=15000`;
+    if (url) {
+      const params: string[] = [];
+      if (!url.includes('connection_limit')) params.push('connection_limit=2');
+      if (!url.includes('pool_timeout')) params.push('pool_timeout=15000');
+      // Required for Supabase transaction-mode pgbouncer — disables prepared statements.
+      if (!url.includes('pgbouncer')) params.push('pgbouncer=true');
+
+      if (params.length) {
+        const separator = url.includes('?') ? '&' : '?';
+        url = `${url}${separator}${params.join('&')}`;
+      }
     }
 
     super({

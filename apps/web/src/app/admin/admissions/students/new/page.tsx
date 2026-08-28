@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import {
   Card,
   CardContent,
@@ -37,6 +38,7 @@ import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { createClient } from '@/lib/supabase/client';
 import { apiClient } from '@/lib/api-client';
+import { getDrafts, saveDraft, removeDraft } from '@/hooks/useAdmissionDrafts';
 
 const PROGRAM_LEVELS = [
   'PRIMARY',
@@ -56,8 +58,14 @@ const steps = [
   { id: 4, title: 'Preview & Submit', icon: CheckCircle2 },
 ];
 
-export default function DirectAdmissionPage() {
+function DirectAdmissionForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const draftIdParam = searchParams.get('draftId');
+
+  // Use existing draftId or create a new one
+  const [draftId] = useState(draftIdParam || crypto.randomUUID());
+
   const { mutateAsync: createAdmission, isPending } = useCreateDirectAdmission();
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -270,7 +278,10 @@ export default function DirectAdmissionPage() {
         // Automatically select the active academic year
         const activeAy = fetchedAYs.find((ay: any) => ay.isActive);
         if (activeAy) {
-          setFormData((prev) => ({ ...prev, academicYearId: activeAy.id }));
+          setFormData((prev) => ({
+            ...prev,
+            academicYearId: prev.academicYearId || activeAy.id,
+          }));
         }
       } catch (e) {
         console.error('Failed to fetch dropdowns', e);
@@ -316,6 +327,35 @@ export default function DirectAdmissionPage() {
     installmentsCount: 1,
     installments: [] as { amount: number; dueDate: string }[],
   });
+
+  // Load Draft
+  useEffect(() => {
+    if (draftIdParam) {
+      const drafts = getDrafts();
+      const existingDraft = drafts.find((d) => d.id === draftIdParam);
+      if (existingDraft && existingDraft.data) {
+        setFormData((prev) => ({
+          ...prev,
+          ...existingDraft.data,
+          // Explicitly keep empty arrays/nulls for files since they can't be saved in localStorage
+          documents: [],
+          photo: null,
+        }));
+      }
+    }
+  }, [draftIdParam]);
+
+  // Auto-Save Draft
+  useEffect(() => {
+    // Only save if we have some meaningful data entered to avoid saving empty drafts immediately
+    const hasData = formData.firstName || formData.lastName || formData.email || formData.phone;
+    if (hasData && !isSubmitting) {
+      const timeoutId = setTimeout(() => {
+        saveDraft(draftId, formData);
+      }, 1000); // 1s debounce
+      return () => clearTimeout(timeoutId);
+    }
+  }, [formData, draftId, isSubmitting]);
 
   const [skillInput, setSkillInput] = useState('');
 
@@ -518,6 +558,7 @@ export default function DirectAdmissionPage() {
         }
       }
 
+      removeDraft(draftId);
       router.push(`/admin/students/${studentId}`);
     } catch (error) {
       console.error('Failed to create admission', error);
@@ -1631,5 +1672,19 @@ export default function DirectAdmissionPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function DirectAdmissionPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 text-center">
+          <Loader2 className="mx-auto h-6 w-6 animate-spin" />
+        </div>
+      }
+    >
+      <DirectAdmissionForm />
+    </Suspense>
   );
 }
