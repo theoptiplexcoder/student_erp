@@ -38,6 +38,17 @@ import 'react-phone-number-input/style.css';
 import { createClient } from '@/lib/supabase/client';
 import { apiClient } from '@/lib/api-client';
 
+const PROGRAM_LEVELS = [
+  'PRIMARY',
+  'SECONDARY',
+  'HIGHER_SECONDARY',
+  'DIPLOMA',
+  'UNDERGRADUATE',
+  'POSTGRADUATE',
+  'DOCTORAL',
+  'CERTIFICATE',
+];
+
 const steps = [
   { id: 1, title: 'Student Info', icon: User },
   { id: 2, title: 'Academic Details', icon: BookOpen },
@@ -96,7 +107,7 @@ export default function DirectAdmissionPage() {
   const [progFormData, setProgFormData] = useState({
     name: '',
     code: '',
-    level: 'UG',
+    level: 'UNDERGRADUATE',
     durationYears: 3,
     departmentId: '',
   });
@@ -159,7 +170,13 @@ export default function DirectAdmissionPage() {
         sectionId: '',
       }));
       setIsProgDialogOpen(false);
-      setProgFormData({ name: '', code: '', level: 'UG', durationYears: 3, departmentId: '' });
+      setProgFormData({
+        name: '',
+        code: '',
+        level: 'UNDERGRADUATE',
+        durationYears: 3,
+        departmentId: '',
+      });
     } catch (e) {
       console.error(e);
       alert('Failed to create Program');
@@ -1217,15 +1234,17 @@ export default function DirectAdmissionPage() {
                                 <Label>Level</Label>
                                 <select
                                   required
-                                  className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                                  className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                   value={progFormData.level}
                                   onChange={(e) =>
                                     setProgFormData((p) => ({ ...p, level: e.target.value }))
                                   }
                                 >
-                                  <option value="UG">Undergraduate</option>
-                                  <option value="PG">Postgraduate</option>
-                                  <option value="DIPLOMA">Diploma</option>
+                                  {PROGRAM_LEVELS.map((level) => (
+                                    <option key={level} value={level}>
+                                      {level.replace(/_/g, ' ')}
+                                    </option>
+                                  ))}
                                 </select>
                               </div>
                               <div className="space-y-2">
