@@ -3,6 +3,16 @@ import { apiClient } from '@/lib/api-client';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+export const useAdminAllCurriculums = () => {
+  return useQuery({
+    queryKey: ['admin', 'curriculums', 'all'],
+    queryFn: async () => {
+      const response = await apiClient.get<any[]>('/academic/curriculums');
+      return response.data;
+    },
+  });
+};
+
 export const useAdminCurriculumsByProgram = (programId: string) => {
   return useQuery({
     queryKey: ['admin', 'curriculums', 'program', programId],

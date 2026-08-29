@@ -74,3 +74,32 @@ export const useCreateAdminProgram = () => {
     },
   });
 };
+
+export const useUpdateAdminProgram = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<CreateProgramDto> }) => {
+      const response = await apiClient.patch<Program>(`/admin/programs/${id}`, data);
+      return response.data;
+    },
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'programs'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'programs', id] });
+    },
+  });
+};
+
+export const useDeleteAdminProgram = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.delete(`/admin/programs/${id}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'programs'] });
+    },
+  });
+};

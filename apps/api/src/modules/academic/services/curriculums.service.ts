@@ -51,6 +51,19 @@ export class CurriculumsService {
     }
   }
 
+  async findAll(institutionId: string) {
+    return this.prisma.curriculum.findMany({
+      where: { institutionId },
+      include: {
+        program: true,
+        _count: {
+          select: { curriculumTerms: true, students: true, enrollments: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async findByProgram(institutionId: string, programId: string) {
     return this.prisma.curriculum.findMany({
       where: { institutionId, programId },

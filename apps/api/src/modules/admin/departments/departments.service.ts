@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 import { PrismaService } from '../../../database/prisma.service';
@@ -38,6 +38,11 @@ export class DepartmentsService {
         skip,
         take: pageSize,
         orderBy: { name: 'asc' },
+        include: {
+          _count: {
+            select: { programs: true, faculty: true, courses: true },
+          },
+        },
       }),
     ]);
 
@@ -72,6 +77,26 @@ export class DepartmentsService {
 
   async remove(institutionId: string, id: string) {
     await this.findOne(institutionId, id);
+
+    // Check for dependent records
+    const departmentWithRelations = await this.prisma.department.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { programs: true, faculty: true, courses: true },
+        },
+      },
+    });
+
+    if (departmentWithRelations?._count) {
+      const { programs, faculty, courses } = departmentWithRelations._count;
+      if (programs > 0 || faculty > 0 || courses > 0) {
+        throw new BadRequestException(
+          `Cannot delete department. It has ${programs} programs, ${faculty} faculty, and ${courses} courses.`,
+        );
+      }
+    }
+
     return this.prisma.department.delete({
       where: { id },
     });

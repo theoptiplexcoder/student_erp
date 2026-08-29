@@ -32,6 +32,11 @@ export class CurriculumsController {
     return this.curriculumsService.create(institutionId, createCurriculumDto);
   }
 
+  @Get()
+  findAll(@CurrentUser() user: any) {
+    return this.curriculumsService.findAll(user.institutionId);
+  }
+
   @Get('program/:programId')
   findByProgram(@CurrentUser() user: any, @Param('programId', ParseUUIDPipe) programId: string) {
     const institutionId = user.institutionId;
