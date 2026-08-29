@@ -41,6 +41,11 @@ export class SupabaseAuthGuard implements CanActivate {
         role: true,
         status: true,
         email: true,
+        customRole: {
+          include: {
+            permissions: true,
+          },
+        },
       },
     });
 
@@ -59,6 +64,7 @@ export class SupabaseAuthGuard implements CanActivate {
       role: dbUser.role,
       status: dbUser.status,
       email: dbUser.email,
+      customRole: dbUser.customRole,
     };
 
     return true;

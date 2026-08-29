@@ -355,6 +355,8 @@ model Institution {
   classLevels   ClassLevel[]
   batches       Batch[]
 
+  customRoles CustomRole[]
+
   academicTerms             AcademicTerm[]
   sections                  Section[]
   courses                   Course[]
@@ -414,12 +416,14 @@ model User {
   lastName      String     @map("last_name")
   phone         String?
   role          UserRole
+  customRoleId  String?    @map("custom_role_id") @db.Uuid
   status        UserStatus @default(ACTIVE)
   photoUrl      String?    @map("photo_url")
   createdAt     DateTime   @default(now()) @map("created_at")
   updatedAt     DateTime   @updatedAt @map("updated_at")
 
   institution Institution @relation(fields: [institutionId], references: [id])
+  customRole  CustomRole? @relation(fields: [customRoleId], references: [id])
   faculty     Faculty?
   student     Student?
   guardian    Guardian?
@@ -1826,4 +1830,32 @@ model AdmissionDraft {
   @@index([institutionId])
   @@index([userId])
   @@map("admission_drafts")
+}
+
+model CustomRole {
+  id            String   @id @default(uuid()) @db.Uuid
+  institutionId String   @map("institution_id") @db.Uuid
+  name          String
+  description   String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  institution Institution      @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  permissions RolePermission[]
+  users       User[]
+
+  @@unique([institutionId, name])
+  @@map("custom_roles")
+}
+
+model RolePermission {
+  id           String @id @default(uuid()) @db.Uuid
+  customRoleId String @map("custom_role_id") @db.Uuid
+  resource     String
+  action       String // e.g. "CREATE", "READ", "UPDATE", "DELETE", "MANAGE"
+
+  customRole CustomRole @relation(fields: [customRoleId], references: [id], onDelete: Cascade)
+
+  @@unique([customRoleId, resource, action])
+  @@map("role_permissions")
 }

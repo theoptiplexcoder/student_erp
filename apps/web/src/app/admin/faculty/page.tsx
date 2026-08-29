@@ -31,10 +31,12 @@ export default function FacultyPage() {
     <div className="space-y-6 p-4 md:p-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Faculty Management</h1>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Faculty
-        </Button>
+        <Link href="/admin/faculty/new">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Faculty
+          </Button>
+        </Link>
       </div>
 
       <Card>

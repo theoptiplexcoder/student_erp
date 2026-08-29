@@ -1,26 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Card, CardHeader, CardTitle, CardContent, Input } from '@student-erp/ui';
-import { useCreateFaculty } from '@/hooks/api/admin/useFaculty';
+import { useAdminFacultyDetails, useUpdateFaculty } from '@/hooks/api/admin/useFaculty';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
-export default function NewFacultyPage() {
+export default function EditFacultyPage({ params }: { params: Promise<{ facultyId: string }> }) {
   const router = useRouter();
-  const createFaculty = useCreateFaculty();
+  const { facultyId } = use(params);
+  const { data: faculty, isLoading } = useAdminFacultyDetails(facultyId);
+  const updateFaculty = useUpdateFaculty();
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
-    password: '',
     phone: '',
     teacherCode: '',
     employmentType: 'FULL_TIME',
     departmentId: '',
     hireDate: '',
   });
+
+  useEffect(() => {
+    if (faculty) {
+      setFormData({
+        firstName: faculty.user.firstName || '',
+        lastName: faculty.user.lastName || '',
+        email: faculty.user.email || '',
+        phone: faculty.user.phone || '',
+        teacherCode: faculty.teacherCode || '',
+        employmentType: faculty.employmentType || 'FULL_TIME',
+        departmentId: faculty.departmentId || '',
+        hireDate: faculty.hireDate ? new Date(faculty.hireDate).toISOString().split('T')[0] : '',
+      });
+    }
+  }, [faculty]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -29,27 +46,34 @@ export default function NewFacultyPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createFaculty.mutate(formData, {
-      onSuccess: () => {
-        router.push('/admin/faculty');
+    updateFaculty.mutate(
+      { id: facultyId, data: formData },
+      {
+        onSuccess: () => {
+          router.push(`/admin/faculty/${facultyId}`);
+        },
       },
-    });
+    );
   };
+
+  if (isLoading) {
+    return <div className="text-muted-foreground p-6 text-center">Loading...</div>;
+  }
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-6">
       <div className="flex items-center space-x-4">
-        <Link href="/admin/faculty">
+        <Link href={`/admin/faculty/${facultyId}`}>
           <Button variant="outline" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <h1 className="text-3xl font-bold tracking-tight">Add New Faculty</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Edit Faculty</h1>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Faculty Information</CardTitle>
+          <CardTitle>Update Faculty Information</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -67,28 +91,6 @@ export default function NewFacultyPage() {
                 <label className="text-sm font-medium">Last Name</label>
                 <Input required name="lastName" value={formData.lastName} onChange={handleChange} />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Email Address</label>
-              <Input
-                required
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Temporary Password</label>
-              <Input
-                required
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-              />
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -119,9 +121,22 @@ export default function NewFacultyPage() {
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
+                <label className="text-sm font-medium">Email</label>
+                <Input
+                  required
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="space-y-2">
                 <label className="text-sm font-medium">Phone</label>
                 <Input name="phone" value={formData.phone} onChange={handleChange} />
               </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Department ID</label>
                 <Input
@@ -132,7 +147,7 @@ export default function NewFacultyPage() {
                   placeholder="Department UUID..."
                 />
               </div>
-              <div className="space-y-2 md:col-span-2">
+              <div className="space-y-2">
                 <label className="text-sm font-medium">Hire Date</label>
                 <Input
                   required
@@ -145,8 +160,8 @@ export default function NewFacultyPage() {
             </div>
 
             <div className="flex justify-end pt-4">
-              <Button type="submit" disabled={createFaculty.isPending}>
-                {createFaculty.isPending ? 'Saving...' : 'Create Faculty'}
+              <Button type="submit" disabled={updateFaculty.isPending}>
+                {updateFaculty.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </form>

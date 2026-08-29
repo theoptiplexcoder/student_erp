@@ -23,9 +23,10 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('No user found on request');
     }
 
-    const hasRole = requiredRoles.includes(user.role);
+    const hasStaticRole = requiredRoles.includes(user.role);
+    const hasCustomRole = user.customRole && requiredRoles.includes(user.customRole.name);
 
-    if (!hasRole) {
+    if (!hasStaticRole && !hasCustomRole) {
       throw new ForbiddenException(`Role "${user.role}" is not authorized for this resource`);
     }
 
