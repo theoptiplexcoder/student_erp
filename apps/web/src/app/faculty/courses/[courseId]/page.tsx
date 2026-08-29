@@ -32,7 +32,6 @@ import {
   Upload,
   Plus,
   Trash2,
-  Mail,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -382,23 +381,6 @@ export default function FacultyCourseDetailsPage({
                 <Link href={`/faculty/examinations`}>
                   <FileText className="mr-2 h-4 w-4" /> Manage Marks
                 </Link>
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => {
-                  const emails = enrollments
-                    .map((e: any) => e.student.user.email)
-                    .filter(Boolean)
-                    .join(',');
-                  if (emails) {
-                    window.location.href = `mailto:?bcc=${emails}&subject=${encodeURIComponent(course.name + ' - ' + section.name + ' Update')}`;
-                  } else {
-                    alert('No student emails found for this class.');
-                  }
-                }}
-              >
-                <Mail className="mr-2 h-4 w-4" /> Message Class
               </Button>
             </CardContent>
           </Card>

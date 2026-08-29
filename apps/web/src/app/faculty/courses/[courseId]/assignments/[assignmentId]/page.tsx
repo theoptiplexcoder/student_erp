@@ -4,7 +4,7 @@ import React, { use, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button, Input } from '@student-erp/ui';
 import { useFacultyAssignmentSubmissions, useGradeFacultySubmission } from '@student-erp/hooks';
-import { Loader2, ArrowLeft, Save } from 'lucide-react';
+import { Loader2, ArrowLeft, Save, Download } from 'lucide-react';
 
 export default function AssignmentSubmissionsPage({
   params,
@@ -18,6 +18,48 @@ export default function AssignmentSubmissionsPage({
   const gradeSubmission = useGradeFacultySubmission(courseId, assignmentId);
 
   const [grades, setGrades] = useState<Record<string, { marks: number; feedback: string }>>({});
+
+  const handleSaveAll = async () => {
+    try {
+      const submissionsToGrade = submissions.filter((sub: any) => grades[sub.id]);
+      await Promise.all(
+        submissionsToGrade.map((sub: any) =>
+          gradeSubmission.mutateAsync({ submissionId: sub.id, data: grades[sub.id] })
+        )
+      );
+      alert('All grades saved successfully!');
+    } catch (e) {
+      alert('Failed to save some grades.');
+    }
+  };
+
+  const handleExportCSV = () => {
+    if (!submissions || submissions.length === 0) return;
+
+    const headers = ['Student ID', 'Student Name', 'Status', 'Marks', 'Feedback', 'Submitted At'];
+    
+    const rows = submissions.map((sub: any) => {
+      const studentName = sub.student?.user ? `${sub.student.user.firstName} ${sub.student.user.lastName}` : 'Unknown';
+      return [
+        sub.studentId,
+        studentName,
+        sub.status,
+        sub.marks || '',
+        sub.feedback || '',
+        sub.submittedAt ? new Date(sub.submittedAt).toLocaleString() : ''
+      ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
+    });
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `assignment_${assignmentId}_submissions.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   if (isLoading) {
     return (
@@ -36,6 +78,16 @@ export default function AssignmentSubmissionsPage({
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Assignment Submissions</h1>
           <p className="text-muted-foreground mt-1">Review and grade student submissions</p>
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <Button variant="outline" onClick={handleExportCSV} disabled={!submissions || submissions.length === 0}>
+            <Download className="mr-2 h-4 w-4" />
+            Export CSV
+          </Button>
+          <Button onClick={handleSaveAll} disabled={gradeSubmission.isPending || Object.keys(grades).length === 0}>
+            <Save className="mr-2 h-4 w-4" />
+            Save All Grades
+          </Button>
         </div>
       </div>
 
@@ -100,7 +152,7 @@ export default function AssignmentSubmissionsPage({
                             type="number"
                             className="h-8"
                             value={gradeState.marks}
-                            onChange={(e) =>
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                               setGrades((prev) => ({
                                 ...prev,
                                 [sub.id]: { ...gradeState, marks: Number(e.target.value) },
@@ -114,7 +166,7 @@ export default function AssignmentSubmissionsPage({
                             className="h-8"
                             placeholder="Add feedback..."
                             value={gradeState.feedback}
-                            onChange={(e) =>
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                               setGrades((prev) => ({
                                 ...prev,
                                 [sub.id]: { ...gradeState, feedback: e.target.value },

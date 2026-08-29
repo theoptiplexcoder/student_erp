@@ -61,6 +61,37 @@ export default function FacultyDashboardPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
+            <CardTitle>At-Risk Students</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!data.atRiskStudents || data.atRiskStudents.length === 0 ? (
+              <p className="text-muted-foreground text-sm">No at-risk students currently.</p>
+            ) : (
+              <div className="space-y-4">
+                {data.atRiskStudents.map((student: any) => (
+                  <div
+                    key={student.id}
+                    className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
+                  >
+                    <div>
+                      <p className="font-medium">{student.name}</p>
+                      <p className="text-muted-foreground text-sm">{student.courseCode}</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Badge variant="destructive">{student.attendance}%</Badge>
+                      <Button size="sm" variant="outline">
+                        Alert
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle>Today's Schedule</CardTitle>
           </CardHeader>
           <CardContent>
