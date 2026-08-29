@@ -18,6 +18,13 @@ import {
   TabsList,
   TabsTrigger,
   TabsContent,
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from '@student-erp/ui';
 import { Plus, Eye, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -27,6 +34,69 @@ import { useAdminAllCurriculums } from '@/hooks/api/admin/useCurriculums';
 import { useAdminTerms } from '@/hooks/api/admin/useTerms';
 import { useAdminCourses } from '@/hooks/api/admin/useCourses';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
+import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
+import { useRouter } from 'next/navigation';
+
+function NewCurriculumButton() {
+  const [open, setOpen] = useState(false);
+  const [selectedProgram, setSelectedProgram] = useState('');
+  const { data: programsData, isLoading } = useAdminPrograms(1, 100);
+  const router = useRouter();
+
+  const handleContinue = () => {
+    if (selectedProgram) {
+      router.push(`/admin/academics/programs/${selectedProgram}/curriculums/new`);
+      setOpen(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm">
+          <Plus className="mr-2 h-4 w-4" /> New Curriculum
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create New Curriculum</DialogTitle>
+          <DialogDescription>Select a program to create a new curriculum for.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Program</label>
+            {isLoading ? (
+              <div className="text-muted-foreground text-sm">Loading programs...</div>
+            ) : (
+              <select
+                className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                value={selectedProgram}
+                onChange={(e) => setSelectedProgram(e.target.value)}
+              >
+                <option value="" disabled>
+                  Select a program
+                </option>
+                {programsData?.data?.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} ({p.code})
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleContinue} disabled={!selectedProgram}>
+            Continue
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export default function AcademicsPage() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -74,6 +144,7 @@ export default function AcademicsPage() {
                 <CardTitle>Curriculums</CardTitle>
                 <CardDescription>View all curriculums across programs</CardDescription>
               </div>
+              <NewCurriculumButton />
             </CardHeader>
             <CardContent>
               {isLoadingCurriculums ? (
