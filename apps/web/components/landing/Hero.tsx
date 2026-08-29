@@ -42,9 +42,9 @@ export function Hero() {
       <div className="bg-primary/20 absolute top-1/2 left-1/2 -z-10 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-50 blur-3xl" />
 
       <div className="container mx-auto px-4">
-        <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-8">
-          {/* Left Text Content */}
-          <div className="flex-1 text-center lg:text-left">
+        <div className="flex flex-col items-center gap-12 text-center">
+          {/* Main Text Content */}
+          <div className="flex max-w-4xl flex-col items-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -88,7 +88,7 @@ export function Hero() {
             </h1>
 
             <motion.p
-              className="text-muted-foreground mx-auto mb-8 max-w-2xl text-lg text-balance md:text-xl lg:mx-0"
+              className="text-muted-foreground mx-auto mb-8 max-w-2xl text-lg text-balance md:text-xl"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
@@ -98,7 +98,7 @@ export function Hero() {
             </motion.p>
 
             <motion.div
-              className="mb-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start"
+              className="mb-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
@@ -115,7 +115,7 @@ export function Hero() {
             </motion.div>
 
             <motion.div
-              className="text-muted-foreground flex items-center justify-center gap-4 text-sm lg:justify-start"
+              className="text-muted-foreground flex flex-col items-center justify-center gap-4 text-sm sm:flex-row"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.7 }}
@@ -144,20 +144,6 @@ export function Hero() {
               <span>Trusted by 500+ institutions</span>
             </motion.div>
           </div>
-
-          {/* Right Logo */}
-          <motion.div
-            className="flex w-full max-w-2xl flex-1 items-center justify-center lg:max-w-none"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            <img
-              src="/landing1.svg"
-              alt="Student ERP Logo"
-              className="w-full max-w-md object-contain drop-shadow-xl lg:max-w-lg xl:max-w-xl"
-            />
-          </motion.div>
         </div>
       </div>
     </section>
