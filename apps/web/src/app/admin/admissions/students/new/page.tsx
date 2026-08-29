@@ -201,6 +201,7 @@ function DirectAdmissionForm() {
     e.stopPropagation();
     setIsBatchSubmitting(true);
     try {
+      if (!formData.sectionId) throw new Error('Section is required for batch');
       const payload = {
         ...batchFormData,
         admissionYear: Number(batchFormData.admissionYear),
@@ -236,7 +237,6 @@ function DirectAdmissionForm() {
       };
       if (!payload.academicYearId) throw new Error('Academic Year is required');
       if (!payload.programId) throw new Error('Program is required to create a section');
-      if (!payload.batchId) throw new Error('Batch is required to create a section');
       const res = await apiClient.post('/admin/sections', payload);
       const newSection = res.data;
       setSections((prev) => [...prev, newSection]);
@@ -453,7 +453,6 @@ function DirectAdmissionForm() {
     }
     if (step >= 2) {
       if (!formData.academicYearId) newErrors['academicYearId'] = 'Academic Year is required';
-      if (!formData.batchId) newErrors['batchId'] = 'Batch is required';
       if (!formData.sectionId) newErrors['sectionId'] = 'Section is required';
     }
     if (step >= 3) {
@@ -1419,9 +1418,7 @@ function DirectAdmissionForm() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>
-                        Batch <span className="text-red-500">*</span>
-                      </Label>
+                      <Label>Batch</Label>
                       <div className="flex items-center gap-2">
                         <select
                           name="batchId"
@@ -1432,7 +1429,7 @@ function DirectAdmissionForm() {
                           }}
                           className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
                         >
-                          <option value="">Select Batch</option>
+                          <option value="">Select Batch (Optional)</option>
                           {batches.map((b) => (
                             <option key={b.id} value={b.id}>
                               {b.name}
@@ -1446,7 +1443,7 @@ function DirectAdmissionForm() {
                               variant="outline"
                               size="icon"
                               className="shrink-0"
-                              disabled={!formData.programId}
+                              disabled={!formData.programId || !formData.sectionId}
                             >
                               <Plus className="h-4 w-4" />
                             </Button>
