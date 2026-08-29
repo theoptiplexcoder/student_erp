@@ -29,6 +29,7 @@ import {
   useDeleteElectiveGroup,
 } from '@/hooks/api/admin/useCurriculums';
 import { useAdminCourses } from '@/hooks/api/admin/useCourses';
+import { createClient } from '@/lib/supabase/client';
 
 export default function CreateCurriculumWizard({
   params,
@@ -351,13 +352,25 @@ function Step3Courses({
 }
 
 function TermCoursesManager({ curriculumId, term }: { curriculumId: string; term: any }) {
+  const { data: curriculum } = useAdminCurriculum(curriculumId);
+  const { data: program } = useAdminProgram(curriculum?.programId || '');
   const { data: coursesData } = useAdminCourses(1, 100);
-  const existingCourses = coursesData?.data || [];
+
+  const allTerms = curriculum?.curriculumTerms || [];
+  const coursesAlreadyAdded = new Set(
+    allTerms.flatMap((t: any) => t.curriculumCourses?.map((cc: any) => cc.courseId) || []),
+  );
+
+  const existingCourses = (coursesData?.data || []).filter(
+    (c: any) => !coursesAlreadyAdded.has(c.id),
+  );
 
   const createCourse = useCreateCurriculumCourse();
   const deleteCourse = useDeleteCurriculumCourse();
   const [mode, setMode] = useState<'existing' | 'new'>('existing');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -383,10 +396,40 @@ function TermCoursesManager({ curriculumId, term }: { curriculumId: string; term
         };
       }
 
+      setIsUploading(true);
+
+      if (mode === 'new' && files.length > 0) {
+        const supabase = createClient();
+        const curriculumCode =
+          curriculum?.versionNumber || curriculum?.name?.replace(/\s+/g, '_') || 'CURR';
+        const programCode = program?.code || program?.name?.replace(/\s+/g, '_') || 'PROG';
+        const courseCode = (formData.get('code') as string).replace(/\s+/g, '_');
+
+        for (const file of files) {
+          const extension = file.name.split('.').pop();
+          const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+          const safeBaseName = baseName.replace(/[^a-zA-Z0-9]/g, '_');
+
+          const fileName = `${curriculumCode}_${programCode}_${courseCode}_${safeBaseName}.${extension}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('course_files_bucket')
+            .upload(fileName, file, { upsert: true });
+
+          if (uploadError) {
+            console.error('File upload error:', uploadError);
+            throw new Error(`Failed to upload file ${file.name}: ${uploadError.message}`);
+          }
+        }
+      }
+
       await createCourse.mutateAsync({ data: payload, curriculumId });
       e.currentTarget.reset();
+      setFiles([]);
     } catch (err: any) {
-      setErrorMsg(err?.response?.data?.message || 'Failed to add course');
+      setErrorMsg(err?.response?.data?.message || err.message || 'Failed to add course');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -420,7 +463,7 @@ function TermCoursesManager({ curriculumId, term }: { curriculumId: string; term
                 className="border-input flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm"
               >
                 <option value="">-- Choose --</option>
-                {existingCourses.map((c) => (
+                {existingCourses.map((c: any) => (
                   <option key={c.id} value={c.id}>
                     {c.code} - {c.name}
                   </option>
@@ -428,16 +471,27 @@ function TermCoursesManager({ curriculumId, term }: { curriculumId: string; term
               </select>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label className="text-xs">Course Code</Label>
-                <Input name="code" required placeholder="CS101" />
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Course Code</Label>
+                  <Input name="code" required placeholder="CS101" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Course Name</Label>
+                  <Input name="name" required placeholder="Intro to Computer Science" />
+                </div>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Course Name</Label>
-                <Input name="name" required placeholder="Intro to Computer Science" />
+                <Label className="text-xs">Course Files (Optional)</Label>
+                <Input
+                  name="files"
+                  type="file"
+                  multiple
+                  onChange={(e) => setFiles(Array.from(e.target.files || []))}
+                />
               </div>
-            </div>
+            </>
           )}
 
           <div className="grid grid-cols-4 items-end gap-3">
@@ -464,8 +518,11 @@ function TermCoursesManager({ curriculumId, term }: { curriculumId: string; term
                 ))}
               </select>
             </div>
-            <Button type="submit" disabled={createCourse.isPending}>
-              Add Course
+            <Button type="submit" disabled={createCourse.isPending || isUploading}>
+              {(createCourse.isPending || isUploading) && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {isUploading ? 'Uploading...' : 'Add Course'}
             </Button>
           </div>
         </form>
