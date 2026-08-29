@@ -235,6 +235,8 @@ function DirectAdmissionForm() {
         batchId: formData.batchId || sectionFormData.batchId || undefined,
       };
       if (!payload.academicYearId) throw new Error('Academic Year is required');
+      if (!payload.programId) throw new Error('Program is required to create a section');
+      if (!payload.batchId) throw new Error('Batch is required to create a section');
       const res = await apiClient.post('/admin/sections', payload);
       const newSection = res.data;
       setSections((prev) => [...prev, newSection]);
@@ -1360,7 +1362,7 @@ function DirectAdmissionForm() {
                               variant="outline"
                               size="icon"
                               className="shrink-0"
-                              disabled={!formData.academicYearId}
+                              disabled={!formData.academicYearId || !formData.programId}
                             >
                               <Plus className="h-4 w-4" />
                             </Button>
