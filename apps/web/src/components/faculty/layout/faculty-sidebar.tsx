@@ -15,6 +15,8 @@ import {
   User,
   ChevronLeft,
   ChevronRight,
+  AlertCircle,
+  CalendarOff,
 } from 'lucide-react';
 import { cn } from '@student-erp/utils';
 import { useSidebarStore } from '@/hooks/use-sidebar';
@@ -27,6 +29,8 @@ export const facultySidebarNavItems = [
   { title: 'Examinations', href: '/faculty/examinations', icon: FileText },
   { title: 'Students', href: '/faculty/students', icon: Users },
   { title: 'Announcements', href: '/faculty/announcements', icon: Megaphone },
+  { title: 'Grievances', href: '/faculty/grievances', icon: AlertCircle },
+  { title: 'Leave Requests', href: '/faculty/leave', icon: CalendarOff },
   { title: 'Calendar', href: '/faculty/calendar', icon: CalendarDays },
   { title: 'My Profile', href: '/faculty/profile', icon: User },
 ];
