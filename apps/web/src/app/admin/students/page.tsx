@@ -376,7 +376,9 @@ function StudentsList() {
                         </TableCell>
                         <TableCell>{getStatusBadge(student.lifecycleStatus)}</TableCell>
                         <TableCell className="text-right">
-                          <Link href={`/admin/students/${student.studentCode || student.id}`}>
+                          <Link
+                            href={`/admin/students/${encodeURIComponent(student.studentCode || student.id)}`}
+                          >
                             <Button variant="ghost" size="icon" className="h-8 w-8">
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
@@ -393,7 +395,7 @@ function StudentsList() {
                 {studentsData.data.map((student) => (
                   <Link
                     key={student.id}
-                    href={`/admin/students/${student.studentCode || student.id}`}
+                    href={`/admin/students/${encodeURIComponent(student.studentCode || student.id)}`}
                     className="block rounded-lg border border-gray-200 bg-white p-4 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-800 dark:hover:bg-gray-700/50"
                   >
                     <div className="flex items-start justify-between">

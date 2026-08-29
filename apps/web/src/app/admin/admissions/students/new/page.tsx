@@ -226,8 +226,9 @@ function DirectAdmissionForm() {
     e.stopPropagation();
     setIsSectionSubmitting(true);
     try {
+      const { departmentId, ...restSectionData } = sectionFormData;
       const payload = {
-        ...sectionFormData,
+        ...restSectionData,
         capacity: Number(sectionFormData.capacity),
         academicYearId: formData.academicYearId || sectionFormData.academicYearId,
         programId: formData.programId || sectionFormData.programId || undefined,
@@ -564,7 +565,7 @@ function DirectAdmissionForm() {
       }
 
       await removeDraft(draftId);
-      router.push(`/admin/students/${studentId}`);
+      router.push(`/admin/students/${encodeURIComponent(studentCode)}`);
     } catch (error) {
       console.error('Failed to create admission', error);
       alert('Failed to create admission. Please try again.');
