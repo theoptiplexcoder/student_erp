@@ -6,10 +6,16 @@ import { Button, Card, CardHeader, CardTitle, CardContent, Input } from '@studen
 import { useCreateFaculty } from '@/hooks/api/admin/useFaculty';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useAdminDepartments } from '@/hooks/api/admin/useDepartments';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 export default function NewFacultyPage() {
   const router = useRouter();
   const createFaculty = useCreateFaculty();
+  const { data: departmentsData } = useAdminDepartments(1, 100);
+  const departments = departmentsData?.data || [];
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -25,6 +31,10 @@ export default function NewFacultyPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePhoneChange = (name: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [name]: value || '' }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -120,17 +130,30 @@ export default function NewFacultyPage() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Phone</label>
-                <Input name="phone" value={formData.phone} onChange={handleChange} />
+                <PhoneInput
+                  international={false}
+                  defaultCountry="IN"
+                  value={formData.phone}
+                  onChange={(v) => handlePhoneChange('phone', v)}
+                  className="border-input bg-background ring-offset-background focus-within:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-offset-2"
+                />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Department ID</label>
-                <Input
+                <label className="text-sm font-medium">Department</label>
+                <select
                   required
                   name="departmentId"
                   value={formData.departmentId}
                   onChange={handleChange}
-                  placeholder="Department UUID..."
-                />
+                  className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                >
+                  <option value="">Select Department</option>
+                  {departments.map((d: any) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name} ({d.code})
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-2 md:col-span-2">
                 <label className="text-sm font-medium">Hire Date</label>
