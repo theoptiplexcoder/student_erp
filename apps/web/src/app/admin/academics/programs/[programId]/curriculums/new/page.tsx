@@ -188,20 +188,36 @@ function Step2Terms({
   const { data: curriculum } = useAdminCurriculum(curriculumId);
   const createTerm = useCreateCurriculumTerm();
   const deleteTerm = useDeleteCurriculumTerm();
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const terms = curriculum?.curriculumTerms || [];
 
   const handleAddTerm = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const data = {
-      curriculumId,
-      name: formData.get('name'),
-      sequence: parseInt(formData.get('sequence') as string, 10),
-      creditRequirement: parseFloat(formData.get('creditRequirement') as string) || 0,
-    };
-    await createTerm.mutateAsync(data);
-    e.currentTarget.reset();
+    const numberOfTerms = parseInt(formData.get('numberOfTerms') as string, 10);
+    const creditRequirement = parseFloat(formData.get('creditRequirement') as string) || 0;
+
+    setIsGenerating(true);
+    try {
+      const maxSequence =
+        terms.length > 0 ? Math.max(...terms.map((t: any) => t.sequence || 0)) : 0;
+      const startSequence = maxSequence + 1;
+
+      for (let i = 0; i < numberOfTerms; i++) {
+        const currentSequence = startSequence + i;
+        const data = {
+          curriculumId,
+          name: `Semester ${currentSequence}`,
+          sequence: currentSequence,
+          creditRequirement,
+        };
+        await createTerm.mutateAsync(data);
+      }
+      e.currentTarget.reset();
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -215,22 +231,30 @@ function Step2Terms({
       <CardContent className="space-y-6">
         <form
           onSubmit={handleAddTerm}
-          className="bg-muted/50 grid grid-cols-4 items-end gap-2 rounded-lg p-4"
+          className="bg-muted/50 grid grid-cols-3 items-end gap-4 rounded-lg p-4"
         >
           <div className="space-y-1">
-            <Label className="text-xs">Term Name</Label>
-            <Input name="name" required placeholder="e.g. Semester 1" />
+            <Label className="text-xs">Number of Terms to Add</Label>
+            <Input name="numberOfTerms" type="number" required min="1" defaultValue={1} />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">Sequence (Order)</Label>
-            <Input name="sequence" type="number" required min="1" defaultValue={terms.length + 1} />
+            <Label className="text-xs">Required Credits (per term)</Label>
+            <Input
+              name="creditRequirement"
+              type="number"
+              min="0"
+              step="0.5"
+              defaultValue={20}
+              required
+            />
           </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Required Credits</Label>
-            <Input name="creditRequirement" type="number" min="0" step="0.5" defaultValue={20} />
-          </div>
-          <Button type="submit" variant="secondary" disabled={createTerm.isPending}>
-            <Plus className="mr-2 h-4 w-4" /> Add Term
+          <Button type="submit" variant="secondary" disabled={isGenerating}>
+            {isGenerating ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Plus className="mr-2 h-4 w-4" />
+            )}
+            {isGenerating ? 'Adding...' : 'Add Terms'}
           </Button>
         </form>
 
