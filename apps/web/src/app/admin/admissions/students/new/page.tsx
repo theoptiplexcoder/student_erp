@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Suspense } from 'react';
 import {
   Card,
@@ -89,6 +90,7 @@ function DirectAdmissionForm() {
         ...prev,
         departmentId: newDept.id,
         programId: '',
+        curriculumId: '',
         courseId: '',
         batchId: '',
         sectionId: '',
@@ -176,6 +178,7 @@ function DirectAdmissionForm() {
       setFormData((prev) => ({
         ...prev,
         programId: newProg.id,
+        curriculumId: '',
         courseId: '',
         batchId: '',
         sectionId: '',
@@ -262,6 +265,7 @@ function DirectAdmissionForm() {
   // Fetched data
   const [academicYears, setAcademicYears] = useState<any[]>([]);
   const [programs, setPrograms] = useState<any[]>([]);
+  const [curriculums, setCurriculums] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [sections, setSections] = useState<any[]>([]);
   const [batches, setBatches] = useState<any[]>([]);
@@ -327,6 +331,7 @@ function DirectAdmissionForm() {
     academicYearId: '',
     departmentId: '',
     programId: '',
+    curriculumId: '',
     courseId: '',
     sectionId: '',
     batchId: '',
@@ -401,8 +406,12 @@ function DirectAdmissionForm() {
         if (formData.programId) {
           const bRes = await apiClient.get(`/admin/batches?programId=${formData.programId}`);
           setBatches(bRes.data.data || []);
+
+          const currRes = await apiClient.get(`/admin/curriculums?programId=${formData.programId}`);
+          setCurriculums(currRes.data.data || []);
         } else {
           setBatches([]);
+          setCurriculums([]);
         }
       } catch (e) {
         console.error(e);
@@ -448,6 +457,7 @@ function DirectAdmissionForm() {
     const newErrors: Record<string, string> = {};
     if (step >= 1) {
       if (!formData.firstName) newErrors['firstName'] = 'First name is required';
+      if (!formData.dateOfBirth) newErrors['dateOfBirth'] = 'Date of birth is required';
       if (!formData.fatherEmail && !formData.motherEmail)
         newErrors['parentEmail'] = 'At least one parent email is required';
     }
@@ -456,10 +466,18 @@ function DirectAdmissionForm() {
       if (!formData.sectionId) newErrors['sectionId'] = 'Section is required';
     }
     if (step >= 3) {
-      const sum = formData.installments.reduce((acc, curr) => acc + Number(curr.amount), 0);
-      if (Math.abs(sum - formData.totalFee) > 0.01) {
-        newErrors['totalFee'] =
-          `Installments sum (${sum}) must equal Annual Fee (${formData.totalFee})`;
+      if (formData.totalFee > 0) {
+        const sum = formData.installments.reduce((acc, curr) => acc + Number(curr.amount), 0);
+        if (Math.abs(sum - formData.totalFee) > 0.01) {
+          newErrors['totalFee'] =
+            `Installments sum (${sum}) must equal Annual Fee (${formData.totalFee})`;
+        }
+        formData.installments.forEach((inst, index) => {
+          if (!inst.dueDate) {
+            newErrors[`installment_${index}_dueDate`] =
+              `Due date is required for installment ${index + 1}`;
+          }
+        });
       }
     }
     setErrors(newErrors);
@@ -507,6 +525,7 @@ function DirectAdmissionForm() {
 
         academicYearId: formData.academicYearId,
         programId: formData.programId || undefined,
+        curriculumId: formData.curriculumId || undefined,
         courseId: formData.courseId || undefined,
         batchId: formData.batchId || undefined,
         sectionId: formData.sectionId || undefined,
@@ -674,13 +693,19 @@ function DirectAdmissionForm() {
                       <Input name="lastName" value={formData.lastName} onChange={handleChange} />
                     </div>
                     <div className="space-y-2">
-                      <Label>Date of Birth</Label>
+                      <Label>
+                        Date of Birth <span className="text-red-500">*</span>
+                      </Label>
                       <Input
                         name="dateOfBirth"
                         type="date"
+                        required
                         value={formData.dateOfBirth}
                         onChange={handleChange}
                       />
+                      {errors['dateOfBirth'] && (
+                        <span className="text-xs text-red-500">{errors['dateOfBirth']}</span>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label>Gender</Label>
@@ -1159,6 +1184,7 @@ function DirectAdmissionForm() {
                             setFormData((p) => ({
                               ...p,
                               programId: '',
+                              curriculumId: '',
                               courseId: '',
                               batchId: '',
                               sectionId: '',
@@ -1228,6 +1254,7 @@ function DirectAdmissionForm() {
                             handleChange(e);
                             setFormData((p) => ({
                               ...p,
+                              curriculumId: '',
                               courseId: '',
                               batchId: '',
                               sectionId: '',
@@ -1333,6 +1360,50 @@ function DirectAdmissionForm() {
                             </form>
                           </DialogContent>
                         </Dialog>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Curriculum</Label>
+                      <div className="flex items-center gap-2">
+                        <select
+                          name="curriculumId"
+                          value={formData.curriculumId}
+                          onChange={handleChange}
+                          className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                        >
+                          <option value="">Select Curriculum (Optional)</option>
+                          {curriculums.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name} {c.versionNumber ? `(v${c.versionNumber})` : ''}
+                            </option>
+                          ))}
+                        </select>
+                        {formData.programId ? (
+                          <Link
+                            href={`/admin/academics/programs/${formData.programId}/curriculums/new`}
+                            passHref
+                          >
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="shrink-0"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="shrink-0"
+                            disabled
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
 
@@ -1529,28 +1600,38 @@ function DirectAdmissionForm() {
                       <div className="bg-muted/30 mt-4 space-y-3 rounded-lg border p-4">
                         <p className="text-sm font-medium">Installment Schedule</p>
                         {formData.installments.map((inst, idx) => (
-                          <div key={idx} className="flex items-center gap-4">
-                            <span className="text-muted-foreground text-sm font-semibold whitespace-nowrap">
-                              Inst {idx + 1}
-                            </span>
-                            <Input
-                              type="number"
-                              value={inst.amount}
-                              onChange={(e) => {
-                                const newInst = [...formData.installments];
-                                newInst[idx].amount = Number(e.target.value);
-                                setFormData((p) => ({ ...p, installments: newInst }));
-                              }}
-                            />
-                            <Input
-                              type="date"
-                              value={inst.dueDate}
-                              onChange={(e) => {
-                                const newInst = [...formData.installments];
-                                newInst[idx].dueDate = e.target.value;
-                                setFormData((p) => ({ ...p, installments: newInst }));
-                              }}
-                            />
+                          <div key={idx} className="flex flex-col gap-1">
+                            <div className="flex items-center gap-4">
+                              <span className="text-muted-foreground text-sm font-semibold whitespace-nowrap">
+                                Inst {idx + 1}
+                              </span>
+                              <Input
+                                type="number"
+                                value={inst.amount}
+                                onChange={(e) => {
+                                  const newInst = [...formData.installments];
+                                  newInst[idx].amount = Number(e.target.value);
+                                  setFormData((p) => ({ ...p, installments: newInst }));
+                                }}
+                              />
+                              <div className="w-full flex-1">
+                                <Input
+                                  type="date"
+                                  required
+                                  value={inst.dueDate}
+                                  onChange={(e) => {
+                                    const newInst = [...formData.installments];
+                                    newInst[idx].dueDate = e.target.value;
+                                    setFormData((p) => ({ ...p, installments: newInst }));
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            {errors[`installment_${idx}_dueDate`] && (
+                              <span className="text-right text-xs text-red-500">
+                                {errors[`installment_${idx}_dueDate`]}
+                              </span>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -1604,6 +1685,9 @@ function DirectAdmissionForm() {
                     </div>
                     <p>
                       <strong>Program ID:</strong> {formData.programId}
+                    </p>
+                    <p>
+                      <strong>Curriculum ID:</strong> {formData.curriculumId}
                     </p>
                     {institutionType === 'COLLEGE' && (
                       <p>

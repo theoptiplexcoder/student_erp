@@ -21,6 +21,7 @@ import {
 } from '@student-erp/ui';
 import { Plus, Eye, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { OverviewTab } from './overview-tab';
 import { DepartmentsTab } from './departments-tab';
 import { useAdminAllCurriculums } from '@/hooks/api/admin/useCurriculums';
 import { useAdminTerms } from '@/hooks/api/admin/useTerms';
@@ -28,7 +29,7 @@ import { useAdminCourses } from '@/hooks/api/admin/useCourses';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
 
 export default function AcademicsPage() {
-  const [activeTab, setActiveTab] = useState('departments');
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Queries
   const { data: curriculumsData, isLoading: isLoadingCurriculums } = useAdminAllCurriculums();
@@ -49,12 +50,17 @@ export default function AcademicsPage() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="departments">Departments & Programs</TabsTrigger>
           <TabsTrigger value="curriculums">Curriculums</TabsTrigger>
           <TabsTrigger value="terms">Terms</TabsTrigger>
           <TabsTrigger value="courses">Courses</TabsTrigger>
           <TabsTrigger value="sections">Sections</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="overview">
+          <OverviewTab />
+        </TabsContent>
 
         <TabsContent value="departments">
           <DepartmentsTab />
