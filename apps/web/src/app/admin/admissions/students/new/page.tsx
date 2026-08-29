@@ -79,6 +79,7 @@ function DirectAdmissionForm() {
 
   const handleCreateDept = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDeptSubmitting(true);
     try {
       const res = await apiClient.post('/admin/departments', deptFormData);
@@ -143,6 +144,7 @@ function DirectAdmissionForm() {
 
   const handleCreateAy = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsAySubmitting(true);
     try {
       const res = await apiClient.post('/admin/institution/academic-years', ayFormData);
@@ -161,6 +163,7 @@ function DirectAdmissionForm() {
 
   const handleCreateProg = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsProgSubmitting(true);
     try {
       const payload = {
@@ -195,6 +198,7 @@ function DirectAdmissionForm() {
 
   const handleCreateBatch = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsBatchSubmitting(true);
     try {
       const payload = {
@@ -219,6 +223,7 @@ function DirectAdmissionForm() {
 
   const handleCreateSection = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsSectionSubmitting(true);
     try {
       const payload = {
@@ -438,17 +443,17 @@ function DirectAdmissionForm() {
 
   const validateStep = (step: number) => {
     const newErrors: Record<string, string> = {};
-    if (step === 1) {
+    if (step >= 1) {
       if (!formData.firstName) newErrors['firstName'] = 'First name is required';
       if (!formData.fatherEmail && !formData.motherEmail)
         newErrors['parentEmail'] = 'At least one parent email is required';
     }
-    if (step === 2) {
+    if (step >= 2) {
       if (!formData.academicYearId) newErrors['academicYearId'] = 'Academic Year is required';
       if (!formData.batchId) newErrors['batchId'] = 'Batch is required';
       if (!formData.sectionId) newErrors['sectionId'] = 'Section is required';
     }
-    if (step === 3) {
+    if (step >= 3) {
       const sum = formData.installments.reduce((acc, curr) => acc + Number(curr.amount), 0);
       if (Math.abs(sum - formData.totalFee) > 0.01) {
         newErrors['totalFee'] =
