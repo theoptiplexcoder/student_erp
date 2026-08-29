@@ -41,7 +41,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   // we centralize database access by proxying to the NestJS API which securely resolves the user
   // role based on the provided auth token.
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+    const res = await fetch(`${process.env['NEXT_PUBLIC_API_URL']}/auth/me`, {
       headers: {
         Authorization: `Bearer ${session.access_token}`,
       },

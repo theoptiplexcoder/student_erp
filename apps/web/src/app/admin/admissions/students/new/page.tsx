@@ -368,6 +368,7 @@ function DirectAdmissionForm() {
       }, 1000); // 1s debounce
       return () => clearTimeout(timeoutId);
     }
+    return undefined;
   }, [formData, draftId, isSubmitting]);
 
   const [skillInput, setSkillInput] = useState('');

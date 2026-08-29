@@ -66,7 +66,7 @@ export default function SectionDetailPage({ params }: { params: { sectionId: str
 
   const { data: facultyData } = useAdminFaculty(1, 100);
   const { data: coursesData } = useAdminCourses(1, 100);
-  const { data: termsData } = useAcademicTerms(section?.academicYearId || '');
+  const { data: termsData } = useAcademicTerms(section?.academicYear?.id || '');
   const createAssignment = useAdminCreateCourseAssignment();
   const deleteAssignment = useAdminDeleteCourseAssignment();
 
@@ -76,6 +76,8 @@ export default function SectionDetailPage({ params }: { params: { sectionId: str
       alert('Please select an academic term.');
       return;
     }
+
+    if (!section) return;
 
     try {
       await createAssignment.mutateAsync({
@@ -414,7 +416,7 @@ export default function SectionDetailPage({ params }: { params: { sectionId: str
                     <div className="mt-1 flex flex-col gap-2">
                       {courses.map((course) => {
                         // Find the specific assignment ID to allow deletion
-                        const assignmentRecord = section.courseAssignments.find(
+                        const assignmentRecord = section.courseAssignments?.find(
                           (ca: any) => ca.facultyId === faculty.id && ca.courseId === course.id,
                         );
                         return (
