@@ -3,19 +3,26 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@student-erp/ui';
-import { Copy, Download, Loader2 } from 'lucide-react';
-import { useDuplicateCurriculum, useExportCurriculum } from '@/hooks/api/admin/useCurriculums';
+import { Copy, Download, Loader2, CheckCircle } from 'lucide-react';
+import {
+  useDuplicateCurriculum,
+  useExportCurriculum,
+  useActivateCurriculum,
+} from '@/hooks/api/admin/useCurriculums';
 
 export function CurriculumActions({
   curriculumId,
   programId,
+  isDraft,
 }: {
   curriculumId: string;
   programId: string;
+  isDraft?: boolean;
 }) {
   const router = useRouter();
   const duplicate = useDuplicateCurriculum();
   const exportCurriculum = useExportCurriculum();
+  const activateCurriculum = useActivateCurriculum();
 
   const [isDuplicating, setIsDuplicating] = useState(false);
 
@@ -61,8 +68,34 @@ export function CurriculumActions({
     }
   };
 
+  const handleActivate = async () => {
+    try {
+      await activateCurriculum.mutateAsync(curriculumId);
+      alert('Curriculum activated successfully!');
+      router.refresh();
+    } catch (err: any) {
+      const responseData = err?.response?.data;
+      if (responseData?.errors && Array.isArray(responseData.errors)) {
+        const errorMsgs = responseData.errors.map((e: any) => `- ${e.message}`).join('\n');
+        alert(`Validation failed:\n${errorMsgs}`);
+      } else {
+        alert(responseData?.message || 'Failed to activate curriculum');
+      }
+    }
+  };
+
   return (
     <div className="flex gap-2">
+      {isDraft && (
+        <Button size="sm" onClick={handleActivate} disabled={activateCurriculum.isPending}>
+          {activateCurriculum.isPending ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <CheckCircle className="mr-2 h-4 w-4" />
+          )}
+          Activate Curriculum
+        </Button>
+      )}
       <Button
         variant="outline"
         size="sm"

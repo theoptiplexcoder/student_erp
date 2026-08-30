@@ -13,10 +13,9 @@ import {
   TableRow,
   Badge,
 } from '@student-erp/ui';
-import { Plus, Eye, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Plus, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { CurriculumActions } from './curriculum-actions';
 
@@ -103,28 +102,7 @@ export default async function CurriculumPage({
         </div>
 
         <div className="flex gap-2">
-          <CurriculumActions curriculumId={curriculum.id} programId={programId} />
-          {isDraft && (
-            <form
-              action={async () => {
-                'use server';
-                const token = await getAuthToken();
-                await fetch(`${API_URL}/academic/curriculums/${curriculumId}/activate`, {
-                  method: 'POST',
-                  headers: {
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                  },
-                });
-                revalidatePath(
-                  `/admin/academics/programs/${programId}/curriculums/${curriculumId}`,
-                );
-              }}
-            >
-              <Button>
-                <CheckCircle className="mr-2 h-4 w-4" /> Activate Curriculum
-              </Button>
-            </form>
-          )}
+          <CurriculumActions curriculumId={curriculum.id} programId={programId} isDraft={isDraft} />
         </div>
       </div>
 
