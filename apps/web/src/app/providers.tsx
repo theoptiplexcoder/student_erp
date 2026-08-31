@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { configureStudentAuth, configureAdminAuth } from '@student-erp/sdk';
+import { configureStudentAuth, configureAdminAuth, configureFacultyAuth } from '@student-erp/sdk';
 import { createClient } from '@/lib/supabase/client';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -28,6 +28,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     };
     configureStudentAuth(getToken);
     configureAdminAuth(getToken);
+    configureFacultyAuth(getToken);
   }, []);
 
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
