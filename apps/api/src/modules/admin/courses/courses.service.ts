@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { Prisma } from '@prisma/client';
 
@@ -7,7 +7,14 @@ export class CoursesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: Prisma.CourseUncheckedCreateInput) {
-    return this.prisma.course.create({ data });
+    try {
+      return await this.prisma.course.create({ data });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new ConflictException(`A course with this code already exists.`);
+      }
+      throw error;
+    }
   }
 
   async findAll(

@@ -53,14 +53,24 @@ export async function updateSession(request: NextRequest) {
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
-    return NextResponse.redirect(url);
+    const response = NextResponse.redirect(url);
+    // Copy refreshed Supabase cookies to the redirect response
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      response.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    return response;
   }
 
   if (user && isAuthOnlyPath) {
     const url = request.nextUrl.clone();
     url.pathname = '/post-login';
     url.search = '';
-    return NextResponse.redirect(url);
+    const response = NextResponse.redirect(url);
+    // Copy refreshed Supabase cookies to the redirect response
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      response.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    return response;
   }
 
   return supabaseResponse;

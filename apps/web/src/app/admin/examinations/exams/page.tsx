@@ -151,11 +151,13 @@ export default function ExamsPage() {
                 }}
               >
                 <option value="">All Curriculums</option>
-                {curriculumsData?.map((c: any) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} (v{c.versionNumber})
-                  </option>
-                ))}
+                {curriculumsData
+                  ?.filter((c: any) => c.status === 'ACTIVE')
+                  .map((c: any) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} (v{c.versionNumber})
+                    </option>
+                  ))}
               </select>
 
               <select
