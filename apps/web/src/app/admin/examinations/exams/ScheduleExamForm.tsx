@@ -174,11 +174,26 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
                 onChange={(e) => setSelectedTermId(e.target.value)}
               >
                 <option value="">Select a term</option>
-                {termsData?.map((term: any) => (
-                  <option key={term.id} value={term.id}>
-                    {term.name}
-                  </option>
-                ))}
+                {termsData?.map((term: any) => {
+                  const curriculumName = term.curriculum?.name || term.program?.name || '';
+                  const deptName =
+                    term.curriculum?.program?.department?.name ||
+                    term.department?.name ||
+                    term.program?.department?.name ||
+                    '';
+                  const extras = [curriculumName, deptName].filter(Boolean).join(' - ');
+
+                  return (
+                    <option key={term.id} value={term.id}>
+                      {term.name}{' '}
+                      {extras
+                        ? `(${extras})`
+                        : term.academicYear?.name
+                          ? `(${term.academicYear.name})`
+                          : ''}
+                    </option>
+                  );
+                })}
               </select>
             )}
           </div>
