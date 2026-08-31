@@ -94,7 +94,7 @@ export async function requireRoleOrRedirect(...roles: string[]): Promise<AuthUse
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect('/api/auth/logout');
+    redirect('/login');
   }
 
   if (user.status !== 'ACTIVE') {
