@@ -3,7 +3,15 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from '@student-erp/ui';
 import { useFacultyDashboard } from '@student-erp/hooks';
-import { Loader2, Calendar, BookOpen, AlertCircle } from 'lucide-react';
+import {
+  Loader2,
+  Calendar,
+  BookOpen,
+  AlertCircle,
+  Users,
+  ClipboardCheck,
+  ArrowRight,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import { TodaysScheduleCalendar } from '@/components/faculty/dashboard/todays-schedule-calendar';
@@ -66,6 +74,63 @@ export default function FacultyDashboardPage() {
           </CardHeader>
           <CardContent>
             <TodaysScheduleCalendar classes={todaysClasses} />
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>My Classes & Sections</CardTitle>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/faculty/courses">
+                View All <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {courseAssignments.length === 0 ? (
+              <p className="text-muted-foreground text-sm">No courses assigned.</p>
+            ) : (
+              <div className="space-y-3">
+                {courseAssignments.map((assignment: any) => (
+                  <div
+                    key={assignment.id}
+                    className="hover:bg-muted/50 flex items-center justify-between rounded-lg border p-4 transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
+                        <BookOpen className="text-primary h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{assignment.course.name}</p>
+                        <p className="text-muted-foreground text-sm">
+                          {assignment.course.code} · Section {assignment.section.name}
+                          {assignment.term && ` · ${assignment.term.name}`}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="gap-1">
+                        <Users className="h-3 w-3" />
+                        {assignment.section.enrollments?.length ?? 0}
+                      </Badge>
+                      <Button asChild size="sm" variant="outline">
+                        <Link href={`/faculty/courses/${assignment.courseId}?tab=students`}>
+                          Roster
+                        </Link>
+                      </Button>
+                      <Button asChild size="sm" variant="outline">
+                        <Link
+                          href={`/faculty/timetable/session?courseId=${assignment.courseId}&sectionId=${assignment.sectionId}&date=${format(new Date(), 'yyyy-MM-dd')}`}
+                        >
+                          <ClipboardCheck className="mr-1 h-3 w-3" />
+                          Attendance
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 

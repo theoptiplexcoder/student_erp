@@ -42,6 +42,10 @@ export class FacultyDashboardService {
             include: {
               program: true,
               batch: true,
+              enrollments: {
+                where: { status: 'ACTIVE' },
+                select: { id: true },
+              },
             },
           },
           term: true,
