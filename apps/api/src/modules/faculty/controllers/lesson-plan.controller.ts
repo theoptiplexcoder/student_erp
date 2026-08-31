@@ -1,85 +1,61 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Body,
-  Param,
-  Req,
-  UseGuards,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, UseGuards, Query } from '@nestjs/common';
 import { LessonPlanService } from '../services/lesson-plan.service';
-import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { SupabaseAuthGuard } from '../../../guards/supabase-auth.guard';
+import { RolesGuard } from '../../../guards/roles.guard';
+import { CurrentUser } from '../../../decorators/current-user.decorator';
+import { Roles } from '../../../decorators/roles.decorator';
 import { CreateLessonPlanDto, UpdateLessonPlanDto } from '../dto/lesson-plan.dto';
-import { Request } from 'express';
 
 @Controller('faculty/courses')
-@UseGuards(JwtAuthGuard)
+@UseGuards(SupabaseAuthGuard, RolesGuard)
+@Roles('FACULTY')
 export class LessonPlanController {
   constructor(private readonly lessonPlanService: LessonPlanService) {}
 
   @Get(':courseId/lesson-plans')
   getLessonPlans(
-    @Req() req: Request,
+    @CurrentUser() user: any,
     @Param('courseId') courseId: string,
     @Query('termId') termId?: string,
   ) {
-    return this.lessonPlanService.getLessonPlans(
-      req.user['userId'],
-      req.user['institutionId'],
-      courseId,
-      termId,
-    );
+    return this.lessonPlanService.getLessonPlans(user.id, user.institutionId, courseId, termId);
   }
 
   @Post(':courseId/lesson-plans')
   createLessonPlan(
-    @Req() req: Request,
+    @CurrentUser() user: any,
     @Param('courseId') courseId: string,
     @Body() dto: CreateLessonPlanDto,
   ) {
-    return this.lessonPlanService.createLessonPlan(
-      req.user['userId'],
-      req.user['institutionId'],
-      courseId,
-      dto,
-    );
+    return this.lessonPlanService.createLessonPlan(user.id, user.institutionId, courseId, dto);
   }
 
   @Get(':courseId/lesson-plans/:id')
-  getLessonPlan(@Req() req: Request, @Param('courseId') courseId: string, @Param('id') id: string) {
-    return this.lessonPlanService.getLessonPlan(req.user['userId'], req.user['institutionId'], id);
+  getLessonPlan(
+    @CurrentUser() user: any,
+    @Param('courseId') courseId: string,
+    @Param('id') id: string,
+  ) {
+    return this.lessonPlanService.getLessonPlan(user.id, user.institutionId, id);
   }
 
   @Patch(':courseId/lesson-plans/:id')
   updateLessonPlan(
-    @Req() req: Request,
+    @CurrentUser() user: any,
     @Param('courseId') courseId: string,
     @Param('id') id: string,
     @Body() dto: UpdateLessonPlanDto,
   ) {
-    return this.lessonPlanService.updateLessonPlan(
-      req.user['userId'],
-      req.user['institutionId'],
-      id,
-      dto,
-    );
+    return this.lessonPlanService.updateLessonPlan(user.id, user.institutionId, id, dto);
   }
 
   @Post(':courseId/lesson-plans/:id/complete')
   completeLessonPlan(
-    @Req() req: Request,
+    @CurrentUser() user: any,
     @Param('courseId') courseId: string,
     @Param('id') id: string,
     @Body() dto: { actualCompletionDate: string; reflectionNotes?: string },
   ) {
-    return this.lessonPlanService.completeLessonPlan(
-      req.user['userId'],
-      req.user['institutionId'],
-      id,
-      dto,
-    );
+    return this.lessonPlanService.completeLessonPlan(user.id, user.institutionId, id, dto);
   }
 }

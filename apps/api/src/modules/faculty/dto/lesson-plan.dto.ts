@@ -11,10 +11,10 @@ import { TeachingMethod, LessonPlanStatus } from '@prisma/client';
 
 export class CreateLessonPlanDto {
   @IsUUID()
-  termId: string;
+  termId!: string;
 
   @IsString()
-  title: string;
+  title!: string;
 
   @IsOptional()
   @IsString()
@@ -29,7 +29,7 @@ export class CreateLessonPlanDto {
   chapterId?: string;
 
   @IsDateString()
-  plannedDate: string;
+  plannedDate!: string;
 
   @IsOptional()
   @IsDateString()
@@ -40,7 +40,7 @@ export class CreateLessonPlanDto {
   durationMinutes?: number;
 
   @IsEnum(TeachingMethod)
-  teachingMethod: TeachingMethod;
+  teachingMethod!: TeachingMethod;
 
   @IsOptional()
   @IsEnum(LessonPlanStatus)
