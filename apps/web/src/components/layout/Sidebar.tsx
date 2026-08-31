@@ -94,10 +94,6 @@ const sidebarGroups = [
       { name: 'Settings', icon: Settings, href: '#' },
     ],
   },
-  {
-    title: 'Reports',
-    items: [{ name: 'Reports', icon: FileText, href: '#' }],
-  },
 ];
 
 export function Sidebar({ collapsed }: { collapsed: boolean }) {

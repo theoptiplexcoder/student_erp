@@ -12,6 +12,14 @@ import { CreateCurriculumTermDto, UpdateCurriculumTermDto } from '../dto/curricu
 export class CurriculumTermsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findAllByCurriculum(institutionId: string, curriculumId?: string) {
+    if (!curriculumId) return [];
+    return this.prisma.curriculumTerm.findMany({
+      where: { institutionId, curriculumId },
+      orderBy: { sequence: 'asc' },
+    });
+  }
+
   async getSections(institutionId: string, id: string) {
     const term = await this.prisma.curriculumTerm.findFirst({
       where: { id, institutionId },

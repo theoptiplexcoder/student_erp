@@ -71,9 +71,24 @@ export const useAdminExams = (
   programId = '',
   curriculumId = '',
   termId = '',
+  curriculumTermId = '',
+  startDate = '',
+  endDate = '',
 ) => {
   return useQuery({
-    queryKey: ['admin', 'exams', page, pageSize, search, programId, curriculumId, termId],
+    queryKey: [
+      'admin',
+      'exams',
+      page,
+      pageSize,
+      search,
+      programId,
+      curriculumId,
+      termId,
+      curriculumTermId,
+      startDate,
+      endDate,
+    ],
     queryFn: async () => {
       const response = await apiClient.get<ExamsResponse>('/admin/examinations', {
         params: {
@@ -83,6 +98,9 @@ export const useAdminExams = (
           programId: programId || undefined,
           curriculumId: curriculumId || undefined,
           termId: termId || undefined,
+          curriculumTermId: curriculumTermId || undefined,
+          startDate: startDate || undefined,
+          endDate: endDate || undefined,
         },
       });
       return response.data;

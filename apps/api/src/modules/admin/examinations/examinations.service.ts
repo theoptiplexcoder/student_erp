@@ -243,6 +243,9 @@ export class ExaminationsService {
     programId?: string,
     curriculumId?: string,
     termId?: string,
+    curriculumTermId?: string,
+    startDate?: string,
+    endDate?: string,
   ) {
     const skip = (page - 1) * pageSize;
     const where: Prisma.ExamWhereInput = {};
@@ -262,6 +265,28 @@ export class ExaminationsService {
       where.termId = termId;
     }
 
+    if (curriculumTermId) {
+      where.examCourses = {
+        some: {
+          course: {
+            curriculumCourses: {
+              some: {
+                curriculumTermId,
+              },
+            },
+          },
+        },
+      };
+    }
+
+    if (startDate) {
+      where.startDate = { gte: new Date(startDate) };
+    }
+
+    if (endDate) {
+      where.endDate = { lte: new Date(endDate) };
+    }
+
     if (programId || curriculumId) {
       const courseFilter: any = {};
       if (programId) courseFilter.programId = programId;
@@ -275,11 +300,20 @@ export class ExaminationsService {
         };
       }
 
-      where.examCourses = {
-        some: {
-          course: courseFilter,
-        },
-      };
+      // Merge with existing examCourses filter if curriculumTermId is also set
+      if (where.examCourses) {
+        where.examCourses = {
+          some: {
+            AND: [where.examCourses as any, { course: courseFilter }],
+          },
+        };
+      } else {
+        where.examCourses = {
+          some: {
+            course: courseFilter,
+          },
+        };
+      }
     }
 
     const [total, data] = await Promise.all([

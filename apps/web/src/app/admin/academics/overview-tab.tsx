@@ -125,10 +125,8 @@ const CurriculumItem = ({
             <div className="text-muted-foreground ml-6 flex items-center gap-2 p-2 text-sm">
               <Loader2 className="h-4 w-4 animate-spin" /> Loading terms...
             </div>
-          ) : terms.length === 0 ? (
-            <p className="text-muted-foreground ml-6 p-2 text-sm">No terms found.</p>
           ) : (
-            terms.map((t: any) => <TermItem key={t.id} term={t} />)
+            terms.length > 0 && terms.map((t: any) => <TermItem key={t.id} term={t} />)
           )}
         </div>
       )}

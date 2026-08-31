@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { CurriculumTermsService } from '../services/curriculum-terms.service';
 import { SupabaseAuthGuard } from '../../../guards/supabase-auth.guard';
 import { RolesGuard } from '../../../guards/roles.guard';
@@ -9,6 +19,11 @@ import { CreateCurriculumTermDto, UpdateCurriculumTermDto } from '../dto/curricu
 @UseGuards(SupabaseAuthGuard, RolesGuard)
 export class CurriculumTermsController {
   constructor(private readonly curriculumTermsService: CurriculumTermsService) {}
+
+  @Get()
+  findAllByCurriculum(@CurrentUser() user: any, @Query('curriculumId') curriculumId?: string) {
+    return this.curriculumTermsService.findAllByCurriculum(user.institutionId, curriculumId);
+  }
 
   @Get(':id/sections')
   getSections(@CurrentUser() user: any, @Param('id') id: string) {
