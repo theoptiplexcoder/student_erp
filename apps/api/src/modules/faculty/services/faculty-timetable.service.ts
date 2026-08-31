@@ -17,7 +17,6 @@ export class FacultyTimetableService {
       include: {
         course: true,
         section: true,
-        room: true,
         term: true,
       },
       orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],

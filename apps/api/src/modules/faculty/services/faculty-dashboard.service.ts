@@ -62,7 +62,6 @@ export class FacultyDashboardService {
         include: {
           course: true,
           section: true,
-          room: true,
         },
         orderBy: { startTime: 'asc' },
       }),
