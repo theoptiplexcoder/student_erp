@@ -17,11 +17,19 @@ import {
   Badge,
   Input,
 } from '@student-erp/ui';
-import { Loader2, Search, Calendar as CalendarIcon, FileText, Plus, Trash2 } from 'lucide-react';
+import {
+  Loader2,
+  Search,
+  Calendar as CalendarIcon,
+  FileText,
+  Plus,
+  Trash2,
+  Clock,
+} from 'lucide-react';
 import { useAdminExams, useDeleteExam } from '@/hooks/api/admin/useExams';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
 import { useAdminCurriculumsByProgram } from '@/hooks/api/admin/useCurriculums';
-import { useAdminTerms } from '@/hooks/api/admin/useTerms';
+import { useCurriculumTerms } from '@/hooks/api/admin/useTerms';
 import { format } from 'date-fns';
 import { ScheduleExamForm } from './ScheduleExamForm';
 
@@ -32,18 +40,30 @@ export default function ExamsPage() {
 
   const [programId, setProgramId] = useState('');
   const [curriculumId, setCurriculumId] = useState('');
-  const [termId, setTermId] = useState('');
+  const [curriculumTermId, setCurriculumTermId] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   const {
     data: examsData,
     isLoading,
     isError,
-  } = useAdminExams(page, 50, search, programId, curriculumId, termId);
+  } = useAdminExams(
+    page,
+    50,
+    search,
+    programId,
+    curriculumId,
+    '',
+    curriculumTermId,
+    startDate,
+    endDate,
+  );
   const deleteMutation = useDeleteExam();
 
   const { data: programsData } = useAdminPrograms(1, 100);
   const { data: curriculumsData } = useAdminCurriculumsByProgram(programId);
-  const { data: termsData } = useAdminTerms(curriculumId || undefined);
+  const { data: curriculumTermsData } = useCurriculumTerms(curriculumId || undefined);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -108,6 +128,7 @@ export default function ExamsPage() {
                 onChange={(e) => {
                   setProgramId(e.target.value);
                   setCurriculumId('');
+                  setCurriculumTermId('');
                   setPage(1);
                 }}
               >
@@ -125,7 +146,7 @@ export default function ExamsPage() {
                 disabled={!programId}
                 onChange={(e) => {
                   setCurriculumId(e.target.value);
-                  setTermId('');
+                  setCurriculumTermId('');
                   setPage(1);
                 }}
               >
@@ -138,34 +159,44 @@ export default function ExamsPage() {
               </select>
 
               <select
-                className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full max-w-[200px] items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
-                value={termId}
+                className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full max-w-[200px] items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                value={curriculumTermId}
+                disabled={!curriculumId}
                 onChange={(e) => {
-                  setTermId(e.target.value);
+                  setCurriculumTermId(e.target.value);
                   setPage(1);
                 }}
               >
                 <option value="">All Terms</option>
-                {termsData?.map((term: any) => {
-                  const curriculumName = term.curriculum?.name || term.program?.name || '';
-                  const deptName =
-                    term.curriculum?.program?.department?.name ||
-                    term.department?.name ||
-                    term.program?.department?.name ||
-                    '';
-                  const extras = [curriculumName, deptName].filter(Boolean).join(' - ');
-                  return (
-                    <option key={term.id} value={term.id}>
-                      {term.name}{' '}
-                      {extras
-                        ? `(${extras})`
-                        : term.academicYear?.name
-                          ? `(${term.academicYear.name})`
-                          : ''}
-                    </option>
-                  );
-                })}
+                {curriculumTermsData?.map((term: any) => (
+                  <option key={term.id} value={term.id}>
+                    {term.name}
+                  </option>
+                ))}
               </select>
+
+              <div className="flex items-center gap-2">
+                <CalendarIcon className="text-muted-foreground h-4 w-4" />
+                <Input
+                  type="date"
+                  className="w-full max-w-[170px]"
+                  value={startDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    setPage(1);
+                  }}
+                />
+                <span className="text-muted-foreground text-sm">to</span>
+                <Input
+                  type="date"
+                  className="w-full max-w-[170px]"
+                  value={endDate}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    setPage(1);
+                  }}
+                />
+              </div>
             </div>
           </div>
         </CardHeader>
