@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
-    "@supabase/supabase-js": "^2.112.2"
+    "@supabase/supabase-js": "^2.112.2",
+    "ts-morph": "^28.0.0"
   },
   "devDependencies": {
     "prisma": "^6.19.3",

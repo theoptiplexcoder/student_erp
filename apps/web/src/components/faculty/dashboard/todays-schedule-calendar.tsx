@@ -50,7 +50,7 @@ export function TodaysScheduleCalendar({ classes }: TodaysScheduleCalendarProps)
   minHour = Math.max(0, minHour - 1);
   maxHour = Math.min(24, maxHour + 1);
 
-  const timeSlots = [];
+  const timeSlots: number[] = [];
   for (let h = minHour; h < maxHour; h++) {
     timeSlots.push(h);
   }

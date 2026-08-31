@@ -23,7 +23,17 @@ import {
   useFacultyAssignments,
   useCreateFacultyAssignment,
 } from '@student-erp/hooks';
-import { Loader2, ArrowLeft, Users, FileText, Calendar, Upload, Plus, Trash2 } from 'lucide-react';
+import {
+  Loader2,
+  ArrowLeft,
+  Users,
+  FileText,
+  Calendar,
+  Upload,
+  Plus,
+  Trash2,
+  ArrowRight,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';

@@ -28,7 +28,6 @@ const navigation = [
   { name: 'Students', href: '/admin/students', icon: Users },
   { name: 'Academics', href: '/admin/academics', icon: BookOpen },
   { name: 'Faculty', href: '/admin/faculty', icon: Users },
-  { name: 'Examinations', href: '/admin/examinations', icon: FileText },
   {
     name: 'Timetable',
     href: '/admin/timetable',

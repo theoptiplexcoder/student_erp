@@ -8,6 +8,7 @@ import {
   CardTitle,
   Badge,
   Button,
+  Input,
   Textarea,
   Dialog,
   DialogContent,
@@ -163,7 +164,7 @@ export default function LessonPlanDetailPage({
                     <Input
                       type="date"
                       value={completeForm.actualCompletionDate}
-                      onChange={(e) =>
+                      onChange={(e: any) =>
                         setCompleteForm({ ...completeForm, actualCompletionDate: e.target.value })
                       }
                     />
