@@ -37,11 +37,20 @@ export class CoursesController {
     @Query('search') search?: string,
     @Query('programId') programId?: string,
     @Query('termId') termId?: string,
+    @Query('curriculumId') curriculumId?: string,
   ) {
     const { institutionId } = req.user;
     const pageNum = page ? parseInt(page, 10) : 1;
     const sizeNum = pageSize ? parseInt(pageSize, 10) : 50;
-    return this.coursesService.findAll(institutionId, pageNum, sizeNum, search, programId, termId);
+    return this.coursesService.findAll(
+      institutionId,
+      pageNum,
+      sizeNum,
+      search,
+      programId,
+      termId,
+      curriculumId,
+    );
   }
 
   @Get(':id')

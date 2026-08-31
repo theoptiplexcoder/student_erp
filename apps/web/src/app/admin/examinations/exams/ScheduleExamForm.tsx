@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAdminTerms } from '@/hooks/api/admin/useTerms';
 import { useAdminCourses } from '@/hooks/api/admin/useCourses';
 import { useAdminRooms } from '@/hooks/api/admin/useRooms';
+import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
+import { useAdminCurriculumsByProgram } from '@/hooks/api/admin/useCurriculums';
 import { useScheduleExam } from '@/hooks/api/admin/useExams';
 import {
   Card,
@@ -29,16 +31,21 @@ const EXAM_TYPES = [
 ];
 
 export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
+  const [programId, setProgramId] = useState<string>('');
+  const [curriculumId, setCurriculumId] = useState<string>('');
   const [selectedTermId, setSelectedTermId] = useState<string>('');
   const [examType, setExamType] = useState<string>('');
   const [examName, setExamName] = useState<string>('');
 
-  const { data: termsData, isLoading: isLoadingTerms } = useAdminTerms();
+  const { data: programsData } = useAdminPrograms(1, 100);
+  const { data: curriculumsData } = useAdminCurriculumsByProgram(programId);
+  const { data: termsData, isLoading: isLoadingTerms } = useAdminTerms(curriculumId || undefined);
   const { data: coursesData, isLoading: isLoadingCourses } = useAdminCourses(
     1,
     500,
     '',
     selectedTermId,
+    curriculumId,
   );
   const { data: roomsData, isLoading: isLoadingRooms } = useAdminRooms(1, 500);
 
@@ -161,6 +168,50 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
         <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <div className="space-y-2">
             <Label>
+              Program <span className="text-destructive">*</span>
+            </Label>
+            <select
+              className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              value={programId}
+              onChange={(e) => {
+                setProgramId(e.target.value);
+                setCurriculumId('');
+                setSelectedTermId('');
+              }}
+            >
+              <option value="">Select a program</option>
+              {programsData?.data?.map((p: any) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>
+              Curriculum <span className="text-destructive">*</span>
+            </Label>
+            <select
+              className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              value={curriculumId}
+              disabled={!programId}
+              onChange={(e) => {
+                setCurriculumId(e.target.value);
+                setSelectedTermId('');
+              }}
+            >
+              <option value="">Select a curriculum</option>
+              {curriculumsData?.map((c: any) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} (v{c.versionNumber})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>
               Academic Term <span className="text-destructive">*</span>
             </Label>
             {isLoadingTerms ? (
@@ -171,29 +222,15 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
               <select
                 className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                 value={selectedTermId}
+                disabled={!curriculumId}
                 onChange={(e) => setSelectedTermId(e.target.value)}
               >
                 <option value="">Select a term</option>
-                {termsData?.map((term: any) => {
-                  const curriculumName = term.curriculum?.name || term.program?.name || '';
-                  const deptName =
-                    term.curriculum?.program?.department?.name ||
-                    term.department?.name ||
-                    term.program?.department?.name ||
-                    '';
-                  const extras = [curriculumName, deptName].filter(Boolean).join(' - ');
-
-                  return (
-                    <option key={term.id} value={term.id}>
-                      {term.name}{' '}
-                      {extras
-                        ? `(${extras})`
-                        : term.academicYear?.name
-                          ? `(${term.academicYear.name})`
-                          : ''}
-                    </option>
-                  );
-                })}
+                {termsData?.map((term: any) => (
+                  <option key={term.id} value={term.id}>
+                    {term.name} {term.academicYear?.name ? `(${term.academicYear.name})` : ''}
+                  </option>
+                ))}
               </select>
             )}
           </div>

@@ -34,12 +34,24 @@ export interface CoursesResponse {
   };
 }
 
-export const useAdminCourses = (page = 1, pageSize = 50, search = '', termId = '') => {
+export const useAdminCourses = (
+  page = 1,
+  pageSize = 50,
+  search = '',
+  termId = '',
+  curriculumId = '',
+) => {
   return useQuery({
-    queryKey: ['admin', 'courses', page, pageSize, search, termId],
+    queryKey: ['admin', 'courses', page, pageSize, search, termId, curriculumId],
     queryFn: async () => {
       const response = await apiClient.get<CoursesResponse>('/admin/courses', {
-        params: { page, pageSize, search, termId: termId || undefined },
+        params: {
+          page,
+          pageSize,
+          search,
+          termId: termId || undefined,
+          curriculumId: curriculumId || undefined,
+        },
       });
       return response.data;
     },
