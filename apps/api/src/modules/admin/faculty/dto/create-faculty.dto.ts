@@ -11,6 +11,9 @@ export class CreateFacultyDto {
   @IsEmail()
   email!: string;
 
+  @IsString()
+  password!: string;
+
   @IsOptional()
   @IsString()
   phone?: string;

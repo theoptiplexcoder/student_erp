@@ -1,13 +1,21 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { Prisma } from '@prisma/client';
 import { CreateFacultyDto } from './dto/create-faculty.dto';
 import { UpdateFacultyDto } from './dto/update-faculty.dto';
 import { CreateCourseAssignmentDto } from './dto/create-course-assignment.dto';
+import { createClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class FacultyService {
-  constructor(private readonly prisma: PrismaService) {}
+  private supabase;
+
+  constructor(private readonly prisma: PrismaService) {
+    this.supabase = createClient(
+      process.env['SUPABASE_URL']!,
+      process.env['SUPABASE_SERVICE_ROLE_KEY']!,
+    );
+  }
 
   async getFaculty(institutionId: string, page = 1, pageSize = 50, search?: string) {
     const skip = (page - 1) * pageSize;
@@ -72,9 +80,27 @@ export class FacultyService {
       });
 
       if (!user) {
+        // Create user in Supabase
+        const { data: authData, error: authError } = await this.supabase.auth.admin.createUser({
+          email: data.email,
+          password: data.password,
+          email_confirm: true,
+          user_metadata: {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            role: 'FACULTY',
+            institutionId,
+          },
+        });
+
+        if (authError) {
+          throw new BadRequestException(`Failed to create auth user: ${authError.message}`);
+        }
+
         user = await tx.user.create({
           data: {
             institutionId,
+            authUserId: authData.user.id,
             email: data.email,
             firstName: data.firstName,
             lastName: data.lastName,
