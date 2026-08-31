@@ -18,6 +18,7 @@ export class CoursesService {
     programId?: string,
     termId?: string,
     curriculumId?: string,
+    curriculumTermId?: string,
   ) {
     const skip = (page - 1) * pageSize;
     const where: Prisma.CourseWhereInput = {};
@@ -36,6 +37,14 @@ export class CoursesService {
           curriculumTerm: {
             curriculumId,
           },
+        },
+      };
+    }
+
+    if (curriculumTermId) {
+      where.curriculumCourses = {
+        some: {
+          curriculumTermId,
         },
       };
     }
@@ -76,6 +85,11 @@ export class CoursesService {
                   },
                 },
               },
+            },
+          },
+          courseOfferings: {
+            include: {
+              term: true,
             },
           },
         },
