@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useCurriculumTerms } from '@/hooks/api/admin/useTerms';
+import { useCurriculumTerms, useAdminTerms } from '@/hooks/api/admin/useTerms';
 import { useAdminCourses } from '@/hooks/api/admin/useCourses';
 import { useAdminRooms } from '@/hooks/api/admin/useRooms';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
@@ -34,11 +34,13 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
   const [programId, setProgramId] = useState<string>('');
   const [curriculumId, setCurriculumId] = useState<string>('');
   const [selectedCurriculumTermId, setSelectedCurriculumTermId] = useState<string>('');
+  const [selectedAcademicTermId, setSelectedAcademicTermId] = useState<string>('');
   const [examType, setExamType] = useState<string>('');
   const [examName, setExamName] = useState<string>('');
 
   const { data: programsData } = useAdminPrograms(1, 100);
   const { data: curriculumsData } = useAdminCurriculumsByProgram(programId);
+  const { data: academicTermsData, isLoading: isLoadingAcademicTerms } = useAdminTerms();
   const { data: curriculumTermsData, isLoading: isLoadingTerms } = useCurriculumTerms(
     curriculumId || undefined,
   );
@@ -96,33 +98,16 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
   };
 
   const handleSave = async () => {
-    if (!selectedCurriculumTermId || !examType) {
-      alert('Please select a curriculum term and exam type.');
+    if (!selectedCurriculumTermId || !selectedAcademicTermId || !examType) {
+      alert('Please select a curriculum term, academic term, and exam type.');
       return;
     }
 
-    // Resolve AcademicTerm from course offerings
-    const selectedTerm = curriculumTermsData?.find((t: any) => t.id === selectedCurriculumTermId);
+    const selectedTerm = academicTermsData?.find((t: any) => t.id === selectedAcademicTermId);
     if (!selectedTerm) return;
 
-    // Find AcademicTerm from the first course's offerings
-    let academicTermId = '';
-    let academicYearId = '';
-    for (const course of coursesData?.data || []) {
-      const offering = course.courseOfferings?.[0];
-      if (offering?.term) {
-        academicTermId = offering.term.id;
-        academicYearId = offering.term.academicYearId || '';
-        break;
-      }
-    }
-
-    if (!academicTermId) {
-      alert(
-        'No academic term found for the selected courses. Please ensure courses have active offerings.',
-      );
-      return;
-    }
+    const academicTermId = selectedTerm.id;
+    const academicYearId = selectedTerm.academicYearId;
 
     const coursesToSchedule = [];
     for (const course of coursesData?.data || []) {
@@ -188,7 +173,7 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
             Define the basic properties for this examination schedule.
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-4">
           <div className="space-y-2">
             <Label>
               Program <span className="text-destructive">*</span>
@@ -252,6 +237,30 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
                 {curriculumTermsData?.map((term: any) => (
                   <option key={term.id} value={term.id}>
                     {term.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label>
+              Academic Term <span className="text-destructive">*</span>
+            </Label>
+            {isLoadingAcademicTerms ? (
+              <div className="flex h-10 items-center">
+                <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
+              </div>
+            ) : (
+              <select
+                className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                value={selectedAcademicTermId}
+                onChange={(e) => setSelectedAcademicTermId(e.target.value)}
+              >
+                <option value="">Select academic term</option>
+                {academicTermsData?.map((term: any) => (
+                  <option key={term.id} value={term.id}>
+                    {term.name} {term.academicYear?.name ? `(${term.academicYear.name})` : ''}
                   </option>
                 ))}
               </select>
