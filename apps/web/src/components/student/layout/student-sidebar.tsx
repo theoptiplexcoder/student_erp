@@ -6,14 +6,11 @@ import { usePathname } from 'next/navigation';
 import {
   BookOpen,
   CalendarDays,
-  FileText,
   GraduationCap,
   LayoutDashboard,
-  Library,
   MessageSquare,
   AlertTriangle,
   User,
-  Users,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
@@ -29,7 +26,6 @@ export const sidebarNavItems = [
   { title: 'Calendar', href: '/student/calendar', icon: CalendarDays },
   { title: 'Certificates', href: '/student/certificates', icon: GraduationCap },
   { title: 'Feedback', href: '/student/feedback', icon: MessageSquare },
-  { title: 'Clubs', href: '/student/clubs', icon: Users },
   { title: 'Grievance', href: '/student/grievance', icon: AlertTriangle },
 ];
 
