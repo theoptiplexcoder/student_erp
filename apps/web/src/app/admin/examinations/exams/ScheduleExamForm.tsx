@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useCurriculumTerms, useAdminTerms } from '@/hooks/api/admin/useTerms';
 import { useAdminCourses } from '@/hooks/api/admin/useCourses';
 import { useAdminRooms } from '@/hooks/api/admin/useRooms';
@@ -38,8 +39,9 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
   const [examType, setExamType] = useState<string>('');
   const [examName, setExamName] = useState<string>('');
 
-  const { data: programsData } = useAdminPrograms(1, 100);
-  const { data: curriculumsData } = useAdminCurriculumsByProgram(programId);
+  const { data: programsData, isLoading: isLoadingPrograms } = useAdminPrograms(1, 100);
+  const { data: curriculumsData, isLoading: isLoadingCurriculums } =
+    useAdminCurriculumsByProgram(programId);
   const { data: academicTermsData, isLoading: isLoadingAcademicTerms } = useAdminTerms();
   const { data: curriculumTermsData, isLoading: isLoadingTerms } = useCurriculumTerms(
     curriculumId || undefined,
@@ -178,44 +180,76 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
             <Label>
               Program <span className="text-destructive">*</span>
             </Label>
-            <select
-              className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-              value={programId}
-              onChange={(e) => {
-                setProgramId(e.target.value);
-                setCurriculumId('');
-                setSelectedCurriculumTermId('');
-              }}
-            >
-              <option value="">Select a program</option>
-              {programsData?.data?.map((p: any) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+            {isLoadingPrograms ? (
+              <div className="flex h-10 items-center">
+                <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
+              </div>
+            ) : programsData?.data && programsData.data.length === 0 ? (
+              <div className="text-muted-foreground space-y-1 text-sm">
+                <p>No programs found.</p>
+                <Link
+                  href="/admin/academics"
+                  className="text-primary underline-offset-4 hover:underline"
+                >
+                  Create Program →
+                </Link>
+              </div>
+            ) : (
+              <select
+                className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                value={programId}
+                onChange={(e) => {
+                  setProgramId(e.target.value);
+                  setCurriculumId('');
+                  setSelectedCurriculumTermId('');
+                }}
+              >
+                <option value="">Select a program</option>
+                {programsData?.data?.map((p: any) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label>
               Curriculum <span className="text-destructive">*</span>
             </Label>
-            <select
-              className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-              value={curriculumId}
-              disabled={!programId}
-              onChange={(e) => {
-                setCurriculumId(e.target.value);
-                setSelectedCurriculumTermId('');
-              }}
-            >
-              <option value="">Select a curriculum</option>
-              {curriculumsData?.map((c: any) => (
-                <option key={c.id} value={c.id}>
-                  {c.name} (v{c.versionNumber})
-                </option>
-              ))}
-            </select>
+            {isLoadingCurriculums ? (
+              <div className="flex h-10 items-center">
+                <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
+              </div>
+            ) : programId && curriculumsData && curriculumsData.length === 0 ? (
+              <div className="text-muted-foreground space-y-1 text-sm">
+                <p>No curriculums found for this program.</p>
+                <Link
+                  href={`/admin/academics/programs/${programId}`}
+                  className="text-primary underline-offset-4 hover:underline"
+                >
+                  Create Curriculum →
+                </Link>
+              </div>
+            ) : (
+              <select
+                className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                value={curriculumId}
+                disabled={!programId}
+                onChange={(e) => {
+                  setCurriculumId(e.target.value);
+                  setSelectedCurriculumTermId('');
+                }}
+              >
+                <option value="">Select a curriculum</option>
+                {curriculumsData?.map((c: any) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} (v{c.versionNumber})
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -225,6 +259,16 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
             {isLoadingTerms ? (
               <div className="flex h-10 items-center">
                 <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
+              </div>
+            ) : curriculumId && curriculumTermsData && curriculumTermsData.length === 0 ? (
+              <div className="text-muted-foreground space-y-1 text-sm">
+                <p>No curriculum terms found.</p>
+                <Link
+                  href={`/admin/academics/programs/${programId}/curriculums/${curriculumId}`}
+                  className="text-primary underline-offset-4 hover:underline"
+                >
+                  Create Curriculum Term →
+                </Link>
               </div>
             ) : (
               <select
@@ -250,6 +294,16 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
             {isLoadingAcademicTerms ? (
               <div className="flex h-10 items-center">
                 <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
+              </div>
+            ) : academicTermsData && academicTermsData.length === 0 ? (
+              <div className="text-muted-foreground space-y-1 text-sm">
+                <p>No academic terms found.</p>
+                <Link
+                  href="/admin/administration/institution/academic-year"
+                  className="text-primary underline-offset-4 hover:underline"
+                >
+                  Create Academic Year →
+                </Link>
               </div>
             ) : (
               <select
@@ -380,6 +434,14 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
                                 </option>
                               ))}
                             </select>
+                            {roomsData?.data && roomsData.data.length === 0 && (
+                              <Link
+                                href="/admin/administration/rooms"
+                                className="text-primary mt-1 block text-xs underline-offset-4 hover:underline"
+                              >
+                                Add rooms →
+                              </Link>
+                            )}
                           </TableCell>
                         </TableRow>
                       );
