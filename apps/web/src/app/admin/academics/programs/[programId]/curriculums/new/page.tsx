@@ -194,7 +194,8 @@ function Step2Terms({
 
   const handleAddTerm = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
     const numberOfTerms = parseInt(formData.get('numberOfTerms') as string, 10);
     const creditRequirement = parseFloat(formData.get('creditRequirement') as string) || 0;
 
@@ -214,7 +215,7 @@ function Step2Terms({
         };
         await createTerm.mutateAsync(data);
       }
-      e.currentTarget.reset();
+      form.reset();
     } finally {
       setIsGenerating(false);
     }
@@ -361,7 +362,8 @@ function TermCoursesManager({ curriculumId, term }: { curriculumId: string; term
   const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMsg(null);
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
 
     try {
       const payload: any = {
@@ -405,7 +407,7 @@ function TermCoursesManager({ curriculumId, term }: { curriculumId: string; term
       }
 
       await createCourse.mutateAsync({ data: payload, curriculumId });
-      e.currentTarget.reset();
+      form?.reset();
       setFiles([]);
     } catch (err: any) {
       setErrorMsg(err?.response?.data?.message || err.message || 'Failed to add course');
@@ -525,7 +527,8 @@ function ElectiveGroupsManager({ curriculumId, term }: { curriculumId: string; t
 
   const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
     await createGroup.mutateAsync({
       curriculumId,
       data: {
@@ -535,7 +538,7 @@ function ElectiveGroupsManager({ curriculumId, term }: { curriculumId: string; t
         requiredCourses: parseInt(formData.get('requiredCourses') as string, 10) || 0,
       },
     });
-    e.currentTarget.reset();
+    form.reset();
   };
 
   return (

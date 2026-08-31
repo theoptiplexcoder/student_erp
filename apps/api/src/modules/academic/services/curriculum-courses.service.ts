@@ -82,14 +82,22 @@ export class CurriculumCoursesService {
         if (!dto.newCourse) {
           throw new BadRequestException('Either courseId or newCourse must be provided');
         }
-        const created = await tx.course.create({
-          data: {
-            ...dto.newCourse,
-            institutionId,
-            status: 'ACTIVE',
-          },
+        // Find-or-create: if a course with this code already exists, reuse it
+        const existingCourse = await tx.course.findFirst({
+          where: { institutionId, code: dto.newCourse.code },
         });
-        targetCourseId = created.id;
+        if (existingCourse) {
+          targetCourseId = existingCourse.id;
+        } else {
+          const created = await tx.course.create({
+            data: {
+              ...dto.newCourse,
+              institutionId,
+              status: 'ACTIVE',
+            },
+          });
+          targetCourseId = created.id;
+        }
       } else {
         const existing = await tx.course.findFirst({
           where: { id: targetCourseId, institutionId },
