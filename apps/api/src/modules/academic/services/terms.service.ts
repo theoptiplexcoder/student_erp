@@ -15,9 +15,39 @@ export class TermsService {
     });
   }
 
-  async findAll(institutionId: string) {
+  async findAll(institutionId: string, curriculumId?: string) {
+    if (!curriculumId) {
+      return this.prisma.academicTerm.findMany({
+        where: { institutionId },
+        include: { academicYear: true },
+        orderBy: { startDate: 'desc' },
+      });
+    }
+
+    // Find academic terms that have course offerings for courses belonging to this curriculum
+    const termIds = await this.prisma.courseOffering.findMany({
+      where: {
+        institutionId,
+        courseId: {
+          in: (
+            await this.prisma.curriculumCourse.findMany({
+              where: {
+                curriculumTerm: { curriculumId },
+              },
+              select: { courseId: true },
+            })
+          ).map((cc) => cc.courseId),
+        },
+      },
+      select: { termId: true },
+      distinct: ['termId'],
+    });
+
     return this.prisma.academicTerm.findMany({
-      where: { institutionId },
+      where: {
+        institutionId,
+        id: { in: termIds.map((t) => t.termId) },
+      },
       include: { academicYear: true },
       orderBy: { startDate: 'desc' },
     });

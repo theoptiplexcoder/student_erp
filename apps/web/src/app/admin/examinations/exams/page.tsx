@@ -43,7 +43,7 @@ export default function ExamsPage() {
 
   const { data: programsData } = useAdminPrograms(1, 100);
   const { data: curriculumsData } = useAdminCurriculumsByProgram(programId);
-  const { data: termsData } = useAdminTerms();
+  const { data: termsData } = useAdminTerms(curriculumId || undefined);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -125,6 +125,7 @@ export default function ExamsPage() {
                 disabled={!programId}
                 onChange={(e) => {
                   setCurriculumId(e.target.value);
+                  setTermId('');
                   setPage(1);
                 }}
               >

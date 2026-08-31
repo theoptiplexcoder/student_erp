@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { TermsService } from '../services/terms.service';
 import { SupabaseAuthGuard } from '../../../guards/supabase-auth.guard';
 import { RolesGuard } from '../../../guards/roles.guard';
@@ -15,8 +25,8 @@ export class TermsController {
   }
 
   @Get()
-  findAll(@CurrentUser() user: any) {
-    return this.termsService.findAll(user.institutionId);
+  findAll(@CurrentUser() user: any, @Query('curriculumId') curriculumId?: string) {
+    return this.termsService.findAll(user.institutionId, curriculumId);
   }
 
   @Get(':id')
