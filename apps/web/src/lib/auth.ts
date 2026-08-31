@@ -41,7 +41,9 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   // we centralize database access by proxying to the NestJS API which securely resolves the user
   // role based on the provided auth token.
   try {
-    const res = await fetch(`${process.env['NEXT_PUBLIC_API_URL']}/auth/me`, {
+    const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:4000';
+    const baseUrl = apiUrl.endsWith('/api/v1') ? apiUrl : `${apiUrl.replace(/\/$/, '')}/api/v1`;
+    const res = await fetch(`${baseUrl}/auth/me`, {
       headers: {
         Authorization: `Bearer ${session.access_token}`,
       },
@@ -92,7 +94,7 @@ export async function requireRoleOrRedirect(...roles: string[]): Promise<AuthUse
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect('/login');
+    redirect('/api/auth/logout');
   }
 
   if (user.status !== 'ACTIVE') {

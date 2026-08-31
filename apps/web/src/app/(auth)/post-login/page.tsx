@@ -8,9 +8,7 @@ export default async function PostLoginPage() {
   const user = await getCurrentUser();
 
   if (!user) {
-    const supabase = await createClient();
-    await supabase.auth.signOut();
-    redirect('/login');
+    redirect('/api/auth/logout');
   }
 
   redirect(getDashboardPath(user.role));
