@@ -28,7 +28,6 @@ import {
   useCreateElectiveGroup,
   useDeleteElectiveGroup,
 } from '@/hooks/api/admin/useCurriculums';
-import { useAdminCourses } from '@/hooks/api/admin/useCourses';
 import { createClient } from '@/lib/supabase/client';
 
 export default function CreateCurriculumWizard({
@@ -317,9 +316,7 @@ function Step3Courses({
     <Card>
       <CardHeader>
         <CardTitle>3. Assign Courses & Electives</CardTitle>
-        <CardDescription>
-          Add existing courses or create new ones inline for each term.
-        </CardDescription>
+        <CardDescription>Create new courses for each term.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex gap-2 overflow-x-auto pb-2">
@@ -354,20 +351,9 @@ function Step3Courses({
 function TermCoursesManager({ curriculumId, term }: { curriculumId: string; term: any }) {
   const { data: curriculum } = useAdminCurriculum(curriculumId);
   const { data: program } = useAdminProgram(curriculum?.programId || '');
-  const { data: coursesData } = useAdminCourses(1, 100);
-
-  const allTerms = curriculum?.curriculumTerms || [];
-  const coursesAlreadyAdded = new Set(
-    allTerms.flatMap((t: any) => t.curriculumCourses?.map((cc: any) => cc.courseId) || []),
-  );
-
-  const existingCourses = (coursesData?.data || []).filter(
-    (c: any) => !coursesAlreadyAdded.has(c.id),
-  );
 
   const createCourse = useCreateCurriculumCourse();
   const deleteCourse = useDeleteCurriculumCourse();
-  const [mode, setMode] = useState<'existing' | 'new'>('existing');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -384,21 +370,16 @@ function TermCoursesManager({ curriculumId, term }: { curriculumId: string; term
         creditValue: parseFloat(formData.get('creditValue') as string),
         isMandatory: formData.get('isMandatory') === 'on',
         electiveGroupId: formData.get('electiveGroupId') || undefined,
-      };
-
-      if (mode === 'existing') {
-        payload.courseId = formData.get('courseId');
-      } else {
-        payload.newCourse = {
+        newCourse: {
           code: formData.get('code'),
           name: formData.get('name'),
           creditValue: parseFloat(formData.get('creditValue') as string),
-        };
-      }
+        },
+      };
 
       setIsUploading(true);
 
-      if (mode === 'new' && files.length > 0) {
+      if (files.length > 0) {
         const supabase = createClient();
         const curriculumCode =
           curriculum?.versionNumber || curriculum?.name?.replace(/\s+/g, '_') || 'CURR';
@@ -436,63 +417,28 @@ function TermCoursesManager({ curriculumId, term }: { curriculumId: string; term
   return (
     <div className="space-y-4">
       <div className="bg-muted/30 rounded-lg border p-4">
-        <div className="mb-4 flex gap-4 border-b pb-2">
-          <label className="flex cursor-pointer items-center gap-2 text-sm">
-            <input
-              type="radio"
-              checked={mode === 'existing'}
-              onChange={() => setMode('existing')}
-            />{' '}
-            Select Existing
-          </label>
-          <label className="flex cursor-pointer items-center gap-2 text-sm">
-            <input type="radio" checked={mode === 'new'} onChange={() => setMode('new')} /> Create
-            New Inline
-          </label>
-        </div>
-
         {errorMsg && <div className="text-destructive mb-3 text-sm">{errorMsg}</div>}
 
         <form onSubmit={handleAdd} className="space-y-3">
-          {mode === 'existing' ? (
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-xs">Select Course</Label>
-              <select
-                name="courseId"
-                required
-                className="border-input flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm"
-              >
-                <option value="">-- Choose --</option>
-                {existingCourses.map((c: any) => (
-                  <option key={c.id} value={c.id}>
-                    {c.code} - {c.name}
-                  </option>
-                ))}
-              </select>
+              <Label className="text-xs">Course Code</Label>
+              <Input name="code" required placeholder="CS101" />
             </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Course Code</Label>
-                  <Input name="code" required placeholder="CS101" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Course Name</Label>
-                  <Input name="name" required placeholder="Intro to Computer Science" />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Course Files (Optional)</Label>
-                <Input
-                  name="files"
-                  type="file"
-                  multiple
-                  onChange={(e) => setFiles(Array.from(e.target.files || []))}
-                />
-              </div>
-            </>
-          )}
+            <div className="space-y-1">
+              <Label className="text-xs">Course Name</Label>
+              <Input name="name" required placeholder="Intro to Computer Science" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Course Files (Optional)</Label>
+            <Input
+              name="files"
+              type="file"
+              multiple
+              onChange={(e) => setFiles(Array.from(e.target.files || []))}
+            />
+          </div>
 
           <div className="grid grid-cols-4 items-end gap-3">
             <div className="space-y-1">
