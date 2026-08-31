@@ -17,19 +17,40 @@ import {
   Badge,
   Input,
 } from '@student-erp/ui';
-import { Loader2, Search, Calendar as CalendarIcon, FileText } from 'lucide-react';
-import { useAdminExams } from '@/hooks/api/admin/useExams';
+import { Loader2, Search, Calendar as CalendarIcon, FileText, Plus, Trash2 } from 'lucide-react';
+import { useAdminExams, useDeleteExam } from '@/hooks/api/admin/useExams';
 import { format } from 'date-fns';
+import { ScheduleExamForm } from './ScheduleExamForm';
 
 export default function ExamsPage() {
+  const [isScheduling, setIsScheduling] = useState(false);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const { data: examsData, isLoading, isError } = useAdminExams(page, 50, search);
+  const deleteMutation = useDeleteExam();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
     setPage(1);
   };
+
+  const handleDelete = async (id: string) => {
+    if (
+      confirm(
+        'Are you sure you want to delete this exam schedule? This will also remove calendar events.',
+      )
+    ) {
+      try {
+        await deleteMutation.mutateAsync(id);
+      } catch (err: any) {
+        alert(err.message || 'Failed to delete exam.');
+      }
+    }
+  };
+
+  if (isScheduling) {
+    return <ScheduleExamForm onCancel={() => setIsScheduling(false)} />;
+  }
 
   return (
     <div className="space-y-6">
@@ -40,6 +61,9 @@ export default function ExamsPage() {
             Manage institutional exams, timetables, and invigilation.
           </p>
         </div>
+        <Button onClick={() => setIsScheduling(true)}>
+          <Plus className="mr-2 h-4 w-4" /> Schedule Examination
+        </Button>
       </div>
 
       <Card>
@@ -84,6 +108,7 @@ export default function ExamsPage() {
                       <TableHead>Term</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Dates</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -121,6 +146,16 @@ export default function ExamsPage() {
                             {' to '}
                             {exam.endDate ? format(new Date(exam.endDate), 'MMM d, yyyy') : '-'}
                           </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(exam.id)}
+                            disabled={deleteMutation.isPending}
+                          >
+                            <Trash2 className="text-destructive h-4 w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -172,11 +207,21 @@ export default function ExamsPage() {
                       </div>
                     </div>
 
-                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                      <CalendarIcon className="h-4 w-4" />
-                      {exam.startDate ? format(new Date(exam.startDate), 'MMM d') : '-'}
-                      {' - '}
-                      {exam.endDate ? format(new Date(exam.endDate), 'MMM d, yyyy') : '-'}
+                    <div className="text-muted-foreground flex items-center justify-between gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <CalendarIcon className="h-4 w-4" />
+                        {exam.startDate ? format(new Date(exam.startDate), 'MMM d') : '-'}
+                        {' - '}
+                        {exam.endDate ? format(new Date(exam.endDate), 'MMM d, yyyy') : '-'}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(exam.id)}
+                        disabled={deleteMutation.isPending}
+                      >
+                        <Trash2 className="text-destructive h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 ))}

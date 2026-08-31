@@ -947,8 +947,9 @@ model Room {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  institution Institution @relation(fields: [institutionId], references: [id])
-  building    Building    @relation(fields: [buildingId], references: [id])
+  institution Institution  @relation(fields: [institutionId], references: [id])
+  building    Building     @relation(fields: [buildingId], references: [id])
+  examCourses ExamCourse[]
 
   @@unique([buildingId, number])
   @@index([institutionId])
@@ -1110,12 +1111,14 @@ model ExamCourse {
   examDate      DateTime @map("exam_date") @db.Date
   startTime     DateTime @map("start_time") @db.Time
   endTime       DateTime @map("end_time") @db.Time
+  roomId        String?  @map("room_id") @db.Uuid
   maxMarks      Float?   @map("max_marks")
   passingMarks  Float?   @map("passing_marks")
 
   institution Institution @relation(fields: [institutionId], references: [id])
   exam        Exam        @relation(fields: [examId], references: [id], onDelete: Cascade)
   course      Course      @relation(fields: [courseId], references: [id])
+  room        Room?       @relation(fields: [roomId], references: [id])
 
   marks Mark[]
 

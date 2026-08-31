@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 
 export interface Exam {
@@ -84,6 +84,34 @@ export const useAdminExamResults = (page = 1, pageSize = 50, search = '') => {
         params: { page, pageSize, search },
       });
       return response.data;
+    },
+  });
+};
+
+export const useScheduleExam = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiClient.post('/admin/examinations/schedule', data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'exams'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'calendar'] });
+    },
+  });
+};
+
+export const useDeleteExam = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.delete(`/admin/examinations/${id}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'exams'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'calendar'] });
     },
   });
 };

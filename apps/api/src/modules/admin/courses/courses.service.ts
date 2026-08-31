@@ -16,6 +16,7 @@ export class CoursesService {
     pageSize = 50,
     search?: string,
     programId?: string,
+    termId?: string,
   ) {
     const skip = (page - 1) * pageSize;
     const where: Prisma.CourseWhereInput = {};
@@ -26,6 +27,14 @@ export class CoursesService {
 
     if (programId) {
       where.programId = programId;
+    }
+
+    if (termId) {
+      where.courseOfferings = {
+        some: {
+          termId,
+        },
+      };
     }
 
     if (search) {

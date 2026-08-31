@@ -34,12 +34,12 @@ export interface CoursesResponse {
   };
 }
 
-export const useAdminCourses = (page = 1, pageSize = 50, search = '') => {
+export const useAdminCourses = (page = 1, pageSize = 50, search = '', termId = '') => {
   return useQuery({
-    queryKey: ['admin', 'courses', page, pageSize, search],
+    queryKey: ['admin', 'courses', page, pageSize, search, termId],
     queryFn: async () => {
       const response = await apiClient.get<CoursesResponse>('/admin/courses', {
-        params: { page, pageSize, search },
+        params: { page, pageSize, search, termId: termId || undefined },
       });
       return response.data;
     },
