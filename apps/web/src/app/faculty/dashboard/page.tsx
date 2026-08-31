@@ -3,9 +3,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from '@student-erp/ui';
 import { useFacultyDashboard } from '@student-erp/hooks';
-import { Loader2, Calendar, Clock, BookOpen, AlertCircle } from 'lucide-react';
+import { Loader2, Calendar, BookOpen, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
+import { TodaysScheduleCalendar } from '@/components/faculty/dashboard/todays-schedule-calendar';
 
 export default function FacultyDashboardPage() {
   const { data, isLoading, error } = useFacultyDashboard();
@@ -59,6 +60,15 @@ export default function FacultyDashboardPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Today's Schedule</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TodaysScheduleCalendar classes={todaysClasses} />
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>At-Risk Students</CardTitle>
@@ -83,48 +93,6 @@ export default function FacultyDashboardPage() {
                         Alert
                       </Button>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Today's Schedule</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {todaysClasses.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No classes scheduled for today.</p>
-            ) : (
-              <div className="space-y-4">
-                {todaysClasses.map((cls: any) => (
-                  <div
-                    key={cls.id}
-                    className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
-                  >
-                    <div>
-                      <p className="font-medium">
-                        {cls.course.code} - {cls.course.name}
-                      </p>
-                      <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                        <Clock className="h-3 w-3" />
-                        <span>
-                          {format(new Date(cls.startTime), 'hh:mm a')} -{' '}
-                          {format(new Date(cls.endTime), 'hh:mm a')}
-                        </span>
-                        <span>•</span>
-                        <span>Room {cls.room.number}</span>
-                      </div>
-                    </div>
-                    <Button asChild size="sm" variant="outline">
-                      <Link
-                        href={`/faculty/timetable/session?courseId=${cls.courseId}&sectionId=${cls.sectionId}&date=${format(new Date(), 'yyyy-MM-dd')}`}
-                      >
-                        Open Workspace
-                      </Link>
-                    </Button>
                   </div>
                 ))}
               </div>
