@@ -333,6 +333,34 @@ enum CurriculumStatus {
   ARCHIVED
 }
 
+enum LessonPlanStatus {
+  DRAFT
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+  CANCELLED
+}
+
+enum TeachingMethod {
+  LECTURE
+  TUTORIAL
+  PRACTICAL
+  LABORATORY
+  DISCUSSION
+  SEMINAR
+  DEMONSTRATION
+  WORKSHOP
+  PROJECT
+  REVISION
+  ASSESSMENT
+}
+
+enum ResourceOwner {
+  ADMIN
+  FACULTY
+}
+
 // ─── Core Models ────────────────────────────────────────
 
 model Institution {
@@ -403,6 +431,8 @@ model Institution {
   buildings                 Building[]
   rooms                     Room[]
   applications              Application[]
+  lessonPlans               LessonPlan[]
+  adminResources            AdminResource[]
 
   @@map("institutions")
 }
@@ -580,6 +610,7 @@ model Faculty {
   grievances         Grievance[]
   assignments        Assignment[]
   announcements      Announcement[]
+  lessonPlans        LessonPlan[]
 
   @@unique([institutionId, teacherCode])
   @@index([institutionId])
@@ -708,6 +739,7 @@ model AcademicTerm {
   courseOfferings    CourseOffering[]
   exams              Exam[]
   studentTerms       StudentTerm[]
+  lessonPlans        LessonPlan[]
 
   @@index([institutionId])
   @@index([academicYearId])
@@ -741,6 +773,7 @@ model Section {
   courseOfferings    CourseOffering[]
   attendanceSessions AttendanceSession[]
   calendarEvents     CalendarEvent[]
+  lessonPlanSections LessonPlanSection[]
 
   @@index([institutionId])
   @@map("sections")
@@ -781,6 +814,8 @@ model Course {
   programId          String?              @db.Uuid
   classLevel         ClassLevel?          @relation(fields: [classLevelId], references: [id])
   classLevelId       String?              @db.Uuid
+  lessonPlans        LessonPlan[]
+  adminResources     AdminResource[]
 
   @@unique([institutionId, code])
   @@index([institutionId])
@@ -892,6 +927,7 @@ model TimetableEntry {
   endTime        DateTime     @map("end_time") @db.Time
   room           String?
   building       String?
+  lessonPlanId   String?      @map("lesson_plan_id") @db.Uuid
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @updatedAt @map("updated_at")
 
@@ -901,6 +937,7 @@ model TimetableEntry {
   course       Course       @relation(fields: [courseId], references: [id])
   faculty      Faculty      @relation(fields: [facultyId], references: [id])
   section      Section      @relation(fields: [sectionId], references: [id])
+  lessonPlan   LessonPlan?  @relation(fields: [lessonPlanId], references: [id])
 
   @@index([institutionId])
   @@map("timetable_entries")
@@ -1006,26 +1043,31 @@ model AttendanceRecord {
 }
 
 model CourseResource {
-  id            String       @id @default(uuid()) @db.Uuid
-  institutionId String       @map("institution_id") @db.Uuid
-  courseId      String       @map("course_id") @db.Uuid
-  facultyId     String       @map("faculty_id") @db.Uuid
+  id            String        @id @default(uuid()) @db.Uuid
+  institutionId String        @map("institution_id") @db.Uuid
+  courseId      String        @map("course_id") @db.Uuid
+  facultyId     String        @map("faculty_id") @db.Uuid
   title         String
   description   String?
-  resourceType  ResourceType @map("resource_type")
-  fileUrl       String?      @map("file_url")
-  externalUrl   String?      @map("external_url")
+  owner         ResourceOwner @default(FACULTY) @map("owner")
+  resourceType  ResourceType  @map("resource_type")
+  fileUrl       String?       @map("file_url")
+  externalUrl   String?       @map("external_url")
   unit          String?
+  unitId        String?       @map("unit_id") @db.Uuid
   chapter       String?
+  chapterId     String?       @map("chapter_id") @db.Uuid
   topic         String?
-  isPublished   Boolean      @default(false) @map("is_published")
-  publishedAt   DateTime?    @map("published_at")
-  createdAt     DateTime     @default(now()) @map("created_at")
-  updatedAt     DateTime     @updatedAt @map("updated_at")
+  isPublished   Boolean       @default(false) @map("is_published")
+  publishedAt   DateTime?     @map("published_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
 
   institution Institution @relation(fields: [institutionId], references: [id])
   course      Course      @relation(fields: [courseId], references: [id])
   faculty     Faculty     @relation(fields: [facultyId], references: [id])
+
+  lessonPlanResources LessonPlanResource[]
 
   @@index([institutionId])
   @@map("course_resources")
@@ -1861,4 +1903,91 @@ model RolePermission {
 
   @@unique([customRoleId, resource, action])
   @@map("role_permissions")
+}
+
+model LessonPlan {
+  id                   String           @id @default(uuid()) @db.Uuid
+  institutionId        String           @map("institution_id") @db.Uuid
+  courseId             String           @map("course_id") @db.Uuid
+  facultyId            String           @map("faculty_id") @db.Uuid
+  termId               String           @map("term_id") @db.Uuid
+  unitId               String?          @map("unit_id") @db.Uuid
+  chapterId            String?          @map("chapter_id") @db.Uuid
+  title                String
+  description          String?          @db.Text
+  sequence             Int
+  plannedDate          DateTime         @map("planned_date") @db.Date
+  deadline             DateTime?        @map("deadline") @db.Date
+  actualCompletionDate DateTime?        @map("actual_completion_date") @db.Date
+  durationMinutes      Int?             @map("duration_minutes")
+  teachingMethod       TeachingMethod   @default(LECTURE) @map("teaching_method")
+  status               LessonPlanStatus @default(DRAFT)
+  learningObjectives   Json?            @map("learning_objectives")
+  teachingPlan         Json?            @map("teaching_plan")
+  teachingNotes        String?          @map("teaching_notes") @db.Text
+  reflectionNotes      String?          @map("reflection_notes") @db.Text
+  createdAt            DateTime         @default(now()) @map("created_at")
+  updatedAt            DateTime         @updatedAt @map("updated_at")
+
+  institution Institution  @relation(fields: [institutionId], references: [id])
+  course      Course       @relation(fields: [courseId], references: [id])
+  faculty     Faculty      @relation(fields: [facultyId], references: [id])
+  term        AcademicTerm @relation(fields: [termId], references: [id])
+
+  sections         LessonPlanSection[]
+  resources        LessonPlanResource[]
+  timetableEntries TimetableEntry[]
+
+  @@index([institutionId])
+  @@index([courseId])
+  @@index([facultyId])
+  @@index([termId])
+  @@index([plannedDate])
+  @@map("lesson_plans")
+}
+
+model LessonPlanSection {
+  id           String @id @default(uuid()) @db.Uuid
+  lessonPlanId String @map("lesson_plan_id") @db.Uuid
+  sectionId    String @map("section_id") @db.Uuid
+
+  lessonPlan LessonPlan @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
+  section    Section    @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonPlanId, sectionId])
+  @@map("lesson_plan_sections")
+}
+
+model LessonPlanResource {
+  id           String @id @default(uuid()) @db.Uuid
+  lessonPlanId String @map("lesson_plan_id") @db.Uuid
+  resourceId   String @map("resource_id") @db.Uuid
+  sortOrder    Int    @default(0) @map("sort_order")
+
+  lessonPlan LessonPlan     @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
+  resource   CourseResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonPlanId, resourceId])
+  @@map("lesson_plan_resources")
+}
+
+model AdminResource {
+  id            String       @id @default(uuid()) @db.Uuid
+  institutionId String       @map("institution_id") @db.Uuid
+  courseId      String?      @map("course_id") @db.Uuid
+  title         String
+  description   String?      @db.Text
+  resourceType  ResourceType @map("resource_type")
+  fileUrl       String?      @map("file_url")
+  externalUrl   String?      @map("external_url")
+  uploadedBy    String?      @map("uploaded_by") @db.Uuid
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  institution Institution @relation(fields: [institutionId], references: [id])
+  course      Course?     @relation(fields: [courseId], references: [id])
+
+  @@index([institutionId])
+  @@index([courseId])
+  @@map("admin_resources")
 }

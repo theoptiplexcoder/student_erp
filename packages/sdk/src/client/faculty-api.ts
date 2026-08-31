@@ -102,4 +102,20 @@ export const FacultyApi = {
         data,
       )
       .then((res) => res.data),
+
+  // Lesson Plans
+  getLessonPlans: (courseId: string, termId?: string) =>
+    facultyApiClient
+      .get(`/courses/${courseId}/lesson-plans${termId ? `?termId=${termId}` : ''}`)
+      .then((res) => res.data),
+  getLessonPlan: (courseId: string, id: string) =>
+    facultyApiClient.get(`/courses/${courseId}/lesson-plans/${id}`).then((res) => res.data),
+  createLessonPlan: (courseId: string, data: any) =>
+    facultyApiClient.post(`/courses/${courseId}/lesson-plans`, data).then((res) => res.data),
+  updateLessonPlan: (courseId: string, id: string, data: any) =>
+    facultyApiClient.patch(`/courses/${courseId}/lesson-plans/${id}`, data).then((res) => res.data),
+  completeLessonPlan: (courseId: string, id: string, data: any) =>
+    facultyApiClient
+      .post(`/courses/${courseId}/lesson-plans/${id}/complete`, data)
+      .then((res) => res.data),
 };

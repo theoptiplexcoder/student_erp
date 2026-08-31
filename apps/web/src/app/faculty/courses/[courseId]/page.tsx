@@ -23,16 +23,7 @@ import {
   useFacultyAssignments,
   useCreateFacultyAssignment,
 } from '@student-erp/hooks';
-import {
-  Loader2,
-  ArrowLeft,
-  Users,
-  FileText,
-  Calendar,
-  Upload,
-  Plus,
-  Trash2,
-} from 'lucide-react';
+import { Loader2, ArrowLeft, Users, FileText, Calendar, Upload, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
@@ -128,6 +119,7 @@ export default function FacultyCourseDetailsPage({
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="students">Students ({enrollments.length})</TabsTrigger>
                 <TabsTrigger value="resources">Resources</TabsTrigger>
+                <TabsTrigger value="lesson-plan">Lesson Plan</TabsTrigger>
                 <TabsTrigger value="assignments">Assignments</TabsTrigger>
               </TabsList>
 
@@ -268,6 +260,43 @@ export default function FacultyCourseDetailsPage({
                     </div>
                   )}
                 </div>
+              </TabsContent>
+
+              <TabsContent value="lesson-plan" className="mt-6 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">Lesson Plans</h3>
+                    <p className="text-muted-foreground text-sm">
+                      Manage your teaching schedule and materials
+                    </p>
+                  </div>
+                  <Button asChild>
+                    <Link href={`/faculty/courses/${courseId}/lesson-plan/new`}>
+                      <Plus className="mr-2 h-4 w-4" /> Create Lesson Plan
+                    </Link>
+                  </Button>
+                </div>
+
+                <Card>
+                  <CardContent className="p-0">
+                    <div className="bg-muted/20 border-b p-4">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Course Progress</span>
+                        <span className="font-medium">10% (Placeholder)</span>
+                      </div>
+                      <div className="bg-secondary mt-2 h-2 w-full overflow-hidden rounded-full">
+                        <div className="bg-primary h-full" style={{ width: `10%` }} />
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <Button asChild variant="outline" className="w-full">
+                        <Link href={`/faculty/courses/${courseId}/lesson-plan`}>
+                          View Full Lesson Plan Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               <TabsContent value="assignments" className="mt-6 space-y-6">

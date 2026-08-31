@@ -22,6 +22,8 @@ import { FacultyCalendarController } from './controllers/faculty-calendar.contro
 import { FacultyCalendarService } from './services/faculty-calendar.service';
 import { FacultyWorkspaceController } from './controllers/faculty-workspace.controller';
 import { FacultyWorkspaceService } from './services/faculty-workspace.service';
+import { LessonPlanController } from './controllers/lesson-plan.controller';
+import { LessonPlanService } from './services/lesson-plan.service';
 
 @Module({
   imports: [DatabaseModule],
@@ -37,6 +39,7 @@ import { FacultyWorkspaceService } from './services/faculty-workspace.service';
     FacultyAnnouncementsController,
     FacultyCalendarController,
     FacultyWorkspaceController,
+    LessonPlanController,
   ],
   providers: [
     FacultyGrievanceService,
@@ -50,6 +53,7 @@ import { FacultyWorkspaceService } from './services/faculty-workspace.service';
     FacultyAnnouncementsService,
     FacultyCalendarService,
     FacultyWorkspaceService,
+    LessonPlanService,
   ],
 })
 export class FacultyModule {}

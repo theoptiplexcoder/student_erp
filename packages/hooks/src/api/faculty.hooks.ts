@@ -218,3 +218,58 @@ export const useGradeFacultySubmission = (courseId: string, assignmentId: string
     },
   });
 };
+
+// Lesson Plan Hooks
+export const useLessonPlans = (courseId: string, termId?: string) => {
+  return useQuery({
+    queryKey: ['faculty', 'courses', courseId, 'lesson-plans', termId],
+    queryFn: () => FacultyApi.getLessonPlans(courseId, termId),
+    enabled: !!courseId,
+  });
+};
+
+export const useLessonPlan = (courseId: string, id: string) => {
+  return useQuery({
+    queryKey: ['faculty', 'courses', courseId, 'lesson-plans', id, 'detail'],
+    queryFn: () => FacultyApi.getLessonPlan(courseId, id),
+    enabled: !!courseId && !!id,
+  });
+};
+
+export const useCreateLessonPlan = (courseId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => FacultyApi.createLessonPlan(courseId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['faculty', 'courses', courseId, 'lesson-plans'] });
+    },
+  });
+};
+
+export const useUpdateLessonPlan = (courseId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      FacultyApi.updateLessonPlan(courseId, id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['faculty', 'courses', courseId, 'lesson-plans'] });
+      queryClient.invalidateQueries({
+        queryKey: ['faculty', 'courses', courseId, 'lesson-plans', variables.id, 'detail'],
+      });
+    },
+  });
+};
+
+export const useCompleteLessonPlan = (courseId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      FacultyApi.completeLessonPlan(courseId, id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['faculty', 'courses', courseId, 'lesson-plans'] });
+      queryClient.invalidateQueries({
+        queryKey: ['faculty', 'courses', courseId, 'lesson-plans', variables.id, 'detail'],
+      });
+    },
+  });
+};
