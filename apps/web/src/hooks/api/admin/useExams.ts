@@ -64,12 +64,26 @@ export interface ExamResultsResponse {
   };
 }
 
-export const useAdminExams = (page = 1, pageSize = 50, search = '') => {
+export const useAdminExams = (
+  page = 1,
+  pageSize = 50,
+  search = '',
+  programId = '',
+  curriculumId = '',
+  termId = '',
+) => {
   return useQuery({
-    queryKey: ['admin', 'exams', page, pageSize, search],
+    queryKey: ['admin', 'exams', page, pageSize, search, programId, curriculumId, termId],
     queryFn: async () => {
       const response = await apiClient.get<ExamsResponse>('/admin/examinations', {
-        params: { page, pageSize, search },
+        params: {
+          page,
+          pageSize,
+          search,
+          programId: programId || undefined,
+          curriculumId: curriculumId || undefined,
+          termId: termId || undefined,
+        },
       });
       return response.data;
     },

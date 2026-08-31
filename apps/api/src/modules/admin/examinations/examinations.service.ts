@@ -235,7 +235,15 @@ export class ExaminationsService {
     });
   }
 
-  async findAll(institutionId?: string, page = 1, pageSize = 50, search?: string) {
+  async findAll(
+    institutionId?: string,
+    page = 1,
+    pageSize = 50,
+    search?: string,
+    programId?: string,
+    curriculumId?: string,
+    termId?: string,
+  ) {
     const skip = (page - 1) * pageSize;
     const where: Prisma.ExamWhereInput = {};
 
@@ -248,6 +256,30 @@ export class ExaminationsService {
         { name: { contains: search, mode: 'insensitive' } },
         { code: { contains: search, mode: 'insensitive' } },
       ];
+    }
+
+    if (termId) {
+      where.termId = termId;
+    }
+
+    if (programId || curriculumId) {
+      const courseFilter: any = {};
+      if (programId) courseFilter.programId = programId;
+      if (curriculumId) {
+        courseFilter.curriculumCourses = {
+          some: {
+            curriculumTerm: {
+              curriculumId,
+            },
+          },
+        };
+      }
+
+      where.examCourses = {
+        some: {
+          course: courseFilter,
+        },
+      };
     }
 
     const [total, data] = await Promise.all([

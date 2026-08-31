@@ -33,11 +33,22 @@ export class ExaminationsController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('search') search?: string,
+    @Query('programId') programId?: string,
+    @Query('curriculumId') curriculumId?: string,
+    @Query('termId') termId?: string,
   ) {
     const { institutionId } = req.user;
     const pageNum = page ? parseInt(page, 10) : 1;
     const sizeNum = pageSize ? parseInt(pageSize, 10) : 50;
-    return this.examinationsService.findAll(institutionId, pageNum, sizeNum, search);
+    return this.examinationsService.findAll(
+      institutionId,
+      pageNum,
+      sizeNum,
+      search,
+      programId,
+      curriculumId,
+      termId,
+    );
   }
 
   @Get('results')
