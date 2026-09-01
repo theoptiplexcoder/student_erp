@@ -4,10 +4,14 @@ import { RecordOfflinePaymentDto } from '../dto/record-offline-payment.dto';
 import { InitiatePaymentDto } from '../dto/initiate-payment.dto';
 import { VerifyPaymentDto } from '../dto/verify-payment.dto';
 import { InstallmentStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class PaymentService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   private generateReceiptNumber(): string {
     const today = new Date();
@@ -162,7 +166,7 @@ export class PaymentService {
         }
       }
 
-      return tx.payment.findUnique({
+      const result = await tx.payment.findUnique({
         where: { id: payment.id },
         include: {
           student: {
@@ -181,6 +185,10 @@ export class PaymentService {
           },
         },
       });
+
+      this.eventEmitter.emit('payment.success', result);
+
+      return result;
     });
   }
 
@@ -315,7 +323,7 @@ export class PaymentService {
         }
       }
 
-      return tx.payment.findUnique({
+      const result = await tx.payment.findUnique({
         where: { id: payment.id },
         include: {
           student: {
@@ -331,6 +339,10 @@ export class PaymentService {
           },
         },
       });
+
+      this.eventEmitter.emit('payment.success', result);
+
+      return result;
     });
   }
 

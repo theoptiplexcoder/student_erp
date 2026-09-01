@@ -9,10 +9,39 @@ import {
   InstallmentStatus,
   StudentLifecycleStatus,
 } from '@prisma/client';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @Injectable()
 export class AdmissionsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  @OnEvent('payment.success')
+  async handlePaymentSuccess(payment: any) {
+    if (!payment || !payment.studentId) return;
+
+    const student = await this.prisma.student.findUnique({
+      where: { id: payment.studentId },
+    });
+
+    if (student && student.lifecycleStatus === 'APPLICANT') {
+      await this.prisma.student.update({
+        where: { id: student.id },
+        data: {
+          lifecycleStatus: 'ENROLLED',
+          admissionDate: new Date(),
+        },
+      });
+
+      // Update Application status if it exists
+      await this.prisma.application.updateMany({
+        where: { studentId: student.id },
+        data: {
+          status: 'ENROLLED',
+          enrolledAt: new Date(),
+        },
+      });
+    }
+  }
 
   async getDrafts(institutionId: string, userId: string) {
     return this.prisma.admissionDraft.findMany({
