@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, RoomType } from '@prisma/client';
 import { CreateTimetableEntryDto, UpdateTimetableEntryDto, MoveTimetableEntryDto, ReassignFacultyDto, BulkUpdateTimetableDto, GenerateTimetableDto } from './dto';
 
 @Injectable()
@@ -363,6 +363,25 @@ export class TimetableService {
     const term = await this.prisma.academicTerm.findUnique({ where: { id: dto.termId } });
     if (!term) throw new NotFoundException('Term not found');
 
+    // Archive existing timetable for this term (keep only 1 previous version)
+    const existingTimetable = await this.prisma.timetable.findFirst({
+      where: { institutionId, termId: dto.termId, status: { in: ['DRAFT', 'PUBLISHED'] } },
+    });
+    if (existingTimetable) {
+      await this.prisma.timetable.update({
+        where: { id: existingTimetable.id },
+        data: { status: 'ARCHIVED' },
+      });
+      // Delete older archived timetables for this term (keep only 1 previous)
+      const olderArchived = await this.prisma.timetable.findMany({
+        where: { institutionId, termId: dto.termId, status: 'ARCHIVED', id: { not: existingTimetable.id } },
+      });
+      for (const old of olderArchived) {
+        await this.prisma.timetableEntry.deleteMany({ where: { timetableId: old.id } });
+        await this.prisma.timetable.delete({ where: { id: old.id } });
+      }
+    }
+
     const name = dto.name || `Generated Timetable - ${new Date().toISOString()}`;
     const timetable = await this.prisma.timetable.create({
       data: {
@@ -494,8 +513,8 @@ export class TimetableService {
             let selectedRoomId: string | null = null;
             for (const room of rooms) {
               if (room.capacity && assignment.section.capacity && room.capacity < assignment.section.capacity) continue;
-              if (room.roomType === 'PRACTICAL' && !assignment.course.isPractical) continue;
-              if (room.roomType === 'LECTURE' && assignment.course.isPractical) continue;
+              if (room.roomType === RoomType.LAB && !assignment.course.isPractical) continue;
+              if ((room.roomType === RoomType.CLASSROOM || room.roomType === RoomType.LECTURE_HALL) && assignment.course.isPractical) continue;
               
               const roomConflict = checkConflict(day, start, end, assignment.facultyId, assignment.sectionId, room.id);
               if (!roomConflict) {

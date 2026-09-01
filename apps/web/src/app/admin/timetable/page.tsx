@@ -151,6 +151,14 @@ export default function AdminTimetablePage() {
       alert('Please select a term to generate timetable');
       return;
     }
+
+    // Confirm before overwriting existing schedule
+    if (entries.length > 0) {
+      const confirmed = window.confirm(
+        'Your existing schedules will be lost. Are you sure you want to generate a new schedule?'
+      );
+      if (!confirmed) return;
+    }
     
     let sectionIds: string[] = [];
     if (sectionId) {
