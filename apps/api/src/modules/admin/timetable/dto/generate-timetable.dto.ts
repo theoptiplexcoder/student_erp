@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsUUID, IsOptional, ArrayMinSize, IsString } from 'class-validator';
+import { IsNotEmpty, IsUUID, IsOptional, ArrayMinSize, IsString, IsNumber, Min, Max } from 'class-validator';
 
 export class GenerateTimetableDto {
   @IsNotEmpty()
@@ -13,4 +13,13 @@ export class GenerateTimetableDto {
   @IsOptional()
   @IsString()
   name?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(15)
+  @Max(180)
+  defaultSessionDuration?: number; // minutes, default 60
+
+  @IsOptional()
+  sessionDurations?: Record<string, number>; // courseId -> minutes override
 }

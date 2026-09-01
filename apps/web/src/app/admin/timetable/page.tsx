@@ -5,10 +5,69 @@ import { TimetableGrid } from '@/components/admin/timetable/timetable-grid';
 import { TimetableToolbar } from '@/components/admin/timetable/timetable-toolbar';
 import { TimetableBulkActions } from '@/components/admin/timetable/timetable-bulk-actions';
 import { TimetableEntryForm } from '@/components/admin/timetable/timetable-entry-form';
+import { TimetableSessionSettings } from '@/components/admin/timetable/timetable-session-settings';
 import { useAdminTimetableConflicts, useGenerateTimetable, useAdminTimetable, usePublishTimetable, useExportTimetable, useImportTimetable } from '@student-erp/hooks';
 import { TimetableConflictBadge } from '@/components/admin/timetable/timetable-conflict-badge';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
 import { TimetableImportModal } from '@/components/admin/timetable/timetable-import-modal';
+import { AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+
+const CONFLICT_TYPE_LABELS: Record<string, string> = {
+  FACULTY: 'Faculty Conflicts',
+  SECTION: 'Section Conflicts',
+  ROOM: 'Room Conflicts',
+  UNSCHEDULED: 'Unscheduled Sessions',
+};
+
+function ConflictAlert({ conflicts }: { conflicts: any[] }) {
+  const [expandedTypes, setExpandedTypes] = useState<Record<string, boolean>>({});
+
+  const grouped = conflicts.reduce<Record<string, any[]>>((acc, c) => {
+    const type = c.type || 'OTHER';
+    if (!acc[type]) acc[type] = [];
+    acc[type].push(c);
+    return acc;
+  }, {});
+
+  const toggleType = (type: string) => {
+    setExpandedTypes((prev) => ({ ...prev, [type]: !prev[type] }));
+  };
+
+  return (
+    <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-2">
+      <div className="flex items-center gap-2 text-red-800 font-medium text-sm">
+        <AlertTriangle className="h-4 w-4" />
+        {conflicts.length} conflict{conflicts.length !== 1 ? 's' : ''} found
+      </div>
+
+      {Object.entries(grouped).map(([type, items]) => (
+        <div key={type} className="border-t border-red-100 pt-2">
+          <button
+            type="button"
+            className="flex items-center gap-2 text-sm font-medium text-red-700 hover:underline w-full"
+            onClick={() => toggleType(type)}
+          >
+            {expandedTypes[type] ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            <span className="bg-red-100 text-red-800 text-xs font-semibold px-2 py-0.5 rounded-full">
+              {items.length}
+            </span>
+            {CONFLICT_TYPE_LABELS[type] || type}
+          </button>
+
+          {expandedTypes[type] && (
+            <ul className="mt-1 ml-5 space-y-1">
+              {items.map((conflict, i) => (
+                <li key={i} className="text-sm text-red-600">
+                  {conflict.message || `${conflict.type} conflict at ${conflict.time || 'unknown time'}`}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function AdminTimetablePage() {
   const [termId, setTermId] = useState('');
@@ -17,6 +76,9 @@ export default function AdminTimetablePage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<any>(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [sessionSettingsOpen, setSessionSettingsOpen] = useState(false);
+  const [generationConflicts, setGenerationConflicts] = useState<any[]>([]);
+  const [generationSummary, setGenerationSummary] = useState<any>(null);
 
   const { data: conflicts } = useAdminTimetableConflicts(termId);
   const { data: timetableData, isPending: isTimetablePending } = useAdminTimetable({ termId, sectionId });
@@ -29,6 +91,26 @@ export default function AdminTimetablePage() {
   const entries = Array.isArray(timetableData) ? timetableData : (timetableData as any)?.data || [];
   const currentTimetable = entries.length > 0 && entries[0].timetable ? entries[0].timetable : null;
   const timetableStatus = currentTimetable?.status || 'NO_TIMETABLE';
+
+  // Derive courses from timetable entries
+  const courses = React.useMemo(() => {
+    const seen = new Set<string>();
+    const result: Array<{ id: string; name: string; code: string; credits: number; isPractical: boolean }> = [];
+    for (const entry of entries) {
+      const course = entry.course || entry.courseOffering?.course;
+      if (course && !seen.has(course.id)) {
+        seen.add(course.id);
+        result.push({
+          id: course.id,
+          name: course.name || '',
+          code: course.code || '',
+          credits: course.credits || 0,
+          isPractical: course.isPractical || false,
+        });
+      }
+    }
+    return result;
+  }, [entries]);
 
   const handlePublish = () => {
     if (!termId) return;
@@ -64,7 +146,7 @@ export default function AdminTimetablePage() {
     });
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = (settings?: { defaultSessionDuration: number; sessionDurations: Record<string, number> }) => {
     if (!termId) {
       alert('Please select a term to generate timetable');
       return;
@@ -85,9 +167,21 @@ export default function AdminTimetablePage() {
     generateTimetable({
       termId,
       sectionIds,
+      ...(settings?.defaultSessionDuration ? { defaultSessionDuration: settings.defaultSessionDuration } : {}),
+      ...(settings?.sessionDurations && Object.keys(settings.sessionDurations).length > 0 ? { sessionDurations: settings.sessionDurations } : {}),
     }, {
-      onSuccess: () => {
-        alert('Timetable generated successfully');
+      onSuccess: (response: any) => {
+        const newConflicts = response?.conflicts || [];
+        const newSummary = response?.summary || null;
+        setGenerationConflicts(newConflicts);
+        setGenerationSummary(newSummary);
+
+        if (newConflicts.length > 0) {
+          const sessionCount = newSummary?.totalSessions ?? newSummary?.total ?? entries.length;
+          alert(`Generated ${sessionCount} sessions. ${newConflicts.length} conflict${newConflicts.length !== 1 ? 's' : ''} found.`);
+        } else {
+          alert('Timetable generated successfully');
+        }
       },
       onError: (err: any) => {
         alert('Failed to generate timetable: ' + err.message);
@@ -131,7 +225,7 @@ export default function AdminTimetablePage() {
         setTermId={setTermId}
         sectionId={sectionId}
         setSectionId={setSectionId}
-        onGenerate={handleGenerate}
+        onGenerate={() => setSessionSettingsOpen(true)}
         isGenerating={isGenerating}
         onImport={() => setImportModalOpen(true)}
         onExport={handleExport}
@@ -139,6 +233,10 @@ export default function AdminTimetablePage() {
         isPublishing={isPublishing}
         status={timetableStatus}
       />
+
+      {generationConflicts.length > 0 && (
+        <ConflictAlert conflicts={generationConflicts} />
+      )}
 
       <TimetableGrid
         termId={termId}
@@ -173,6 +271,13 @@ export default function AdminTimetablePage() {
         isOpen={importModalOpen}
         onClose={() => setImportModalOpen(false)}
         onImport={handleImport}
+      />
+
+      <TimetableSessionSettings
+        open={sessionSettingsOpen}
+        onOpenChange={setSessionSettingsOpen}
+        onConfirm={handleGenerate}
+        courses={courses}
       />
     </div>
   );

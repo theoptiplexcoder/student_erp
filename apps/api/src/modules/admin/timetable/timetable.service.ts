@@ -374,6 +374,7 @@ export class TimetableService {
       },
     });
 
+    // Fetch all assignments grouped by section
     const assignments = await this.prisma.courseAssignment.findMany({
       where: {
         institutionId,
@@ -391,71 +392,147 @@ export class TimetableService {
       where: { institutionId, termId: dto.termId },
     });
 
+    // Fetch faculty availability for the term
+    const facultyAvailability = await this.prisma.facultyAvailability.findMany({
+      where: {
+        facultyId: { in: [...new Set(assignments.map(a => a.facultyId))] },
+      },
+    });
+
     const days: import("@prisma/client").TimetableDay[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
     const generatedEntries: Prisma.TimetableEntryCreateManyInput[] = [];
+    const conflicts: Array<{ type: string; message: string; courseId?: string; sectionId?: string; facultyId?: string }> = [];
 
+    // Helper to check time overlap
     const overlaps = (startA: Date, endA: Date, startB: Date, endB: Date) => {
       return startA < endB && endA > startB;
     };
 
-    const isConflict = (day: string, start: Date, end: Date, facultyId: string, sectionId: string, roomId: string) => {
+    // Check if faculty is available at given time
+    const isFacultyAvailable = (facultyId: string, day: string, start: Date, end: Date) => {
+      const avail = facultyAvailability.filter(f => f.facultyId === facultyId && f.dayOfWeek === day);
+      if (avail.length === 0) return true; // No availability records = always available
+      return avail.some(a => !a.isAvailable || overlaps(start, end, a.startTime, a.endTime));
+    };
+
+    // Check for conflicts with existing or generated entries
+    const checkConflict = (day: string, start: Date, end: Date, facultyId: string, sectionId: string, roomId: string | null) => {
       const allEntries: any[] = [...existingEntries, ...generatedEntries];
       for (const entry of allEntries) {
         if (entry.dayOfWeek !== day) continue;
         if (overlaps(start, end, entry.startTime, entry.endTime)) {
-          if (entry.facultyId === facultyId || entry.sectionId === sectionId || entry.roomId === roomId) {
-            return true;
-          }
+          if (entry.facultyId === facultyId) return { type: 'FACULTY', message: `Faculty conflict at ${day} ${this.formatTime(start)}-${this.formatTime(end)}` };
+          if (entry.sectionId === sectionId) return { type: 'SECTION', message: `Section conflict at ${day} ${this.formatTime(start)}-${this.formatTime(end)}` };
+          if (roomId && entry.roomId === roomId) return { type: 'ROOM', message: `Room conflict at ${day} ${this.formatTime(start)}-${this.formatTime(end)}` };
         }
       }
-      return false;
+      return null;
     };
 
+    // Group assignments by section for proportional distribution
+    const sectionAssignments = new Map<string, typeof assignments>();
     for (const assignment of assignments) {
-      const credits = Math.max(1, Math.floor(assignment.course.creditValue || 3));
-      let assigned = 0;
+      const existing = sectionAssignments.get(assignment.sectionId) || [];
+      existing.push(assignment);
+      sectionAssignments.set(assignment.sectionId, existing);
+    }
 
-      for (const day of days) {
-        if (assigned >= credits) break;
+    // Process each section
+    for (const [sectionId, sectionAssignmentsList] of sectionAssignments) {
+      // Calculate total credits for proportional distribution
+      const totalCredits = sectionAssignmentsList.reduce((sum, a) => sum + (a.course.creditValue || 3), 0);
+      
+      // Sort by credits descending to place larger courses first
+      const sortedAssignments = [...sectionAssignmentsList].sort((a, b) => 
+        (b.course.creditValue || 3) - (a.course.creditValue || 3)
+      );
+
+      for (const assignment of sortedAssignments) {
+        const credits = Math.max(1, Math.floor(assignment.course.creditValue || 3));
+        const durationMinutes = dto.sessionDurations?.[assignment.courseId] || dto.defaultSessionDuration || 60;
+        const sessionsNeeded = credits; // Each credit = one session of configured duration
         
-        const startHour = assignment.course.isPractical ? 12 : 8;
-        const endHour = assignment.course.isPractical ? 16 : 12;
+        let assigned = 0;
 
-        for (let hour = startHour; hour < endHour; hour++) {
-          if (assigned >= credits) break;
+        // Try to spread sessions across different days
+        for (const day of days) {
+          if (assigned >= sessionsNeeded) break;
+          
+          const startHour = assignment.course.isPractical ? 12 : 8;
+          const endHour = assignment.course.isPractical ? 18 : 17;
 
-          const startTimeStr = `${hour.toString().padStart(2, '0')}:00`;
-          const endTimeStr = `${(hour + 1).toString().padStart(2, '0')}:00`;
-          const start = this.parseTime(startTimeStr);
-          const end = this.parseTime(endTimeStr);
+          for (let hour = startHour; hour < endHour; hour++) {
+            if (assigned >= sessionsNeeded) break;
 
-          let selectedRoomId = null;
-          for (const room of rooms) {
-            if (room.capacity && assignment.section.capacity && room.capacity < assignment.section.capacity) continue;
-            if (!isConflict(day, start, end, assignment.facultyId, assignment.sectionId, room.id)) {
-              selectedRoomId = room.id;
-              break;
+            const startTimeStr = `${hour.toString().padStart(2, '0')}:00`;
+            const endTimeMinutes = hour * 60 + durationMinutes;
+            const endHourCalc = Math.floor(endTimeMinutes / 60);
+            const endMinuteCalc = endTimeMinutes % 60;
+            const endTimeStr = `${endHourCalc.toString().padStart(2, '0')}:${endMinuteCalc.toString().padStart(2, '0')}`;
+            
+            const start = this.parseTime(startTimeStr);
+            const end = this.parseTime(endTimeStr);
+
+            // Check faculty availability
+            if (!isFacultyAvailable(assignment.facultyId, day, start, end)) {
+              continue;
+            }
+
+            // Check for conflicts
+            const conflict = checkConflict(day, start, end, assignment.facultyId, assignment.sectionId, null);
+            if (conflict) {
+              conflicts.push({
+                ...conflict,
+                courseId: assignment.courseId,
+                sectionId: assignment.sectionId,
+                facultyId: assignment.facultyId,
+              });
+              continue; // Skip this slot but continue trying others
+            }
+
+            // Find a suitable room
+            let selectedRoomId: string | null = null;
+            for (const room of rooms) {
+              if (room.capacity && assignment.section.capacity && room.capacity < assignment.section.capacity) continue;
+              if (room.roomType === 'PRACTICAL' && !assignment.course.isPractical) continue;
+              if (room.roomType === 'LECTURE' && assignment.course.isPractical) continue;
+              
+              const roomConflict = checkConflict(day, start, end, assignment.facultyId, assignment.sectionId, room.id);
+              if (!roomConflict) {
+                selectedRoomId = room.id;
+                break;
+              }
+            }
+
+            if (selectedRoomId) {
+              const entryData = {
+                institutionId,
+                academicYearId: term.academicYearId,
+                termId: dto.termId,
+                courseId: assignment.courseId,
+                facultyId: assignment.facultyId,
+                sectionId: assignment.sectionId,
+                dayOfWeek: day,
+                startTime: start,
+                endTime: end,
+                roomId: selectedRoomId,
+                timetableId: timetable.id,
+              };
+              generatedEntries.push(entryData);
+              assigned++;
+              break; // Move to next day after placing a session
             }
           }
+        }
 
-          if (selectedRoomId) {
-            const entryData = {
-              institutionId,
-              academicYearId: term.academicYearId,
-              termId: dto.termId,
-              courseId: assignment.courseId,
-              facultyId: assignment.facultyId,
-              sectionId: assignment.sectionId,
-              dayOfWeek: day,
-              startTime: start,
-              endTime: end,
-              roomId: selectedRoomId,
-              timetableId: timetable.id,
-            };
-            generatedEntries.push(entryData);
-            assigned++;
-            break; // spread across days
-          }
+        if (assigned < sessionsNeeded) {
+          conflicts.push({
+            type: 'UNSCHEDULED',
+            message: `Could not schedule all ${sessionsNeeded} sessions for ${assignment.course.name} (only ${assigned} placed)`,
+            courseId: assignment.courseId,
+            sectionId: assignment.sectionId,
+            facultyId: assignment.facultyId,
+          });
         }
       }
     }
@@ -466,10 +543,20 @@ export class TimetableService {
       });
     }
 
-    return this.prisma.timetable.findUnique({
+    const timetableResult = await this.prisma.timetable.findUnique({
       where: { id: timetable.id },
       include: { entries: true },
     });
+
+    return {
+      timetable: timetableResult,
+      conflicts,
+      summary: {
+        totalSessions: generatedEntries.length,
+        totalConflicts: conflicts.length,
+        sectionsProcessed: sectionAssignments.size,
+      },
+    };
   }
 
   async exportTimetable(institutionId: string, termId: string, format: 'csv' | 'json') {
