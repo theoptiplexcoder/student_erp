@@ -18,6 +18,11 @@ import {
   ChevronRight,
   AlertCircle,
   DoorOpen,
+  IndianRupee,
+  Receipt,
+  Layers,
+  Users2,
+  AlertOctagon,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@student-erp/ui';
@@ -26,6 +31,18 @@ const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Admissions', href: '/admin/admissions', icon: UserPlus },
   { name: 'Students', href: '/admin/students', icon: Users },
+  {
+    name: 'Finance',
+    href: '/admin/finance',
+    icon: IndianRupee,
+    children: [
+      { name: 'Overview', href: '/admin/finance', icon: LayoutDashboard },
+      { name: 'Fee Structures', href: '/admin/finance/structures', icon: Layers },
+      { name: 'Student Fee Plans', href: '/admin/finance/plans', icon: Users2 },
+      { name: 'Payments & Receipts', href: '/admin/finance/payments', icon: Receipt },
+      { name: 'Defaulters', href: '/admin/finance/defaulters', icon: AlertOctagon },
+    ],
+  },
   { name: 'Academics', href: '/admin/academics', icon: BookOpen },
   { name: 'Faculty', href: '/admin/faculty', icon: Users },
   {

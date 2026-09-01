@@ -13,6 +13,7 @@ import {
   User,
   ChevronLeft,
   ChevronRight,
+  IndianRupee,
 } from 'lucide-react';
 import { cn } from '@student-erp/utils';
 import { useSidebarStore } from '@/hooks/use-sidebar';
@@ -21,6 +22,7 @@ import { Button } from '@student-erp/ui';
 export const sidebarNavItems = [
   { title: 'Dashboard', href: '/student', icon: LayoutDashboard, exact: true },
   { title: 'My Profile', href: '/student/profile', icon: User },
+  { title: 'Fees & Dues', href: '/student/finance', icon: IndianRupee },
   { title: 'Timetable', href: '/student/timetable', icon: CalendarDays },
   { title: 'My Courses', href: '/student/courses', icon: BookOpen },
   { title: 'Calendar', href: '/student/calendar', icon: CalendarDays },

@@ -48,12 +48,12 @@ export function TimetableToolbar({
   const faculties = facultyResponse?.data || [];
 
   return (
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-4 rounded-lg shadow-sm mb-6 border">
-      <div className="flex flex-wrap gap-2 w-full md:w-auto">
-        <select 
-          value={termId} 
+    <div className="bg-card mb-6 flex flex-col items-start justify-between gap-4 rounded-lg border p-4 shadow-sm md:flex-row md:items-center">
+      <div className="flex w-full flex-wrap gap-2 md:w-auto">
+        <select
+          value={termId}
           onChange={(e) => setTermId(e.target.value)}
-          className="flex h-10 w-full md:w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+          className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm md:w-[180px]"
           disabled={isLoadingTerms}
         >
           <option value="">Select Term</option>
@@ -64,10 +64,10 @@ export function TimetableToolbar({
           ))}
         </select>
 
-        <select 
-          value={sectionId} 
+        <select
+          value={sectionId}
           onChange={(e) => setSectionId(e.target.value)}
-          className="flex h-10 w-full md:w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+          className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm md:w-[180px]"
           disabled={isLoadingSections}
         >
           <option value="">All Sections</option>
@@ -79,10 +79,10 @@ export function TimetableToolbar({
         </select>
 
         {setFacultyId && (
-          <select 
-            value={facultyId || ''} 
+          <select
+            value={facultyId || ''}
             onChange={(e) => setFacultyId(e.target.value)}
-            className="flex h-10 w-full md:w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm md:w-[180px]"
             disabled={isLoadingFaculty}
           >
             <option value="">All Faculty</option>
@@ -95,10 +95,10 @@ export function TimetableToolbar({
         )}
 
         {setDayOfWeek && (
-          <select 
-            value={dayOfWeek || ''} 
+          <select
+            value={dayOfWeek || ''}
             onChange={(e) => setDayOfWeek(e.target.value)}
-            className="flex h-10 w-full md:w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm md:w-[180px]"
           >
             <option value="">All Days</option>
             <option value="MONDAY">Monday</option>
@@ -112,23 +112,39 @@ export function TimetableToolbar({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {(!status || status === 'NO_TIMETABLE' || status === 'DRAFT') && (
-          <Button onClick={onGenerate} variant="outline" className="gap-2" disabled={isGenerating || !termId}>
-            {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-            Generate
-          </Button>
-        )}
+        <Button
+          onClick={onGenerate}
+          variant="outline"
+          className="gap-2"
+          disabled={isGenerating || !termId}
+        >
+          {isGenerating ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Zap className="h-4 w-4" />
+          )}
+          Generate
+        </Button>
         <Button onClick={onImport} variant="outline" className="gap-2">
-          <Upload className="w-4 h-4" />
+          <Upload className="h-4 w-4" />
           Import
         </Button>
-        <Button onClick={onExport} variant="outline" className="gap-2" disabled={!termId || status === 'NO_TIMETABLE'}>
-          <Download className="w-4 h-4" />
+        <Button
+          onClick={onExport}
+          variant="outline"
+          className="gap-2"
+          disabled={!termId || status === 'NO_TIMETABLE'}
+        >
+          <Download className="h-4 w-4" />
           Export
         </Button>
         {status === 'DRAFT' && (
           <Button onClick={onPublish} className="gap-2" disabled={isPublishing}>
-            {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            {isPublishing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
             Publish
           </Button>
         )}

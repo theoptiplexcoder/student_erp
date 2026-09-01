@@ -262,6 +262,49 @@ export class AdmissionsService {
         },
       });
 
+      // 5. Auto-assign Fee Plan if an active FeeStructure matches
+      const activeFeeStructure = await tx.feeStructure.findFirst({
+        where: {
+          institutionId,
+          academicYearId: app.academicYearId,
+          programId: app.programId,
+          isActive: true,
+        },
+        include: { components: true },
+      });
+
+      if (activeFeeStructure) {
+        const mandatorySum = activeFeeStructure.components
+          .filter((c) => !c.isOptional)
+          .reduce((sum, c) => sum + c.amount, 0);
+
+        const planTotal = mandatorySum > 0 ? mandatorySum : activeFeeStructure.totalAmount;
+
+        const feePlan = await tx.studentFeePlan.create({
+          data: {
+            institutionId,
+            studentId: student.id,
+            academicYearId: app.academicYearId,
+            feeStructureId: activeFeeStructure.id,
+            totalAmount: planTotal,
+            currency: activeFeeStructure.currency,
+            paymentMode: 'ANNUAL',
+            status: 'ACTIVE',
+          },
+        });
+
+        await tx.feeInstallment.create({
+          data: {
+            studentFeePlanId: feePlan.id,
+            installmentNumber: 1,
+            amount: planTotal,
+            amountPaid: 0,
+            dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            status: 'PENDING',
+          },
+        });
+      }
+
       return student;
     });
   }

@@ -26,6 +26,7 @@ import { DemoModule } from './demo/demo.module';
 import { GrievancesModule } from './grievances/grievances.module';
 import { BuildingsModule } from './buildings/buildings.module';
 import { RoomsModule } from './rooms/rooms.module';
+import { FinanceModule } from './finance/finance.module';
 
 @Module({
   imports: [
@@ -56,6 +57,8 @@ import { RoomsModule } from './rooms/rooms.module';
     GrievancesModule,
     BuildingsModule,
     RoomsModule,
+    FinanceModule,
   ],
+  exports: [FinanceModule],
 })
 export class AdminModule {}
