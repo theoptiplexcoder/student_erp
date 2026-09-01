@@ -5,8 +5,9 @@ import { TimetableGrid } from '@/components/admin/timetable/timetable-grid';
 import { TimetableToolbar } from '@/components/admin/timetable/timetable-toolbar';
 import { TimetableBulkActions } from '@/components/admin/timetable/timetable-bulk-actions';
 import { TimetableEntryForm } from '@/components/admin/timetable/timetable-entry-form';
-import { useAdminTimetableConflicts } from '@student-erp/hooks';
+import { useAdminTimetableConflicts, useGenerateTimetable } from '@student-erp/hooks';
 import { TimetableConflictBadge } from '@/components/admin/timetable/timetable-conflict-badge';
+import { useAdminSections } from '@/hooks/api/admin/useSections';
 
 export default function AdminTimetablePage() {
   const [termId, setTermId] = useState('');
@@ -16,6 +17,39 @@ export default function AdminTimetablePage() {
   const [editingEntry, setEditingEntry] = useState<any>(null);
 
   const { data: conflicts } = useAdminTimetableConflicts(termId);
+  const { mutate: generateTimetable, isPending: isGenerating } = useGenerateTimetable();
+  const { data: sectionsResponse } = useAdminSections(1, 100);
+
+  const handleGenerate = () => {
+    if (!termId) {
+      alert('Please select a term to generate timetable');
+      return;
+    }
+    
+    let sectionIds: string[] = [];
+    if (sectionId) {
+      sectionIds = [sectionId];
+    } else if (sectionsResponse?.data) {
+      sectionIds = sectionsResponse.data.map(s => s.id);
+    }
+    
+    if (sectionIds.length === 0) {
+      alert('No sections available to generate timetable');
+      return;
+    }
+    
+    generateTimetable({
+      termId,
+      sectionIds,
+    }, {
+      onSuccess: () => {
+        alert('Timetable generated successfully');
+      },
+      onError: (err: any) => {
+        alert('Failed to generate timetable: ' + err.message);
+      }
+    });
+  };
 
   const handleToggleSelect = (id: string) => {
     setSelectedIds((prev) =>
@@ -53,7 +87,8 @@ export default function AdminTimetablePage() {
         setTermId={setTermId}
         sectionId={sectionId}
         setSectionId={setSectionId}
-        onGenerate={() => console.log('Generate clicked')}
+        onGenerate={handleGenerate}
+        isGenerating={isGenerating}
         onImport={() => console.log('Import clicked')}
         onExport={() => console.log('Export clicked')}
         onPublish={() => console.log('Publish clicked')}

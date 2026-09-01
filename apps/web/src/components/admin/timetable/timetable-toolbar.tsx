@@ -7,6 +7,7 @@ import { useAdminFaculty } from '@/hooks/api/admin/useFaculty';
 
 interface TimetableToolbarProps {
   onGenerate: () => void;
+  isGenerating?: boolean;
   onImport: () => void;
   onExport: () => void;
   onPublish: () => void;
@@ -33,6 +34,7 @@ export function TimetableToolbar({
   setFacultyId,
   dayOfWeek,
   setDayOfWeek,
+  isGenerating,
 }: TimetableToolbarProps) {
   const { data: terms, isLoading: isLoadingTerms } = useAdminTerms();
   const { data: sectionsResponse, isLoading: isLoadingSections } = useAdminSections(1, 100);
@@ -106,8 +108,8 @@ export function TimetableToolbar({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button onClick={onGenerate} variant="outline" className="gap-2">
-          <Zap className="w-4 h-4" />
+        <Button onClick={onGenerate} variant="outline" className="gap-2" disabled={isGenerating}>
+          {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
           Generate
         </Button>
         <Button onClick={onImport} variant="outline" className="gap-2">
