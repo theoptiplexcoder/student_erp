@@ -60,7 +60,7 @@ export class TimetableController {
   @Post('publish')
   @HttpCode(HttpStatus.OK)
   async publish(@CurrentUser() user: any, @Body('termId') termId: string) {
-    throw new NotImplementedException('Publish is not implemented yet');
+    return this.timetableService.publish(user.institutionId, termId);
   }
 
   @Post('duplicate')
@@ -75,7 +75,7 @@ export class TimetableController {
     @Query('termId') termId: string,
     @Query('format') format: 'csv' | 'json',
   ) {
-    throw new NotImplementedException('Export is not implemented yet');
+    return this.timetableService.exportTimetable(user.institutionId, termId, format);
   }
 
   @Post('import')

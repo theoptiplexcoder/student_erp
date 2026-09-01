@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Skeleton, Checkbox } from '@student-erp/ui';
-import { useAdminTimetable } from '@student-erp/hooks';
 import { Clock, MapPin, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@student-erp/ui';
 import { TimetableConflictBadge } from './timetable-conflict-badge';
@@ -30,10 +29,12 @@ interface AdminTimetableGridProps {
   onToggleSelect: (id: string) => void;
   onEntryClick: (entry: any) => void;
   onEmptySlotClick: (day: string, startTime: string) => void;
+  entries: any[];
+  isPending: boolean;
+  status: string;
 }
 
-export function TimetableGrid({ termId, sectionId, selectedIds, onToggleSelect, onEntryClick, onEmptySlotClick }: AdminTimetableGridProps) {
-  const { data: timetable, isPending, isError } = useAdminTimetable({ termId, sectionId });
+export function TimetableGrid({ termId, sectionId, selectedIds, onToggleSelect, onEntryClick, onEmptySlotClick, entries, isPending, status }: AdminTimetableGridProps) {
   const displayDays = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 
   if (isPending) {
@@ -44,12 +45,6 @@ export function TimetableGrid({ termId, sectionId, selectedIds, onToggleSelect, 
       </div>
     );
   }
-
-  if (isError || !timetable) {
-    return <div className="p-4 text-center text-red-500">Failed to load timetable. Please ensure a term is selected.</div>;
-  }
-
-  const entries = Array.isArray(timetable) ? timetable : (timetable as any).data || [];
 
   const timeSlotsSet = new Set<string>();
   entries.forEach((entry: any) => {
@@ -78,7 +73,7 @@ export function TimetableGrid({ termId, sectionId, selectedIds, onToggleSelect, 
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="flex items-center gap-4">
           <CardTitle>Timetable View</CardTitle>
-          <TimetableStatusBadge status="DRAFT" />
+          {status !== 'NO_TIMETABLE' && <TimetableStatusBadge status={status} />}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="h-8">

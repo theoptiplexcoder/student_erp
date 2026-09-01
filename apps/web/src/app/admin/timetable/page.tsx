@@ -5,9 +5,10 @@ import { TimetableGrid } from '@/components/admin/timetable/timetable-grid';
 import { TimetableToolbar } from '@/components/admin/timetable/timetable-toolbar';
 import { TimetableBulkActions } from '@/components/admin/timetable/timetable-bulk-actions';
 import { TimetableEntryForm } from '@/components/admin/timetable/timetable-entry-form';
-import { useAdminTimetableConflicts, useGenerateTimetable } from '@student-erp/hooks';
+import { useAdminTimetableConflicts, useGenerateTimetable, useAdminTimetable, usePublishTimetable, useExportTimetable, useImportTimetable } from '@student-erp/hooks';
 import { TimetableConflictBadge } from '@/components/admin/timetable/timetable-conflict-badge';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
+import { TimetableImportModal } from '@/components/admin/timetable/timetable-import-modal';
 
 export default function AdminTimetablePage() {
   const [termId, setTermId] = useState('');
@@ -17,8 +18,48 @@ export default function AdminTimetablePage() {
   const [editingEntry, setEditingEntry] = useState<any>(null);
 
   const { data: conflicts } = useAdminTimetableConflicts(termId);
+  const { data: timetableData, isPending: isTimetablePending } = useAdminTimetable({ termId, sectionId });
   const { mutate: generateTimetable, isPending: isGenerating } = useGenerateTimetable();
+  const { mutate: publishTimetable, isPending: isPublishing } = usePublishTimetable();
   const { data: sectionsResponse } = useAdminSections(1, 100);
+
+  const entries = Array.isArray(timetableData) ? timetableData : (timetableData as any)?.data || [];
+  const currentTimetable = entries.length > 0 && entries[0].timetable ? entries[0].timetable : null;
+  const timetableStatus = currentTimetable?.status || 'NO_TIMETABLE';
+
+  const handlePublish = () => {
+    if (!termId) return;
+    publishTimetable(termId, {
+      onSuccess: () => alert('Timetable published successfully'),
+      onError: (err: any) => alert('Failed to publish timetable: ' + err.message)
+    });
+  };
+
+  const handleExport = () => {
+    if (!termId) return;
+    exportTimetable({ termId, format: 'csv' }, {
+      onSuccess: (data: any) => {
+        const blob = new Blob([data], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `timetable-${termId}.csv`;
+        a.click();
+      },
+      onError: (err: any) => alert('Failed to export timetable: ' + err.message)
+    });
+  };
+
+  const handleImport = (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (termId) formData.append('termId', termId);
+
+    importTimetable(formData, {
+      onSuccess: () => alert('Timetable imported successfully'),
+      onError: (err: any) => alert('Failed to import timetable: ' + err.message)
+    });
+  };
 
   const handleGenerate = () => {
     if (!termId) {
@@ -89,9 +130,11 @@ export default function AdminTimetablePage() {
         setSectionId={setSectionId}
         onGenerate={handleGenerate}
         isGenerating={isGenerating}
-        onImport={() => console.log('Import clicked')}
-        onExport={() => console.log('Export clicked')}
-        onPublish={() => console.log('Publish clicked')}
+        onImport={() => setImportModalOpen(true)}
+        onExport={handleExport}
+        onPublish={handlePublish}
+        isPublishing={isPublishing}
+        status={timetableStatus}
       />
 
       <TimetableGrid
@@ -101,6 +144,9 @@ export default function AdminTimetablePage() {
         onToggleSelect={handleToggleSelect}
         onEntryClick={handleEntryClick}
         onEmptySlotClick={handleEmptySlotClick}
+        entries={entries}
+        isPending={isTimetablePending}
+        status={timetableStatus}
       />
 
       <TimetableBulkActions
@@ -118,6 +164,12 @@ export default function AdminTimetablePage() {
           if (!open) setEditingEntry(null);
         }}
         entry={editingEntry}
+      />
+
+      <TimetableImportModal
+        isOpen={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onImport={handleImport}
       />
     </div>
   );

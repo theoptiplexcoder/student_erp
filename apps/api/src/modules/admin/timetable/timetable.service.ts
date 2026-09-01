@@ -115,7 +115,7 @@ export class TimetableService {
         ...(filters.facultyId && { facultyId: filters.facultyId }),
         ...(filters.dayOfWeek && { dayOfWeek: filters.dayOfWeek }),
       },
-      include: { course: true, faculty: { include: { user: true } }, section: true, room: true },
+      include: { course: true, faculty: { include: { user: true } }, section: true, room: true, timetable: true },
       orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
     });
   }
@@ -469,6 +469,48 @@ export class TimetableService {
     return this.prisma.timetable.findUnique({
       where: { id: timetable.id },
       include: { entries: true },
+    });
+  }
+
+  async exportTimetable(institutionId: string, termId: string, format: 'csv' | 'json') {
+    const entries = await this.prisma.timetableEntry.findMany({
+      where: { institutionId, termId },
+      include: { course: true, faculty: { include: { user: true } }, section: true, room: true },
+      orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
+    });
+
+    if (format === 'json') {
+      return entries;
+    }
+
+    // Basic CSV generation
+    const lines = ['Day,Start Time,End Time,Course,Section,Faculty,Room'];
+    for (const e of entries) {
+      const day = e.dayOfWeek;
+      const start = e.startTime.toISOString().substring(11, 16);
+      const end = e.endTime.toISOString().substring(11, 16);
+      const course = e.course?.name || e.courseId;
+      const section = e.section?.name || e.sectionId;
+      const faculty = e.faculty ? `${e.faculty.user.firstName} ${e.faculty.user.lastName}` : 'TBA';
+      const room = e.room?.name || e.roomId || '';
+      lines.push(`${day},${start},${end},"${course}","${section}","${faculty}","${room}"`);
+    }
+    return lines.join('\n');
+  }
+
+  async publish(institutionId: string, termId: string) {
+    const timetable = await this.prisma.timetable.findFirst({
+      where: { institutionId, termId },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!timetable) throw new NotFoundException('Timetable not found for this term');
+    
+    return this.prisma.timetable.update({
+      where: { id: timetable.id },
+      data: {
+        status: 'PUBLISHED',
+        publishedAt: new Date(),
+      },
     });
   }
 

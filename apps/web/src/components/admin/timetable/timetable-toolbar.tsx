@@ -19,6 +19,8 @@ interface TimetableToolbarProps {
   setFacultyId?: (val: string) => void;
   dayOfWeek?: string;
   setDayOfWeek?: (val: string) => void;
+  status?: string;
+  isPublishing?: boolean;
 }
 
 export function TimetableToolbar({
@@ -35,6 +37,8 @@ export function TimetableToolbar({
   dayOfWeek,
   setDayOfWeek,
   isGenerating,
+  status,
+  isPublishing,
 }: TimetableToolbarProps) {
   const { data: terms, isLoading: isLoadingTerms } = useAdminTerms();
   const { data: sectionsResponse, isLoading: isLoadingSections } = useAdminSections(1, 100);
@@ -108,22 +112,26 @@ export function TimetableToolbar({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button onClick={onGenerate} variant="outline" className="gap-2" disabled={isGenerating}>
-          {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-          Generate
-        </Button>
+        {(!status || status === 'NO_TIMETABLE' || status === 'DRAFT') && (
+          <Button onClick={onGenerate} variant="outline" className="gap-2" disabled={isGenerating || !termId}>
+            {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+            Generate
+          </Button>
+        )}
         <Button onClick={onImport} variant="outline" className="gap-2">
           <Upload className="w-4 h-4" />
           Import
         </Button>
-        <Button onClick={onExport} variant="outline" className="gap-2">
+        <Button onClick={onExport} variant="outline" className="gap-2" disabled={!termId || status === 'NO_TIMETABLE'}>
           <Download className="w-4 h-4" />
           Export
         </Button>
-        <Button onClick={onPublish} className="gap-2">
-          <Send className="w-4 h-4" />
-          Publish
-        </Button>
+        {status === 'DRAFT' && (
+          <Button onClick={onPublish} className="gap-2" disabled={isPublishing}>
+            {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            Publish
+          </Button>
+        )}
       </div>
     </div>
   );
