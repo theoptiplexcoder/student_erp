@@ -16,11 +16,14 @@ export default function AdminTimetablePage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [formOpen, setFormOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<any>(null);
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   const { data: conflicts } = useAdminTimetableConflicts(termId);
   const { data: timetableData, isPending: isTimetablePending } = useAdminTimetable({ termId, sectionId });
   const { mutate: generateTimetable, isPending: isGenerating } = useGenerateTimetable();
   const { mutate: publishTimetable, isPending: isPublishing } = usePublishTimetable();
+  const { mutate: exportTimetable } = useExportTimetable();
+  const { mutate: importTimetable } = useImportTimetable();
   const { data: sectionsResponse } = useAdminSections(1, 100);
 
   const entries = Array.isArray(timetableData) ? timetableData : (timetableData as any)?.data || [];
