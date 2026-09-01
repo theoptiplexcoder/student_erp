@@ -105,8 +105,9 @@ export default function AdminTimetablePage() {
   const { data: sectionsResponse } = useAdminSections(1, 100);
 
   const entries = Array.isArray(timetableData) ? timetableData : (timetableData as any)?.data || [];
-  const currentTimetable = entries.length > 0 && entries[0].timetable ? entries[0].timetable : null;
-  const timetableStatus = currentTimetable?.status || 'NO_TIMETABLE';
+  // TODO: Fetch timetable status via dedicated endpoint when available
+  // Currently timetable is not included in findAll to reduce query latency
+  const timetableStatus = 'NO_TIMETABLE';
 
   // Derive courses from timetable entries
   const courses = React.useMemo(() => {
@@ -184,6 +185,7 @@ export default function AdminTimetablePage() {
   const handleGenerate = (settings?: {
     defaultSessionDuration: number;
     sessionDurations: Record<string, number>;
+    workingHours?: { start: string; end: string };
   }) => {
     if (!termId) {
       alert('Please select a term to generate timetable');
@@ -220,6 +222,7 @@ export default function AdminTimetablePage() {
         ...(settings?.sessionDurations && Object.keys(settings.sessionDurations).length > 0
           ? { sessionDurations: settings.sessionDurations }
           : {}),
+        ...(settings?.workingHours ? { workingHours: settings.workingHours } : {}),
       },
       {
         onSuccess: (response: any) => {

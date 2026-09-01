@@ -1,7 +1,14 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { Prisma, RoomType } from '@prisma/client';
-import { CreateTimetableEntryDto, UpdateTimetableEntryDto, MoveTimetableEntryDto, ReassignFacultyDto, BulkUpdateTimetableDto, GenerateTimetableDto } from './dto';
+import {
+  CreateTimetableEntryDto,
+  UpdateTimetableEntryDto,
+  MoveTimetableEntryDto,
+  ReassignFacultyDto,
+  BulkUpdateTimetableDto,
+  GenerateTimetableDto,
+} from './dto';
 
 @Injectable()
 export class TimetableService {
@@ -19,13 +26,13 @@ export class TimetableService {
   async checkConflicts(
     institutionId: string,
     termId: string,
-    dayOfWeek: import("@prisma/client").TimetableDay,
+    dayOfWeek: import('@prisma/client').TimetableDay,
     startTime: string,
     endTime: string,
     roomId?: string,
     facultyId?: string,
     sectionId?: string,
-    excludeId?: string
+    excludeId?: string,
   ) {
     if (!termId || !dayOfWeek || !startTime || !endTime) {
       return [];
@@ -80,7 +87,7 @@ export class TimetableService {
       dto.endTime,
       dto.roomId,
       dto.facultyId,
-      dto.sectionId
+      dto.sectionId,
     );
     if (conflicts.length > 0) {
       throw new ConflictException('Conflicts detected', { cause: conflicts });
@@ -106,7 +113,15 @@ export class TimetableService {
     });
   }
 
-  async findAll(institutionId: string, filters: { termId?: string; sectionId?: string; facultyId?: string; dayOfWeek?: import("@prisma/client").TimetableDay }) {
+  async findAll(
+    institutionId: string,
+    filters: {
+      termId?: string;
+      sectionId?: string;
+      facultyId?: string;
+      dayOfWeek?: import('@prisma/client').TimetableDay;
+    },
+  ) {
     return this.prisma.timetableEntry.findMany({
       where: {
         institutionId,
@@ -115,7 +130,7 @@ export class TimetableService {
         ...(filters.facultyId && { facultyId: filters.facultyId }),
         ...(filters.dayOfWeek && { dayOfWeek: filters.dayOfWeek }),
       },
-      include: { course: true, faculty: { include: { user: true } }, section: true, room: true, timetable: true },
+      include: { course: true, faculty: { include: { user: true } }, section: true },
       orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
     });
   }
@@ -134,7 +149,7 @@ export class TimetableService {
 
     const termId = dto.termId ?? existing.termId;
     const dayOfWeek = dto.dayOfWeek ?? existing.dayOfWeek;
-    
+
     const startTime = dto.startTime ?? this.formatTime(existing.startTime);
     const endTime = dto.endTime ?? this.formatTime(existing.endTime);
     const roomId = dto.roomId !== undefined ? dto.roomId : existing.roomId;
@@ -150,7 +165,7 @@ export class TimetableService {
       roomId || undefined,
       facultyId,
       sectionId,
-      id
+      id,
     );
 
     if (conflicts.length > 0) {
@@ -211,7 +226,7 @@ export class TimetableService {
       roomId || undefined,
       existing.facultyId,
       existing.sectionId,
-      entryId
+      entryId,
     );
 
     if (conflicts.length > 0) {
@@ -251,11 +266,13 @@ export class TimetableService {
       entry.roomId || undefined,
       dto.facultyId,
       entry.sectionId,
-      dto.entryId
+      dto.entryId,
     );
 
     if (conflicts.length > 0) {
-      throw new ConflictException('Faculty has a conflicting assignment at this time', { cause: conflicts });
+      throw new ConflictException('Faculty has a conflicting assignment at this time', {
+        cause: conflicts,
+      });
     }
 
     return this.prisma.timetableEntry.update({
@@ -289,28 +306,25 @@ export class TimetableService {
         roomId || undefined,
         facultyId,
         entry.sectionId,
-        entry.id
+        entry.id,
       );
 
       if (conflicts.length > 0) {
-        throw new ConflictException(
-          `Conflict for entry ${entry.id}`,
-          { cause: conflicts }
-        );
+        throw new ConflictException(`Conflict for entry ${entry.id}`, { cause: conflicts });
       }
     }
 
     return this.prisma.$transaction(
-      dto.entryIds.map(id => {
+      dto.entryIds.map((id) => {
         const updateData: any = { ...dto.updates };
         if (dto.updates.startTime) updateData.startTime = this.parseTime(dto.updates.startTime);
         if (dto.updates.endTime) updateData.endTime = this.parseTime(dto.updates.endTime);
-        
+
         return this.prisma.timetableEntry.update({
           where: { id },
           data: updateData,
         });
-      })
+      }),
     );
   }
 
@@ -374,7 +388,12 @@ export class TimetableService {
       });
       // Delete older archived timetables for this term (keep only 1 previous)
       const olderArchived = await this.prisma.timetable.findMany({
-        where: { institutionId, termId: dto.termId, status: 'ARCHIVED', id: { not: existingTimetable.id } },
+        where: {
+          institutionId,
+          termId: dto.termId,
+          status: 'ARCHIVED',
+          id: { not: existingTimetable.id },
+        },
       });
       for (const old of olderArchived) {
         await this.prisma.timetableEntry.deleteMany({ where: { timetableId: old.id } });
@@ -414,13 +433,49 @@ export class TimetableService {
     // Fetch faculty availability for the term
     const facultyAvailability = await this.prisma.facultyAvailability.findMany({
       where: {
-        facultyId: { in: [...new Set(assignments.map(a => a.facultyId))] },
+        facultyId: { in: [...new Set(assignments.map((a) => a.facultyId))] },
       },
     });
 
-    const days: import("@prisma/client").TimetableDay[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
+    const curriculumCourses = await this.prisma.curriculumCourse.findMany({
+      where: {
+        institutionId,
+        courseId: { in: [...new Set(assignments.map((a) => a.courseId))] },
+      },
+      include: {
+        curriculumTerm: {
+          include: {
+            curriculum: true,
+          },
+        },
+      },
+    });
+
+    const getCreditsForAssignment = (assignment: any) => {
+      if (!assignment.section?.programId) return assignment.course?.creditValue ?? 3;
+      const cc = curriculumCourses.find(
+        (c) =>
+          c.courseId === assignment.courseId &&
+          c.curriculumTerm?.curriculum?.programId === assignment.section.programId,
+      );
+      return cc?.creditValue ?? assignment.course?.creditValue ?? 3;
+    };
+
+    const days: import('@prisma/client').TimetableDay[] = [
+      'MONDAY',
+      'TUESDAY',
+      'WEDNESDAY',
+      'THURSDAY',
+      'FRIDAY',
+    ];
     const generatedEntries: Prisma.TimetableEntryCreateManyInput[] = [];
-    const conflicts: Array<{ type: string; message: string; courseId?: string; sectionId?: string; facultyId?: string }> = [];
+    const conflicts: Array<{
+      type: string;
+      message: string;
+      courseId?: string;
+      sectionId?: string;
+      facultyId?: string;
+    }> = [];
 
     // Helper to check time overlap
     const overlaps = (startA: Date, endA: Date, startB: Date, endB: Date) => {
@@ -429,20 +484,41 @@ export class TimetableService {
 
     // Check if faculty is available at given time
     const isFacultyAvailable = (facultyId: string, day: string, start: Date, end: Date) => {
-      const avail = facultyAvailability.filter(f => f.facultyId === facultyId && f.dayOfWeek === day);
+      const avail = facultyAvailability.filter(
+        (f) => f.facultyId === facultyId && f.dayOfWeek === day,
+      );
       if (avail.length === 0) return true; // No availability records = always available
-      return avail.some(a => !a.isAvailable || overlaps(start, end, a.startTime, a.endTime));
+      return avail.some((a) => !a.isAvailable || overlaps(start, end, a.startTime, a.endTime));
     };
 
     // Check for conflicts with existing or generated entries
-    const checkConflict = (day: string, start: Date, end: Date, facultyId: string, sectionId: string, roomId: string | null) => {
+    const checkConflict = (
+      day: string,
+      start: Date,
+      end: Date,
+      facultyId: string,
+      sectionId: string,
+      roomId: string | null,
+    ) => {
       const allEntries: any[] = [...existingEntries, ...generatedEntries];
       for (const entry of allEntries) {
         if (entry.dayOfWeek !== day) continue;
         if (overlaps(start, end, entry.startTime, entry.endTime)) {
-          if (entry.facultyId === facultyId) return { type: 'FACULTY', message: `Faculty conflict at ${day} ${this.formatTime(start)}-${this.formatTime(end)}` };
-          if (entry.sectionId === sectionId) return { type: 'SECTION', message: `Section conflict at ${day} ${this.formatTime(start)}-${this.formatTime(end)}` };
-          if (roomId && entry.roomId === roomId) return { type: 'ROOM', message: `Room conflict at ${day} ${this.formatTime(start)}-${this.formatTime(end)}` };
+          if (entry.facultyId === facultyId)
+            return {
+              type: 'FACULTY',
+              message: `Faculty conflict at ${day} ${this.formatTime(start)}-${this.formatTime(end)}`,
+            };
+          if (entry.sectionId === sectionId)
+            return {
+              type: 'SECTION',
+              message: `Section conflict at ${day} ${this.formatTime(start)}-${this.formatTime(end)}`,
+            };
+          if (roomId && entry.roomId === roomId)
+            return {
+              type: 'ROOM',
+              message: `Room conflict at ${day} ${this.formatTime(start)}-${this.formatTime(end)}`,
+            };
         }
       }
       return null;
@@ -459,26 +535,34 @@ export class TimetableService {
     // Process each section
     for (const [sectionId, sectionAssignmentsList] of sectionAssignments) {
       // Calculate total credits for proportional distribution
-      const totalCredits = sectionAssignmentsList.reduce((sum, a) => sum + (a.course.creditValue || 3), 0);
-      
+      const totalCredits = sectionAssignmentsList.reduce(
+        (sum, a) => sum + getCreditsForAssignment(a),
+        0,
+      );
+
       // Sort by credits descending to place larger courses first
-      const sortedAssignments = [...sectionAssignmentsList].sort((a, b) => 
-        (b.course.creditValue || 3) - (a.course.creditValue || 3)
+      const sortedAssignments = [...sectionAssignmentsList].sort(
+        (a, b) => getCreditsForAssignment(b) - getCreditsForAssignment(a),
       );
 
       for (const assignment of sortedAssignments) {
-        const credits = Math.max(1, Math.floor(assignment.course.creditValue || 3));
-        const durationMinutes = dto.sessionDurations?.[assignment.courseId] || dto.defaultSessionDuration || 60;
+        const credits = Math.max(1, Math.floor(getCreditsForAssignment(assignment)));
+        const durationMinutes =
+          dto.sessionDurations?.[assignment.courseId] || dto.defaultSessionDuration || 50;
         const sessionsNeeded = credits; // Each credit = one session of configured duration
-        
+
         let assigned = 0;
 
         // Try to spread sessions across different days
         for (const day of days) {
           if (assigned >= sessionsNeeded) break;
-          
-          const startHour = assignment.course.isPractical ? 12 : 8;
-          const endHour = assignment.course.isPractical ? 18 : 17;
+
+          const whStart = dto.workingHours ? parseInt(dto.workingHours.start.split(':')[0], 10) : 8;
+          const whEnd = dto.workingHours ? parseInt(dto.workingHours.end.split(':')[0], 10) : 17;
+          const half = Math.floor((whStart + whEnd) / 2);
+
+          const startHour = assignment.course.isPractical ? Math.max(whStart, half) : whStart;
+          const endHour = whEnd;
 
           for (let hour = startHour; hour < endHour; hour++) {
             if (assigned >= sessionsNeeded) break;
@@ -488,7 +572,7 @@ export class TimetableService {
             const endHourCalc = Math.floor(endTimeMinutes / 60);
             const endMinuteCalc = endTimeMinutes % 60;
             const endTimeStr = `${endHourCalc.toString().padStart(2, '0')}:${endMinuteCalc.toString().padStart(2, '0')}`;
-            
+
             const start = this.parseTime(startTimeStr);
             const end = this.parseTime(endTimeStr);
 
@@ -498,7 +582,14 @@ export class TimetableService {
             }
 
             // Check for conflicts
-            const conflict = checkConflict(day, start, end, assignment.facultyId, assignment.sectionId, null);
+            const conflict = checkConflict(
+              day,
+              start,
+              end,
+              assignment.facultyId,
+              assignment.sectionId,
+              null,
+            );
             if (conflict) {
               conflicts.push({
                 ...conflict,
@@ -512,11 +603,27 @@ export class TimetableService {
             // Find a suitable room
             let selectedRoomId: string | null = null;
             for (const room of rooms) {
-              if (room.capacity && assignment.section.capacity && room.capacity < assignment.section.capacity) continue;
+              if (
+                room.capacity &&
+                assignment.section.capacity &&
+                room.capacity < assignment.section.capacity
+              )
+                continue;
               if (room.roomType === RoomType.LAB && !assignment.course.isPractical) continue;
-              if ((room.roomType === RoomType.CLASSROOM || room.roomType === RoomType.LECTURE_HALL) && assignment.course.isPractical) continue;
-              
-              const roomConflict = checkConflict(day, start, end, assignment.facultyId, assignment.sectionId, room.id);
+              if (
+                (room.roomType === RoomType.CLASSROOM || room.roomType === RoomType.LECTURE_HALL) &&
+                assignment.course.isPractical
+              )
+                continue;
+
+              const roomConflict = checkConflict(
+                day,
+                start,
+                end,
+                assignment.facultyId,
+                assignment.sectionId,
+                room.id,
+              );
               if (!roomConflict) {
                 selectedRoomId = room.id;
                 break;
@@ -610,7 +717,7 @@ export class TimetableService {
       orderBy: { createdAt: 'desc' },
     });
     if (!timetable) throw new NotFoundException('Timetable not found for this term');
-    
+
     return this.prisma.timetable.update({
       where: { id: timetable.id },
       data: {

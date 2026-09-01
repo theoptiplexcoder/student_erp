@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Input } from '@student-erp/ui';
+import { Button } from '@student-erp/ui';
 import { Download, Upload, Zap, Send, Loader2 } from 'lucide-react';
 import { useAdminTerms } from '@/hooks/api/admin/useTerms';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
@@ -44,8 +44,18 @@ export function TimetableToolbar({
   const { data: sectionsResponse, isLoading: isLoadingSections } = useAdminSections(1, 100);
   const { data: facultyResponse, isLoading: isLoadingFaculty } = useAdminFaculty(1, 100);
 
-  const sections = sectionsResponse?.data || [];
+  const allSections = sectionsResponse?.data || [];
   const faculties = facultyResponse?.data || [];
+
+  // Filter sections relevant to selected term
+  const selectedTerm = terms?.find((t: any) => t.id === termId);
+  const sections = selectedTerm
+    ? allSections.filter(
+        (s: any) =>
+          s.semester === selectedTerm.semester && s.academicYearId === selectedTerm.academicYearId,
+      )
+    : allSections;
+  const noSectionsForTerm = !!termId && sections.length === 0 && !isLoadingSections;
 
   return (
     <div className="bg-card mb-6 flex flex-col items-start justify-between gap-4 rounded-lg border p-4 shadow-sm md:flex-row md:items-center">
@@ -68,9 +78,11 @@ export function TimetableToolbar({
           value={sectionId}
           onChange={(e) => setSectionId(e.target.value)}
           className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm md:w-[180px]"
-          disabled={isLoadingSections}
+          disabled={isLoadingSections || noSectionsForTerm}
         >
-          <option value="">All Sections</option>
+          <option value="">
+            {noSectionsForTerm ? 'No sections for this term' : 'All Sections'}
+          </option>
           {sections.map((section: any) => (
             <option key={section.id} value={section.id}>
               {section.name} {section.code ? `(${section.code})` : ''}

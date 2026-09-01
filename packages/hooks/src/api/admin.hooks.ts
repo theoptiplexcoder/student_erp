@@ -3,24 +3,30 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AdminApi } from '@student-erp/sdk';
 
-export const useAdminTimetable = (params?: { termId?: string; sectionId?: string; facultyId?: string; dayOfWeek?: string }) =>
+export const useAdminTimetable = (params?: {
+  termId?: string;
+  sectionId?: string;
+  facultyId?: string;
+  dayOfWeek?: string;
+}) =>
   useQuery({
     queryKey: ['admin', 'timetable', params],
-    queryFn: () => AdminApi.timetable.list(params)
+    queryFn: () => AdminApi.timetable.list(params),
+    enabled: !!params?.termId,
   });
 
 export const useAdminTimetableEntry = (id: string) =>
   useQuery({
     queryKey: ['admin', 'timetable', id],
     queryFn: () => AdminApi.timetable.get(id),
-    enabled: !!id
+    enabled: !!id,
   });
 
 export const useAdminTimetableConflicts = (termId: string) =>
   useQuery({
     queryKey: ['admin', 'timetable', 'conflicts', termId],
     queryFn: () => AdminApi.timetable.conflicts(termId),
-    enabled: !!termId
+    enabled: !!termId,
   });
 
 export const useCreateTimetableEntry = () => {

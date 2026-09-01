@@ -25,7 +25,11 @@ interface Course {
 interface TimetableSessionSettingsProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (settings: { defaultSessionDuration: number; sessionDurations: Record<string, number> }) => void;
+  onConfirm: (settings: {
+    defaultSessionDuration: number;
+    sessionDurations: Record<string, number>;
+    workingHours?: { start: string; end: string };
+  }) => void;
   courses: Course[];
 }
 
@@ -35,7 +39,9 @@ export function TimetableSessionSettings({
   onConfirm,
   courses,
 }: TimetableSessionSettingsProps) {
-  const [defaultDuration, setDefaultDuration] = useState(60);
+  const [defaultDuration, setDefaultDuration] = useState(50);
+  const [workingHoursStart, setWorkingHoursStart] = useState('08:00');
+  const [workingHoursEnd, setWorkingHoursEnd] = useState('17:00');
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
   const [durations, setDurations] = useState<Record<string, number>>({});
   const [showPerCourse, setShowPerCourse] = useState(false);
@@ -43,11 +49,13 @@ export function TimetableSessionSettings({
   // Reset to defaults when dialog opens
   useEffect(() => {
     if (open) {
-      setDefaultDuration(60);
+      setDefaultDuration(50);
+      setWorkingHoursStart('08:00');
+      setWorkingHoursEnd('17:00');
       setOverrides({});
       const initialDurations: Record<string, number> = {};
       courses.forEach((c) => {
-        initialDurations[c.id] = 60;
+        initialDurations[c.id] = 50;
       });
       setDurations(initialDurations);
       setShowPerCourse(false);
@@ -101,6 +109,7 @@ export function TimetableSessionSettings({
     onConfirm({
       defaultSessionDuration: defaultDuration,
       sessionDurations,
+      workingHours: { start: workingHoursStart, end: workingHoursEnd },
     });
     onOpenChange(false);
   };
@@ -120,32 +129,57 @@ export function TimetableSessionSettings({
               type="number"
               min={15}
               max={180}
-              step={15}
+              step={5}
               value={defaultDuration}
               onChange={(e) => handleDefaultDurationChange(parseInt(e.target.value, 10) || 15)}
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="working-hours-start">Working Hours Start</Label>
+              <Input
+                id="working-hours-start"
+                type="time"
+                value={workingHoursStart}
+                onChange={(e) => setWorkingHoursStart(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="working-hours-end">Working Hours End</Label>
+              <Input
+                id="working-hours-end"
+                type="time"
+                value={workingHoursEnd}
+                onChange={(e) => setWorkingHoursEnd(e.target.value)}
+              />
+            </div>
           </div>
 
           {courses.length > 0 && (
             <div className="space-y-2">
               <button
                 type="button"
-                className="flex items-center gap-2 text-sm font-medium text-foreground hover:underline"
+                className="text-foreground flex items-center gap-2 text-sm font-medium hover:underline"
                 onClick={() => setShowPerCourse(!showPerCourse)}
               >
                 Per-Course Overrides
-                {showPerCourse ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                {showPerCourse ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
               </button>
 
               {showPerCourse && (
-                <div className="border rounded-lg overflow-hidden">
+                <div className="overflow-hidden rounded-lg border">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b bg-muted/50">
+                      <tr className="bg-muted/50 border-b">
                         <th className="px-3 py-2 text-left font-medium">Course</th>
-                        <th className="px-3 py-2 text-center font-medium w-16">Credits</th>
-                        <th className="px-3 py-2 text-center font-medium w-24">Minutes</th>
-                        <th className="px-3 py-2 text-center font-medium w-12">Use</th>
+                        <th className="w-16 px-3 py-2 text-center font-medium">Credits</th>
+                        <th className="w-24 px-3 py-2 text-center font-medium">Minutes</th>
+                        <th className="w-12 px-3 py-2 text-center font-medium">Use</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -155,7 +189,9 @@ export function TimetableSessionSettings({
                           <tr key={course.id} className="border-b last:border-0">
                             <td className="px-3 py-2">
                               <div className="font-medium">{course.code}</div>
-                              <div className="text-xs text-muted-foreground truncate max-w-[200px]">{course.name}</div>
+                              <div className="text-muted-foreground max-w-[200px] truncate text-xs">
+                                {course.name}
+                              </div>
                             </td>
                             <td className="px-3 py-2 text-center">{course.credits}</td>
                             <td className="px-3 py-2 text-center">
@@ -165,9 +201,14 @@ export function TimetableSessionSettings({
                                 max={180}
                                 step={15}
                                 value={durations[course.id] ?? defaultDuration}
-                                onChange={(e) => handleDurationChange(course.id, parseInt(e.target.value, 10) || 15)}
+                                onChange={(e) =>
+                                  handleDurationChange(
+                                    course.id,
+                                    parseInt(e.target.value, 10) || 15,
+                                  )
+                                }
                                 disabled={!isEnabled}
-                                className="h-8 w-20 text-center mx-auto"
+                                className="mx-auto h-8 w-20 text-center"
                               />
                             </td>
                             <td className="px-3 py-2 text-center">

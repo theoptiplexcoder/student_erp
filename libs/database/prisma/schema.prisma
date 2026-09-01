@@ -1009,6 +1009,7 @@ model TimetableEntry {
   @@index([sectionId])
   @@index([facultyId])
   @@index([dayOfWeek])
+  @@index([institutionId, termId, sectionId])
   @@map("timetable_entries")
 }
 
