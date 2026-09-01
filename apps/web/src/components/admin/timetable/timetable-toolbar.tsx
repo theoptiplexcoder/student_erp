@@ -1,6 +1,9 @@
 import React from 'react';
 import { Button, Input } from '@student-erp/ui';
-import { Download, Upload, Zap, Send } from 'lucide-react';
+import { Download, Upload, Zap, Send, Loader2 } from 'lucide-react';
+import { useAdminTerms } from '@/hooks/api/admin/useTerms';
+import { useAdminSections } from '@/hooks/api/admin/useSections';
+import { useAdminFaculty } from '@/hooks/api/admin/useFaculty';
 
 interface TimetableToolbarProps {
   onGenerate: () => void;
@@ -31,6 +34,13 @@ export function TimetableToolbar({
   dayOfWeek,
   setDayOfWeek,
 }: TimetableToolbarProps) {
+  const { data: terms, isLoading: isLoadingTerms } = useAdminTerms();
+  const { data: sectionsResponse, isLoading: isLoadingSections } = useAdminSections(1, 100);
+  const { data: facultyResponse, isLoading: isLoadingFaculty } = useAdminFaculty(1, 100);
+
+  const sections = sectionsResponse?.data || [];
+  const faculties = facultyResponse?.data || [];
+
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-4 rounded-lg shadow-sm mb-6 border">
       <div className="flex flex-wrap gap-2 w-full md:w-auto">
@@ -38,20 +48,28 @@ export function TimetableToolbar({
           value={termId} 
           onChange={(e) => setTermId(e.target.value)}
           className="flex h-10 w-full md:w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+          disabled={isLoadingTerms}
         >
           <option value="">Select Term</option>
-          <option value="term-1">Fall 2024</option>
-          <option value="term-2">Spring 2025</option>
+          {terms?.map((term: any) => (
+            <option key={term.id} value={term.id}>
+              {term.name}
+            </option>
+          ))}
         </select>
 
         <select 
           value={sectionId} 
           onChange={(e) => setSectionId(e.target.value)}
           className="flex h-10 w-full md:w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+          disabled={isLoadingSections}
         >
           <option value="">All Sections</option>
-          <option value="sec-1">Section A</option>
-          <option value="sec-2">Section B</option>
+          {sections.map((section: any) => (
+            <option key={section.id} value={section.id}>
+              {section.name} {section.code ? `(${section.code})` : ''}
+            </option>
+          ))}
         </select>
 
         {setFacultyId && (
@@ -59,10 +77,14 @@ export function TimetableToolbar({
             value={facultyId || ''} 
             onChange={(e) => setFacultyId(e.target.value)}
             className="flex h-10 w-full md:w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+            disabled={isLoadingFaculty}
           >
             <option value="">All Faculty</option>
-            <option value="fac-1">Faculty 1</option>
-            <option value="fac-2">Faculty 2</option>
+            {faculties.map((faculty: any) => (
+              <option key={faculty.id} value={faculty.id}>
+                {faculty.user.firstName} {faculty.user.lastName} ({faculty.teacherCode})
+              </option>
+            ))}
           </select>
         )}
 

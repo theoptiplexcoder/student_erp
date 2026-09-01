@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAdminTimetable, useMoveTimetableEntry, useDeleteTimetableEntry, useSwapTimetableSlots } from '@student-erp/hooks';
+import { useAdminTerms } from '@/hooks/api/admin/useTerms';
 import { Skeleton, Card, CardHeader, CardTitle, CardContent, Button } from '@student-erp/ui';
 import { ChevronLeft, ChevronRight, User, MapPin } from 'lucide-react';
 import { TimetableContextMenu } from '../../../../components/admin/timetable/timetable-context-menu';
@@ -15,7 +16,15 @@ function formatTime(timeString: string | Date) {
 }
 
 export default function WeeklyTimetablePage() {
-  const [termId, setTermId] = useState<string>('00000000-0000-0000-0000-000000000000'); // mock term
+  const [termId, setTermId] = useState<string>(''); 
+  const { data: terms } = useAdminTerms();
+  
+  useEffect(() => {
+    if (terms && terms.length > 0 && !termId) {
+      setTermId(terms[0].id);
+    }
+  }, [terms, termId]);
+
   const { data: timetable, isPending } = useAdminTimetable({ termId });
   const moveMutation = useMoveTimetableEntry();
   const deleteMutation = useDeleteTimetableEntry();

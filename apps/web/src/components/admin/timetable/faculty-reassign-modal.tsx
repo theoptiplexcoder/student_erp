@@ -11,6 +11,7 @@ import {
 } from '@student-erp/ui';
 import { Button } from '@student-erp/ui';
 import { useReassignFaculty } from '@student-erp/hooks';
+import { useAdminFaculty } from '@/hooks/api/admin/useFaculty';
 import { User } from 'lucide-react';
 
 interface FacultyReassignModalProps {
@@ -21,10 +22,12 @@ interface FacultyReassignModalProps {
   institutionId?: string; // or passed down from auth context
 }
 
-// In a real app we would use a hook to fetch available faculties, but here we mock or use a generic input.
 export function FacultyReassignModal({ isOpen, onClose, entryId, currentFacultyName }: FacultyReassignModalProps) {
   const [newFacultyId, setNewFacultyId] = useState('');
   const { mutate, isPending } = useReassignFaculty();
+  const { data: facultyResponse, isLoading: isLoadingFaculty } = useAdminFaculty(1, 100);
+
+  const faculties = facultyResponse?.data || [];
 
   const handleReassign = () => {
     if (!newFacultyId) return;
@@ -52,14 +55,20 @@ export function FacultyReassignModal({ isOpen, onClose, entryId, currentFacultyN
         </DialogHeader>
         
         <div className="py-4">
-          <label className="block text-sm font-medium mb-1">New Faculty ID</label>
-          <input
-            type="text"
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            placeholder="Enter new faculty UUID"
+          <label className="block text-sm font-medium mb-1">New Faculty</label>
+          <select
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             value={newFacultyId}
             onChange={(e) => setNewFacultyId(e.target.value)}
-          />
+            disabled={isLoadingFaculty}
+          >
+            <option value="">Select Faculty...</option>
+            {faculties.map((faculty: any) => (
+              <option key={faculty.id} value={faculty.id}>
+                {faculty.user.firstName} {faculty.user.lastName} ({faculty.teacherCode})
+              </option>
+            ))}
+          </select>
         </div>
 
         <DialogFooter>
