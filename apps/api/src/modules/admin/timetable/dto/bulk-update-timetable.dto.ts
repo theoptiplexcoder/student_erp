@@ -1,24 +1,8 @@
-import { IsUUID, IsOptional, IsString, Matches, IsIn } from 'class-validator';
+import { IsNotEmpty, IsUUID, IsOptional, ArrayMinSize, ValidateNested, IsString, Matches, IsIn } from 'class-validator';
+import { Type } from 'class-transformer';
 import { TimetableDay } from '@prisma/client';
-import { IsAfterTimeConstraint } from './is-after-time.decorator';
 
-export class UpdateTimetableEntryDto {
-  @IsOptional()
-  @IsUUID()
-  termId?: string;
-
-  @IsOptional()
-  @IsUUID()
-  courseId?: string;
-
-  @IsOptional()
-  @IsUUID()
-  facultyId?: string;
-
-  @IsOptional()
-  @IsUUID()
-  sectionId?: string;
-
+export class TimetableUpdatesDto {
   @IsOptional()
   @IsIn([
     TimetableDay.MONDAY,
@@ -43,7 +27,6 @@ export class UpdateTimetableEntryDto {
   @Matches(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, {
     message: 'endTime must be in HH:mm format',
   })
-  @IsAfterTimeConstraint('startTime')
   endTime?: string;
 
   @IsOptional()
@@ -52,13 +35,17 @@ export class UpdateTimetableEntryDto {
 
   @IsOptional()
   @IsUUID()
-  buildingId?: string;
+  facultyId?: string;
+}
 
-  @IsOptional()
-  @IsUUID()
-  lessonPlanId?: string;
+export class BulkUpdateTimetableDto {
+  @IsNotEmpty()
+  @IsUUID(undefined, { each: true })
+  @ArrayMinSize(1)
+  entryIds!: string[];
 
-  @IsOptional()
-  @IsUUID()
-  timetableId?: string;
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => TimetableUpdatesDto)
+  updates!: TimetableUpdatesDto;
 }

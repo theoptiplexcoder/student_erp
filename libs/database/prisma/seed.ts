@@ -22,6 +22,9 @@ const time = (h: number, m: number) =>
 async function cleanup() {
   console.log('🧹 Cleaning up existing data...');
   const tables = [
+    'timetable_entries',
+    'timetables',
+    'faculty_availability',
     'audit_logs',
     'admin_resources',
     'lesson_plan_resources',
@@ -1381,8 +1384,20 @@ async function main() {
     }
   })();
 
-  // 24. Timetable Entries
+  // 24. Timetable & Timetable Entries
   await await (async () => {
+    const _timetable = await prisma.timetable.create({
+      data: {
+        institutionId: I.institution,
+        academicYearId: I.ay2025,
+        termId: I.termSem1,
+        name: 'Fall 2025 Regular Schedule',
+        status: 'PUBLISHED',
+        publishedAt: new Date(),
+      },
+    });
+    I.timetable1 = _timetable.id;
+
     const _modelData = [
       {
         idKey: 'tt1',
@@ -1390,14 +1405,15 @@ async function main() {
           institutionId: I.institution,
           academicYearId: I.ay2025,
           termId: I.termSem1,
+          timetableId: I.timetable1,
           courseId: I.cs101,
           facultyId: I.fac1,
           sectionId: I.sectionCS,
           dayOfWeek: 'MONDAY',
           startTime: time(9, 0),
           endTime: time(10, 30),
-          room: 'A-101',
-          building: 'Main Building',
+          roomId: I.roomA101,
+          buildingId: I.building,
         },
       },
       {
@@ -1406,14 +1422,100 @@ async function main() {
           institutionId: I.institution,
           academicYearId: I.ay2025,
           termId: I.termSem1,
+          timetableId: I.timetable1,
           courseId: I.ma101,
           facultyId: I.fac2,
           sectionId: I.sectionMath,
-          dayOfWeek: 'TUESDAY',
+          dayOfWeek: 'MONDAY',
           startTime: time(11, 0),
           endTime: time(12, 30),
-          room: 'A-101',
-          building: 'Main Building',
+          roomId: I.roomA101,
+          buildingId: I.building,
+        },
+      },
+      {
+        idKey: 'tt3',
+        data: {
+          institutionId: I.institution,
+          academicYearId: I.ay2025,
+          termId: I.termSem1,
+          timetableId: I.timetable1,
+          courseId: I.cs201,
+          facultyId: I.fac1,
+          sectionId: I.sectionCS,
+          dayOfWeek: 'TUESDAY',
+          startTime: time(9, 0),
+          endTime: time(10, 30),
+          roomId: I.roomA101,
+          buildingId: I.building,
+        },
+      },
+      {
+        idKey: 'tt4',
+        data: {
+          institutionId: I.institution,
+          academicYearId: I.ay2025,
+          termId: I.termSem1,
+          timetableId: I.timetable1,
+          courseId: I.cs301,
+          facultyId: I.fac1,
+          sectionId: I.sectionCS,
+          dayOfWeek: 'WEDNESDAY',
+          startTime: time(13, 0),
+          endTime: time(16, 0),
+          roomId: I.roomB201,
+          buildingId: I.building,
+        },
+      },
+      {
+        idKey: 'tt5',
+        data: {
+          institutionId: I.institution,
+          academicYearId: I.ay2025,
+          termId: I.termSem1,
+          timetableId: I.timetable1,
+          courseId: I.cs101,
+          facultyId: I.fac1,
+          sectionId: I.sectionCS,
+          dayOfWeek: 'THURSDAY',
+          startTime: time(10, 0),
+          endTime: time(11, 30),
+          roomId: I.roomA101,
+          buildingId: I.building,
+        },
+      },
+      {
+        idKey: 'tt6',
+        data: {
+          institutionId: I.institution,
+          academicYearId: I.ay2025,
+          termId: I.termSem1,
+          timetableId: I.timetable1,
+          courseId: I.ma101,
+          facultyId: I.fac2,
+          sectionId: I.sectionMath,
+          dayOfWeek: 'THURSDAY',
+          startTime: time(11, 30),
+          endTime: time(13, 0),
+          roomId: I.roomA101,
+          buildingId: I.building,
+        },
+      },
+      {
+        idKey: 'tt7',
+        data: {
+          institutionId: I.institution,
+          academicYearId: I.ay2025,
+          termId: I.termSem1,
+          timetableId: I.timetable1,
+          courseId: I.ma201,
+          facultyId: I.fac2,
+          sectionId: I.sectionMath,
+          dayOfWeek: 'FRIDAY',
+          startTime: time(14, 0),
+          endTime: time(15, 30),
+          roomId: I.roomA101,
+          buildingId: I.building,
         },
       },
     ];

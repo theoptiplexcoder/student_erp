@@ -433,6 +433,8 @@ model Institution {
   applications              Application[]
   lessonPlans               LessonPlan[]
   adminResources            AdminResource[]
+  timetables                Timetable[]
+  facultyAvailabilities     FacultyAvailability[]
 
   @@map("institutions")
 }
@@ -532,6 +534,7 @@ model AcademicYear {
   sections         Section[]
   exams            Exam[]
   timetableEntries TimetableEntry[]
+  timetables       Timetable[]
   enrollments      Enrollment[]
   feePlans         StudentFeePlan[]
   applications     Application[]
@@ -611,6 +614,7 @@ model Faculty {
   assignments        Assignment[]
   announcements      Announcement[]
   lessonPlans        LessonPlan[]
+  availability       FacultyAvailability[]
 
   @@unique([institutionId, teacherCode])
   @@index([institutionId])
@@ -740,6 +744,7 @@ model AcademicTerm {
   exams              Exam[]
   studentTerms       StudentTerm[]
   lessonPlans        LessonPlan[]
+  timetables         Timetable[]
 
   @@index([institutionId])
   @@index([academicYearId])
@@ -914,6 +919,52 @@ model CourseAssignment {
   @@map("course_assignments")
 }
 
+enum TimetableStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Timetable {
+  id             String          @id @default(uuid()) @db.Uuid
+  institutionId  String          @map("institution_id") @db.Uuid
+  academicYearId String          @map("academic_year_id") @db.Uuid
+  termId         String          @map("term_id") @db.Uuid
+  name           String
+  status         TimetableStatus @default(DRAFT)
+  publishedAt    DateTime?       @map("published_at")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  institution  Institution  @relation(fields: [institutionId], references: [id])
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id])
+  term         AcademicTerm @relation(fields: [termId], references: [id])
+  entries      TimetableEntry[]
+
+  @@unique([termId, name])
+  @@index([institutionId])
+  @@map("timetables")
+}
+
+model FacultyAvailability {
+  id            String       @id @default(uuid()) @db.Uuid
+  institutionId String       @map("institution_id") @db.Uuid
+  facultyId     String       @map("faculty_id") @db.Uuid
+  dayOfWeek     TimetableDay @map("day_of_week")
+  startTime     DateTime     @map("start_time") @db.Time
+  endTime       DateTime     @map("end_time") @db.Time
+  isAvailable   Boolean      @default(true) @map("is_available")
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  institution Institution @relation(fields: [institutionId], references: [id])
+  faculty     Faculty     @relation(fields: [facultyId], references: [id])
+
+  @@unique([facultyId, dayOfWeek, startTime])
+  @@index([institutionId])
+  @@index([facultyId])
+  @@map("faculty_availability")
+}
+
 model TimetableEntry {
   id             String       @id @default(uuid()) @db.Uuid
   institutionId  String       @map("institution_id") @db.Uuid
@@ -922,11 +973,12 @@ model TimetableEntry {
   courseId       String       @map("course_id") @db.Uuid
   facultyId      String       @map("faculty_id") @db.Uuid
   sectionId      String       @map("section_id") @db.Uuid
+  timetableId    String?      @map("timetable_id") @db.Uuid
   dayOfWeek      TimetableDay @map("day_of_week")
   startTime      DateTime     @map("start_time") @db.Time
   endTime        DateTime     @map("end_time") @db.Time
-  room           String?
-  building       String?
+  roomId         String?      @map("room_id") @db.Uuid
+  buildingId     String?      @map("building_id") @db.Uuid
   lessonPlanId   String?      @map("lesson_plan_id") @db.Uuid
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @updatedAt @map("updated_at")
@@ -937,9 +989,19 @@ model TimetableEntry {
   course       Course       @relation(fields: [courseId], references: [id])
   faculty      Faculty      @relation(fields: [facultyId], references: [id])
   section      Section      @relation(fields: [sectionId], references: [id])
+  timetable    Timetable?   @relation(fields: [timetableId], references: [id])
+  room         Room?        @relation(fields: [roomId], references: [id])
+  building     Building?    @relation(fields: [buildingId], references: [id])
   lessonPlan   LessonPlan?  @relation(fields: [lessonPlanId], references: [id])
 
+  @@unique([termId, sectionId, dayOfWeek, startTime])
+  @@unique([termId, facultyId, dayOfWeek, startTime])
+  @@unique([termId, roomId, dayOfWeek, startTime])
   @@index([institutionId])
+  @@index([termId])
+  @@index([sectionId])
+  @@index([facultyId])
+  @@index([dayOfWeek])
   @@map("timetable_entries")
 }
 
@@ -966,6 +1028,7 @@ model Building {
 
   institution Institution @relation(fields: [institutionId], references: [id])
   rooms       Room[]
+  timetableEntries TimetableEntry[]
 
   @@unique([institutionId, code])
   @@index([institutionId])
@@ -987,6 +1050,7 @@ model Room {
   institution Institution  @relation(fields: [institutionId], references: [id])
   building    Building     @relation(fields: [buildingId], references: [id])
   examCourses ExamCourse[]
+  timetableEntries TimetableEntry[]
 
   @@unique([buildingId, number])
   @@index([institutionId])

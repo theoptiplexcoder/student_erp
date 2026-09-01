@@ -1,24 +1,7 @@
 import { IsUUID, IsOptional, IsString, Matches, IsIn } from 'class-validator';
 import { TimetableDay } from '@prisma/client';
-import { IsAfterTimeConstraint } from './is-after-time.decorator';
 
-export class UpdateTimetableEntryDto {
-  @IsOptional()
-  @IsUUID()
-  termId?: string;
-
-  @IsOptional()
-  @IsUUID()
-  courseId?: string;
-
-  @IsOptional()
-  @IsUUID()
-  facultyId?: string;
-
-  @IsOptional()
-  @IsUUID()
-  sectionId?: string;
-
+export class MoveTimetableEntryDto {
   @IsOptional()
   @IsIn([
     TimetableDay.MONDAY,
@@ -43,7 +26,6 @@ export class UpdateTimetableEntryDto {
   @Matches(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, {
     message: 'endTime must be in HH:mm format',
   })
-  @IsAfterTimeConstraint('startTime')
   endTime?: string;
 
   @IsOptional()
@@ -53,12 +35,4 @@ export class UpdateTimetableEntryDto {
   @IsOptional()
   @IsUUID()
   buildingId?: string;
-
-  @IsOptional()
-  @IsUUID()
-  lessonPlanId?: string;
-
-  @IsOptional()
-  @IsUUID()
-  timetableId?: string;
 }
