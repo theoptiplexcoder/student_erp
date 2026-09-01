@@ -1,20 +1,7 @@
 'use client';
 
 import React, { use, useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Button,
-  Badge,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  Input,
-} from '@student-erp/ui';
+import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Input } from '@student-erp/ui';
 import {
   useFacultyAttendanceSummary,
   useFacultySectionDetail,
@@ -118,16 +105,22 @@ export default function SectionAttendancePage({
           </p>
         </div>
 
-        <Dialog open={isNewSessionOpen} onOpenChange={setIsNewSessionOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={handleOpenNewSession}>
-              <Plus className="mr-2 h-4 w-4" /> New Session
+        {!isNewSessionOpen && (
+          <Button onClick={handleOpenNewSession}>
+            <Plus className="mr-2 h-4 w-4" /> New Session
+          </Button>
+        )}
+      </div>
+
+      {isNewSessionOpen && (
+        <Card className="mt-6">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Mark Attendance</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => setIsNewSessionOpen(false)}>
+              Cancel
             </Button>
-          </DialogTrigger>
-          <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col overflow-hidden">
-            <DialogHeader>
-              <DialogTitle>Mark Attendance</DialogTitle>
-            </DialogHeader>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
             <div className="flex gap-4 border-b pb-4">
               <div className="space-y-1">
                 <label className="text-xs font-medium">Date</label>
@@ -175,7 +168,7 @@ export default function SectionAttendancePage({
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto">
+            <div className="max-h-[60vh] overflow-y-auto">
               <table className="w-full text-left text-sm">
                 <thead className="bg-muted/50 sticky top-0 text-xs uppercase">
                   <tr>
@@ -216,11 +209,11 @@ export default function SectionAttendancePage({
                 Save Attendance
               </Button>
             </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+          </CardContent>
+        </Card>
+      )}
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="mt-6 grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Session History</CardTitle>

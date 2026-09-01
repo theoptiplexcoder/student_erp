@@ -127,7 +127,6 @@ export default function FacultyCourseDetailsPage({
             <Tabs defaultValue="overview">
               <TabsList>
                 <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="students">Students ({enrollments.length})</TabsTrigger>
                 <TabsTrigger value="resources">Resources</TabsTrigger>
                 <TabsTrigger value="lesson-plan">Lesson Plan</TabsTrigger>
                 <TabsTrigger value="assignments">Assignments</TabsTrigger>
@@ -157,31 +156,6 @@ export default function FacultyCourseDetailsPage({
                     <p className="text-muted-foreground text-sm font-medium">Passing Marks</p>
                     <p>{course.passingMarks || 'N/A'}</p>
                   </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="students" className="mt-6">
-                <div className="space-y-4">
-                  {enrollments.length === 0 ? (
-                    <p className="text-muted-foreground">No students enrolled.</p>
-                  ) : (
-                    enrollments.map((e: any) => (
-                      <div
-                        key={e.id}
-                        className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
-                      >
-                        <div>
-                          <p className="font-medium">
-                            {e.student.user.firstName} {e.student.user.lastName}
-                          </p>
-                          <p className="text-muted-foreground text-sm">
-                            {e.student.rollNumber || e.student.admissionNumber}
-                          </p>
-                        </div>
-                        <Badge variant="outline">{e.status}</Badge>
-                      </div>
-                    ))
-                  )}
                 </div>
               </TabsContent>
 
