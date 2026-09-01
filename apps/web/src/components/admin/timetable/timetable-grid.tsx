@@ -318,8 +318,8 @@ export function TimetableGrid({
                 courseColor={courseColors[entry.courseId] || colors[0]}
                 isConflicting={isConflicting}
                 selectedIds={[]}
-                onToggleSelect={undefined}
-                onEntryClick={undefined}
+                onToggleSelect={() => {}}
+                onEntryClick={() => {}}
               />
             );
           })()}

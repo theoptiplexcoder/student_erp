@@ -61,7 +61,11 @@ export function AttendanceSessionItem({ session }: AttendanceSessionItemProps) {
 
   const formatTime = (time: any) => {
     if (!time) return '';
-    return new Date(time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const date = new Date(time);
+    if (isNaN(date.getTime())) return String(time).substring(11, 16);
+    const h = date.getUTCHours().toString().padStart(2, '0');
+    const m = date.getUTCMinutes().toString().padStart(2, '0');
+    return `${h}:${m}`;
   };
 
   return (

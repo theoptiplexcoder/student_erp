@@ -234,10 +234,7 @@ export default function SectionAttendancePage({
                       <div className="font-medium">{format(new Date(s.date), 'MMM dd, yyyy')}</div>
                       <div className="text-muted-foreground mt-1 flex items-center gap-1 text-xs">
                         <Clock className="h-3 w-3" />{' '}
-                        {new Date(`1970-01-01T${s.startTime}`).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
+                        {String(s.startTime).substring(0, 5)}
                         {s.topic && ` • ${s.topic}`}
                       </div>
                     </div>

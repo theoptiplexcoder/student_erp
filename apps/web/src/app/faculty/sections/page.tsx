@@ -91,10 +91,7 @@ export default function FacultySectionsPage() {
                   <span>
                     Next Class:
                     <span className="ml-1 font-medium">
-                      {new Date(`1970-01-01T${item.nextClass.startTime}`).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {String(item.nextClass.startTime).substring(0, 5)}
                       {item.nextClass.room ? ` in ${item.nextClass.room}` : ''}
                     </span>
                   </span>

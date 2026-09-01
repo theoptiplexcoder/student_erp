@@ -9,7 +9,9 @@ function formatTime(timeString: string | Date) {
   if (!timeString) return '';
   const date = new Date(timeString);
   if (isNaN(date.getTime())) return String(timeString);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const h = date.getUTCHours().toString().padStart(2, '0');
+  const m = date.getUTCMinutes().toString().padStart(2, '0');
+  return `${h}:${m}`;
 }
 
 export function TodayScheduleCard() {

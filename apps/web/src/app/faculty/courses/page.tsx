@@ -129,10 +129,7 @@ export default function FacultyCoursesPage() {
                     <Clock className="text-primary h-3.5 w-3.5" />
                     <span>
                       Next class: Today,{' '}
-                      {new Date(`1970-01-01T${assignment.nextClass.startTime}`).toLocaleTimeString(
-                        [],
-                        { hour: '2-digit', minute: '2-digit' },
-                      )}
+                      {String(assignment.nextClass.startTime).substring(0, 5)}
                     </span>
                   </div>
                 )}
