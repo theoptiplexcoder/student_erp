@@ -8,11 +8,13 @@ import { AuthDivider } from './AuthDivider';
 import { SocialLoginButtons } from './SocialLoginButtons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createClient } from '../../../src/lib/supabase/client';
+import { useToast } from '../../../src/hooks/use-toast';
 
 type AuthMode = 'password' | 'magic-link' | 'otp';
 
 export function LoginForm() {
   const router = useRouter();
+  const { toast } = useToast();
   const [mode, setMode] = useState<AuthMode>('password');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -56,7 +58,7 @@ export function LoginForm() {
           setError(error.message);
         } else {
           setError(null);
-          alert('Check your email for the magic link.');
+          toast({ title: 'Success', description: 'Check your email for the magic link.' });
         }
       }
     } catch {

@@ -85,9 +85,29 @@ export class StudentsService {
       this.prisma.student.findMany({
         where,
         include: {
-          user: true,
-          program: true,
-          section: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              photoUrl: true,
+            },
+          },
+          program: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+            },
+          },
+          section: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+            },
+          },
         },
         skip,
         take: pageSize,

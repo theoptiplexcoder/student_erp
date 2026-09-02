@@ -1,4 +1,13 @@
-import { Controller, Get, Patch, Param, UseGuards, Request, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Param,
+  UseGuards,
+  Request,
+  Body,
+  ForbiddenException,
+} from '@nestjs/common';
 import { StudentService } from '../services/student.service';
 import { Roles } from '../../../decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
@@ -18,6 +27,13 @@ export class StudentController {
   @Patch('me')
   async updateProfile(@Request() req: any, @Body() updateDto: UpdateStudentProfileDto) {
     const { id: userId, institutionId } = req.user;
+
+    // Explicit userId-to-token subject validation
+    const payloadUserId = (updateDto as any).userId;
+    if (payloadUserId && payloadUserId !== userId) {
+      throw new ForbiddenException('Cannot update profile for a different user');
+    }
+
     return this.studentService.updateStudentProfile(userId, institutionId, updateDto);
   }
 
