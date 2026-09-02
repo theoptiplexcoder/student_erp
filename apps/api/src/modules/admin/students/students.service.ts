@@ -154,26 +154,35 @@ export class StudentsService {
 
     const { firstName, lastName, phone, ...studentData } = data;
 
-    if (firstName !== undefined || lastName !== undefined || phone !== undefined) {
-      const userUpdate: any = {};
-      if (firstName !== undefined) userUpdate.firstName = firstName;
-      if (lastName !== undefined) userUpdate.lastName = lastName;
-      if (phone !== undefined) userUpdate.phone = phone;
+    if (
+      firstName !== undefined ||
+      lastName !== undefined ||
+      phone !== undefined ||
+      Object.keys(studentData).length > 0
+    ) {
+      await this.prisma.$transaction(async (tx) => {
+        if (firstName !== undefined || lastName !== undefined || phone !== undefined) {
+          const userUpdate: any = {};
+          if (firstName !== undefined) userUpdate.firstName = firstName;
+          if (lastName !== undefined) userUpdate.lastName = lastName;
+          if (phone !== undefined) userUpdate.phone = phone;
 
-      await this.prisma.user.update({
-        where: { id: student.userId },
-        data: userUpdate,
-      });
-    }
+          await tx.user.update({
+            where: { id: student.userId },
+            data: userUpdate,
+          });
+        }
 
-    if (Object.keys(studentData).length > 0) {
-      const mappedData: any = { ...studentData };
-      if (mappedData.dateOfBirth) {
-        mappedData.dateOfBirth = new Date(mappedData.dateOfBirth);
-      }
-      await this.prisma.student.update({
-        where: { id: student.id },
-        data: mappedData,
+        if (Object.keys(studentData).length > 0) {
+          const mappedData: any = { ...studentData };
+          if (mappedData.dateOfBirth) {
+            mappedData.dateOfBirth = new Date(mappedData.dateOfBirth);
+          }
+          await tx.student.update({
+            where: { id: student.id },
+            data: mappedData,
+          });
+        }
       });
     }
 

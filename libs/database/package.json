@@ -7,7 +7,8 @@
     "migrate": "prisma migrate dev",
     "migrate:prod": "prisma migrate deploy",
     "db:push": "prisma db push",
-    "seed": "tsx prisma/seed.ts",
+    "seed": "dotenv -e ../../.env -- tsx prisma/seed.ts",
+    "db:push:seed": "dotenv -e ../../.env -- sh -c 'prisma db push --skip-generate && tsx prisma/seed.ts'",
     "studio": "prisma studio"
   },
   "dependencies": {
@@ -16,6 +17,7 @@
     "ts-morph": "^28.0.0"
   },
   "devDependencies": {
+    "dotenv-cli": "^11.0.0",
     "prisma": "^6.19.3",
     "tsx": "^4.7.1"
   }

@@ -35,21 +35,25 @@ export class StudentService {
 
     const { phone, photoUrl, ...studentData } = data;
 
-    if (phone !== undefined || photoUrl !== undefined) {
-      const userUpdate: any = {};
-      if (phone !== undefined) userUpdate.phone = phone;
-      if (photoUrl !== undefined) userUpdate.photoUrl = photoUrl;
+    if (phone !== undefined || photoUrl !== undefined || Object.keys(studentData).length > 0) {
+      await this.prisma.$transaction(async (tx) => {
+        if (phone !== undefined || photoUrl !== undefined) {
+          const userUpdate: any = {};
+          if (phone !== undefined) userUpdate.phone = phone;
+          if (photoUrl !== undefined) userUpdate.photoUrl = photoUrl;
 
-      await this.prisma.user.update({
-        where: { id: userId },
-        data: userUpdate,
-      });
-    }
+          await tx.user.update({
+            where: { id: userId },
+            data: userUpdate,
+          });
+        }
 
-    if (Object.keys(studentData).length > 0) {
-      await this.prisma.student.update({
-        where: { id: student.id },
-        data: studentData,
+        if (Object.keys(studentData).length > 0) {
+          await tx.student.update({
+            where: { id: student.id },
+            data: studentData,
+          });
+        }
       });
     }
 

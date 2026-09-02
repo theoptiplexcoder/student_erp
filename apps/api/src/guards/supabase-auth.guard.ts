@@ -1,19 +1,31 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { createClient } from '@supabase/supabase-js';
+import { Reflector } from '@nestjs/core';
 import { PrismaService } from '../database/prisma.service';
+import * as jwt from 'jsonwebtoken';
+import Redis from 'ioredis';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
 export class SupabaseAuthGuard implements CanActivate {
-  private supabase;
+  private redis: Redis;
 
-  constructor(private readonly prisma: PrismaService) {
-    this.supabase = createClient(
-      process.env['SUPABASE_URL']!,
-      process.env['SUPABASE_SERVICE_ROLE_KEY']!,
-    );
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly reflector: Reflector,
+  ) {
+    this.redis = new Redis(process.env['REDIS_URL'] || 'redis://localhost:6379');
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) {
+      return true;
+    }
+
     const request = context.switchToHttp().getRequest();
     const authorization = request.headers.authorization;
 
@@ -22,35 +34,51 @@ export class SupabaseAuthGuard implements CanActivate {
     }
 
     const token = authorization.split(' ')[1];
+    let decodedToken: any;
 
-    const {
-      data: { user: supabaseUser },
-      error,
-    } = await this.supabase.auth.getUser(token);
+    try {
+      const jwtSecret = process.env['SUPABASE_JWT_SECRET'];
+      if (!jwtSecret) throw new Error('SUPABASE_JWT_SECRET is missing');
 
-    if (error || !supabaseUser) {
+      decodedToken = jwt.verify(token, jwtSecret);
+    } catch (error) {
       throw new UnauthorizedException('Invalid or expired token');
     }
 
-    const dbUser = await this.prisma.user.findUnique({
-      where: { authUserId: supabaseUser.id },
-      select: {
-        id: true,
-        authUserId: true,
-        institutionId: true,
-        role: true,
-        status: true,
-        email: true,
-        customRole: {
-          include: {
-            permissions: true,
+    const authUserId = decodedToken.sub;
+    if (!authUserId) {
+      throw new UnauthorizedException('Invalid token payload');
+    }
+
+    const cacheKey = `user_auth:${authUserId}`;
+    let dbUser: any;
+
+    const cachedUser = await this.redis.get(cacheKey);
+    if (cachedUser) {
+      dbUser = JSON.parse(cachedUser);
+    } else {
+      dbUser = await this.prisma.user.findUnique({
+        where: { authUserId: authUserId },
+        select: {
+          id: true,
+          authUserId: true,
+          institutionId: true,
+          role: true,
+          status: true,
+          email: true,
+          customRole: {
+            include: {
+              permissions: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    if (!dbUser) {
-      throw new UnauthorizedException('User not found in application');
+      if (!dbUser) {
+        throw new UnauthorizedException('User not found in application');
+      }
+
+      await this.redis.set(cacheKey, JSON.stringify(dbUser), 'EX', 15 * 60);
     }
 
     if (dbUser.status !== 'ACTIVE') {

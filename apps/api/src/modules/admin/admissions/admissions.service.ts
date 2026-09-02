@@ -9,11 +9,23 @@ import {
   InstallmentStatus,
   StudentLifecycleStatus,
 } from '@prisma/client';
-import { OnEvent } from '@nestjs/event-emitter';
+import { OnEvent, EventEmitter2 } from '@nestjs/event-emitter';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { StudentAdmittedEvent } from './events/student-admitted.event';
 
 @Injectable()
 export class AdmissionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private supabase: SupabaseClient;
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {
+    this.supabase = createClient(
+      process.env['SUPABASE_URL']!,
+      process.env['SUPABASE_SERVICE_ROLE_KEY']!,
+    );
+  }
 
   @OnEvent('payment.success')
   async handlePaymentSuccess(payment: any) {
@@ -246,11 +258,28 @@ export class AdmissionsService {
         throw new BadRequestException('A user with this email already exists.');
       }
 
-      // 1. Create User
+      // 1. Create Auth User & Postgres User
+      const email = app.email || `student_${Date.now()}@example.com`;
+      const { data: authData, error: authError } = await this.supabase.auth.admin.createUser({
+        email: email,
+        password: 'Password123!',
+        email_confirm: !!app.email,
+        user_metadata: {
+          first_name: app.firstName,
+          last_name: app.lastName,
+          role: 'STUDENT',
+        },
+      });
+
+      if (authError) {
+        throw new BadRequestException(`Failed to create auth user: ${authError.message}`);
+      }
+
       const user = await tx.user.create({
         data: {
           institutionId,
-          email: app.email,
+          authUserId: authData.user.id,
+          email: email,
           firstName: app.firstName,
           lastName: app.lastName,
           phone: app.phone,
@@ -291,48 +320,10 @@ export class AdmissionsService {
         },
       });
 
-      // 5. Auto-assign Fee Plan if an active FeeStructure matches
-      const activeFeeStructure = await tx.feeStructure.findFirst({
-        where: {
-          institutionId,
-          academicYearId: app.academicYearId,
-          programId: app.programId,
-          isActive: true,
-        },
-        include: { components: true },
-      });
-
-      if (activeFeeStructure) {
-        const mandatorySum = activeFeeStructure.components
-          .filter((c) => !c.isOptional)
-          .reduce((sum, c) => sum + c.amount, 0);
-
-        const planTotal = mandatorySum > 0 ? mandatorySum : activeFeeStructure.totalAmount;
-
-        const feePlan = await tx.studentFeePlan.create({
-          data: {
-            institutionId,
-            studentId: student.id,
-            academicYearId: app.academicYearId,
-            feeStructureId: activeFeeStructure.id,
-            totalAmount: planTotal,
-            currency: activeFeeStructure.currency,
-            paymentMode: 'ANNUAL',
-            status: 'ACTIVE',
-          },
-        });
-
-        await tx.feeInstallment.create({
-          data: {
-            studentFeePlanId: feePlan.id,
-            installmentNumber: 1,
-            amount: planTotal,
-            amountPaid: 0,
-            dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            status: 'PENDING',
-          },
-        });
-      }
+      this.eventEmitter.emit(
+        'student.admitted',
+        new StudentAdmittedEvent(institutionId, student.id, app.academicYearId, app.programId),
+      );
 
       return student;
     });
@@ -354,7 +345,7 @@ export class AdmissionsService {
     }
 
     return this.prisma.$transaction(async (tx) => {
-      // 0. Auto-generate Registration No. (usn)
+      // 0. Auto-generate Registration No. (usn) with atomic counter
       const academicYear = await tx.academicYear.findUnique({
         where: { id: data.academicYearId },
       });
@@ -362,34 +353,49 @@ export class AdmissionsService {
         throw new BadRequestException('Academic Year not found');
       }
       const yearOfAdmission = academicYear.startDate.getFullYear();
-      const enrollmentCount = await tx.enrollment.count({
-        where: { institutionId, academicYearId: data.academicYearId },
-      });
-      let incrementalNumber = enrollmentCount + 1;
-      let generatedUsn = `${incrementalNumber}/${yearOfAdmission}`;
 
-      // Ensure uniqueness for the registration number
-      let isUnique = false;
-      while (!isUnique) {
-        const existingStudent = await tx.student.findFirst({
-          where: {
+      const counterKey = `enrollment_${data.academicYearId}`;
+      const counter = await tx.institutionCounter.upsert({
+        where: {
+          institutionId_key: {
             institutionId,
-            OR: [{ admissionNumber: generatedUsn }, { studentCode: generatedUsn }],
+            key: counterKey,
           },
-        });
-        if (existingStudent) {
-          incrementalNumber++;
-          generatedUsn = `${incrementalNumber}/${yearOfAdmission}`;
-        } else {
-          isUnique = true;
-        }
+        },
+        update: {
+          value: { increment: 1 },
+        },
+        create: {
+          institutionId,
+          key: counterKey,
+          value: 1,
+        },
+      });
+
+      const generatedUsn = `${counter.value}/${yearOfAdmission}`;
+
+      // 1. Create Auth User & Postgres User
+      const email = data.email || `student_${Date.now()}@example.com`;
+      const { data: authData, error: authError } = await this.supabase.auth.admin.createUser({
+        email: email,
+        password: 'Password123!',
+        email_confirm: !!data.email,
+        user_metadata: {
+          first_name: data.firstName,
+          last_name: data.lastName || '',
+          role: 'STUDENT',
+        },
+      });
+
+      if (authError) {
+        throw new BadRequestException(`Failed to create auth user: ${authError.message}`);
       }
 
-      // 1. Create User
       const user = await tx.user.create({
         data: {
           institutionId,
-          email: data.email || `student_${Date.now()}@example.com`,
+          authUserId: authData.user.id,
+          email: email,
           firstName: data.firstName,
           lastName: data.lastName || '',
           phone: data.phone,
@@ -509,78 +515,19 @@ export class AdmissionsService {
         },
       });
 
-      // 4. Create Fee Plan & Installments if provided
-      if (data.feePlan) {
-        const feePlan = await tx.studentFeePlan.create({
-          data: {
-            institutionId,
-            studentId: student.id,
-            academicYearId: data.academicYearId,
-            totalAmount: data.feePlan.totalAmount,
-            currency: data.feePlan.currency || 'INR',
-            paymentMode: data.feePlan.paymentMode,
-            status: 'ACTIVE',
-          },
-        });
-
-        if (
-          data.feePlan.paymentMode === 'INSTALLMENTS' &&
-          data.feePlan.installments &&
-          data.feePlan.installments.length > 0
-        ) {
-          const installments = data.feePlan.installments.map((inst, idx) => ({
-            studentFeePlanId: feePlan.id,
-            installmentNumber: idx + 1,
-            amount: inst.amount,
-            amountPaid: 0,
-            dueDate: inst.dueDate ? new Date(inst.dueDate) : new Date(),
-            status: 'PENDING' as InstallmentStatus,
-          }));
-          await tx.feeInstallment.createMany({ data: installments });
-        } else if (data.feePlan.paymentMode === 'INSTALLMENTS') {
-          // Fallback to equal installments based on count
-          const count = data.feePlan.installmentsCount || 4;
-          const instAmount = data.feePlan.totalAmount / count;
-          const installments = [];
-          for (let i = 1; i <= count; i++) {
-            const dueDate = new Date();
-            dueDate.setMonth(dueDate.getMonth() + i * 2);
-            installments.push({
-              studentFeePlanId: feePlan.id,
-              installmentNumber: i,
-              amount: instAmount,
-              amountPaid: 0,
-              dueDate: dueDate,
-              status: 'PENDING' as InstallmentStatus,
-            });
-          }
-          await tx.feeInstallment.createMany({ data: installments });
-        } else {
-          // Annual - 1 installment
-          await tx.feeInstallment.create({
-            data: {
-              studentFeePlanId: feePlan.id,
-              installmentNumber: 1,
-              amount: data.feePlan.totalAmount,
-              amountPaid: 0,
-              dueDate: new Date(),
-              status: 'PENDING',
-            },
-          });
-        }
-      }
-
-      // 5. Audit Log
-      await tx.auditLog.create({
-        data: {
+      // 4. Decoupled async tasks via event
+      this.eventEmitter.emit(
+        'student.admitted',
+        new StudentAdmittedEvent(
           institutionId,
-          actorUserId: authUserId,
-          action: 'DIRECT_ADMISSION_CREATED',
-          entityType: 'STUDENT',
-          entityId: student.id,
-          afterData: JSON.parse(JSON.stringify(student)),
-        },
-      });
+          student.id,
+          data.academicYearId,
+          data.programId,
+          authUserId,
+          data.feePlan,
+          student,
+        ),
+      );
 
       return student;
     });

@@ -17,6 +17,7 @@ import { UpdateApplicationDto } from './dto/update-application.dto';
 import { SupabaseAuthGuard } from '../../../guards/supabase-auth.guard';
 import { RolesGuard } from '../../../guards/roles.guard';
 import { Roles } from '../../../decorators/roles.decorator';
+import { Public } from '../../../decorators/public.decorator';
 
 @Controller('admin/admissions')
 @UseGuards(SupabaseAuthGuard, RolesGuard)
@@ -34,9 +35,12 @@ export class AdmissionsController {
     return this.admissionsService.getRecentAdmissions(req.user.institutionId);
   }
 
+  @Public()
   @Post('applications')
   async createApplication(@Request() req: any, @Body() data: CreateApplicationDto) {
-    return this.admissionsService.createApplication(req.user.institutionId, data);
+    const institutionId =
+      req.user?.institutionId || req.headers['x-institution-id'] || (data as any)['institutionId'];
+    return this.admissionsService.createApplication(institutionId, data);
   }
 
   @Get('drafts')

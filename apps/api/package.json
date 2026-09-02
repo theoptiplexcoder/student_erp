@@ -21,6 +21,8 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "dotenv": "^17.4.2",
+    "ioredis": "^6.0.0",
+    "jsonwebtoken": "^9.0.3",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.0"
   },
@@ -30,6 +32,7 @@
     "@nestjs/testing": "^10.0.0",
     "@types/cron": "^2.4.3",
     "@types/jest": "^29.5.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.0.0",
     "prisma": "^6.19.3",
     "ts-node": "^10.9.2",
