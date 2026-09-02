@@ -1,19 +1,26 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PrismaService } from '../database/prisma.service';
-import * as jwt from 'jsonwebtoken';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import Redis from 'ioredis';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
 export class SupabaseAuthGuard implements CanActivate {
-  private redis: Redis;
+  private redis: Redis | undefined;
+  private supabase: SupabaseClient;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly reflector: Reflector,
   ) {
-    this.redis = new Redis(process.env['REDIS_URL'] || 'redis://localhost:6379');
+    if (process.env['REDIS_URL']) {
+      this.redis = new Redis(process.env['REDIS_URL']);
+    }
+    this.supabase = createClient(
+      process.env['SUPABASE_URL']!,
+      process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']!,
+    );
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -34,29 +41,31 @@ export class SupabaseAuthGuard implements CanActivate {
     }
 
     const token = authorization.split(' ')[1];
-    let decodedToken: any;
 
-    try {
-      const jwtSecret = process.env['SUPABASE_JWT_SECRET'];
-      if (!jwtSecret) throw new Error('SUPABASE_JWT_SECRET is missing');
+    // Use Supabase's getUser() to verify the token server-side
+    // This handles ES256/HS256 and all signing algorithms natively
+    const {
+      data: { user },
+      error,
+    } = await this.supabase.auth.getUser(token);
 
-      decodedToken = jwt.verify(token, jwtSecret);
-    } catch (error) {
+    if (error || !user) {
       throw new UnauthorizedException('Invalid or expired token');
     }
 
-    const authUserId = decodedToken.sub;
-    if (!authUserId) {
-      throw new UnauthorizedException('Invalid token payload');
-    }
+    const authUserId = user.id;
 
     const cacheKey = `user_auth:${authUserId}`;
     let dbUser: any;
 
-    const cachedUser = await this.redis.get(cacheKey);
-    if (cachedUser) {
-      dbUser = JSON.parse(cachedUser);
-    } else {
+    if (this.redis) {
+      const cachedUser = await this.redis.get(cacheKey);
+      if (cachedUser) {
+        dbUser = JSON.parse(cachedUser);
+      }
+    }
+
+    if (!dbUser) {
       dbUser = await this.prisma.user.findUnique({
         where: { authUserId: authUserId },
         select: {
@@ -78,7 +87,9 @@ export class SupabaseAuthGuard implements CanActivate {
         throw new UnauthorizedException('User not found in application');
       }
 
-      await this.redis.set(cacheKey, JSON.stringify(dbUser), 'EX', 15 * 60);
+      if (this.redis) {
+        await this.redis.set(cacheKey, JSON.stringify(dbUser), 'EX', 15 * 60);
+      }
     }
 
     if (dbUser.status !== 'ACTIVE') {

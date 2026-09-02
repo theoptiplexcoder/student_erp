@@ -29,6 +29,18 @@ export function getDashboardPath(role: string): string {
 export async function getCurrentUser(): Promise<AuthUser | null> {
   const supabase = await createClient();
 
+  // Validate the token against Supabase's server and refresh if needed.
+  // getSession() returns tokens from cookies without validation — they may be expired.
+  const {
+    data: { user: authUser },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !authUser) {
+    return null;
+  }
+
+  // Get the (now refreshed) session to extract the access_token for the NestJS API
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -53,6 +65,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     });
 
     if (!res.ok) {
+      console.error('API /auth/me returned not ok:', res.status, await res.text());
       return null;
     }
 
