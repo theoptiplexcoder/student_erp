@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { configureStudentAuth, configureAdminAuth, configureFacultyAuth } from '@student-erp/sdk';
 import { createClient } from '@/lib/supabase/client';
+import { Toaster } from 'sonner';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -31,5 +32,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     configureFacultyAuth(getToken);
   }, []);
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <Toaster />
+    </QueryClientProvider>
+  );
 }
