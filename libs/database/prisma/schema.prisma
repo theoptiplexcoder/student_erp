@@ -1909,9 +1909,24 @@ model FeeComponent {
   updatedAt      DateTime         @updatedAt @map("updated_at")
 
   feeStructure FeeStructure @relation(fields: [feeStructureId], references: [id], onDelete: Cascade)
+  studentFeePlanComponents StudentFeePlanComponent[]
 
   @@index([feeStructureId])
   @@map("fee_components")
+}
+
+model StudentFeePlanComponent {
+  id               String         @id @default(uuid()) @db.Uuid
+  studentFeePlanId String         @map("student_fee_plan_id") @db.Uuid
+  feeComponentId   String         @map("fee_component_id") @db.Uuid
+  amount           Float
+
+  studentFeePlan   StudentFeePlan @relation(fields: [studentFeePlanId], references: [id], onDelete: Cascade)
+  feeComponent     FeeComponent   @relation(fields: [feeComponentId], references: [id], onDelete: Restrict)
+
+  @@index([studentFeePlanId])
+  @@index([feeComponentId])
+  @@map("student_fee_plan_components")
 }
 
 model StudentFeePlan {
@@ -1934,6 +1949,7 @@ model StudentFeePlan {
 
   installments FeeInstallment[]
   waivers      FeeWaiver[]
+  components   StudentFeePlanComponent[]
 
   @@index([institutionId])
   @@index([studentId])

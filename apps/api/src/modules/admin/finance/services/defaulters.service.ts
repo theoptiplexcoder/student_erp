@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../../database/prisma.service';
 import { InstallmentStatus, PaymentStatus } from '@prisma/client';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class DefaultersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async getDefaulters(
     institutionId: string,
@@ -269,20 +273,12 @@ export class DefaultersService {
     let notificationsSent = 0;
     for (const s of studentMap.values()) {
       if (s.userId) {
-        try {
-          await this.prisma.notification.create({
-            data: {
-              institutionId: s.instId,
-              userId: s.userId,
-              title: 'Fee Payment Overdue',
-              message: `You have overdue fee installments totaling ₹${s.amountDue.toLocaleString()}. Please make payment to avoid service restrictions.`,
-              type: 'SYSTEM',
-            },
-          });
-          notificationsSent++;
-        } catch {
-          // ignore notification creation errors in batch
-        }
+        this.eventEmitter.emit('fee.overdue', {
+          institutionId: s.instId,
+          userId: s.userId,
+          amountDue: s.amountDue,
+        });
+        notificationsSent++;
       }
     }
 

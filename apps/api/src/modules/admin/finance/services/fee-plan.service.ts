@@ -50,6 +50,7 @@ export class FeePlanService {
     let calculatedTotal = 0;
     let feeStructure = null;
     let currency = 'INR';
+    const componentsData: { feeComponentId: string; amount: number }[] = [];
 
     if (dto.feeStructureId) {
       feeStructure = await this.prisma.feeStructure.findFirst({
@@ -63,15 +64,20 @@ export class FeePlanService {
 
       currency = feeStructure.currency;
 
-      // Calculate total: mandatory components + selected optional components
-      const mandatorySum = feeStructure.components
-        .filter((c) => !c.isOptional)
-        .reduce((sum, c) => sum + c.amount, 0);
-
       const optionalIds = new Set(dto.optionalComponentIds || []);
-      const optionalSum = feeStructure.components
-        .filter((c) => c.isOptional && optionalIds.has(c.id))
-        .reduce((sum, c) => sum + c.amount, 0);
+
+      let mandatorySum = 0;
+      let optionalSum = 0;
+
+      for (const comp of feeStructure.components) {
+        if (!comp.isOptional) {
+          mandatorySum += comp.amount;
+          componentsData.push({ feeComponentId: comp.id, amount: comp.amount });
+        } else if (optionalIds.has(comp.id)) {
+          optionalSum += comp.amount;
+          componentsData.push({ feeComponentId: comp.id, amount: comp.amount });
+        }
+      }
 
       calculatedTotal = mandatorySum + optionalSum;
     } else if (dto.customTotalAmount !== undefined) {
@@ -132,6 +138,12 @@ export class FeePlanService {
           currency,
           paymentMode: dto.paymentMode,
           status: 'ACTIVE',
+          components:
+            componentsData.length > 0
+              ? {
+                  create: componentsData,
+                }
+              : undefined,
           installments: {
             create: installmentData,
           },
@@ -139,6 +151,9 @@ export class FeePlanService {
         include: {
           installments: {
             orderBy: { installmentNumber: 'asc' },
+          },
+          components: {
+            include: { feeComponent: true },
           },
           feeStructure: {
             include: { components: true },
@@ -225,8 +240,10 @@ export class FeePlanService {
             id: true,
             name: true,
             code: true,
-            components: true,
           },
+        },
+        components: {
+          include: { feeComponent: true },
         },
         installments: {
           orderBy: { installmentNumber: 'asc' },
@@ -310,6 +327,9 @@ export class FeePlanService {
             components: true,
           },
         },
+        components: {
+          include: { feeComponent: true },
+        },
         installments: {
           orderBy: { installmentNumber: 'asc' },
           include: {
@@ -372,6 +392,135 @@ export class FeePlanService {
       feePlans: plans,
       payments,
     };
+  }
+
+  async appendComponentToPlan(
+    institutionId: string,
+    studentId: string,
+    componentDto: {
+      componentId?: string;
+      name?: string;
+      amount?: number;
+      type?: any;
+      dueDate?: Date;
+    },
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Get the ACTIVE student fee plan for the student
+      const plan = await tx.studentFeePlan.findFirst({
+        where: { studentId, institutionId, status: 'ACTIVE' },
+        include: { installments: { orderBy: { installmentNumber: 'desc' } } },
+      });
+
+      if (!plan) {
+        throw new NotFoundException(`Active fee plan not found for student ${studentId}`);
+      }
+
+      let feeComponentId = componentDto.componentId;
+      let amountToAdd = componentDto.amount || 0;
+
+      // 2. Link or create FeeComponent
+      if (!feeComponentId) {
+        if (!plan.feeStructureId) {
+          throw new BadRequestException(
+            'Cannot create ad-hoc component because plan has no fee structure',
+          );
+        }
+        if (!componentDto.name || !componentDto.amount) {
+          throw new BadRequestException('Name and amount are required to create a new component');
+        }
+        const newComponent = await tx.feeComponent.create({
+          data: {
+            feeStructureId: plan.feeStructureId,
+            name: componentDto.name,
+            type: componentDto.type || 'MISC',
+            amount: amountToAdd,
+            isOptional: true,
+          },
+        });
+        feeComponentId = newComponent.id;
+      } else {
+        const existingComponent = await tx.feeComponent.findUnique({
+          where: { id: feeComponentId },
+        });
+        if (!existingComponent) {
+          throw new NotFoundException(`Fee component with ID ${feeComponentId} not found`);
+        }
+        if (!amountToAdd) {
+          amountToAdd = existingComponent.amount;
+        }
+      }
+
+      // 3. Link via StudentFeePlanComponent
+      await tx.studentFeePlanComponent.create({
+        data: {
+          studentFeePlanId: plan.id,
+          feeComponentId: feeComponentId,
+          amount: amountToAdd,
+        },
+      });
+
+      // 4. Increase totalAmount on StudentFeePlan
+      const updatedPlan = await tx.studentFeePlan.update({
+        where: { id: plan.id },
+        data: {
+          totalAmount: { increment: amountToAdd },
+        },
+      });
+
+      // 5. Update/Create FeeInstallment
+      if (amountToAdd !== 0) {
+        if (componentDto.dueDate) {
+          // Create a new installment
+          const nextInstallmentNumber =
+            plan.installments.length > 0 ? plan.installments[0].installmentNumber + 1 : 1;
+          await tx.feeInstallment.create({
+            data: {
+              studentFeePlanId: plan.id,
+              installmentNumber: nextInstallmentNumber,
+              amount: amountToAdd,
+              amountPaid: 0,
+              dueDate: new Date(componentDto.dueDate),
+              status: InstallmentStatus.PENDING,
+            },
+          });
+        } else {
+          // Append to the last installment
+          if (plan.installments.length > 0) {
+            const lastInst = plan.installments[0]; // ordered desc
+            const newAmount = lastInst.amount + amountToAdd;
+            const newStatus =
+              lastInst.amountPaid >= newAmount
+                ? InstallmentStatus.PAID
+                : lastInst.amountPaid > 0
+                  ? InstallmentStatus.PARTIAL
+                  : InstallmentStatus.PENDING;
+
+            await tx.feeInstallment.update({
+              where: { id: lastInst.id },
+              data: {
+                amount: { increment: amountToAdd },
+                status: newStatus,
+              },
+            });
+          } else {
+            // No installments exist, create the first one
+            await tx.feeInstallment.create({
+              data: {
+                studentFeePlanId: plan.id,
+                installmentNumber: 1,
+                amount: amountToAdd,
+                amountPaid: 0,
+                dueDate: new Date(),
+                status: InstallmentStatus.PENDING,
+              },
+            });
+          }
+        }
+      }
+
+      return updatedPlan;
+    });
   }
 
   async applyWaiver(institutionId: string, approvedById: string | undefined, dto: ApplyWaiverDto) {
