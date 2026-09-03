@@ -19,6 +19,7 @@ export class DashboardService {
       upcomingExams,
       pendingResults,
       grievanceList,
+      lowAttendanceStudentsCount,
     ] = await Promise.all([
       // 1. Active students
       this.prisma.student.count({
@@ -80,6 +81,8 @@ export class DashboardService {
           createdAt: true,
         },
       }),
+      // 9. Low attendance students count (parallelized)
+      this.getLowAttendanceStudentsCount(institutionId),
     ]);
 
     // Calculate attendance percentage
@@ -93,11 +96,6 @@ export class DashboardService {
     });
     const attendanceRate =
       totalAttendance > 0 ? Math.round((presentAttendance / totalAttendance) * 100) : 0;
-
-    // We don't have a direct "low attendance students" count without a complex query or raw query.
-    // For now, let's use a raw query or mock it to 0 if not easily available.
-    // Finding students below a threshold requires aggregating per student.
-    const lowAttendanceStudentsCount = await this.getLowAttendanceStudentsCount(institutionId);
 
     const attentionRequired = [];
 

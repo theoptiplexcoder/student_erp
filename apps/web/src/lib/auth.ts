@@ -1,4 +1,5 @@
 import { redirect, unauthorized, forbidden } from 'next/navigation';
+import { cache } from 'react';
 import { createClient } from './supabase/server';
 
 export interface AuthUser {
@@ -26,7 +27,7 @@ export function getDashboardPath(role: string): string {
   }
 }
 
-export async function getCurrentUser(): Promise<AuthUser | null> {
+export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
   const supabase = await createClient();
 
   // Validate the token against Supabase's server and refresh if needed.
@@ -75,7 +76,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     console.error('Failed to fetch user from API:', error);
     return null;
   }
-}
+});
 
 export async function requireAuth(): Promise<AuthUser> {
   const user = await getCurrentUser();

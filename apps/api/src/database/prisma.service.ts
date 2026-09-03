@@ -10,7 +10,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
     if (url) {
       const params: string[] = [];
-      if (!url.includes('connection_limit')) params.push('connection_limit=2');
+      if (!url.includes('connection_limit')) params.push('connection_limit=10');
       if (!url.includes('pool_timeout')) params.push('pool_timeout=15000');
       // Required for Supabase transaction-mode pgbouncer — disables prepared statements.
       if (!url.includes('pgbouncer')) params.push('pgbouncer=true');

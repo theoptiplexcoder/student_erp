@@ -256,6 +256,8 @@ model Grievance {
   faculty     Faculty?    @relation(fields: [facultyId], references: [id])
 
   @@index([institutionId])
+  // Accelerates dashboard open grievance filtering and chronological retrieval
+  @@index([institutionId, status, createdAt])
   @@index([studentId])
   @@index([facultyId])
   @@map("grievances")
@@ -1110,6 +1112,8 @@ model AttendanceRecord {
   @@index([institutionId])
   @@index([institutionId, studentId])
   @@index([institutionId, status])
+  // Accelerates multi-tenant student-level attendance aggregation and filtering
+  @@index([institutionId, studentId, status])
   @@index([studentId, attendanceSessionId])
   @@map("attendance_records")
 }

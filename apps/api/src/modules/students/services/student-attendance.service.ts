@@ -30,39 +30,59 @@ export class StudentAttendanceService {
       },
     });
 
-    const results = await Promise.all(
-      enrollments.map(async (enr) => {
-        const records = await this.prisma.attendanceRecord.findMany({
-          where: {
-            institutionId,
-            studentId: student.id,
-            attendanceSession: {
-              courseId: enr.courseId || '',
+    if (enrollments.length === 0) {
+      return [];
+    }
+
+    const courseIds = enrollments.map((e) => e.courseId).filter((id): id is string => Boolean(id));
+
+    const recordsByCourse = new Map<string, { status: string }[]>();
+
+    if (courseIds.length > 0) {
+      const allRecords = await this.prisma.attendanceRecord.findMany({
+        where: {
+          institutionId,
+          studentId: student.id,
+          attendanceSession: {
+            courseId: { in: courseIds },
+          },
+        },
+        select: {
+          status: true,
+          attendanceSession: {
+            select: {
+              courseId: true,
             },
           },
-          include: {
-            attendanceSession: true,
-          },
-        });
+        },
+      });
 
-        const totalSessions = records.length;
-        const presentSessions = records.filter(
-          (r) => r.status === 'PRESENT' || r.status === 'LATE',
-        ).length;
-        const percentage = totalSessions > 0 ? (presentSessions / totalSessions) * 100 : 0;
+      for (const record of allRecords) {
+        const cId = record.attendanceSession.courseId;
+        if (!recordsByCourse.has(cId)) {
+          recordsByCourse.set(cId, []);
+        }
+        recordsByCourse.get(cId)!.push({ status: record.status });
+      }
+    }
 
-        return {
-          course: enr.course,
-          totalSessions,
-          presentSessions,
-          percentage,
-          requiredPercentage: policy.minimumAttendanceThreshold,
-          meetsRequirement: percentage >= policy.minimumAttendanceThreshold,
-        };
-      }),
-    );
+    return enrollments.map((enr) => {
+      const records = (enr.courseId ? recordsByCourse.get(enr.courseId) : undefined) || [];
+      const totalSessions = records.length;
+      const presentSessions = records.filter(
+        (r) => r.status === 'PRESENT' || r.status === 'LATE',
+      ).length;
+      const percentage = totalSessions > 0 ? (presentSessions / totalSessions) * 100 : 0;
 
-    return results;
+      return {
+        course: enr.course,
+        totalSessions,
+        presentSessions,
+        percentage,
+        requiredPercentage: policy.minimumAttendanceThreshold,
+        meetsRequirement: percentage >= policy.minimumAttendanceThreshold,
+      };
+    });
   }
 
   async getCourseAttendance(userId: string, institutionId: string, courseId: string) {
