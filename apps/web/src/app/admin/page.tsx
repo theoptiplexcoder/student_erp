@@ -218,7 +218,7 @@ export default function AdminDashboard() {
           </h2>
           <Card className="flex-1 shadow-sm">
             <CardContent className="grid grid-cols-2 gap-2 p-4">
-              <Link href="/admin/students/new" className="block">
+              <Link href="/admin/admissions/students/new" className="block">
                 <Button
                   variant="outline"
                   className="h-auto w-full flex-col items-center justify-center gap-2 p-4 text-xs"

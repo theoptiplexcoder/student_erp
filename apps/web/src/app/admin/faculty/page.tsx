@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAdminFaculty } from '@/hooks/api/admin/useFaculty';
+import { AssignSectionModal } from '@/components/admin/faculty/AssignSectionModal';
 import {
   Button,
   Input,
@@ -23,6 +24,7 @@ import { Search, Plus, User, Building, Briefcase } from 'lucide-react';
 export default function FacultyPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [selectedFacultyForSection, setSelectedFacultyForSection] = useState<any | null>(null);
   const pageSize = 50;
 
   const { data, isLoading } = useAdminFaculty(page, pageSize, search);
@@ -118,7 +120,14 @@ export default function FacultyPage() {
                           {faculty.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="space-x-2 text-right">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedFacultyForSection(faculty)}
+                        >
+                          Assign Section
+                        </Button>
                         <Link href={`/admin/faculty/${faculty.id}`}>
                           <Button variant="ghost" size="sm">
                             View Details
@@ -181,8 +190,16 @@ export default function FacultyPage() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end border-t pt-3">
-                    <Link href={`/admin/faculty/${faculty.id}`}>
+                  <div className="flex justify-end gap-2 border-t pt-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-1/2"
+                      onClick={() => setSelectedFacultyForSection(faculty)}
+                    >
+                      Assign Section
+                    </Button>
+                    <Link href={`/admin/faculty/${faculty.id}`} className="w-1/2">
                       <Button variant="outline" size="sm" className="w-full">
                         View Details
                       </Button>
@@ -220,6 +237,12 @@ export default function FacultyPage() {
           )}
         </CardContent>
       </Card>
+
+      <AssignSectionModal
+        isOpen={Boolean(selectedFacultyForSection)}
+        onClose={() => setSelectedFacultyForSection(null)}
+        faculty={selectedFacultyForSection}
+      />
     </div>
   );
 }

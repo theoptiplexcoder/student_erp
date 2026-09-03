@@ -439,6 +439,7 @@ model Institution {
   adminResources            AdminResource[]
   timetables                Timetable[]
   facultyAvailabilities     FacultyAvailability[]
+  facultySections           FacultySection[]
 
   @@map("institutions")
 }
@@ -545,6 +546,7 @@ model AcademicYear {
   feePlans         StudentFeePlan[]
   feeStructures    FeeStructure[]
   applications     Application[]
+  facultySections  FacultySection[]
 
   @@index([institutionId])
   @@index([institutionId, isActive])
@@ -623,6 +625,7 @@ model Faculty {
   announcements      Announcement[]
   lessonPlans        LessonPlan[]
   availability       FacultyAvailability[]
+  facultySections    FacultySection[]
 
   @@unique([institutionId, teacherCode])
   @@index([institutionId])
@@ -788,6 +791,7 @@ model Section {
   attendanceSessions AttendanceSession[]
   calendarEvents     CalendarEvent[]
   lessonPlanSections LessonPlanSection[]
+  facultySections    FacultySection[]
 
   @@index([institutionId])
   @@map("sections")
@@ -926,6 +930,30 @@ model CourseAssignment {
   @@unique([facultyId, courseId, sectionId, termId])
   @@index([institutionId])
   @@map("course_assignments")
+}
+
+model FacultySection {
+  id             String   @id @default(uuid()) @db.Uuid
+  institutionId  String   @map("institution_id") @db.Uuid
+  facultyId      String   @map("faculty_id") @db.Uuid
+  sectionId      String   @map("section_id") @db.Uuid
+  role           String   // "TEACHER" | "CLASS_TEACHER" | custom role name
+  academicYearId String   @map("academic_year_id") @db.Uuid
+  isPrimary      Boolean  @default(false) @map("is_primary")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  institution  Institution  @relation(fields: [institutionId], references: [id])
+  faculty      Faculty      @relation(fields: [facultyId], references: [id])
+  section      Section      @relation(fields: [sectionId], references: [id])
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id])
+
+  @@unique([facultyId, sectionId, academicYearId])
+  @@index([institutionId])
+  @@index([facultyId])
+  @@index([sectionId])
+  @@index([academicYearId])
+  @@map("faculty_sections")
 }
 
 enum TimetableStatus {
