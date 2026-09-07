@@ -30,6 +30,7 @@ import { Plus, Eye, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { OverviewTab } from './overview-tab';
 import { DepartmentsTab } from './departments-tab';
+import { ProgramsTab } from './programs-tab';
 import { useAdminAllCurriculums } from '@/hooks/api/admin/useCurriculums';
 import { useAdminTerms } from '@/hooks/api/admin/useTerms';
 import { useAdminCourses } from '@/hooks/api/admin/useCourses';
@@ -121,7 +122,8 @@ export default function AcademicsPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="departments">Departments & Programs</TabsTrigger>
+          <TabsTrigger value="departments">Departments</TabsTrigger>
+          <TabsTrigger value="programs">Programs</TabsTrigger>
           <TabsTrigger value="curriculums">Curriculums</TabsTrigger>
           <TabsTrigger value="terms">Terms</TabsTrigger>
           <TabsTrigger value="courses">Courses</TabsTrigger>
@@ -134,6 +136,10 @@ export default function AcademicsPage() {
 
         <TabsContent value="departments">
           <DepartmentsTab />
+        </TabsContent>
+
+        <TabsContent value="programs">
+          <ProgramsTab />
         </TabsContent>
 
         {/* CURRICULUMS TAB */}
