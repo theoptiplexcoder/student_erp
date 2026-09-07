@@ -31,7 +31,6 @@ import Link from 'next/link';
 import { DepartmentsTab } from './departments-tab';
 import { ProgramsTab } from './programs-tab';
 import { useAdminAllCurriculums } from '@/hooks/api/admin/useCurriculums';
-import { useAdminTerms } from '@/hooks/api/admin/useTerms';
 import { useAdminCourses } from '@/hooks/api/admin/useCourses';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
@@ -103,7 +102,6 @@ export default function AcademicsPage() {
 
   // Queries
   const { data: curriculumsData, isLoading: isLoadingCurriculums } = useAdminAllCurriculums();
-  const { data: termsData, isLoading: isLoadingTerms } = useAdminTerms();
   const { data: coursesData, isLoading: isLoadingCourses } = useAdminCourses(1, 50);
   const { data: sectionsData, isLoading: isLoadingSections } = useAdminSections(1, 50);
 
@@ -113,17 +111,16 @@ export default function AcademicsPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Academic Management</h1>
           <p className="text-muted-foreground">
-            Manage academic programs, curriculums, terms, courses, and sections.
+            Manage academic programs, curriculums, courses, and sections.
           </p>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
+        <TabsList className="max-w-full justify-start overflow-x-auto">
           <TabsTrigger value="departments">Departments</TabsTrigger>
           <TabsTrigger value="programs">Programs</TabsTrigger>
           <TabsTrigger value="curriculums">Curriculums</TabsTrigger>
-          <TabsTrigger value="terms">Terms</TabsTrigger>
           <TabsTrigger value="courses">Courses</TabsTrigger>
           <TabsTrigger value="sections">Sections</TabsTrigger>
         </TabsList>
@@ -180,52 +177,6 @@ export default function AcademicsPage() {
                             </Button>
                           </Link>
                         </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* TERMS TAB */}
-        <TabsContent value="terms">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Academic Terms</CardTitle>
-                <CardDescription>View all academic terms</CardDescription>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {isLoadingTerms ? (
-                <div className="flex justify-center py-10">
-                  <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
-                </div>
-              ) : !termsData?.length ? (
-                <div className="text-muted-foreground py-10 text-center">
-                  No academic terms found.
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Code</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Academic Year</TableHead>
-                      <TableHead>Start Date</TableHead>
-                      <TableHead>End Date</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {termsData.map((term) => (
-                      <TableRow key={term.id}>
-                        <TableCell className="font-medium">{term.code}</TableCell>
-                        <TableCell>{term.name}</TableCell>
-                        <TableCell>{term.academicYear?.name || '—'}</TableCell>
-                        <TableCell>{new Date(term.startDate).toLocaleDateString()}</TableCell>
-                        <TableCell>{new Date(term.endDate).toLocaleDateString()}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
