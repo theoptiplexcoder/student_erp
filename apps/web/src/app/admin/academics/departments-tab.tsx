@@ -23,7 +23,7 @@ import {
   Label,
   Badge,
 } from '@student-erp/ui';
-import { Plus, Edit, Trash2, Layers, Loader2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Layers, Loader2, BookOpen } from 'lucide-react';
 import {
   useAdminDepartments,
   useCreateDepartment,
@@ -36,10 +36,12 @@ import {
   useUpdateAdminProgram,
   useDeleteAdminProgram,
 } from '@/hooks/api/admin/usePrograms';
+import { useAdminCourses, useCreateCourse } from '@/hooks/api/admin/useCourses';
 
 export function DepartmentsTab() {
   const { data: departmentsData, isLoading: isLoadingDeps } = useAdminDepartments(1, 100);
   const { data: programsData, isLoading: isLoadingProgs } = useAdminPrograms(1, 200);
+  const { data: coursesData, isLoading: isLoadingCourses } = useAdminCourses(1, 200);
 
   const [depDialogOpen, setDepDialogOpen] = useState(false);
   const [editingDep, setEditingDep] = useState<any>(null);
@@ -47,6 +49,9 @@ export function DepartmentsTab() {
   const [progDialogOpen, setProgDialogOpen] = useState(false);
   const [editingProg, setEditingProg] = useState<any>(null);
   const [selectedDepId, setSelectedDepId] = useState<string | null>(null);
+
+  const [courseDialogOpen, setCourseDialogOpen] = useState(false);
+  const [selectedDepIdForCourse, setSelectedDepIdForCourse] = useState<string | null>(null);
 
   const createDep = useCreateDepartment();
   const updateDep = useUpdateDepartment();
@@ -56,7 +61,9 @@ export function DepartmentsTab() {
   const updateProg = useUpdateAdminProgram();
   const deleteProg = useDeleteAdminProgram();
 
-  const isLoading = isLoadingDeps || isLoadingProgs;
+  const createCourse = useCreateCourse();
+
+  const isLoading = isLoadingDeps || isLoadingProgs || isLoadingCourses;
 
   if (isLoading) {
     return (
@@ -68,6 +75,7 @@ export function DepartmentsTab() {
 
   const departments = departmentsData?.data || [];
   const programs = programsData?.data || [];
+  const courses = coursesData?.data || [];
 
   const handleSaveDepartment = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -138,10 +146,34 @@ export function DepartmentsTab() {
     }
   };
 
+  const handleSaveCourse = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const data = {
+      code: fd.get('code') as string,
+      name: fd.get('name') as string,
+      creditValue: parseFloat(fd.get('creditValue') as string),
+      description: (fd.get('description') as string) || undefined,
+      departmentId: fd.get('departmentId') as string,
+    };
+
+    try {
+      await createCourse.mutateAsync(data);
+      setCourseDialogOpen(false);
+    } catch (err: any) {
+      alert(err.response?.data?.message || err.message || 'Error saving course');
+    }
+  };
+
   const openCreateProgramForDep = (depId: string) => {
     setEditingProg(null);
     setSelectedDepId(depId);
     setProgDialogOpen(true);
+  };
+
+  const openCreateCourseForDep = (depId: string) => {
+    setSelectedDepIdForCourse(depId);
+    setCourseDialogOpen(true);
   };
 
   return (
@@ -172,10 +204,13 @@ export function DepartmentsTab() {
       ) : (
         departments.map((dep) => {
           const depPrograms = programs.filter((p) => p.departmentId === dep.id);
+          const depCourses = courses.filter(
+            (c) => c.department?.id === dep.id || (c as any).departmentId === dep.id,
+          );
 
           return (
             <Card key={dep.id} className="overflow-hidden">
-              <CardHeader className="bg-muted/50 flex flex-row items-center justify-between border-b py-4">
+              <CardHeader className="bg-muted/50 flex flex-col gap-4 border-b py-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Layers className="text-primary h-5 w-5" />
@@ -183,10 +218,18 @@ export function DepartmentsTab() {
                     <span className="text-muted-foreground text-sm font-normal">({dep.code})</span>
                   </CardTitle>
                   <CardDescription>
-                    {depPrograms.length} {depPrograms.length === 1 ? 'Program' : 'Programs'}
+                    {depPrograms.length} {depPrograms.length === 1 ? 'Program' : 'Programs'} •{' '}
+                    {depCourses.length} {depCourses.length === 1 ? 'Course' : 'Courses'}
                   </CardDescription>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openCreateCourseForDep(dep.id)}
+                  >
+                    <Plus className="mr-2 h-4 w-4" /> Add Course
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
@@ -215,56 +258,103 @@ export function DepartmentsTab() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="p-0">
-                {depPrograms.length === 0 ? (
-                  <div className="text-muted-foreground p-6 text-center text-sm">
-                    No programs defined for this department.
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="pl-6">Code</TableHead>
-                        <TableHead>Program Name</TableHead>
-                        <TableHead>Level</TableHead>
-                        <TableHead>Duration</TableHead>
-                        <TableHead className="pr-6 text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {depPrograms.map((prog) => (
-                        <TableRow key={prog.id}>
-                          <TableCell className="pl-6 font-medium">{prog.code}</TableCell>
-                          <TableCell>{prog.name}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{prog.level.replace(/_/g, ' ')}</Badge>
-                          </TableCell>
-                          <TableCell>{prog.durationYears} Years</TableCell>
-                          <TableCell className="pr-6 text-right">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setEditingProg(prog);
-                                setSelectedDepId(prog.departmentId);
-                                setProgDialogOpen(true);
-                              }}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteProgram(prog.id)}
-                            >
-                              <Trash2 className="text-destructive h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
+              <CardContent className="space-y-6 p-4">
+                {/* Programs Section */}
+                <div className="space-y-3">
+                  <h4 className="text-foreground flex items-center gap-2 text-sm font-semibold">
+                    <Layers className="text-muted-foreground h-4 w-4" /> Programs (
+                    {depPrograms.length})
+                  </h4>
+                  {depPrograms.length === 0 ? (
+                    <div className="text-muted-foreground bg-muted/20 rounded-md p-4 text-center text-sm">
+                      No programs defined for this department.
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="pl-4">Code</TableHead>
+                            <TableHead>Program Name</TableHead>
+                            <TableHead>Level</TableHead>
+                            <TableHead>Duration</TableHead>
+                            <TableHead className="pr-4 text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {depPrograms.map((prog) => (
+                            <TableRow key={prog.id}>
+                              <TableCell className="pl-4 font-medium">{prog.code}</TableCell>
+                              <TableCell>{prog.name}</TableCell>
+                              <TableCell>
+                                <Badge variant="outline">{prog.level.replace(/_/g, ' ')}</Badge>
+                              </TableCell>
+                              <TableCell>{prog.durationYears} Years</TableCell>
+                              <TableCell className="pr-4 text-right">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    setEditingProg(prog);
+                                    setSelectedDepId(prog.departmentId);
+                                    setProgDialogOpen(true);
+                                  }}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDeleteProgram(prog.id)}
+                                >
+                                  <Trash2 className="text-destructive h-4 w-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </div>
+
+                {/* Courses Section */}
+                <div className="space-y-3">
+                  <h4 className="text-foreground flex items-center gap-2 text-sm font-semibold">
+                    <BookOpen className="text-muted-foreground h-4 w-4" /> Department Courses (
+                    {depCourses.length})
+                  </h4>
+                  {depCourses.length === 0 ? (
+                    <div className="text-muted-foreground bg-muted/20 rounded-md p-4 text-center text-sm">
+                      No courses created in this department yet.
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="pl-4">Code</TableHead>
+                            <TableHead>Course Name</TableHead>
+                            <TableHead>Credits</TableHead>
+                            <TableHead>Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {depCourses.map((course) => (
+                            <TableRow key={course.id}>
+                              <TableCell className="pl-4 font-medium">{course.code}</TableCell>
+                              <TableCell>{course.name}</TableCell>
+                              <TableCell>{course.credits || course.creditValue || '—'}</TableCell>
+                              <TableCell>
+                                <Badge variant="default">Active</Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           );
@@ -399,6 +489,78 @@ export function DepartmentsTab() {
               </Button>
               <Button type="submit" disabled={createProg.isPending || updateProg.isPending}>
                 {createProg.isPending || updateProg.isPending ? 'Saving...' : 'Save'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Course Dialog */}
+      <Dialog open={courseDialogOpen} onOpenChange={setCourseDialogOpen}>
+        <DialogContent>
+          <form onSubmit={handleSaveCourse}>
+            <DialogHeader>
+              <DialogTitle>Add Course to Department</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="course-dep">Department</Label>
+                <select
+                  id="course-dep"
+                  name="departmentId"
+                  required
+                  defaultValue={selectedDepIdForCourse || ''}
+                  className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  <option value="" disabled>
+                    Select Department
+                  </option>
+                  {departments.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name} ({d.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="course-code">Course Code</Label>
+                <Input id="course-code" name="code" required placeholder="e.g. CS101" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="course-name">Course Name</Label>
+                <Input
+                  id="course-name"
+                  name="name"
+                  required
+                  placeholder="e.g. Data Structures and Algorithms"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="course-credits">Credits</Label>
+                <Input
+                  id="course-credits"
+                  name="creditValue"
+                  type="number"
+                  step="0.5"
+                  required
+                  placeholder="e.g. 4.0"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="course-desc">Description (Optional)</Label>
+                <Input
+                  id="course-desc"
+                  name="description"
+                  placeholder="Brief description of the course"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setCourseDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createCourse.isPending}>
+                {createCourse.isPending ? 'Saving...' : 'Save Course'}
               </Button>
             </DialogFooter>
           </form>

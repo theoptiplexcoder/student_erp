@@ -13,6 +13,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useCreateCourse } from '@/hooks/api/admin/useCourses';
+import { useAdminDepartments } from '@/hooks/api/admin/useDepartments';
 
 interface NewCourseFormProps {
   institutionId: string;
@@ -22,17 +23,20 @@ export function NewCourseForm({ institutionId }: NewCourseFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const createCourseMutation = useCreateCourse();
+  const { data: departmentsData, isLoading: isLoadingDeps } = useAdminDepartments(1, 100);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 
     const formData = new FormData(e.currentTarget);
+    const departmentId = formData.get('departmentId') as string;
     const data = {
       code: formData.get('code') as string,
       name: formData.get('name') as string,
       creditValue: parseFloat(formData.get('credits') as string),
       description: (formData.get('description') as string) || undefined,
+      departmentId: departmentId || undefined,
       institutionId,
     };
 
@@ -55,6 +59,22 @@ export function NewCourseForm({ institutionId }: NewCourseFormProps) {
           {error && (
             <div className="bg-destructive/10 text-destructive rounded-md p-3 text-sm">{error}</div>
           )}
+
+          <div className="space-y-2">
+            <Label htmlFor="departmentId">Department</Label>
+            <select
+              id="departmentId"
+              name="departmentId"
+              className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+            >
+              <option value="">Select Department (Optional)</option>
+              {departmentsData?.data?.map((dep) => (
+                <option key={dep.id} value={dep.id}>
+                  {dep.name} ({dep.code})
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="code">Course Code</Label>
