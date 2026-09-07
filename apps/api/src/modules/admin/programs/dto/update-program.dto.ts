@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum, IsInt, Min, IsUUID } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsInt, Min, IsUUID, IsArray } from 'class-validator';
 import { ProgramLevel } from '@prisma/client';
 
 export class UpdateProgramDto {
@@ -22,4 +22,9 @@ export class UpdateProgramDto {
   @IsOptional()
   @IsUUID()
   departmentId?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  courseIds?: string[];
 }

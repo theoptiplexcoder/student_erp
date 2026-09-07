@@ -1,4 +1,13 @@
-import { IsString, IsNotEmpty, IsEnum, IsInt, Min, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsEnum,
+  IsInt,
+  Min,
+  IsUUID,
+  IsOptional,
+  IsArray,
+} from 'class-validator';
 import { ProgramLevel } from '@prisma/client';
 
 export class CreateProgramDto {
@@ -20,4 +29,9 @@ export class CreateProgramDto {
   @IsUUID()
   @IsNotEmpty()
   departmentId!: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  courseIds?: string[];
 }

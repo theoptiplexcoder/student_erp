@@ -828,8 +828,7 @@ model Course {
   assignments        Assignment[]
   examCourses        ExamCourse[]
   announcements      Announcement[]
-  program            Program?             @relation(fields: [programId], references: [id])
-  programId          String?              @db.Uuid
+  programOfferings   Program[]
   classLevel         ClassLevel?          @relation(fields: [classLevelId], references: [id])
   classLevelId       String?              @db.Uuid
   lessonPlans        LessonPlan[]

@@ -40,6 +40,7 @@ export function ProgramsTab() {
 
   const [progDialogOpen, setProgDialogOpen] = useState(false);
   const [editingProg, setEditingProg] = useState<any>(null);
+  const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([]);
 
   const [courseDialogOpen, setCourseDialogOpen] = useState(false);
   const [selectedProgForCourse, setSelectedProgForCourse] = useState<any>(null);
@@ -63,6 +64,18 @@ export function ProgramsTab() {
   const departments = departmentsData?.data || [];
   const courses = coursesData?.data || [];
 
+  const openProgramModal = (prog?: any) => {
+    if (prog) {
+      setEditingProg(prog);
+      const existingIds = prog.courses ? prog.courses.map((c: any) => c.id) : [];
+      setSelectedCourseIds(existingIds);
+    } else {
+      setEditingProg(null);
+      setSelectedCourseIds([]);
+    }
+    setProgDialogOpen(true);
+  };
+
   const handleSaveProgram = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
@@ -72,6 +85,7 @@ export function ProgramsTab() {
       level: fd.get('level') as any,
       durationYears: parseInt(fd.get('durationYears') as string, 10),
       departmentId: fd.get('departmentId') as string,
+      courseIds: selectedCourseIds,
     };
 
     try {
@@ -103,19 +117,26 @@ export function ProgramsTab() {
   const handleSaveCourseForProgram = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const programId = fd.get('programId') as string;
     const departmentId = fd.get('departmentId') as string;
     const data = {
       code: fd.get('code') as string,
       name: fd.get('name') as string,
       creditValue: parseFloat(fd.get('creditValue') as string),
       description: (fd.get('description') as string) || undefined,
-      programId: programId || undefined,
       departmentId: departmentId || undefined,
     };
 
     try {
-      await createCourse.mutateAsync(data);
+      const created = await createCourse.mutateAsync(data);
+      if (selectedProgForCourse && created?.id) {
+        const currentCourseIds = (selectedProgForCourse.courses || []).map((c: any) => c.id);
+        if (!currentCourseIds.includes(created.id)) {
+          await updateProg.mutateAsync({
+            id: selectedProgForCourse.id,
+            data: { courseIds: [...currentCourseIds, created.id] },
+          });
+        }
+      }
       setCourseDialogOpen(false);
     } catch (err: any) {
       alert(err.response?.data?.message || err.message || 'Error saving course');
@@ -127,6 +148,12 @@ export function ProgramsTab() {
     setCourseDialogOpen(true);
   };
 
+  const toggleCourseSelection = (courseId: string) => {
+    setSelectedCourseIds((prev) =>
+      prev.includes(courseId) ? prev.filter((id) => id !== courseId) : [...prev, courseId],
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -136,12 +163,7 @@ export function ProgramsTab() {
             Create programs and group courses under a single program name
           </p>
         </div>
-        <Button
-          onClick={() => {
-            setEditingProg(null);
-            setProgDialogOpen(true);
-          }}
-        >
+        <Button onClick={() => openProgramModal()}>
           <Plus className="mr-2 h-4 w-4" /> Add Program
         </Button>
       </div>
@@ -154,9 +176,7 @@ export function ProgramsTab() {
         </Card>
       ) : (
         programs.map((prog) => {
-          const progCourses = courses.filter(
-            (c) => c.program?.id === prog.id || (c as any).programId === prog.id,
-          );
+          const progCourses = prog.courses || [];
 
           return (
             <Card key={prog.id} className="overflow-hidden">
@@ -178,14 +198,7 @@ export function ProgramsTab() {
                   <Button variant="outline" size="sm" onClick={() => openAddCourseModal(prog)}>
                     <Plus className="mr-2 h-4 w-4" /> Add Course
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setEditingProg(prog);
-                      setProgDialogOpen(true);
-                    }}
-                  >
+                  <Button variant="ghost" size="icon" onClick={() => openProgramModal(prog)}>
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button variant="ghost" size="icon" onClick={() => handleDeleteProgram(prog.id)}>
@@ -201,7 +214,8 @@ export function ProgramsTab() {
                   </h4>
                   {progCourses.length === 0 ? (
                     <div className="text-muted-foreground bg-muted/20 rounded-md p-4 text-center text-sm">
-                      No courses linked to this program yet. Click "Add Course" to link one.
+                      No courses linked to this program yet. Click "Add Course" or edit program to
+                      link existing courses.
                     </div>
                   ) : (
                     <div className="overflow-x-auto rounded-md border">
@@ -216,7 +230,7 @@ export function ProgramsTab() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {progCourses.map((course) => (
+                          {progCourses.map((course: any) => (
                             <TableRow key={course.id}>
                               <TableCell className="pl-4 font-medium">{course.code}</TableCell>
                               <TableCell>{course.name}</TableCell>
@@ -240,7 +254,7 @@ export function ProgramsTab() {
 
       {/* Program Dialog */}
       <Dialog open={progDialogOpen} onOpenChange={setProgDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
           <form onSubmit={handleSaveProgram}>
             <DialogHeader>
               <DialogTitle>{editingProg ? 'Edit Program' : 'Create Program'}</DialogTitle>
@@ -317,6 +331,45 @@ export function ProgramsTab() {
                   <option value="DOCTORAL">Doctoral</option>
                   <option value="CERTIFICATE">Certificate</option>
                 </select>
+              </div>
+
+              {/* Course Selection */}
+              <div className="space-y-2 border-t pt-4">
+                <Label className="text-base font-semibold">Select Courses to Associate</Label>
+                <p className="text-muted-foreground text-xs">
+                  Check courses to include in this program.
+                </p>
+                {courses.length === 0 ? (
+                  <p className="text-muted-foreground text-sm italic">
+                    No courses available in the system.
+                  </p>
+                ) : (
+                  <div className="bg-muted/10 max-h-48 space-y-2 overflow-y-auto rounded-md border p-3">
+                    {courses.map((course: any) => {
+                      const isChecked = selectedCourseIds.includes(course.id);
+                      return (
+                        <label
+                          key={course.id}
+                          className="hover:bg-muted/40 flex cursor-pointer items-center space-x-3 rounded p-1 text-sm"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => toggleCourseSelection(course.id)}
+                            className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
+                          />
+                          <span className="font-medium">{course.code}</span> -{' '}
+                          <span>{course.name}</span>
+                          {course.department && (
+                            <span className="text-muted-foreground text-xs">
+                              ({course.department.name})
+                            </span>
+                          )}
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
             <DialogFooter>

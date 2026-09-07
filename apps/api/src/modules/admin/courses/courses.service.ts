@@ -35,7 +35,11 @@ export class CoursesService {
     }
 
     if (programId) {
-      where.programId = programId;
+      where.programOfferings = {
+        some: {
+          id: programId,
+        },
+      };
     }
 
     if (curriculumId) {
@@ -78,7 +82,7 @@ export class CoursesService {
         skip,
         take: pageSize,
         include: {
-          program: true,
+          programOfferings: true,
           department: true,
           classLevel: true,
           curriculumCourses: {
@@ -119,7 +123,7 @@ export class CoursesService {
     const course = await this.prisma.course.findUnique({
       where: { id },
       include: {
-        program: true,
+        programOfferings: true,
         department: true,
         classLevel: true,
         courseOfferings: {

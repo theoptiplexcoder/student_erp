@@ -43,9 +43,5 @@ export class CreateCourseDto {
 
   @IsOptional()
   @IsString()
-  programId?: string;
-
-  @IsOptional()
-  @IsString()
   classLevelId?: string;
 }

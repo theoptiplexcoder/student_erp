@@ -13,6 +13,17 @@ export interface Program {
     name: string;
     code: string;
   };
+  courses?: Array<{
+    id: string;
+    code: string;
+    name: string;
+    creditValue?: number;
+    department?: {
+      id: string;
+      name: string;
+      code: string;
+    };
+  }>;
   _count?: {
     curriculums?: number;
     students?: number;
@@ -26,6 +37,7 @@ export interface CreateProgramDto {
   level: string;
   durationYears: number;
   departmentId: string;
+  courseIds?: string[];
 }
 
 export interface ProgramsResponse {

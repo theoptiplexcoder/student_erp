@@ -27,14 +27,31 @@ export class ProgramsService {
       throw new BadRequestException('A program with this code already exists in your institution');
     }
 
+    const { courseIds, ...programData } = dto;
+
     return this.prisma.program.create({
       data: {
         institutionId,
-        departmentId: dto.departmentId,
-        name: dto.name,
-        code: dto.code,
-        level: dto.level,
-        durationYears: dto.durationYears,
+        departmentId: programData.departmentId,
+        name: programData.name,
+        code: programData.code,
+        level: programData.level,
+        durationYears: programData.durationYears,
+        ...(courseIds && courseIds.length > 0
+          ? {
+              courses: {
+                connect: courseIds.map((cId) => ({ id: cId })),
+              },
+            }
+          : {}),
+      },
+      include: {
+        department: true,
+        courses: {
+          include: {
+            department: true,
+          },
+        },
       },
     });
   }
@@ -44,6 +61,11 @@ export class ProgramsService {
       where: { id, institutionId },
       include: {
         department: true,
+        courses: {
+          include: {
+            department: true,
+          },
+        },
         curriculums: {
           orderBy: { versionNumber: 'desc' },
         },
@@ -82,6 +104,11 @@ export class ProgramsService {
         take: pageSize,
         include: {
           department: true,
+          courses: {
+            include: {
+              department: true,
+            },
+          },
           _count: {
             select: { students: true, courses: true },
           },
@@ -124,9 +151,28 @@ export class ProgramsService {
       }
     }
 
+    const { courseIds, ...updateData } = dto;
+
     return this.prisma.program.update({
       where: { id },
-      data: dto,
+      data: {
+        ...updateData,
+        ...(courseIds !== undefined
+          ? {
+              courses: {
+                set: courseIds.map((cId) => ({ id: cId })),
+              },
+            }
+          : {}),
+      },
+      include: {
+        department: true,
+        courses: {
+          include: {
+            department: true,
+          },
+        },
+      },
     });
   }
 

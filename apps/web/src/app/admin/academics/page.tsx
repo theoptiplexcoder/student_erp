@@ -28,7 +28,6 @@ import {
 } from '@student-erp/ui';
 import { Plus, Eye, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { OverviewTab } from './overview-tab';
 import { DepartmentsTab } from './departments-tab';
 import { ProgramsTab } from './programs-tab';
 import { useAdminAllCurriculums } from '@/hooks/api/admin/useCurriculums';
@@ -100,7 +99,7 @@ function NewCurriculumButton() {
 }
 
 export default function AcademicsPage() {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('departments');
 
   // Queries
   const { data: curriculumsData, isLoading: isLoadingCurriculums } = useAdminAllCurriculums();
@@ -121,7 +120,6 @@ export default function AcademicsPage() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="departments">Departments</TabsTrigger>
           <TabsTrigger value="programs">Programs</TabsTrigger>
           <TabsTrigger value="curriculums">Curriculums</TabsTrigger>
@@ -129,10 +127,6 @@ export default function AcademicsPage() {
           <TabsTrigger value="courses">Courses</TabsTrigger>
           <TabsTrigger value="sections">Sections</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="overview">
-          <OverviewTab />
-        </TabsContent>
 
         <TabsContent value="departments">
           <DepartmentsTab />
