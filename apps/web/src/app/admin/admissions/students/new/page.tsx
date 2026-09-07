@@ -78,6 +78,76 @@ function DirectAdmissionForm() {
   const supabase = createClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Form Data State
+  const [formData, setFormData] = useState({
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    dateOfBirth: '',
+    gender: '',
+    email: '',
+    phone: '',
+    address: '',
+    about: '',
+    skills: [] as string[],
+
+    fatherName: '',
+    motherName: '',
+    guardianName: '',
+    fatherPhone: '',
+    motherPhone: '',
+    guardianPhone: '',
+    fatherEmail: '',
+    motherEmail: '',
+
+    accomplishments: [] as { type: string; title: string; description: string; issuer?: string }[],
+    documents: [] as { file: File; fileName: string; size: number; mimeType: string }[],
+    previousEducation: [] as { institutionName: string; academicYear: string }[],
+    photo: null as File | null,
+
+    academicYearId: '',
+    departmentId: '',
+    programId: '',
+    courseId: '',
+    sectionId: '',
+    batchId: '',
+
+    feeStructureId: '',
+    totalFee: 0,
+    installmentsCount: 1,
+    installments: [] as { amount: number; dueDate: string }[],
+  });
+
+  // Load Draft
+  useEffect(() => {
+    if (draftIdParam) {
+      getDraft(draftIdParam).then((existingDraft) => {
+        if (existingDraft && existingDraft.data) {
+          setFormData((prev) => ({
+            ...prev,
+            ...existingDraft.data,
+            // Explicitly keep empty arrays/nulls for files since they can't be saved in localStorage
+            documents: [],
+            photo: null,
+          }));
+        }
+      });
+    }
+  }, [draftIdParam]);
+
+  // Auto-Save Draft
+  useEffect(() => {
+    // Only save if we have some meaningful data entered to avoid saving empty drafts immediately
+    const hasData = formData.firstName || formData.lastName || formData.email || formData.phone;
+    if (hasData && !isSubmitting) {
+      const timeoutId = setTimeout(() => {
+        saveDraft(draftId, formData);
+      }, 1000); // 1s debounce
+      return () => clearTimeout(timeoutId);
+    }
+    return undefined;
+  }, [formData, draftId, isSubmitting]);
+
   // Quick Add States
   const [isDeptDialogOpen, setIsDeptDialogOpen] = useState(false);
   const [deptFormData, setDeptFormData] = useState({ name: '', code: '' });
@@ -428,75 +498,6 @@ function DirectAdmissionForm() {
     };
     loadDropdowns();
   }, []);
-
-  const [formData, setFormData] = useState({
-    firstName: '',
-    middleName: '',
-    lastName: '',
-    dateOfBirth: '',
-    gender: '',
-    email: '',
-    phone: '',
-    address: '',
-    about: '',
-    skills: [] as string[],
-
-    fatherName: '',
-    motherName: '',
-    guardianName: '',
-    fatherPhone: '',
-    motherPhone: '',
-    guardianPhone: '',
-    fatherEmail: '',
-    motherEmail: '',
-
-    accomplishments: [] as { type: string; title: string; description: string; issuer?: string }[],
-    documents: [] as { file: File; fileName: string; size: number; mimeType: string }[],
-    previousEducation: [] as { institutionName: string; academicYear: string }[],
-    photo: null as File | null,
-
-    academicYearId: '',
-    departmentId: '',
-    programId: '',
-    courseId: '',
-    sectionId: '',
-    batchId: '',
-
-    feeStructureId: '',
-    totalFee: 0,
-    installmentsCount: 1,
-    installments: [] as { amount: number; dueDate: string }[],
-  });
-
-  // Load Draft
-  useEffect(() => {
-    if (draftIdParam) {
-      getDraft(draftIdParam).then((existingDraft) => {
-        if (existingDraft && existingDraft.data) {
-          setFormData((prev) => ({
-            ...prev,
-            ...existingDraft.data,
-            // Explicitly keep empty arrays/nulls for files since they can't be saved in localStorage
-            documents: [],
-            photo: null,
-          }));
-        }
-      });
-    }
-  }, [draftIdParam]);
-
-  // Auto-Save Draft
-  useEffect(() => {
-    // Only save if we have some meaningful data entered to avoid saving empty drafts immediately
-    const hasData = formData.firstName || formData.lastName || formData.email || formData.phone;
-    if (hasData && !isSubmitting) {
-      const timeoutId = setTimeout(() => {
-        saveDraft(draftId, formData);
-      }, 1000); // 1s debounce
-      return () => clearTimeout(timeoutId);
-    }
-    return undefined;
-  }, [formData, draftId, isSubmitting]);
 
   const [skillInput, setSkillInput] = useState('');
 
