@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import { Suspense } from 'react';
 import {
   Card,
@@ -35,6 +34,7 @@ import {
   X,
 } from 'lucide-react';
 import { useCreateDirectAdmission } from '@/hooks/api/admin/useAdmissions';
+import { useFeeStructures, FeeStructure } from '@/hooks/api/admin/useFinance';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { createClient } from '@/lib/supabase/client';
@@ -90,7 +90,6 @@ function DirectAdmissionForm() {
         ...prev,
         departmentId: newDept.id,
         programId: '',
-        curriculumId: '',
         courseId: '',
         batchId: '',
         sectionId: '',
@@ -178,7 +177,6 @@ function DirectAdmissionForm() {
       setFormData((prev) => ({
         ...prev,
         programId: newProg.id,
-        curriculumId: '',
         courseId: '',
         batchId: '',
         sectionId: '',
@@ -265,12 +263,78 @@ function DirectAdmissionForm() {
   // Fetched data
   const [academicYears, setAcademicYears] = useState<any[]>([]);
   const [programs, setPrograms] = useState<any[]>([]);
-  const [curriculums, setCurriculums] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [sections, setSections] = useState<any[]>([]);
   const [batches, setBatches] = useState<any[]>([]);
   const [institutionType, setInstitutionType] = useState<'SCHOOL' | 'COLLEGE'>('SCHOOL');
   const [departments, setDepartments] = useState<any[]>([]);
+
+  // Fee structures fetched dynamically
+  const { data: allFeeStructures = [], isLoading: isFeeStructuresLoading } = useFeeStructures({
+    isActive: true,
+  });
+
+  // Filter fee structures based on academic year and program if selected
+  const matchingFeeStructures = React.useMemo(() => {
+    return allFeeStructures.filter((fs) => {
+      const matchAy =
+        !formData.academicYearId ||
+        !fs.academicYearId ||
+        fs.academicYearId === formData.academicYearId;
+      const matchProg = !formData.programId || !fs.programId || fs.programId === formData.programId;
+      return matchAy && matchProg;
+    });
+  }, [allFeeStructures, formData.academicYearId, formData.programId]);
+
+  // Automatically link the fee structure when academic year and program are selected
+  useEffect(() => {
+    if (!formData.academicYearId || !formData.programId || allFeeStructures.length === 0) {
+      return;
+    }
+
+    // Find the best match:
+    // 1. Exact match for both academicYearId and programId (and optionally batchId if present)
+    const exactMatch =
+      (formData.batchId &&
+        allFeeStructures.find(
+          (fs) =>
+            fs.academicYearId === formData.academicYearId &&
+            fs.programId === formData.programId &&
+            fs.batchId === formData.batchId,
+        )) ||
+      allFeeStructures.find(
+        (fs) =>
+          fs.academicYearId === formData.academicYearId && fs.programId === formData.programId,
+      );
+
+    if (exactMatch) {
+      // If no fee structure is selected yet or the current selection is from another program/academic year
+      setFormData((prev) => {
+        if (prev.feeStructureId === exactMatch.id) return prev;
+
+        const count =
+          exactMatch.installmentCount || (exactMatch.defaultPaymentMode === 'ANNUAL' ? 1 : 4);
+        const amount = exactMatch.totalAmount / count;
+        const now = new Date();
+        const intervalMonths = exactMatch.installmentIntervalMonths || 3;
+
+        return {
+          ...prev,
+          feeStructureId: exactMatch.id,
+          totalFee: exactMatch.totalAmount,
+          installmentsCount: count,
+          installments: Array.from({ length: count }).map((_, idx) => {
+            const dueDate = new Date(now);
+            dueDate.setMonth(dueDate.getMonth() + idx * intervalMonths);
+            return {
+              amount: Math.round(amount * 100) / 100,
+              dueDate: dueDate.toISOString().split('T')[0],
+            };
+          }),
+        };
+      });
+    }
+  }, [formData.academicYearId, formData.programId, formData.batchId, allFeeStructures]);
 
   useEffect(() => {
     const loadDropdowns = async () => {
@@ -331,11 +395,11 @@ function DirectAdmissionForm() {
     academicYearId: '',
     departmentId: '',
     programId: '',
-    curriculumId: '',
     courseId: '',
     sectionId: '',
     batchId: '',
 
+    feeStructureId: '',
     totalFee: 0,
     installmentsCount: 1,
     installments: [] as { amount: number; dueDate: string }[],
@@ -407,12 +471,8 @@ function DirectAdmissionForm() {
         if (formData.programId) {
           const bRes = await apiClient.get(`/admin/batches?programId=${formData.programId}`);
           setBatches(bRes.data.data || []);
-
-          const currRes = await apiClient.get(`/admin/curriculums?programId=${formData.programId}`);
-          setCurriculums(currRes.data.data || []);
         } else {
           setBatches([]);
-          setCurriculums([]);
         }
       } catch (e) {
         console.error(e);
@@ -526,7 +586,6 @@ function DirectAdmissionForm() {
 
         academicYearId: formData.academicYearId,
         programId: formData.programId || undefined,
-        curriculumId: formData.curriculumId || undefined,
         courseId: formData.courseId || undefined,
         batchId: formData.batchId || undefined,
         sectionId: formData.sectionId || undefined,
@@ -534,6 +593,7 @@ function DirectAdmissionForm() {
         feePlan:
           formData.totalFee > 0
             ? {
+                feeStructureId: formData.feeStructureId || undefined,
                 totalAmount: formData.totalFee,
                 currency: 'INR',
                 paymentMode: formData.installmentsCount > 1 ? 'INSTALLMENTS' : 'ANNUAL',
@@ -601,12 +661,48 @@ function DirectAdmissionForm() {
       return {
         ...prev,
         installmentsCount: count,
-        installments: Array.from({ length: count }).map(() => ({
-          amount: Math.round(amount * 100) / 100,
-          dueDate: '',
-        })),
+        installments: Array.from({ length: count }).map((_, idx) => {
+          const existing = prev.installments[idx];
+          return {
+            amount: Math.round(amount * 100) / 100,
+            dueDate: existing?.dueDate || '',
+          };
+        }),
       };
     });
+  };
+
+  const handleFeeStructureChange = (structureId: string) => {
+    if (!structureId) {
+      setFormData((prev) => ({
+        ...prev,
+        feeStructureId: '',
+      }));
+      return;
+    }
+
+    const structure = allFeeStructures.find((s) => s.id === structureId);
+    if (!structure) return;
+
+    const count = structure.installmentCount || (structure.defaultPaymentMode === 'ANNUAL' ? 1 : 4);
+    const amount = structure.totalAmount / count;
+    const now = new Date();
+    const intervalMonths = structure.installmentIntervalMonths || 3;
+
+    setFormData((prev) => ({
+      ...prev,
+      feeStructureId: structure.id,
+      totalFee: structure.totalAmount,
+      installmentsCount: count,
+      installments: Array.from({ length: count }).map((_, idx) => {
+        const dueDate = new Date(now);
+        dueDate.setMonth(dueDate.getMonth() + idx * intervalMonths);
+        return {
+          amount: Math.round(amount * 100) / 100,
+          dueDate: dueDate.toISOString().split('T')[0],
+        };
+      }),
+    }));
   };
 
   const filteredPrograms = formData.departmentId
@@ -1185,7 +1281,6 @@ function DirectAdmissionForm() {
                             setFormData((p) => ({
                               ...p,
                               programId: '',
-                              curriculumId: '',
                               courseId: '',
                               batchId: '',
                               sectionId: '',
@@ -1255,7 +1350,6 @@ function DirectAdmissionForm() {
                             handleChange(e);
                             setFormData((p) => ({
                               ...p,
-                              curriculumId: '',
                               courseId: '',
                               batchId: '',
                               sectionId: '',
@@ -1361,50 +1455,6 @@ function DirectAdmissionForm() {
                             </form>
                           </DialogContent>
                         </Dialog>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Curriculum</Label>
-                      <div className="flex items-center gap-2">
-                        <select
-                          name="curriculumId"
-                          value={formData.curriculumId}
-                          onChange={handleChange}
-                          className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                        >
-                          <option value="">Select Curriculum (Optional)</option>
-                          {curriculums.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {c.name} {c.versionNumber ? `(v${c.versionNumber})` : ''}
-                            </option>
-                          ))}
-                        </select>
-                        {formData.programId ? (
-                          <Link
-                            href={`/admin/academics/programs/${formData.programId}/curriculums/new`}
-                            passHref
-                          >
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="shrink-0"
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                        ) : (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="shrink-0"
-                            disabled
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        )}
                       </div>
                     </div>
 
@@ -1569,75 +1619,127 @@ function DirectAdmissionForm() {
             {/* STEP 3: FEE */}
             {currentStep === 3 && (
               <div className="animate-in fade-in slide-in-from-right-4 space-y-8 duration-300">
-                <h2 className="mb-4 text-xl font-semibold">Fee Configuration</h2>
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold">Fee Configuration</h2>
+                  <p className="text-muted-foreground text-sm">
+                    Select a fee structure blueprint or enter custom fee details for this student.
+                  </p>
+                </div>
                 {errors['totalFee'] && (
                   <p className="text-sm font-semibold text-red-500">{errors['totalFee']}</p>
                 )}
-                <div className="grid max-w-md grid-cols-1 gap-6">
+
+                <div className="space-y-6">
                   <div className="space-y-2">
-                    <Label>Annual Fee (₹)</Label>
-                    <Input
-                      name="totalFee"
-                      type="number"
-                      value={formData.totalFee}
-                      onChange={handleChange}
-                    />
+                    <Label htmlFor="feeStructureSelect">Fee Structure Template</Label>
+                    <select
+                      id="feeStructureSelect"
+                      value={formData.feeStructureId}
+                      onChange={(e) => handleFeeStructureChange(e.target.value)}
+                      className="border-input bg-background w-full max-w-md rounded-md border px-3 py-2 text-sm"
+                    >
+                      <option value="">
+                        {isFeeStructuresLoading
+                          ? 'Loading fee structures...'
+                          : matchingFeeStructures.length > 0
+                            ? 'Select a fee structure (or leave blank for custom fee)...'
+                            : 'No fee structures match the selected program/year'}
+                      </option>
+                      {matchingFeeStructures.map((fs) => (
+                        <option key={fs.id} value={fs.id}>
+                          {fs.name} (₹{fs.totalAmount?.toLocaleString('en-IN')})
+                          {fs.code ? ` - ${fs.code}` : ''}
+                        </option>
+                      ))}
+                      {/* Show other active structures if they don't match current program/year */}
+                      {allFeeStructures.length > matchingFeeStructures.length && (
+                        <optgroup label="Other Fee Structures">
+                          {allFeeStructures
+                            .filter((fs) => !matchingFeeStructures.some((m) => m.id === fs.id))
+                            .map((fs) => (
+                              <option key={fs.id} value={fs.id}>
+                                {fs.name} (₹{fs.totalAmount?.toLocaleString('en-IN')})
+                                {fs.academicYear?.name ? ` • ${fs.academicYear.name}` : ''}
+                                {fs.program?.name ? ` • ${fs.program.name}` : ''}
+                              </option>
+                            ))}
+                        </optgroup>
+                      )}
+                    </select>
+                    {formData.feeStructureId && (
+                      <div className="flex items-center gap-2 pt-1 text-xs text-green-600 dark:text-green-400">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        <span>Fee structure linked and schedule populated automatically.</span>
+                      </div>
+                    )}
                   </div>
 
-                  {formData.totalFee > 0 && (
+                  <div className="grid max-w-md grid-cols-1 gap-6">
                     <div className="space-y-2">
-                      <Label>Installment Plan</Label>
-                      <select
-                        value={formData.installmentsCount}
-                        onChange={handleInstallmentCountChange}
-                        className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                      >
-                        <option value={1}>1 Installment</option>
-                        <option value={2}>2 Installments</option>
-                        <option value={3}>3 Installments</option>
-                        <option value={4}>4 Installments</option>
-                      </select>
+                      <Label>Annual Fee (₹)</Label>
+                      <Input
+                        name="totalFee"
+                        type="number"
+                        value={formData.totalFee}
+                        onChange={handleChange}
+                      />
+                    </div>
 
-                      <div className="bg-muted/30 mt-4 space-y-3 rounded-lg border p-4">
-                        <p className="text-sm font-medium">Installment Schedule</p>
-                        {formData.installments.map((inst, idx) => (
-                          <div key={idx} className="flex flex-col gap-1">
-                            <div className="flex items-center gap-4">
-                              <span className="text-muted-foreground text-sm font-semibold whitespace-nowrap">
-                                Inst {idx + 1}
-                              </span>
-                              <Input
-                                type="number"
-                                value={inst.amount}
-                                onChange={(e) => {
-                                  const newInst = [...formData.installments];
-                                  newInst[idx].amount = Number(e.target.value);
-                                  setFormData((p) => ({ ...p, installments: newInst }));
-                                }}
-                              />
-                              <div className="w-full flex-1">
+                    {formData.totalFee > 0 && (
+                      <div className="space-y-2">
+                        <Label>Installment Plan</Label>
+                        <select
+                          value={formData.installmentsCount}
+                          onChange={handleInstallmentCountChange}
+                          className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                        >
+                          <option value={1}>1 Installment</option>
+                          <option value={2}>2 Installments</option>
+                          <option value={3}>3 Installments</option>
+                          <option value={4}>4 Installments</option>
+                        </select>
+
+                        <div className="bg-muted/30 mt-4 space-y-3 rounded-lg border p-4">
+                          <p className="text-sm font-medium">Installment Schedule</p>
+                          {formData.installments.map((inst, idx) => (
+                            <div key={idx} className="flex flex-col gap-1">
+                              <div className="flex items-center gap-4">
+                                <span className="text-muted-foreground text-sm font-semibold whitespace-nowrap">
+                                  Inst {idx + 1}
+                                </span>
                                 <Input
-                                  type="date"
-                                  required
-                                  value={inst.dueDate}
+                                  type="number"
+                                  value={inst.amount}
                                   onChange={(e) => {
                                     const newInst = [...formData.installments];
-                                    newInst[idx].dueDate = e.target.value;
+                                    newInst[idx].amount = Number(e.target.value);
                                     setFormData((p) => ({ ...p, installments: newInst }));
                                   }}
                                 />
+                                <div className="w-full flex-1">
+                                  <Input
+                                    type="date"
+                                    required
+                                    value={inst.dueDate}
+                                    onChange={(e) => {
+                                      const newInst = [...formData.installments];
+                                      newInst[idx].dueDate = e.target.value;
+                                      setFormData((p) => ({ ...p, installments: newInst }));
+                                    }}
+                                  />
+                                </div>
                               </div>
+                              {errors[`installment_${idx}_dueDate`] && (
+                                <span className="text-right text-xs text-red-500">
+                                  {errors[`installment_${idx}_dueDate`]}
+                                </span>
+                              )}
                             </div>
-                            {errors[`installment_${idx}_dueDate`] && (
-                              <span className="text-right text-xs text-red-500">
-                                {errors[`installment_${idx}_dueDate`]}
-                              </span>
-                            )}
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -1687,9 +1789,6 @@ function DirectAdmissionForm() {
                     <p>
                       <strong>Program ID:</strong> {formData.programId}
                     </p>
-                    <p>
-                      <strong>Curriculum ID:</strong> {formData.curriculumId}
-                    </p>
                     {institutionType === 'COLLEGE' && (
                       <p>
                         <strong>Course ID:</strong> {formData.courseId}
@@ -1701,6 +1800,18 @@ function DirectAdmissionForm() {
                     <p>
                       <strong>Batch ID:</strong> {formData.batchId}
                     </p>
+                    {formData.previousEducation.length > 0 && (
+                      <div className="pt-2">
+                        <p className="font-semibold">Previous Education:</p>
+                        <ul className="list-inside list-disc pl-1">
+                          {formData.previousEducation.map((edu, idx) => (
+                            <li key={idx}>
+                              {edu.institutionName} ({edu.academicYear})
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2 rounded-md border p-4 text-sm md:col-span-2">
                     <div className="mb-2 flex items-center justify-between">
@@ -1709,6 +1820,13 @@ function DirectAdmissionForm() {
                         Edit
                       </Button>
                     </div>
+                    {formData.feeStructureId && (
+                      <p>
+                        <strong>Fee Structure:</strong>{' '}
+                        {allFeeStructures.find((s) => s.id === formData.feeStructureId)?.name ||
+                          'Linked Structure'}
+                      </p>
+                    )}
                     <p>
                       <strong>Annual Fee:</strong> ₹{formData.totalFee}
                     </p>

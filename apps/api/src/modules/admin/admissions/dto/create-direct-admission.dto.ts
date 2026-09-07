@@ -24,6 +24,10 @@ export class InstallmentDto {
 }
 
 export class FeePlanDto {
+  @IsString()
+  @IsOptional()
+  feeStructureId?: string;
+
   @IsNumber()
   @Min(0)
   totalAmount!: number;
