@@ -34,7 +34,12 @@ import {
   X,
 } from 'lucide-react';
 import { useCreateDirectAdmission } from '@/hooks/api/admin/useAdmissions';
-import { useFeeStructures, FeeStructure } from '@/hooks/api/admin/useFinance';
+import {
+  useFeeStructures,
+  useCreateFeeStructure,
+  FeeStructure,
+  FeeComponentType,
+} from '@/hooks/api/admin/useFinance';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { createClient } from '@/lib/supabase/client';
@@ -268,6 +273,64 @@ function DirectAdmissionForm() {
   const [batches, setBatches] = useState<any[]>([]);
   const [institutionType, setInstitutionType] = useState<'SCHOOL' | 'COLLEGE'>('SCHOOL');
   const [departments, setDepartments] = useState<any[]>([]);
+
+  // Quick Add Fee Structure State
+  const [isFeeStructDialogOpen, setIsFeeStructDialogOpen] = useState(false);
+  const [feeStructFormData, setFeeStructFormData] = useState({
+    name: '',
+    code: '',
+    description: '',
+    academicYearId: '',
+    programId: '',
+    batchId: '',
+    defaultPaymentMode: 'INSTALLMENTS' as 'ANNUAL' | 'INSTALLMENTS',
+    installmentCount: 2,
+    installmentIntervalMonths: 6,
+    components: [
+      {
+        name: 'Tuition Fee',
+        type: 'TUITION' as FeeComponentType,
+        amount: 50000,
+        isOptional: false,
+        description: 'Standard academic tuition fee',
+      },
+    ],
+  });
+  const createFeeStructureMutation = useCreateFeeStructure();
+
+  const handleCreateFeeStructure = async (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const payload = {
+        name: feeStructFormData.name,
+        code: feeStructFormData.code,
+        description: feeStructFormData.description || undefined,
+        academicYearId: feeStructFormData.academicYearId || formData.academicYearId,
+        programId: feeStructFormData.programId || formData.programId || undefined,
+        batchId: feeStructFormData.batchId || formData.batchId || undefined,
+        defaultPaymentMode: feeStructFormData.defaultPaymentMode,
+        installmentCount: Number(feeStructFormData.installmentCount),
+        installmentIntervalMonths: Number(feeStructFormData.installmentIntervalMonths),
+        components: feeStructFormData.components.map((c) => ({
+          ...c,
+          amount: Number(c.amount),
+        })),
+      };
+
+      if (!payload.name || !payload.code || !payload.academicYearId) {
+        alert('Please provide Structure Name, Code, and Academic Year.');
+        return;
+      }
+
+      const created = await createFeeStructureMutation.mutateAsync(payload);
+      setIsFeeStructDialogOpen(false);
+      handleFeeStructureChange(created.id);
+    } catch (err: any) {
+      console.error(err);
+      alert(err?.response?.data?.message || 'Failed to create fee structure');
+    }
+  };
 
   // Fee structures fetched dynamically
   const { data: allFeeStructures = [], isLoading: isFeeStructuresLoading } = useFeeStructures({
@@ -1632,40 +1695,329 @@ function DirectAdmissionForm() {
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="feeStructureSelect">Fee Structure Template</Label>
-                    <select
-                      id="feeStructureSelect"
-                      value={formData.feeStructureId}
-                      onChange={(e) => handleFeeStructureChange(e.target.value)}
-                      className="border-input bg-background w-full max-w-md rounded-md border px-3 py-2 text-sm"
-                    >
-                      <option value="">
-                        {isFeeStructuresLoading
-                          ? 'Loading fee structures...'
-                          : matchingFeeStructures.length > 0
-                            ? 'Select a fee structure (or leave blank for custom fee)...'
-                            : 'No fee structures match the selected program/year'}
-                      </option>
-                      {matchingFeeStructures.map((fs) => (
-                        <option key={fs.id} value={fs.id}>
-                          {fs.name} (₹{fs.totalAmount?.toLocaleString('en-IN')})
-                          {fs.code ? ` - ${fs.code}` : ''}
+                    <div className="flex max-w-md items-center gap-2">
+                      <select
+                        id="feeStructureSelect"
+                        value={formData.feeStructureId}
+                        onChange={(e) => handleFeeStructureChange(e.target.value)}
+                        className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                      >
+                        <option value="">
+                          {isFeeStructuresLoading
+                            ? 'Loading fee structures...'
+                            : matchingFeeStructures.length > 0
+                              ? 'Select a fee structure (or leave blank for custom fee)...'
+                              : 'No fee structures match the selected program/year'}
                         </option>
-                      ))}
-                      {/* Show other active structures if they don't match current program/year */}
-                      {allFeeStructures.length > matchingFeeStructures.length && (
-                        <optgroup label="Other Fee Structures">
-                          {allFeeStructures
-                            .filter((fs) => !matchingFeeStructures.some((m) => m.id === fs.id))
-                            .map((fs) => (
-                              <option key={fs.id} value={fs.id}>
-                                {fs.name} (₹{fs.totalAmount?.toLocaleString('en-IN')})
-                                {fs.academicYear?.name ? ` • ${fs.academicYear.name}` : ''}
-                                {fs.program?.name ? ` • ${fs.program.name}` : ''}
-                              </option>
-                            ))}
-                        </optgroup>
-                      )}
-                    </select>
+                        {matchingFeeStructures.map((fs) => (
+                          <option key={fs.id} value={fs.id}>
+                            {fs.name} (₹{fs.totalAmount?.toLocaleString('en-IN')})
+                            {fs.code ? ` - ${fs.code}` : ''}
+                          </option>
+                        ))}
+                        {/* Show other active structures if they don't match current program/year */}
+                        {allFeeStructures.length > matchingFeeStructures.length && (
+                          <optgroup label="Other Fee Structures">
+                            {allFeeStructures
+                              .filter((fs) => !matchingFeeStructures.some((m) => m.id === fs.id))
+                              .map((fs) => (
+                                <option key={fs.id} value={fs.id}>
+                                  {fs.name} (₹{fs.totalAmount?.toLocaleString('en-IN')})
+                                  {fs.academicYear?.name ? ` • ${fs.academicYear.name}` : ''}
+                                  {fs.program?.name ? ` • ${fs.program.name}` : ''}
+                                </option>
+                              ))}
+                          </optgroup>
+                        )}
+                      </select>
+
+                      <Dialog
+                        open={isFeeStructDialogOpen}
+                        onOpenChange={(open) => {
+                          setIsFeeStructDialogOpen(open);
+                          if (open) {
+                            setFeeStructFormData({
+                              name: '',
+                              code: '',
+                              description: '',
+                              academicYearId: formData.academicYearId || academicYears[0]?.id || '',
+                              programId: formData.programId || '',
+                              batchId: formData.batchId || '',
+                              defaultPaymentMode: 'INSTALLMENTS',
+                              installmentCount: 2,
+                              installmentIntervalMonths: 6,
+                              components: [
+                                {
+                                  name: 'Tuition Fee',
+                                  type: 'TUITION',
+                                  amount: 50000,
+                                  isOptional: false,
+                                  description: 'Standard academic tuition fee',
+                                },
+                              ],
+                            });
+                          }
+                        }}
+                      >
+                        <DialogTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="shrink-0"
+                            title="Create New Fee Structure"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Create Fee Structure</DialogTitle>
+                          </DialogHeader>
+                          <form onSubmit={handleCreateFeeStructure} className="space-y-4 pt-2">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                              <div className="space-y-1.5">
+                                <Label>Structure Name *</Label>
+                                <Input
+                                  required
+                                  placeholder="e.g. B.Tech Standard 2024-25"
+                                  value={feeStructFormData.name}
+                                  onChange={(e) =>
+                                    setFeeStructFormData((p) => ({ ...p, name: e.target.value }))
+                                  }
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label>Structure Code *</Label>
+                                <Input
+                                  required
+                                  placeholder="e.g. FS-BTECH-2024"
+                                  value={feeStructFormData.code}
+                                  onChange={(e) =>
+                                    setFeeStructFormData((p) => ({
+                                      ...p,
+                                      code: e.target.value.toUpperCase(),
+                                    }))
+                                  }
+                                />
+                              </div>
+
+                              <div className="space-y-1.5">
+                                <Label>Academic Year *</Label>
+                                <select
+                                  required
+                                  value={feeStructFormData.academicYearId}
+                                  onChange={(e) =>
+                                    setFeeStructFormData((p) => ({
+                                      ...p,
+                                      academicYearId: e.target.value,
+                                    }))
+                                  }
+                                  className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                                >
+                                  <option value="">Select Academic Year</option>
+                                  {academicYears.map((ay) => (
+                                    <option key={ay.id} value={ay.id}>
+                                      {ay.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <div className="space-y-1.5">
+                                <Label>Program (Optional)</Label>
+                                <select
+                                  value={feeStructFormData.programId}
+                                  onChange={(e) =>
+                                    setFeeStructFormData((p) => ({
+                                      ...p,
+                                      programId: e.target.value,
+                                    }))
+                                  }
+                                  className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                                >
+                                  <option value="">All Programs</option>
+                                  {programs.map((prog) => (
+                                    <option key={prog.id} value={prog.id}>
+                                      {prog.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <div className="space-y-1.5">
+                                <Label>Payment Mode</Label>
+                                <select
+                                  value={feeStructFormData.defaultPaymentMode}
+                                  onChange={(e) =>
+                                    setFeeStructFormData((p) => ({
+                                      ...p,
+                                      defaultPaymentMode: e.target.value as
+                                        'ANNUAL' | 'INSTALLMENTS',
+                                    }))
+                                  }
+                                  className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                                >
+                                  <option value="INSTALLMENTS">Installments</option>
+                                  <option value="ANNUAL">Annual (Single Payment)</option>
+                                </select>
+                              </div>
+
+                              {feeStructFormData.defaultPaymentMode === 'INSTALLMENTS' && (
+                                <>
+                                  <div className="space-y-1.5">
+                                    <Label>Installment Count</Label>
+                                    <Input
+                                      type="number"
+                                      min={1}
+                                      max={12}
+                                      value={feeStructFormData.installmentCount}
+                                      onChange={(e) =>
+                                        setFeeStructFormData((p) => ({
+                                          ...p,
+                                          installmentCount: Number(e.target.value),
+                                        }))
+                                      }
+                                    />
+                                  </div>
+                                  <div className="space-y-1.5">
+                                    <Label>Interval (Months)</Label>
+                                    <Input
+                                      type="number"
+                                      min={1}
+                                      max={12}
+                                      value={feeStructFormData.installmentIntervalMonths}
+                                      onChange={(e) =>
+                                        setFeeStructFormData((p) => ({
+                                          ...p,
+                                          installmentIntervalMonths: Number(e.target.value),
+                                        }))
+                                      }
+                                    />
+                                  </div>
+                                </>
+                              )}
+                            </div>
+
+                            <div className="space-y-3 rounded-lg border p-3">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-sm font-semibold">Fee Components</Label>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    setFeeStructFormData((p) => ({
+                                      ...p,
+                                      components: [
+                                        ...p.components,
+                                        {
+                                          name: 'Additional Fee',
+                                          type: 'MISCELLANEOUS',
+                                          amount: 5000,
+                                          isOptional: false,
+                                          description: '',
+                                        },
+                                      ],
+                                    }))
+                                  }
+                                  className="flex items-center gap-1 text-xs"
+                                >
+                                  <Plus className="h-3 w-3" /> Add Item
+                                </Button>
+                              </div>
+
+                              <div className="space-y-2">
+                                {feeStructFormData.components.map((comp, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="bg-muted/40 grid grid-cols-1 gap-2 rounded-md border p-2 sm:grid-cols-12 sm:items-center"
+                                  >
+                                    <div className="sm:col-span-5">
+                                      <Input
+                                        placeholder="Component Name"
+                                        value={comp.name}
+                                        required
+                                        onChange={(e) => {
+                                          const next = [...feeStructFormData.components];
+                                          next[idx].name = e.target.value;
+                                          setFeeStructFormData((p) => ({ ...p, components: next }));
+                                        }}
+                                        className="h-8 text-xs"
+                                      />
+                                    </div>
+                                    <div className="sm:col-span-4">
+                                      <Input
+                                        type="number"
+                                        min={0}
+                                        placeholder="Amount"
+                                        value={comp.amount}
+                                        required
+                                        onChange={(e) => {
+                                          const next = [...feeStructFormData.components];
+                                          next[idx].amount = Number(e.target.value);
+                                          setFeeStructFormData((p) => ({ ...p, components: next }));
+                                        }}
+                                        className="h-8 text-xs"
+                                      />
+                                    </div>
+                                    <div className="flex items-center justify-end sm:col-span-3">
+                                      {feeStructFormData.components.length > 1 && (
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          className="text-destructive h-8 w-8"
+                                          onClick={() =>
+                                            setFeeStructFormData((p) => ({
+                                              ...p,
+                                              components: p.components.filter((_, i) => i !== idx),
+                                            }))
+                                          }
+                                        >
+                                          <Trash2 className="h-3.5 w-3.5" />
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+
+                              <div className="flex justify-between pt-1 text-xs font-medium">
+                                <span>Total Amount:</span>
+                                <span>
+                                  ₹
+                                  {feeStructFormData.components
+                                    .reduce((sum, c) => sum + (Number(c.amount) || 0), 0)
+                                    .toLocaleString('en-IN')}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex justify-end gap-2 pt-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsFeeStructDialogOpen(false)}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                type="submit"
+                                disabled={createFeeStructureMutation.isPending}
+                                className="bg-admin-primary hover:bg-admin-primary/90"
+                              >
+                                {createFeeStructureMutation.isPending && (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                )}
+                                Save & Apply Structure
+                              </Button>
+                            </div>
+                          </form>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+
                     {formData.feeStructureId && (
                       <div className="flex items-center gap-2 pt-1 text-xs text-green-600 dark:text-green-400">
                         <CheckCircle2 className="h-3.5 w-3.5" />
