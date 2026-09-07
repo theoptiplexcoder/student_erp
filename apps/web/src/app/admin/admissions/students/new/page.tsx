@@ -118,6 +118,15 @@ function DirectAdmissionForm() {
     installments: [] as { amount: number; dueDate: string }[],
   });
 
+  // Fetched data
+  const [academicYears, setAcademicYears] = useState<any[]>([]);
+  const [programs, setPrograms] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [sections, setSections] = useState<any[]>([]);
+  const [batches, setBatches] = useState<any[]>([]);
+  const [institutionType, setInstitutionType] = useState<'SCHOOL' | 'COLLEGE'>('SCHOOL');
+  const [departments, setDepartments] = useState<any[]>([]);
+
   // Load Draft
   useEffect(() => {
     if (draftIdParam) {
@@ -335,15 +344,6 @@ function DirectAdmissionForm() {
     }
   };
 
-  // Fetched data
-  const [academicYears, setAcademicYears] = useState<any[]>([]);
-  const [programs, setPrograms] = useState<any[]>([]);
-  const [courses, setCourses] = useState<any[]>([]);
-  const [sections, setSections] = useState<any[]>([]);
-  const [batches, setBatches] = useState<any[]>([]);
-  const [institutionType, setInstitutionType] = useState<'SCHOOL' | 'COLLEGE'>('SCHOOL');
-  const [departments, setDepartments] = useState<any[]>([]);
-
   // Quick Add Fee Structure State
   const [isFeeStructDialogOpen, setIsFeeStructDialogOpen] = useState(false);
   const [feeStructFormData, setFeeStructFormData] = useState({
@@ -367,6 +367,39 @@ function DirectAdmissionForm() {
     ],
   });
   const createFeeStructureMutation = useCreateFeeStructure();
+
+  const handleFeeStructureChange = (structureId: string) => {
+    if (!structureId) {
+      setFormData((prev) => ({
+        ...prev,
+        feeStructureId: '',
+      }));
+      return;
+    }
+
+    const structure = allFeeStructures.find((s) => s.id === structureId);
+    if (!structure) return;
+
+    const count = structure.installmentCount || (structure.defaultPaymentMode === 'ANNUAL' ? 1 : 4);
+    const amount = structure.totalAmount / count;
+    const now = new Date();
+    const intervalMonths = structure.installmentIntervalMonths || 3;
+
+    setFormData((prev) => ({
+      ...prev,
+      feeStructureId: structure.id,
+      totalFee: structure.totalAmount,
+      installmentsCount: count,
+      installments: Array.from({ length: count }).map((_, idx) => {
+        const dueDate = new Date(now);
+        dueDate.setMonth(dueDate.getMonth() + idx * intervalMonths);
+        return {
+          amount: Math.round(amount * 100) / 100,
+          dueDate: dueDate.toISOString().split('T')[0],
+        };
+      }),
+    }));
+  };
 
   const handleCreateFeeStructure = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -734,39 +767,6 @@ function DirectAdmissionForm() {
         }),
       };
     });
-  };
-
-  const handleFeeStructureChange = (structureId: string) => {
-    if (!structureId) {
-      setFormData((prev) => ({
-        ...prev,
-        feeStructureId: '',
-      }));
-      return;
-    }
-
-    const structure = allFeeStructures.find((s) => s.id === structureId);
-    if (!structure) return;
-
-    const count = structure.installmentCount || (structure.defaultPaymentMode === 'ANNUAL' ? 1 : 4);
-    const amount = structure.totalAmount / count;
-    const now = new Date();
-    const intervalMonths = structure.installmentIntervalMonths || 3;
-
-    setFormData((prev) => ({
-      ...prev,
-      feeStructureId: structure.id,
-      totalFee: structure.totalAmount,
-      installmentsCount: count,
-      installments: Array.from({ length: count }).map((_, idx) => {
-        const dueDate = new Date(now);
-        dueDate.setMonth(dueDate.getMonth() + idx * intervalMonths);
-        return {
-          amount: Math.round(amount * 100) / 100,
-          dueDate: dueDate.toISOString().split('T')[0],
-        };
-      }),
-    }));
   };
 
   const filteredPrograms = formData.departmentId
