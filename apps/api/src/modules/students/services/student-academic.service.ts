@@ -18,6 +18,7 @@ export class StudentAcademicService {
       institutionId,
       studentId: student.id,
       status: { in: ['ACTIVE', 'COMPLETED'] },
+      courseId: { not: null },
     };
 
     if (termId) {

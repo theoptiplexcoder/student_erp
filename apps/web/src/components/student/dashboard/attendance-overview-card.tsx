@@ -66,25 +66,33 @@ export function AttendanceOverviewCard() {
         </div>
 
         <div className="mt-2 space-y-3">
-          {attendanceData.slice(0, 3).map((item: any) => {
-            const courseAttendance = Math.round(item.percentage);
-            const itemIsWarning = courseAttendance < 75;
-            return (
-              <div key={item.course.id} className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground truncate pr-2">{item.course.name}</span>
-                <div className="flex flex-shrink-0 items-center gap-2">
-                  <span className={`font-medium ${itemIsWarning ? 'text-destructive' : ''}`}>
-                    {courseAttendance}%
+          {attendanceData
+            .filter((item: any) => Boolean(item?.course))
+            .slice(0, 3)
+            .map((item: any) => {
+              const courseAttendance = Math.round(item.percentage);
+              const itemIsWarning = courseAttendance < 75;
+              return (
+                <div
+                  key={item.course?.id || item.course?.code}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <span className="text-muted-foreground truncate pr-2">
+                    {item.course?.name || 'Unknown Course'}
                   </span>
-                  {itemIsWarning ? (
-                    <AlertTriangle className="text-destructive h-3 w-3" />
-                  ) : (
-                    <CheckCircle2 className="h-3 w-3 text-green-500" />
-                  )}
+                  <div className="flex flex-shrink-0 items-center gap-2">
+                    <span className={`font-medium ${itemIsWarning ? 'text-destructive' : ''}`}>
+                      {courseAttendance}%
+                    </span>
+                    {itemIsWarning ? (
+                      <AlertTriangle className="text-destructive h-3 w-3" />
+                    ) : (
+                      <CheckCircle2 className="h-3 w-3 text-green-500" />
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       </CardContent>
       <CardFooter className="pt-2">

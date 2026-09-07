@@ -24,17 +24,22 @@ export class StudentAttendanceService {
         institutionId,
         studentId: student.id,
         status: { in: ['ACTIVE', 'COMPLETED'] },
+        courseId: { not: null },
       },
       include: {
         course: true,
       },
     });
 
-    if (enrollments.length === 0) {
+    const validEnrollments = enrollments.filter((e) => e.course !== null && e.courseId !== null);
+
+    if (validEnrollments.length === 0) {
       return [];
     }
 
-    const courseIds = enrollments.map((e) => e.courseId).filter((id): id is string => Boolean(id));
+    const courseIds = validEnrollments
+      .map((e) => e.courseId)
+      .filter((id): id is string => Boolean(id));
 
     const recordsByCourse = new Map<string, { status: string }[]>();
 
@@ -66,7 +71,7 @@ export class StudentAttendanceService {
       }
     }
 
-    return enrollments.map((enr) => {
+    return validEnrollments.map((enr) => {
       const records = (enr.courseId ? recordsByCourse.get(enr.courseId) : undefined) || [];
       const totalSessions = records.length;
       const presentSessions = records.filter(
