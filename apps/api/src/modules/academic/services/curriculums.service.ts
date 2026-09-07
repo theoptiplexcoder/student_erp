@@ -15,17 +15,28 @@ export class CurriculumsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(institutionId: string, dto: CreateCurriculumDto) {
-    const program = await this.prisma.program.findFirst({
-      where: { id: dto.programId, institutionId },
-    });
-    if (!program) {
-      throw new BadRequestException('Program not found or does not belong to your institution.');
+    const programIds =
+      dto.programIds && dto.programIds.length > 0
+        ? dto.programIds
+        : dto.programId
+          ? [dto.programId]
+          : [];
+
+    if (programIds.length > 0) {
+      const validPrograms = await this.prisma.program.findMany({
+        where: { id: { in: programIds }, institutionId },
+      });
+      if (validPrograms.length !== programIds.length) {
+        throw new BadRequestException(
+          'One or more selected programs do not exist in your institution.',
+        );
+      }
     }
 
     let versionNumber = dto.versionNumber;
     if (!versionNumber) {
       const existingCount = await this.prisma.curriculum.count({
-        where: { programId: dto.programId, institutionId },
+        where: { institutionId },
       });
       versionNumber = `v${existingCount + 1}.0`;
     }
@@ -34,17 +45,26 @@ export class CurriculumsService {
       return await this.prisma.curriculum.create({
         data: {
           institutionId,
-          programId: dto.programId,
           versionNumber,
           name: dto.name,
           effectiveFrom: new Date(dto.effectiveFrom),
           status: CurriculumStatus.DRAFT,
+          ...(programIds.length > 0
+            ? {
+                programs: {
+                  connect: programIds.map((id) => ({ id })),
+                },
+              }
+            : {}),
+        },
+        include: {
+          programs: true,
         },
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
         throw new ConflictException(
-          `A curriculum with version ${dto.versionNumber} already exists for this program.`,
+          `A curriculum with name "${dto.name}" and version "${versionNumber}" already exists.`,
         );
       }
       throw error;
@@ -55,7 +75,7 @@ export class CurriculumsService {
     return this.prisma.curriculum.findMany({
       where: { institutionId },
       include: {
-        program: true,
+        programs: true,
         _count: {
           select: { curriculumTerms: true, students: true, enrollments: true },
         },
@@ -66,8 +86,14 @@ export class CurriculumsService {
 
   async findByProgram(institutionId: string, programId: string) {
     return this.prisma.curriculum.findMany({
-      where: { institutionId, programId },
+      where: {
+        institutionId,
+        programs: {
+          some: { id: programId },
+        },
+      },
       include: {
+        programs: true,
         _count: {
           select: { curriculumTerms: true },
         },
@@ -80,7 +106,7 @@ export class CurriculumsService {
     const curriculum = await this.prisma.curriculum.findFirst({
       where: { id, institutionId },
       include: {
-        program: true,
+        programs: true,
         curriculumTerms: {
           orderBy: { sequence: 'asc' },
           include: {
@@ -105,19 +131,42 @@ export class CurriculumsService {
     const curriculum = await this.findOne(institutionId, id);
     if (
       curriculum.status !== CurriculumStatus.DRAFT &&
-      Object.keys(dto).some((k) => k !== 'status')
+      Object.keys(dto).some((k) => k !== 'status' && k !== 'programIds')
     ) {
       throw new ConflictException('Cannot modify an active or archived curriculum.');
+    }
+
+    const { programIds, ...restDto } = dto;
+
+    if (programIds && programIds.length > 0) {
+      const validPrograms = await this.prisma.program.findMany({
+        where: { id: { in: programIds }, institutionId },
+      });
+      if (validPrograms.length !== programIds.length) {
+        throw new BadRequestException(
+          'One or more selected programs do not exist in your institution.',
+        );
+      }
     }
 
     try {
       return await this.prisma.curriculum.update({
         where: { id },
         data: {
-          name: dto.name,
-          versionNumber: dto.versionNumber,
-          effectiveFrom: dto.effectiveFrom ? new Date(dto.effectiveFrom) : undefined,
-          status: dto.status,
+          name: restDto.name,
+          versionNumber: restDto.versionNumber,
+          effectiveFrom: restDto.effectiveFrom ? new Date(restDto.effectiveFrom) : undefined,
+          status: restDto.status,
+          ...(programIds !== undefined
+            ? {
+                programs: {
+                  set: programIds.map((pId) => ({ id: pId })),
+                },
+              }
+            : {}),
+        },
+        include: {
+          programs: true,
         },
       });
     } catch (error) {
@@ -200,11 +249,20 @@ export class CurriculumsService {
         const clonedCurriculum = await tx.curriculum.create({
           data: {
             institutionId,
-            programId: existing.programId,
             name: existing.name,
             versionNumber: dto.versionNumber,
             effectiveFrom: new Date(dto.effectiveFrom),
             status: CurriculumStatus.DRAFT,
+            ...(existing.programs?.length > 0
+              ? {
+                  programs: {
+                    connect: existing.programs.map((p) => ({ id: p.id })),
+                  },
+                }
+              : {}),
+          },
+          include: {
+            programs: true,
           },
         });
 
@@ -269,7 +327,7 @@ export class CurriculumsService {
 
     // Format into a clean JSON structure that matches ImportCurriculumDto
     const exportData = {
-      programId: existing.programId,
+      programIds: existing.programs.map((p) => p.id),
       name: existing.name,
       versionNumber: existing.versionNumber,
       effectiveFrom: existing.effectiveFrom,
@@ -298,20 +356,40 @@ export class CurriculumsService {
   }
 
   async importCurriculum(institutionId: string, dto: ImportCurriculumDto) {
-    const program = await this.prisma.program.findFirst({
-      where: { id: dto.programId, institutionId },
-    });
-    if (!program) throw new BadRequestException('Program not found.');
+    const programIds =
+      dto.programIds && dto.programIds.length > 0
+        ? dto.programIds
+        : dto.programId
+          ? [dto.programId]
+          : [];
+
+    if (programIds.length > 0) {
+      const validPrograms = await this.prisma.program.findMany({
+        where: { id: { in: programIds }, institutionId },
+      });
+      if (validPrograms.length !== programIds.length) {
+        throw new BadRequestException('One or more selected programs not found.');
+      }
+    }
 
     return this.prisma.$transaction(async (tx) => {
       const curriculum = await tx.curriculum.create({
         data: {
           institutionId,
-          programId: dto.programId,
           name: dto.name,
           versionNumber: dto.versionNumber,
           effectiveFrom: new Date(dto.effectiveFrom),
           status: CurriculumStatus.DRAFT,
+          ...(programIds.length > 0
+            ? {
+                programs: {
+                  connect: programIds.map((id) => ({ id })),
+                },
+              }
+            : {}),
+        },
+        include: {
+          programs: true,
         },
       });
 

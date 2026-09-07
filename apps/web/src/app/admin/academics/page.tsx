@@ -38,15 +38,23 @@ import { useRouter } from 'next/navigation';
 
 function NewCurriculumButton() {
   const [open, setOpen] = useState(false);
-  const [selectedProgram, setSelectedProgram] = useState('');
+  const [selectedPrograms, setSelectedPrograms] = useState<string[]>([]);
   const { data: programsData, isLoading } = useAdminPrograms(1, 100);
   const router = useRouter();
 
   const handleContinue = () => {
-    if (selectedProgram) {
-      router.push(`/admin/academics/programs/${selectedProgram}/curriculums/new`);
+    if (selectedPrograms.length > 0) {
+      router.push(
+        `/admin/academics/programs/${selectedPrograms[0]}/curriculums/new?programIds=${selectedPrograms.join(',')}`,
+      );
       setOpen(false);
     }
+  };
+
+  const toggleProgram = (id: string) => {
+    setSelectedPrograms((prev) =>
+      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id],
+    );
   };
 
   return (
@@ -56,31 +64,42 @@ function NewCurriculumButton() {
           <Plus className="mr-2 h-4 w-4" /> New Curriculum
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create New Curriculum</DialogTitle>
-          <DialogDescription>Select a program to create a new curriculum for.</DialogDescription>
+          <DialogDescription>
+            Select one or multiple programs to include in this curriculum.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Program</label>
+            <label className="text-sm font-medium">Select Programs</label>
+            <p className="text-muted-foreground text-xs">
+              Check all programs that will follow this curriculum.
+            </p>
             {isLoading ? (
               <div className="text-muted-foreground text-sm">Loading programs...</div>
             ) : (
-              <select
-                className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                value={selectedProgram}
-                onChange={(e) => setSelectedProgram(e.target.value)}
-              >
-                <option value="" disabled>
-                  Select a program
-                </option>
-                {programsData?.data?.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} ({p.code})
-                  </option>
-                ))}
-              </select>
+              <div className="bg-muted/10 max-h-52 space-y-2 overflow-y-auto rounded-md border p-3">
+                {programsData?.data?.map((p) => {
+                  const isChecked = selectedPrograms.includes(p.id);
+                  return (
+                    <label
+                      key={p.id}
+                      className="hover:bg-muted/40 flex cursor-pointer items-center space-x-3 rounded p-1 text-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggleProgram(p.id)}
+                        className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
+                      />
+                      <span className="font-medium">{p.name}</span>
+                      <span className="text-muted-foreground text-xs">({p.code})</span>
+                    </label>
+                  );
+                })}
+              </div>
             )}
           </div>
         </div>
@@ -88,7 +107,7 @@ function NewCurriculumButton() {
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleContinue} disabled={!selectedProgram}>
+          <Button onClick={handleContinue} disabled={selectedPrograms.length === 0}>
             Continue
           </Button>
         </DialogFooter>
@@ -156,29 +175,47 @@ export default function AcademicsPage() {
                     <TableRow>
                       <TableHead>Version</TableHead>
                       <TableHead>Name</TableHead>
-                      <TableHead>Program</TableHead>
+                      <TableHead>Programs</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {curriculumsData.map((curr) => (
-                      <TableRow key={curr.id}>
-                        <TableCell className="font-medium">{curr.versionNumber}</TableCell>
-                        <TableCell>{curr.name}</TableCell>
-                        <TableCell>{curr.program?.name || '—'}</TableCell>
-                        <TableCell>{curr.status}</TableCell>
-                        <TableCell className="text-right">
-                          <Link
-                            href={`/admin/academics/programs/${curr.programId}/curriculums/${curr.id}`}
-                          >
-                            <Button variant="ghost" size="icon">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {curriculumsData.map((curr) => {
+                      const primaryProgId = curr.programs?.[0]?.id || curr.programId || 'all';
+                      return (
+                        <TableRow key={curr.id}>
+                          <TableCell className="font-medium">{curr.versionNumber}</TableCell>
+                          <TableCell>{curr.name}</TableCell>
+                          <TableCell>
+                            {curr.programs && curr.programs.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {curr.programs.map((p: any) => (
+                                  <span
+                                    key={p.id}
+                                    className="bg-muted text-muted-foreground inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium"
+                                  >
+                                    {p.name} ({p.code})
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              curr.program?.name || '—'
+                            )}
+                          </TableCell>
+                          <TableCell>{curr.status}</TableCell>
+                          <TableCell className="text-right">
+                            <Link
+                              href={`/admin/academics/programs/${primaryProgId}/curriculums/${curr.id}`}
+                            >
+                              <Button variant="ghost" size="icon">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               )}

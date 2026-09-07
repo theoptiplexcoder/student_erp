@@ -251,7 +251,6 @@ async function main() {
     data: [
       {
         institutionId: I.institution,
-        programId: I.progBTechCS,
         versionNumber: '1.0',
         name: 'B.Tech CS Curriculum 2025',
         status: 'ACTIVE',
@@ -259,7 +258,6 @@ async function main() {
       },
       {
         institutionId: I.institution,
-        programId: I.progBTechMath,
         versionNumber: '1.0',
         name: 'B.Tech Math Curriculum 2025',
         status: 'ACTIVE',
@@ -269,6 +267,15 @@ async function main() {
   });
   I.currCS = currs[0].id;
   I.currMath = currs[1].id;
+
+  await prisma.curriculum.update({
+    where: { id: I.currCS },
+    data: { programs: { connect: [{ id: I.progBTechCS }] } },
+  });
+  await prisma.curriculum.update({
+    where: { id: I.currMath },
+    data: { programs: { connect: [{ id: I.progBTechMath }] } },
+  });
 
   // 9. Academic Terms
   const terms = await prisma.academicTerm.createManyAndReturn({

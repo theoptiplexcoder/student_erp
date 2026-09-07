@@ -7,6 +7,7 @@ import {
   IsArray,
   IsNumber,
   IsBoolean,
+  IsUUID,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -80,9 +81,14 @@ export class ImportTermDto {
 }
 
 export class ImportCurriculumDto {
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  programIds?: string[];
+
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  programId!: string;
+  programId?: string;
 
   @IsString()
   @IsNotEmpty()

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -15,7 +15,7 @@ import {
 } from '@student-erp/ui';
 import { ArrowLeft, Loader2, CheckCircle2, AlertCircle, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import { useAdminProgram } from '@/hooks/api/admin/usePrograms';
+import { useAdminProgram, useAdminPrograms } from '@/hooks/api/admin/usePrograms';
 import {
   useCreateCurriculum,
   useAdminCurriculum,
@@ -121,15 +121,37 @@ export default function CreateCurriculumWizard({
 }
 
 function Step1Details({ programId, onNext }: { programId: string; onNext: (id: string) => void }) {
+  const searchParams = useSearchParams();
+  const queryProgramIds = searchParams.get('programIds');
+  const initialProgramIds = queryProgramIds
+    ? queryProgramIds.split(',').filter(Boolean)
+    : programId && programId !== 'all'
+      ? [programId]
+      : [];
+
+  const [selectedProgramIds, setSelectedProgramIds] = useState<string[]>(initialProgramIds);
+  const { data: allProgramsData, isLoading: isLoadingPrograms } = useAdminPrograms(1, 100);
+
   const createCurriculum = useCreateCurriculum();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const toggleProgram = (id: string) => {
+    setSelectedProgramIds((prev) =>
+      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id],
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMsg(null);
+    if (selectedProgramIds.length === 0) {
+      setErrorMsg('Please select at least one program to associate with this curriculum.');
+      return;
+    }
     const formData = new FormData(e.currentTarget);
     const data = {
-      programId,
+      programIds: selectedProgramIds,
+      programId: selectedProgramIds[0],
       name: formData.get('name') as string,
       effectiveFrom: formData.get('effectiveFrom') as string,
     };
@@ -163,6 +185,37 @@ function Step1Details({ programId, onNext }: { programId: string; onNext: (id: s
           <div className="space-y-2">
             <Label className="text-sm font-medium">Effective From</Label>
             <Input name="effectiveFrom" type="date" required />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Programs Included in Curriculum</Label>
+            <p className="text-muted-foreground text-xs">
+              Select one or multiple programs that will share this curriculum.
+            </p>
+            {isLoadingPrograms ? (
+              <div className="text-muted-foreground text-sm">Loading programs...</div>
+            ) : (
+              <div className="bg-muted/10 max-h-48 space-y-2 overflow-y-auto rounded-md border p-3">
+                {allProgramsData?.data?.map((p) => {
+                  const isChecked = selectedProgramIds.includes(p.id);
+                  return (
+                    <label
+                      key={p.id}
+                      className="hover:bg-muted/40 flex cursor-pointer items-center space-x-3 rounded p-1 text-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggleProgram(p.id)}
+                        className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
+                      />
+                      <span className="font-medium">{p.name}</span>
+                      <span className="text-muted-foreground text-xs">({p.code})</span>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex justify-end">
@@ -351,7 +404,8 @@ function Step3Courses({
 
 function TermCoursesManager({ curriculumId, term }: { curriculumId: string; term: any }) {
   const { data: curriculum } = useAdminCurriculum(curriculumId);
-  const { data: program } = useAdminProgram(curriculum?.programId || '');
+  const primaryProgId = curriculum?.programs?.[0]?.id || curriculum?.programId || '';
+  const { data: program } = useAdminProgram(primaryProgId);
 
   const createCourse = useCreateCurriculumCourse();
   const deleteCourse = useDeleteCurriculumCourse();
@@ -385,7 +439,7 @@ function TermCoursesManager({ curriculumId, term }: { curriculumId: string; term
         const supabase = createClient();
         const curriculumCode =
           curriculum?.versionNumber || curriculum?.name?.replace(/\s+/g, '_') || 'CURR';
-        const programCode = program?.code || program?.name?.replace(/\s+/g, '_') || 'PROG';
+        const programCode = program?.code || curriculum?.programs?.[0]?.code || 'PROG';
         const courseCode = (formData.get('code') as string).replace(/\s+/g, '_');
 
         for (const file of files) {

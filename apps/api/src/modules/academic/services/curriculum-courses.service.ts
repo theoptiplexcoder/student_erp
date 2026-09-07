@@ -54,7 +54,13 @@ export class CurriculumCoursesService {
   async create(institutionId: string, dto: CreateCurriculumCourseDto) {
     const term = await this.prisma.curriculumTerm.findFirst({
       where: { id: dto.curriculumTermId, institutionId },
-      include: { curriculum: true },
+      include: {
+        curriculum: {
+          include: {
+            programs: true,
+          },
+        },
+      },
     });
 
     if (!term) throw new NotFoundException('Curriculum term not found');
@@ -63,7 +69,7 @@ export class CurriculumCoursesService {
       throw new BadRequestException('Curriculum term does not belong to the provided curriculum');
     }
 
-    if (dto.programId && term.curriculum.programId !== dto.programId) {
+    if (dto.programId && !term.curriculum.programs.some((p) => p.id === dto.programId)) {
       throw new BadRequestException('Curriculum does not belong to the provided program');
     }
 

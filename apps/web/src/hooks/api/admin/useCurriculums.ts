@@ -43,9 +43,12 @@ export const useCreateCurriculum = () => {
       return response.data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ['admin', 'curriculums', 'program', variables.programId],
-      });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'curriculums'] });
+      if (variables.programId) {
+        queryClient.invalidateQueries({
+          queryKey: ['admin', 'curriculums', 'program', variables.programId],
+        });
+      }
     },
   });
 };
@@ -57,8 +60,8 @@ export const useUpdateCurriculum = () => {
       const response = await apiClient.patch<any>(`/academic/curriculums/${id}`, data);
       return response.data;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'curriculums', data.id] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'curriculums'] });
     },
   });
 };

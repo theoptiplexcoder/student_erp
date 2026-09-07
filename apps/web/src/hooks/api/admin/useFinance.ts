@@ -2,17 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 
 export type FeeComponentType =
-  | 'TUITION'
-  | 'ADMISSION'
-  | 'EXAMINATION'
-  | 'HOSTEL'
-  | 'TRANSPORT'
-  | 'LIBRARY'
-  | 'LABORATORY'
-  | 'SPORTS'
-  | 'DEVELOPMENT'
-  | 'MISCELLANEOUS'
-  | 'OTHER';
+  'TUITION' | 'TRANSPORT' | 'HOSTEL' | 'EXAMINATION' | 'LIBRARY' | 'ADMISSION' | 'MISC';
 
 export type PaymentFrequency = 'ANNUAL' | 'SEMESTER' | 'QUARTERLY' | 'MONTHLY' | 'ONE_TIME';
 
@@ -30,7 +20,6 @@ export interface FeeComponentItem {
   name: string;
   type: FeeComponentType;
   amount: number;
-  frequency?: PaymentFrequency;
   isOptional?: boolean;
   description?: string;
 }
@@ -39,15 +28,11 @@ export interface FeeStructure {
   id: string;
   name: string;
   code: string;
-  description?: string;
   totalAmount: number;
   currency: string;
   academicYearId: string;
   programId?: string;
   batchId?: string;
-  defaultPaymentMode: 'ANNUAL' | 'INSTALLMENTS';
-  installmentCount: number;
-  installmentIntervalMonths: number;
   isActive: boolean;
   academicYear?: { id: string; name: string };
   program?: { id: string; name: string; code: string };
@@ -61,18 +46,15 @@ export interface FeeStructure {
 export interface CreateFeeStructureDto {
   name: string;
   code: string;
-  description?: string;
   academicYearId: string;
   programId?: string;
   batchId?: string;
-  defaultPaymentMode?: 'ANNUAL' | 'INSTALLMENTS';
-  installmentCount?: number;
-  installmentIntervalMonths?: number;
+  totalAmount?: number;
+  currency?: string;
   components: {
     name: string;
     type: FeeComponentType;
     amount: number;
-    frequency?: PaymentFrequency;
     isOptional?: boolean;
     description?: string;
   }[];

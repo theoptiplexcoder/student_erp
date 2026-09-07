@@ -91,7 +91,7 @@ export class CoursesService {
                 include: {
                   curriculum: {
                     include: {
-                      program: true,
+                      programs: true,
                     },
                   },
                 },

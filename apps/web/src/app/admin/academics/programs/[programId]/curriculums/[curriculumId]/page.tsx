@@ -83,11 +83,11 @@ export default async function CurriculumPage({
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <div className="text-muted-foreground text-sm">
-              Academics / Programs / {curriculum.program?.code} / {curriculum.versionNumber}
+              Academics / Curriculums / {curriculum.versionNumber}
             </div>
           </div>
           <h1 className="text-3xl font-bold tracking-tight">{curriculum.name}</h1>
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <Badge variant={isDraft ? 'secondary' : 'default'}>{curriculum.status}</Badge>
             <span className="text-muted-foreground text-sm">
               Effective: {new Date(curriculum.effectiveFrom).toLocaleDateString()}
@@ -98,6 +98,25 @@ export default async function CurriculumPage({
             <span className="text-muted-foreground border-l pl-2 text-sm">
               Total Credits: {totalCredits}
             </span>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <span className="text-muted-foreground text-xs font-medium">Included Programs:</span>
+            {curriculum.programs && curriculum.programs.length > 0 ? (
+              curriculum.programs.map((p: any) => (
+                <span
+                  key={p.id}
+                  className="bg-muted text-muted-foreground inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium"
+                >
+                  {p.name} ({p.code})
+                </span>
+              ))
+            ) : curriculum.program ? (
+              <span className="bg-muted text-muted-foreground inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium">
+                {curriculum.program.name} ({curriculum.program.code})
+              </span>
+            ) : (
+              <span className="text-muted-foreground text-xs">—</span>
+            )}
           </div>
         </div>
 

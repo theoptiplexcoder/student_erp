@@ -445,7 +445,11 @@ export class TimetableService {
       include: {
         curriculumTerm: {
           include: {
-            curriculum: true,
+            curriculum: {
+              include: {
+                programs: true,
+              },
+            },
           },
         },
       },
@@ -456,7 +460,9 @@ export class TimetableService {
       const cc = curriculumCourses.find(
         (c) =>
           c.courseId === assignment.courseId &&
-          c.curriculumTerm?.curriculum?.programId === assignment.section.programId,
+          c.curriculumTerm?.curriculum?.programs?.some(
+            (p) => p.id === assignment.section.programId,
+          ),
       );
       return cc?.creditValue ?? assignment.course?.creditValue ?? 3;
     };

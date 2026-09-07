@@ -1,10 +1,23 @@
-import { IsString, IsNotEmpty, IsOptional, IsDateString, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsDateString,
+  IsEnum,
+  IsArray,
+  IsUUID,
+} from 'class-validator';
 import { CurriculumStatus } from '@prisma/client';
 
 export class CreateCurriculumDto {
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  programIds?: string[];
+
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  programId!: string;
+  programId?: string;
 
   @IsOptional()
   @IsString()
@@ -34,4 +47,9 @@ export class UpdateCurriculumDto {
   @IsOptional()
   @IsEnum(CurriculumStatus)
   status?: CurriculumStatus;
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  programIds?: string[];
 }

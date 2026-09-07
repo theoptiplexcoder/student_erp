@@ -52,10 +52,7 @@ const COMPONENT_TYPES: { label: string; value: FeeComponentType }[] = [
   { label: 'Hostel / Accommodation', value: 'HOSTEL' },
   { label: 'Transport / Bus Fee', value: 'TRANSPORT' },
   { label: 'Library & Learning Resources', value: 'LIBRARY' },
-  { label: 'Laboratory / Equipment', value: 'LABORATORY' },
-  { label: 'Sports & Student Activities', value: 'SPORTS' },
-  { label: 'Campus Development', value: 'DEVELOPMENT' },
-  { label: 'Miscellaneous / Other', value: 'MISCELLANEOUS' },
+  { label: 'Miscellaneous / Other', value: 'MISC' },
 ];
 
 export default function FeeStructuresPage() {
@@ -89,18 +86,13 @@ export default function FeeStructuresPage() {
   const [formData, setFormData] = useState({
     name: '',
     code: '',
-    description: '',
     academicYearId: '',
     programId: '',
-    defaultPaymentMode: 'INSTALLMENTS' as 'ANNUAL' | 'INSTALLMENTS',
-    installmentCount: 2,
-    installmentIntervalMonths: 6,
     components: [
       {
         name: 'Tuition Fee',
         type: 'TUITION' as FeeComponentType,
         amount: 50000,
-        frequency: 'ANNUAL' as PaymentFrequency,
         isOptional: false,
         description: 'Standard academic tuition fee',
       },
@@ -111,18 +103,13 @@ export default function FeeStructuresPage() {
     setFormData({
       name: '',
       code: '',
-      description: '',
       academicYearId: academicYears?.[0]?.id || '',
       programId: '',
-      defaultPaymentMode: 'INSTALLMENTS',
-      installmentCount: 2,
-      installmentIntervalMonths: 6,
       components: [
         {
           name: 'Tuition Fee',
           type: 'TUITION',
           amount: 50000,
-          frequency: 'ANNUAL',
           isOptional: false,
           description: 'Standard academic tuition fee',
         },
@@ -143,18 +130,13 @@ export default function FeeStructuresPage() {
     setEditingStructure(structure);
     setFormData({
       name: structure.name,
-      code: structure.code,
-      description: structure.description || '',
+      code: structure.code || '',
       academicYearId: structure.academicYearId,
       programId: structure.programId || '',
-      defaultPaymentMode: structure.defaultPaymentMode || 'INSTALLMENTS',
-      installmentCount: structure.installmentCount || 2,
-      installmentIntervalMonths: structure.installmentIntervalMonths || 6,
       components: structure.components.map((c) => ({
         name: c.name,
         type: c.type,
         amount: c.amount,
-        frequency: c.frequency || 'ANNUAL',
         isOptional: !!c.isOptional,
         description: c.description || '',
       })),
@@ -169,9 +151,8 @@ export default function FeeStructuresPage() {
         ...prev.components,
         {
           name: 'Additional Fee',
-          type: 'MISCELLANEOUS',
+          type: 'MISC',
           amount: 5000,
-          frequency: 'ANNUAL',
           isOptional: false,
           description: '',
         },
@@ -206,28 +187,28 @@ export default function FeeStructuresPage() {
       return;
     }
 
+    const payload = {
+      name: formData.name,
+      code: formData.code,
+      academicYearId: formData.academicYearId,
+      programId: formData.programId || undefined,
+      components: formData.components.map((c) => ({
+        name: c.name,
+        type: c.type,
+        amount: Number(c.amount),
+        isOptional: c.isOptional,
+        description: c.description || undefined,
+      })),
+    };
+
     try {
       if (editingStructure) {
         await updateMutation.mutateAsync({
           id: editingStructure.id,
-          data: {
-            ...formData,
-            programId: formData.programId || undefined,
-            components: formData.components.map((c) => ({
-              ...c,
-              amount: Number(c.amount),
-            })),
-          },
+          data: payload,
         });
       } else {
-        await createMutation.mutateAsync({
-          ...formData,
-          programId: formData.programId || undefined,
-          components: formData.components.map((c) => ({
-            ...c,
-            amount: Number(c.amount),
-          })),
-        });
+        await createMutation.mutateAsync(payload);
       }
       setIsCreateOpen(false);
       resetForm();
@@ -349,11 +330,6 @@ export default function FeeStructuresPage() {
                     {structure.isActive ? 'Active' : 'Inactive'}
                   </Badge>
                 </div>
-                {structure.description && (
-                  <CardDescription className="line-clamp-2 text-xs">
-                    {structure.description}
-                  </CardDescription>
-                )}
               </CardHeader>
 
               <CardContent className="space-y-3 pb-3 text-sm">
@@ -366,14 +342,6 @@ export default function FeeStructuresPage() {
                     <span className="text-muted-foreground">Program:</span>
                     <span className="font-medium">
                       {structure.program?.name || 'General / All'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Installments:</span>
-                    <span className="font-medium">
-                      {structure.defaultPaymentMode === 'ANNUAL'
-                        ? 'Annual (Single)'
-                        : `${structure.installmentCount} installments (${structure.installmentIntervalMonths}m interval)`}
                     </span>
                   </div>
                 </div>
@@ -491,71 +459,6 @@ export default function FeeStructuresPage() {
                     </option>
                   ))}
                 </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="paymentMode">Default Payment Schedule</Label>
-                <select
-                  id="paymentMode"
-                  className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                  value={formData.defaultPaymentMode}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      defaultPaymentMode: e.target.value as 'ANNUAL' | 'INSTALLMENTS',
-                    })
-                  }
-                >
-                  <option value="INSTALLMENTS">Installments</option>
-                  <option value="ANNUAL">Annual (Lump-sum)</option>
-                </select>
-              </div>
-
-              {formData.defaultPaymentMode === 'INSTALLMENTS' && (
-                <>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="installmentCount">Number of Installments</Label>
-                    <Input
-                      id="installmentCount"
-                      type="number"
-                      min={1}
-                      max={12}
-                      value={formData.installmentCount}
-                      onChange={(e) =>
-                        setFormData({ ...formData, installmentCount: Number(e.target.value) })
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="installmentIntervalMonths">
-                      Interval Between Installments (Months)
-                    </Label>
-                    <Input
-                      id="installmentIntervalMonths"
-                      type="number"
-                      min={1}
-                      max={12}
-                      value={formData.installmentIntervalMonths}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          installmentIntervalMonths: Number(e.target.value),
-                        })
-                      }
-                    />
-                  </div>
-                </>
-              )}
-
-              <div className="space-y-1.5 sm:col-span-2">
-                <Label htmlFor="description">Description / Notes</Label>
-                <Input
-                  id="description"
-                  placeholder="Optional notes regarding this structure"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
               </div>
             </div>
 
@@ -710,14 +613,6 @@ export default function FeeStructuresPage() {
                   <span className="font-semibold">
                     {viewingStructure.program?.name || 'General / All'}
                   </span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Installment Mode: </span>
-                  <span className="font-semibold">{viewingStructure.defaultPaymentMode}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Installment Count: </span>
-                  <span className="font-semibold">{viewingStructure.installmentCount}</span>
                 </div>
               </div>
 

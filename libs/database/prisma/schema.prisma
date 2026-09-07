@@ -1739,7 +1739,6 @@ model AuditLog {
 model Curriculum {
   id            String           @id @default(uuid()) @db.Uuid
   institutionId String           @map("institution_id") @db.Uuid
-  programId     String           @map("program_id") @db.Uuid
   versionNumber String           @map("version_number")
   name          String
   status        CurriculumStatus @default(DRAFT)
@@ -1748,12 +1747,12 @@ model Curriculum {
   updatedAt     DateTime         @updatedAt @map("updated_at")
 
   institution     Institution      @relation(fields: [institutionId], references: [id])
-  program         Program          @relation(fields: [programId], references: [id])
+  programs        Program[]
   curriculumTerms CurriculumTerm[]
   students        Student[]
   enrollments     Enrollment[]
 
-  @@unique([programId, versionNumber])
+  @@unique([institutionId, name, versionNumber])
   @@index([institutionId])
   @@map("curriculums")
 }

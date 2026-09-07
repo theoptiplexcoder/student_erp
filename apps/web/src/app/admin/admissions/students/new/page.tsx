@@ -347,10 +347,10 @@ function DirectAdmissionForm() {
     const structure = allFeeStructures.find((s) => s.id === structureId);
     if (!structure) return;
 
-    const count = structure.installmentCount || (structure.defaultPaymentMode === 'ANNUAL' ? 1 : 4);
+    const count = 4;
     const amount = structure.totalAmount / count;
     const now = new Date();
-    const intervalMonths = structure.installmentIntervalMonths || 3;
+    const intervalMonths = 3;
 
     setFormData((prev) => ({
       ...prev,
@@ -375,16 +375,15 @@ function DirectAdmissionForm() {
       const payload = {
         name: feeStructFormData.name,
         code: feeStructFormData.code,
-        description: feeStructFormData.description || undefined,
         academicYearId: feeStructFormData.academicYearId || formData.academicYearId,
         programId: feeStructFormData.programId || formData.programId || undefined,
         batchId: feeStructFormData.batchId || formData.batchId || undefined,
-        defaultPaymentMode: feeStructFormData.defaultPaymentMode,
-        installmentCount: Number(feeStructFormData.installmentCount),
-        installmentIntervalMonths: Number(feeStructFormData.installmentIntervalMonths),
         components: feeStructFormData.components.map((c) => ({
-          ...c,
+          name: c.name,
+          type: c.type,
           amount: Number(c.amount),
+          isOptional: c.isOptional,
+          description: c.description || undefined,
         })),
       };
 
@@ -445,11 +444,10 @@ function DirectAdmissionForm() {
       setFormData((prev) => {
         if (prev.feeStructureId === exactMatch.id) return prev;
 
-        const count =
-          exactMatch.installmentCount || (exactMatch.defaultPaymentMode === 'ANNUAL' ? 1 : 4);
+        const count = 4;
         const amount = exactMatch.totalAmount / count;
         const now = new Date();
-        const intervalMonths = exactMatch.installmentIntervalMonths || 3;
+        const intervalMonths = 3;
 
         return {
           ...prev,
@@ -1788,7 +1786,7 @@ function DirectAdmissionForm() {
                                         ...p.components,
                                         {
                                           name: 'Additional Fee',
-                                          type: 'MISCELLANEOUS',
+                                          type: 'MISC',
                                           amount: 5000,
                                           isOptional: false,
                                           description: '',

@@ -23,14 +23,21 @@ export class CurriculumTermsService {
   async getSections(institutionId: string, id: string) {
     const term = await this.prisma.curriculumTerm.findFirst({
       where: { id, institutionId },
-      include: { curriculum: true },
+      include: {
+        curriculum: {
+          include: {
+            programs: true,
+          },
+        },
+      },
     });
     if (!term) throw new NotFoundException('Curriculum term not found');
 
+    const programIds = term.curriculum.programs.map((p) => p.id);
     const sections = await this.prisma.section.findMany({
       where: {
         institutionId,
-        programId: term.curriculum.programId,
+        programId: { in: programIds },
         semester: term.sequence,
       },
       include: {
