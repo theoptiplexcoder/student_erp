@@ -20,7 +20,7 @@ export default function NewFacultyPage() {
     firstName: '',
     lastName: '',
     email: '',
-    password: '',
+    password: 'Wasdwasd12!',
     phone: '',
     teacherCode: '',
     employmentType: 'FULL_TIME',

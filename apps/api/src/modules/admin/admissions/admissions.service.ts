@@ -262,7 +262,7 @@ export class AdmissionsService {
       const email = app.email || `student_${Date.now()}@example.com`;
       const { data: authData, error: authError } = await this.supabase.auth.admin.createUser({
         email: email,
-        password: 'Password123!',
+        password: 'Wasdwasd12!',
         email_confirm: !!app.email,
         user_metadata: {
           first_name: app.firstName,
@@ -378,7 +378,7 @@ export class AdmissionsService {
       const email = data.email || `student_${Date.now()}@example.com`;
       const { data: authData, error: authError } = await this.supabase.auth.admin.createUser({
         email: email,
-        password: 'Password123!',
+        password: 'Wasdwasd12!',
         email_confirm: !!data.email,
         user_metadata: {
           first_name: data.firstName,
