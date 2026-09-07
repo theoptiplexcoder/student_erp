@@ -10,8 +10,8 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Right Panel (Auth Forms) */}
-      <div className="relative z-10 flex w-full items-center justify-center p-6 md:p-12 lg:w-3/5">
-        <div className="w-full max-w-[480px]">{children}</div>
+      <div className="relative z-10 flex w-full items-center justify-center p-4 sm:p-6 md:p-12 lg:w-3/5">
+        <div className="w-full max-w-[540px]">{children}</div>
       </div>
     </div>
   );

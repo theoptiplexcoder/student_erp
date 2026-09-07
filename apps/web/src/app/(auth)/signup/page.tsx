@@ -6,7 +6,10 @@ import { SignupForm } from '../../../../components/shared/auth/SignupForm';
 export default function SignupPage() {
   return (
     <AuthLayout>
-      <AuthCard title="Create an account" subtitle="Join your institution's platform today.">
+      <AuthCard
+        title="Register Your Institution"
+        subtitle="Set up your institution workspace and create the primary administrator account."
+      >
         <SignupForm />
       </AuthCard>
     </AuthLayout>
