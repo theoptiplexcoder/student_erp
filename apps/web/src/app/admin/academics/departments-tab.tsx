@@ -165,12 +165,6 @@ export function DepartmentsTab() {
     }
   };
 
-  const openCreateProgramForDep = (depId: string) => {
-    setEditingProg(null);
-    setSelectedDepId(depId);
-    setProgDialogOpen(true);
-  };
-
   const openCreateCourseForDep = (depId: string) => {
     setSelectedDepIdForCourse(depId);
     setCourseDialogOpen(true);
@@ -229,13 +223,6 @@ export function DepartmentsTab() {
                     onClick={() => openCreateCourseForDep(dep.id)}
                   >
                     <Plus className="mr-2 h-4 w-4" /> Add Course
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => openCreateProgramForDep(dep.id)}
-                  >
-                    <Plus className="mr-2 h-4 w-4" /> Add Program
                   </Button>
                   <Button
                     variant="ghost"
