@@ -92,7 +92,11 @@ export default function FacultyCoursesPage() {
                 <div className="space-y-1 text-sm">
                   <p className="flex items-center gap-2">
                     <span className="w-4">🎓</span>
-                    <span>{assignment.course.program?.name || 'B.Tech'}</span>
+                    <span>
+                      {assignment.course.program?.name ||
+                        assignment.section?.program?.name ||
+                        'B.Tech'}
+                    </span>
                   </p>
                   <p className="flex items-center gap-2">
                     <span className="w-4">📅</span>
@@ -128,8 +132,7 @@ export default function FacultyCoursesPage() {
                   <div className="text-muted-foreground bg-muted flex items-center gap-2 rounded-md p-2 text-xs">
                     <Clock className="text-primary h-3.5 w-3.5" />
                     <span>
-                      Next class: Today,{' '}
-                      {String(assignment.nextClass.startTime).substring(0, 5)}
+                      Next class: Today, {String(assignment.nextClass.startTime).substring(0, 5)}
                     </span>
                   </div>
                 )}

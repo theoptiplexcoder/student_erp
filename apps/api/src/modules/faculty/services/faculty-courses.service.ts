@@ -17,7 +17,7 @@ export class FacultyCoursesService {
       include: {
         course: {
           include: {
-            program: true,
+            programOfferings: true,
             department: true,
           },
         },
@@ -95,6 +95,10 @@ export class FacultyCoursesService {
 
         return {
           ...assignment,
+          course: {
+            ...assignment.course,
+            program: assignment.course.programOfferings?.[0] || assignment.section?.program || null,
+          },
           totalStudents,
           lessonPlansTotal,
           lessonPlansCompleted,
@@ -121,7 +125,7 @@ export class FacultyCoursesService {
       include: {
         course: {
           include: {
-            program: true,
+            programOfferings: true,
             department: true,
             courseResources: true,
             assignments: true,
@@ -149,6 +153,12 @@ export class FacultyCoursesService {
       throw new NotFoundException('You are not assigned to this course');
     }
 
-    return assignment;
+    return {
+      ...assignment,
+      course: {
+        ...assignment.course,
+        program: assignment.course.programOfferings?.[0] || assignment.section?.program || null,
+      },
+    };
   }
 }
