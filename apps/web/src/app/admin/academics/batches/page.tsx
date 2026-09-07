@@ -19,11 +19,13 @@ import {
 import { Plus, Eye, Edit, Loader2, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useAdminBatches } from '@/hooks/api/admin/useBatches';
+import { useDebounce } from '@/hooks/use-debounce';
 
 export default function BatchesPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const { data: batchesData, isLoading, isError } = useAdminBatches(page, 50, search);
+  const debouncedSearch = useDebounce(search, 350);
+  const { data: batchesData, isLoading, isError } = useAdminBatches(page, 50, debouncedSearch);
 
   return (
     <div className="space-y-6 p-6">

@@ -3,6 +3,10 @@ import { PrismaService } from '../../../database/prisma.service';
 
 @Injectable()
 export class DashboardService {
+  // In-memory cache for low attendance calculation with 5-minute TTL per institution
+  private readonly lowAttendanceCache = new Map<string, { count: number; expiresAt: number }>();
+  private readonly LOW_ATTENDANCE_CACHE_TTL_MS = 5 * 60 * 1000;
+
   constructor(private readonly prisma: PrismaService) {}
 
   async getSummary(institutionId: string) {
@@ -174,6 +178,21 @@ export class DashboardService {
   }
 
   private async getLowAttendanceStudentsCount(institutionId: string): Promise<number> {
+    const now = Date.now();
+    const cached = this.lowAttendanceCache.get(institutionId);
+    if (cached && cached.expiresAt > now) {
+      return cached.count;
+    }
+
+    // Prune expired entries to prevent unbounded memory growth in long-running instances
+    if (this.lowAttendanceCache.size > 100) {
+      for (const [key, entry] of this.lowAttendanceCache.entries()) {
+        if (entry.expiresAt <= now) {
+          this.lowAttendanceCache.delete(key);
+        }
+      }
+    }
+
     try {
       // Prisma raw query to find students with attendance < 75%
       const result = await this.prisma.$queryRaw<{ count: bigint }[]>`
@@ -186,7 +205,12 @@ export class DashboardService {
           HAVING SUM(CASE WHEN status IN ('PRESENT', 'LATE', 'EXCUSED') THEN 1 ELSE 0 END) * 100.0 / COUNT(*) < 75.0
         ) as subquery;
       `;
-      return Number(result[0]?.count || 0);
+      const count = Number(result[0]?.count || 0);
+      this.lowAttendanceCache.set(institutionId, {
+        count,
+        expiresAt: now + this.LOW_ATTENDANCE_CACHE_TTL_MS,
+      });
+      return count;
     } catch (e) {
       console.error('Failed to get low attendance count:', e);
       return 0;

@@ -36,8 +36,12 @@ export function AssignSectionModal({ isOpen, onClose, faculty }: AssignSectionMo
   const [isPrimary, setIsPrimary] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const { data: sectionsResponse, isLoading: isLoadingSections } = useAdminSections(1, 100);
-  const { data: customRoles, isLoading: isLoadingRoles } = useAdminRoles();
+  const { data: sectionsResponse, isLoading: isLoadingSections } = useAdminSections(1, 100, '', {
+    enabled: isOpen,
+  });
+  const { data: customRoles, isLoading: isLoadingRoles } = useAdminRoles({
+    enabled: isOpen,
+  });
   const createMutation = useAdminCreateFacultySection();
 
   const sections = sectionsResponse?.data || [];

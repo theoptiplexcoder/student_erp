@@ -24,8 +24,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAdminSection, CourseAssignment } from '@/hooks/api/admin/useSections';
-import { useAdminFaculty } from '@/hooks/api/admin/useFaculty';
-import { useAdminCourses, Course } from '@/hooks/api/admin/useCourses';
+import type { Course } from '@/hooks/api/admin/useCourses';
 import { useAcademicTerms } from '@/hooks/api/admin/useAcademicTerms';
 import { useAdminDeleteCourseAssignment } from '@/hooks/api/admin/useCourseAssignments';
 import { AssignCourseFacultyModal } from '@/components/admin/sections/AssignCourseFacultyModal';
@@ -77,8 +76,6 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
   const { sectionId } = use(params);
   const { data: section, isLoading, isError, error } = useAdminSection(sectionId);
 
-  const { data: facultyData } = useAdminFaculty(1, 100);
-  const { data: coursesData } = useAdminCourses(1, 100);
   const { data: termsData } = useAcademicTerms(section?.academicYear?.id || '');
   const deleteAssignment = useAdminDeleteCourseAssignment();
 
@@ -203,16 +200,38 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
     }
   }
 
-  // Derive all applicable courses for this section
-  // 1. Courses already having an assignment in this section
-  // 2. Plus courses belonging to the same program or from the courses list
+  // Derive section-specific courses:
+  // 1. First from section.courseOfferings (exact courses mapped to this section)
+  // 2. Supplemented by any existing section.courseAssignments
   const sectionCourses: Course[] = (() => {
     const courseMap = new Map<string, Course>();
 
-    // First add courses from existing assignments
+    // Add section-specific course offerings
+    if (section.courseOfferings) {
+      for (const offering of section.courseOfferings) {
+        if (offering.course) {
+          courseMap.set(offering.course.id, {
+            id: offering.course.id,
+            code: offering.course.code,
+            name: offering.course.name,
+            creditValue: offering.course.creditValue ?? undefined,
+            credits: offering.course.creditValue ?? 0,
+            status: 'ACTIVE',
+            department: offering.course.department
+              ? {
+                  id: offering.course.department.id,
+                  name: offering.course.department.name,
+                }
+              : undefined,
+          });
+        }
+      }
+    }
+
+    // Add courses from existing course assignments if not already present
     if (section.courseAssignments) {
       for (const ca of section.courseAssignments) {
-        if (ca.course?.id) {
+        if (ca.course?.id && !courseMap.has(ca.course.id)) {
           courseMap.set(ca.course.id, {
             id: ca.course.id,
             code: ca.course.code,
@@ -227,25 +246,6 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
                 }
               : undefined,
           });
-        }
-      }
-    }
-
-    // Next add program-level or general courses from coursesData
-    if (coursesData?.data) {
-      for (const c of coursesData.data) {
-        // If section has a program, prioritize courses matching that program or add to list
-        if (section.program?.id && c.program?.id) {
-          if (c.program.id === section.program.id) {
-            courseMap.set(c.id, {
-              ...c,
-              ...(courseMap.get(c.id) || {}),
-              department: c.department || courseMap.get(c.id)?.department,
-            });
-          }
-        } else if (!courseMap.has(c.id) && courseMap.size < 12) {
-          // If no program match is strictly required, supply existing courses
-          courseMap.set(c.id, c);
         }
       }
     }

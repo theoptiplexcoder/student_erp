@@ -12,6 +12,8 @@ export const useAdminTerms = (curriculumId?: string) => {
       });
       return response.data;
     },
+    staleTime: 10 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
   });
 };
 
@@ -25,5 +27,7 @@ export const useCurriculumTerms = (curriculumId?: string) => {
       return response.data;
     },
     enabled: !!curriculumId && UUID_RE.test(curriculumId),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
   });
 };

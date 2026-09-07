@@ -35,11 +35,14 @@ export interface CourseAssignmentItem {
   };
 }
 
-export const useAdminCourseAssignments = (filters?: {
-  courseId?: string;
-  sectionId?: string;
-  termId?: string;
-}) => {
+export const useAdminCourseAssignments = (
+  filters?: {
+    courseId?: string;
+    sectionId?: string;
+    termId?: string;
+  },
+  options?: { enabled?: boolean },
+) => {
   return useQuery<CourseAssignmentItem[]>({
     queryKey: ['admin', 'course-assignments', filters],
     queryFn: async () => {
@@ -48,6 +51,7 @@ export const useAdminCourseAssignments = (filters?: {
       });
       return response.data;
     },
+    enabled: options?.enabled ?? true,
   });
 };
 

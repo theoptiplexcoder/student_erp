@@ -31,7 +31,12 @@ export interface FacultyResponse {
   };
 }
 
-export const useAdminFaculty = (page = 1, pageSize = 50, search = '') => {
+export const useAdminFaculty = (
+  page = 1,
+  pageSize = 50,
+  search = '',
+  options?: { enabled?: boolean },
+) => {
   return useQuery({
     queryKey: ['admin', 'faculty', page, pageSize, search],
     queryFn: async () => {
@@ -40,6 +45,7 @@ export const useAdminFaculty = (page = 1, pageSize = 50, search = '') => {
       });
       return response.data;
     },
+    enabled: options?.enabled ?? true,
   });
 };
 

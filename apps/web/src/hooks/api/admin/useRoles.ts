@@ -8,13 +8,14 @@ export interface CustomRole {
   isSystem: boolean;
 }
 
-export const useAdminRoles = () => {
+export const useAdminRoles = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ['admin', 'roles'],
     queryFn: async () => {
       const response = await apiClient.get<CustomRole[]>('/admin/roles');
       return response.data;
     },
+    enabled: options?.enabled ?? true,
   });
 };
 

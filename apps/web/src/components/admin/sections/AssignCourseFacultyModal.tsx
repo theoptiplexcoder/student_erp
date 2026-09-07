@@ -66,13 +66,17 @@ export function AssignCourseFacultyModal({
   const [selectedTermId, setSelectedTermId] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Fetch all faculty members (page 1, up to 100)
-  const { data: facultyResponse, isLoading: isLoadingFaculty } = useAdminFaculty(1, 100);
+  // Fetch all faculty members (page 1, up to 100) - only when modal is open
+  const { data: facultyResponse, isLoading: isLoadingFaculty } = useAdminFaculty(1, 100, '', {
+    enabled: isOpen,
+  });
   const allFaculty = facultyResponse?.data || [];
 
-  // Fetch institution-wide course assignments to determine current workloads
-  const { data: allAssignments = [], isLoading: isLoadingAssignments } =
-    useAdminCourseAssignments();
+  // Fetch institution-wide course assignments to determine current workloads - only when modal is open
+  const { data: allAssignments = [], isLoading: isLoadingAssignments } = useAdminCourseAssignments(
+    undefined,
+    { enabled: isOpen },
+  );
 
   const createAssignment = useAdminCreateCourseAssignment();
 

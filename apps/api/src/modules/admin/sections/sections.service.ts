@@ -86,6 +86,15 @@ export class SectionsService {
             },
           },
         },
+        courseOfferings: {
+          include: {
+            course: {
+              include: {
+                department: true,
+              },
+            },
+          },
+        },
         _count: {
           select: { students: true },
         },

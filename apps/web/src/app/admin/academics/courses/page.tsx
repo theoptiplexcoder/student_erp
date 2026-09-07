@@ -20,11 +20,13 @@ import {
 import { Plus, Eye, Edit, Loader2, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useAdminCourses } from '@/hooks/api/admin/useCourses';
+import { useDebounce } from '@/hooks/use-debounce';
 
 export default function CoursesPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const { data: coursesData, isLoading, isError } = useAdminCourses(page, 50, search);
+  const debouncedSearch = useDebounce(search, 350);
+  const { data: coursesData, isLoading, isError } = useAdminCourses(page, 50, debouncedSearch);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);

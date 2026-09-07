@@ -17,19 +17,7 @@ import { useAdminDepartments } from '@/hooks/api/admin/useDepartments';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
 import { useAdminBatches } from '@/hooks/api/admin/useBatches';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
-import { apiClient } from '@/lib/api-client';
-import { useQuery } from '@tanstack/react-query';
-
-// Fetch academic years (since no dedicated hook exists)
-const useAcademicYears = () => {
-  return useQuery({
-    queryKey: ['admin', 'academic-years'],
-    queryFn: async () => {
-      const response = await apiClient.get<any[]>('/admin/institution/academic-years');
-      return response.data;
-    },
-  });
-};
+import { useAcademicYears } from '@/hooks/api/admin/useAcademicYears';
 
 const SELECT_CLASS =
   'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50';

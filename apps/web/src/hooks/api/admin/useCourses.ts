@@ -41,6 +41,7 @@ export const useAdminCourses = (
   termId = '',
   curriculumId = '',
   curriculumTermId = '',
+  options?: { enabled?: boolean },
 ) => {
   return useQuery({
     queryKey: ['admin', 'courses', page, pageSize, search, termId, curriculumId, curriculumTermId],
@@ -57,6 +58,7 @@ export const useAdminCourses = (
       });
       return response.data;
     },
+    enabled: options?.enabled ?? true,
   });
 };
 

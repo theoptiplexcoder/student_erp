@@ -13,6 +13,8 @@ export const useAcademicTerms = (academicYearId: string) => {
       return data;
     },
     enabled: !!academicYearId,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
   });
 
   const createMutation = useMutation({

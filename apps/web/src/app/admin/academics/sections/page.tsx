@@ -19,11 +19,13 @@ import {
 import { Plus, Eye, Edit, Loader2, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
+import { useDebounce } from '@/hooks/use-debounce';
 
 export default function SectionsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const { data: sectionsData, isLoading, isError } = useAdminSections(page, 50, search);
+  const debouncedSearch = useDebounce(search, 350);
+  const { data: sectionsData, isLoading, isError } = useAdminSections(page, 50, debouncedSearch);
 
   return (
     <div className="space-y-6 p-6">

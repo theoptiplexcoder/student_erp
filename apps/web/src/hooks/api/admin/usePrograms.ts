@@ -59,6 +59,8 @@ export const useAdminPrograms = (page = 1, pageSize = 50, search = '') => {
       });
       return response.data;
     },
+    staleTime: 10 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
   });
 };
 
@@ -70,6 +72,8 @@ export const useAdminProgram = (id: string) => {
       return response.data;
     },
     enabled: !!id,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
   });
 };
 

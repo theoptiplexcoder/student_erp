@@ -24,6 +24,20 @@ export interface Section {
     name: string;
   };
   courseAssignments?: CourseAssignment[];
+  courseOfferings?: {
+    id: string;
+    courseId?: string;
+    course: {
+      id: string;
+      code: string;
+      name: string;
+      creditValue?: number | null;
+      department?: {
+        id: string;
+        name: string;
+      } | null;
+    };
+  }[];
   _count?: {
     students?: number;
   };
@@ -64,7 +78,12 @@ export interface SectionsResponse {
   };
 }
 
-export const useAdminSections = (page = 1, pageSize = 50, search = '') => {
+export const useAdminSections = (
+  page = 1,
+  pageSize = 50,
+  search = '',
+  options?: { enabled?: boolean },
+) => {
   return useQuery({
     queryKey: ['admin', 'sections', page, pageSize, search],
     queryFn: async () => {
@@ -73,6 +92,7 @@ export const useAdminSections = (page = 1, pageSize = 50, search = '') => {
       });
       return response.data;
     },
+    enabled: options?.enabled ?? true,
   });
 };
 

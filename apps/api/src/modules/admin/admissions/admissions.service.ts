@@ -16,6 +16,9 @@ import { StudentAdmittedEvent } from './events/student-admitted.event';
 @Injectable()
 export class AdmissionsService {
   private supabase: SupabaseClient;
+  // In-memory cache for admissions statistics with 3-minute TTL per institution
+  private readonly statsCache = new Map<string, { data: any; expiresAt: number }>();
+  private readonly STATS_CACHE_TTL_MS = 3 * 60 * 1000;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -101,8 +104,23 @@ export class AdmissionsService {
   }
 
   async getStats(institutionId: string) {
+    const now = Date.now();
+    const cached = this.statsCache.get(institutionId);
+    if (cached && cached.expiresAt > now) {
+      return cached.data;
+    }
+
+    // Prune expired entries to prevent unbounded memory growth in long-running instances
+    if (this.statsCache.size > 100) {
+      for (const [key, entry] of this.statsCache.entries()) {
+        if (entry.expiresAt <= now) {
+          this.statsCache.delete(key);
+        }
+      }
+    }
+
     try {
-      const [totalApplications, pendingReview, admittedStudents, feeOutstandingResult] =
+      const [totalApplications, pendingReview, admittedStudents, feeOutstandingResult, paidResult] =
         await Promise.all([
           this.prisma.student.count({
             where: { institutionId, lifecycleStatus: 'APPLICANT' },
@@ -117,17 +135,16 @@ export class AdmissionsService {
             where: { institutionId, status: { in: ['ACTIVE', 'OVERDUE'] } },
             _sum: { totalAmount: true },
           }),
+          this.prisma.feeInstallment.aggregate({
+            where: { studentFeePlan: { institutionId } },
+            _sum: { amountPaid: true },
+          }),
         ]);
-
-      const paidResult = await this.prisma.feeInstallment.aggregate({
-        where: { studentFeePlan: { institutionId } },
-        _sum: { amountPaid: true },
-      });
 
       const feeOutstanding =
         (feeOutstandingResult._sum.totalAmount || 0) - (paidResult._sum.amountPaid || 0);
 
-      return {
+      const stats = {
         applications: totalApplications,
         pendingReview,
         readyForEnrollment: admittedStudents,
@@ -135,6 +152,13 @@ export class AdmissionsService {
         feeOutstanding,
         availableSeats: 0,
       };
+
+      this.statsCache.set(institutionId, {
+        data: stats,
+        expiresAt: now + this.STATS_CACHE_TTL_MS,
+      });
+
+      return stats;
     } catch (error) {
       console.error('Error fetching admissions stats:', error);
       return {

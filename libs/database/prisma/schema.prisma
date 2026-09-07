@@ -2002,6 +2002,7 @@ model FeeInstallment {
   allocations    PaymentAllocation[]
 
   @@index([studentFeePlanId])
+  @@index([status])
   @@map("fee_installments")
 }
 
