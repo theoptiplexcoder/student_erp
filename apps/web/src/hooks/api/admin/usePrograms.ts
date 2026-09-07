@@ -7,7 +7,7 @@ export interface Program {
   name: string;
   level: string;
   durationYears: number;
-  departmentId: string;
+  departmentId?: string | null;
   department?: {
     id: string;
     name: string;
@@ -36,7 +36,7 @@ export interface CreateProgramDto {
   code: string;
   level: string;
   durationYears: number;
-  departmentId: string;
+  departmentId?: string;
   courseIds?: string[];
 }
 

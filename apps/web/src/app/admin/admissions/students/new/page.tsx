@@ -172,7 +172,6 @@ function DirectAdmissionForm() {
     code: '',
     level: 'UNDERGRADUATE',
     durationYears: 3,
-    departmentId: '',
   });
   const [isProgSubmitting, setIsProgSubmitting] = useState(false);
 
@@ -240,7 +239,6 @@ function DirectAdmissionForm() {
         code: '',
         level: 'UNDERGRADUATE',
         durationYears: 3,
-        departmentId: '',
       });
     } catch (e) {
       console.error(e);
@@ -1388,24 +1386,6 @@ function DirectAdmissionForm() {
                                     }))
                                   }
                                 />
-                              </div>
-                              <div className="space-y-2">
-                                <Label>Department</Label>
-                                <select
-                                  required
-                                  className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                                  value={progFormData.departmentId}
-                                  onChange={(e) =>
-                                    setProgFormData((p) => ({ ...p, departmentId: e.target.value }))
-                                  }
-                                >
-                                  <option value="">Select Department</option>
-                                  {departments.map((d: any) => (
-                                    <option key={d.id} value={d.id}>
-                                      {d.name}
-                                    </option>
-                                  ))}
-                                </select>
                               </div>
                               <Button type="submit" disabled={isProgSubmitting}>
                                 {isProgSubmitting ? 'Saving...' : 'Save'}

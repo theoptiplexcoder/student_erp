@@ -26,9 +26,9 @@ export class CreateProgramDto {
   @Min(1)
   durationYears!: number;
 
+  @IsOptional()
   @IsUUID()
-  @IsNotEmpty()
-  departmentId!: string;
+  departmentId?: string;
 
   @IsOptional()
   @IsArray()

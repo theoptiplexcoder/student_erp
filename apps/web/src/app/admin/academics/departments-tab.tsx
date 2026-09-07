@@ -48,7 +48,6 @@ export function DepartmentsTab() {
 
   const [progDialogOpen, setProgDialogOpen] = useState(false);
   const [editingProg, setEditingProg] = useState<any>(null);
-  const [selectedDepId, setSelectedDepId] = useState<string | null>(null);
 
   const [courseDialogOpen, setCourseDialogOpen] = useState(false);
   const [selectedDepIdForCourse, setSelectedDepIdForCourse] = useState<string | null>(null);
@@ -117,7 +116,6 @@ export function DepartmentsTab() {
       code: fd.get('code') as string,
       level: fd.get('level') as any,
       durationYears: parseInt(fd.get('durationYears') as string, 10),
-      departmentId: fd.get('departmentId') as string,
     };
 
     try {
@@ -283,7 +281,6 @@ export function DepartmentsTab() {
                                   size="icon"
                                   onClick={() => {
                                     setEditingProg(prog);
-                                    setSelectedDepId(prog.departmentId);
                                     setProgDialogOpen(true);
                                   }}
                                 >
@@ -397,25 +394,6 @@ export function DepartmentsTab() {
               <DialogTitle>{editingProg ? 'Edit Program' : 'Create Program'}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="prog-dep">Department</Label>
-                <select
-                  id="prog-dep"
-                  name="departmentId"
-                  required
-                  defaultValue={editingProg?.departmentId || selectedDepId || ''}
-                  className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
-                >
-                  <option value="" disabled>
-                    Select Department
-                  </option>
-                  {departments.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="prog-name">Program Name</Label>
                 <Input

@@ -16,7 +16,6 @@ import {
 import { ArrowLeft, Loader2, Save } from 'lucide-react';
 import Link from 'next/link';
 import { useCreateAdminProgram } from '@/hooks/api/admin/usePrograms';
-import { useAdminDepartments } from '@/hooks/api/admin/useDepartments';
 
 const PROGRAM_LEVELS = [
   'PRIMARY',
@@ -32,7 +31,6 @@ const PROGRAM_LEVELS = [
 export default function CreateProgramPage() {
   const router = useRouter();
   const createProgram = useCreateAdminProgram();
-  const { data: departmentsData, isLoading: isLoadingDepartments } = useAdminDepartments();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -47,7 +45,6 @@ export default function CreateProgramPage() {
       code: formData.get('code') as string,
       level: formData.get('level') as string,
       durationYears: parseInt(formData.get('durationYears') as string, 10),
-      departmentId: formData.get('departmentId') as string,
     };
 
     try {
@@ -134,26 +131,6 @@ export default function CreateProgramPage() {
                 />
               </div>
             </div>
-
-            <div className="flex flex-col space-y-2">
-              <Label htmlFor="departmentId">Department</Label>
-              <select
-                id="departmentId"
-                name="departmentId"
-                required
-                disabled={isLoadingDepartments}
-                className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="" disabled selected>
-                  {isLoadingDepartments ? 'Loading departments...' : 'Select department'}
-                </option>
-                {departmentsData?.data.map((dept) => (
-                  <option key={dept.id} value={dept.id}>
-                    {dept.name} ({dept.code})
-                  </option>
-                ))}
-              </select>
-            </div>
           </CardContent>
           <CardFooter className="flex justify-end space-x-2">
             <Button
@@ -164,7 +141,7 @@ export default function CreateProgramPage() {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || isLoadingDepartments}>
+            <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...

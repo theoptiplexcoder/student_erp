@@ -9,13 +9,15 @@ export class ProgramsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createProgram(institutionId: string, dto: CreateProgramDto) {
-    // Verify department belongs to institution
-    const department = await this.prisma.department.findFirst({
-      where: { id: dto.departmentId, institutionId },
-    });
+    // If departmentId is provided, verify it belongs to institution
+    if (dto.departmentId) {
+      const department = await this.prisma.department.findFirst({
+        where: { id: dto.departmentId, institutionId },
+      });
 
-    if (!department) {
-      throw new NotFoundException('Department not found or does not belong to your institution');
+      if (!department) {
+        throw new NotFoundException('Department not found or does not belong to your institution');
+      }
     }
 
     // Verify uniqueness of code within institution
@@ -32,7 +34,7 @@ export class ProgramsService {
     return this.prisma.program.create({
       data: {
         institutionId,
-        departmentId: programData.departmentId,
+        departmentId: programData.departmentId || null,
         name: programData.name,
         code: programData.code,
         level: programData.level,

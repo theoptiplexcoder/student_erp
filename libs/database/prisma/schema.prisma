@@ -499,7 +499,7 @@ model Department {
 model Program {
   id            String       @id @default(uuid()) @db.Uuid
   institutionId String       @map("institution_id") @db.Uuid
-  departmentId  String       @map("department_id") @db.Uuid
+  departmentId  String?      @map("department_id") @db.Uuid
   name          String
   code          String
   level         ProgramLevel
@@ -508,7 +508,7 @@ model Program {
   updatedAt     DateTime     @updatedAt @map("updated_at")
 
   institution     Institution      @relation(fields: [institutionId], references: [id])
-  department      Department       @relation(fields: [departmentId], references: [id])
+  department      Department?      @relation(fields: [departmentId], references: [id])
   students        Student[]
   sections        Section[]
   batches         Batch[]

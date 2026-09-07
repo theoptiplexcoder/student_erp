@@ -84,7 +84,6 @@ export function ProgramsTab() {
       code: fd.get('code') as string,
       level: fd.get('level') as any,
       durationYears: parseInt(fd.get('durationYears') as string, 10),
-      departmentId: fd.get('departmentId') as string,
       courseIds: selectedCourseIds,
     };
 
@@ -190,7 +189,6 @@ export function ProgramsTab() {
                   <CardDescription className="flex flex-wrap items-center gap-2 pt-1">
                     <Badge variant="outline">{prog.level?.replace(/_/g, ' ')}</Badge>
                     <span>• {prog.durationYears} Years</span>
-                    {prog.department && <span>• Department: {prog.department.name}</span>}
                     <span>• {progCourses.length} Courses Linked</span>
                   </CardDescription>
                 </div>
@@ -260,25 +258,6 @@ export function ProgramsTab() {
               <DialogTitle>{editingProg ? 'Edit Program' : 'Create Program'}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="prog-dep">Department</Label>
-                <select
-                  id="prog-dep"
-                  name="departmentId"
-                  required
-                  defaultValue={editingProg?.departmentId || ''}
-                  className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
-                >
-                  <option value="" disabled>
-                    Select Department
-                  </option>
-                  {departments.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name} ({d.code})
-                    </option>
-                  ))}
-                </select>
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="prog-name">Program Name</Label>
                 <Input
