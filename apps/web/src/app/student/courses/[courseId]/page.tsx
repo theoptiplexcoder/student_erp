@@ -61,9 +61,11 @@ export default function CourseWorkspace({ params }: { params: Promise<{ courseId
           </Link>
         </Button>
         <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">{course.name}</h1>
+          <h1 className="font-display text-3xl font-bold tracking-tight">
+            {course.name || course.title || course.code || 'Untitled Course'}
+          </h1>
           <p className="text-muted-foreground mt-1 flex items-center gap-3">
-            <span>{course.code}</span>
+            <span>{course.code || 'N/A'}</span>
           </p>
         </div>
       </div>

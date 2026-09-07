@@ -132,16 +132,18 @@ function MyCoursesContent() {
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <CardTitle className="line-clamp-2 text-lg leading-tight">
-                      {course.name}
+                      {course.name || course.title || course.code || 'Untitled Course'}
                     </CardTitle>
                   </div>
-                  <p className="text-muted-foreground mt-1 text-xs font-semibold">{course.code}</p>
+                  <p className="text-muted-foreground mt-1 text-xs font-semibold">
+                    {course.code || 'N/A'}
+                  </p>
                 </CardHeader>
                 <CardContent className="flex-1">
                   <div className="space-y-4 text-sm">
                     <div className="text-muted-foreground flex items-center">
                       <BookOpen className="mr-2 h-4 w-4" />
-                      {course.creditValue} Credits
+                      {course.creditValue ?? course.credits ?? 0} Credits
                     </div>
 
                     <div className="pt-2">

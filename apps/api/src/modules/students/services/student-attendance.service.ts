@@ -24,22 +24,63 @@ export class StudentAttendanceService {
         institutionId,
         studentId: student.id,
         status: { in: ['ACTIVE', 'COMPLETED'] },
-        courseId: { not: null },
       },
       include: {
         course: true,
+        program: {
+          include: {
+            courses: true,
+            curriculums: {
+              include: {
+                curriculumTerms: {
+                  include: {
+                    curriculumCourses: {
+                      include: {
+                        course: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
 
-    const validEnrollments = enrollments.filter((e) => e.course !== null && e.courseId !== null);
+    const coursesMap = new Map<string, any>();
 
-    if (validEnrollments.length === 0) {
+    for (const enr of enrollments) {
+      if (enr.course) {
+        coursesMap.set(enr.course.id, enr.course);
+      }
+      if (enr.program?.courses) {
+        for (const pc of enr.program.courses) {
+          if (!coursesMap.has(pc.id)) {
+            coursesMap.set(pc.id, pc);
+          }
+        }
+      }
+      if (enr.program?.curriculums) {
+        for (const curr of enr.program.curriculums) {
+          for (const ct of curr.curriculumTerms) {
+            for (const cc of ct.curriculumCourses) {
+              if (cc.course && !coursesMap.has(cc.course.id)) {
+                coursesMap.set(cc.course.id, cc.course);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    const validCourses = Array.from(coursesMap.values());
+
+    if (validCourses.length === 0) {
       return [];
     }
 
-    const courseIds = validEnrollments
-      .map((e) => e.courseId)
-      .filter((id): id is string => Boolean(id));
+    const courseIds = validCourses.map((c) => c.id);
 
     const recordsByCourse = new Map<string, { status: string }[]>();
 
@@ -71,8 +112,8 @@ export class StudentAttendanceService {
       }
     }
 
-    return validEnrollments.map((enr) => {
-      const records = (enr.courseId ? recordsByCourse.get(enr.courseId) : undefined) || [];
+    return validCourses.map((crs) => {
+      const records = recordsByCourse.get(crs.id) || [];
       const totalSessions = records.length;
       const presentSessions = records.filter(
         (r) => r.status === 'PRESENT' || r.status === 'LATE',
@@ -80,7 +121,7 @@ export class StudentAttendanceService {
       const percentage = totalSessions > 0 ? (presentSessions / totalSessions) * 100 : 0;
 
       return {
-        course: enr.course,
+        course: crs,
         totalSessions,
         presentSessions,
         percentage,

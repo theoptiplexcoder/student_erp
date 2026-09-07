@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { use, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -65,8 +65,8 @@ function aggregateFaculty(assignments: CourseAssignment[] | undefined) {
   };
 }
 
-export default function SectionDetailPage({ params }: { params: { sectionId: string } }) {
-  const { sectionId } = params;
+export default function SectionDetailPage({ params }: { params: Promise<{ sectionId: string }> }) {
+  const { sectionId } = use(params);
   const { data: section, isLoading, isError, error } = useAdminSection(sectionId);
   const [isAssigning, setIsAssigning] = useState(false);
   const [assignForm, setAssignForm] = useState({ facultyId: '', courseId: '', termId: '' });

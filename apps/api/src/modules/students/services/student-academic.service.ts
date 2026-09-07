@@ -18,7 +18,6 @@ export class StudentAcademicService {
       institutionId,
       studentId: student.id,
       status: { in: ['ACTIVE', 'COMPLETED'] },
-      courseId: { not: null },
     };
 
     if (termId) {
@@ -33,15 +32,77 @@ export class StudentAcademicService {
             department: true,
           },
         },
+        program: {
+          include: {
+            courses: {
+              include: {
+                department: true,
+              },
+            },
+            curriculums: {
+              include: {
+                curriculumTerms: {
+                  include: {
+                    curriculumCourses: {
+                      include: {
+                        course: {
+                          include: {
+                            department: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
         term: true,
       },
     });
 
-    return enrollments.map((e) => ({
-      ...e.course,
-      enrollmentId: e.id,
-      term: e.term,
-    }));
+    const courseMap = new Map<string, any>();
+
+    for (const e of enrollments) {
+      if (e.course) {
+        courseMap.set(e.course.id, {
+          ...e.course,
+          enrollmentId: e.id,
+          term: e.term,
+        });
+      }
+
+      if (e.program?.courses) {
+        for (const pc of e.program.courses) {
+          if (!courseMap.has(pc.id)) {
+            courseMap.set(pc.id, {
+              ...pc,
+              enrollmentId: e.id,
+              term: e.term,
+            });
+          }
+        }
+      }
+
+      if (e.program?.curriculums) {
+        for (const curr of e.program.curriculums) {
+          for (const ct of curr.curriculumTerms) {
+            for (const cc of ct.curriculumCourses) {
+              if (cc.course && !courseMap.has(cc.course.id)) {
+                courseMap.set(cc.course.id, {
+                  ...cc.course,
+                  enrollmentId: e.id,
+                  term: e.term,
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return Array.from(courseMap.values());
   }
 
   async getTerms(userId: string, institutionId: string) {
@@ -74,15 +135,46 @@ export class StudentAcademicService {
 
     if (!student) return null;
 
-    const enrollment = await this.prisma.enrollment.findFirst({
+    const enrollments = await this.prisma.enrollment.findMany({
       where: {
         institutionId,
         studentId: student.id,
-        courseId,
+        status: { in: ['ACTIVE', 'COMPLETED'] },
+      },
+      include: {
+        program: {
+          include: {
+            courses: true,
+            curriculums: {
+              include: {
+                curriculumTerms: {
+                  include: {
+                    curriculumCourses: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
 
-    if (!enrollment) {
+    const isEnrolled = enrollments.some((e) => {
+      if (e.courseId === courseId) return true;
+      if (e.program?.courses?.some((pc) => pc.id === courseId)) return true;
+      if (
+        e.program?.curriculums?.some((curr) =>
+          curr.curriculumTerms?.some((ct) =>
+            ct.curriculumCourses?.some((cc) => cc.courseId === courseId),
+          ),
+        )
+      ) {
+        return true;
+      }
+      return false;
+    });
+
+    if (!isEnrolled) {
       throw new Error('Not enrolled in this course');
     }
 
@@ -119,10 +211,42 @@ export class StudentAcademicService {
     });
     if (!student) throw new Error('Student not found');
 
-    const enrollment = await this.prisma.enrollment.findFirst({
-      where: { institutionId, studentId: student.id, courseId },
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: { institutionId, studentId: student.id, status: { in: ['ACTIVE', 'COMPLETED'] } },
+      include: {
+        program: {
+          include: {
+            courses: true,
+            curriculums: {
+              include: {
+                curriculumTerms: {
+                  include: {
+                    curriculumCourses: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
-    if (!enrollment) throw new Error('Not enrolled in this course');
+
+    const isEnrolled = enrollments.some((e) => {
+      if (e.courseId === courseId) return true;
+      if (e.program?.courses?.some((pc) => pc.id === courseId)) return true;
+      if (
+        e.program?.curriculums?.some((curr) =>
+          curr.curriculumTerms?.some((ct) =>
+            ct.curriculumCourses?.some((cc) => cc.courseId === courseId),
+          ),
+        )
+      ) {
+        return true;
+      }
+      return false;
+    });
+
+    if (!isEnrolled) throw new Error('Not enrolled in this course');
 
     const assignment = await this.prisma.assignment.findFirst({
       where: { id: assignmentId, courseId, institutionId, status: 'PUBLISHED' },
