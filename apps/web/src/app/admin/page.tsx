@@ -22,7 +22,6 @@ import {
   UserPlus,
   Megaphone,
   ChevronRight,
-  ClipboardList,
   CheckCircle2,
   TrendingUp,
 } from 'lucide-react';
@@ -227,15 +226,6 @@ export default function AdminDashboard() {
                   Add Student
                 </Button>
               </Link>
-              <Link href="/admin/admissions/applications" className="block">
-                <Button
-                  variant="outline"
-                  className="h-auto w-full flex-col items-center justify-center gap-2 p-4 text-xs"
-                >
-                  <ClipboardList className="h-5 w-5 text-orange-500" />
-                  Review Admissions
-                </Button>
-              </Link>
               <Link href="/admin/faculty/new" className="block">
                 <Button
                   variant="outline"
@@ -245,7 +235,7 @@ export default function AdminDashboard() {
                   Add Faculty
                 </Button>
               </Link>
-              <Link href="/admin/examinations/timetable" className="block">
+              <Link href="/admin/examinations/timetable" className="col-span-2 block">
                 <Button
                   variant="outline"
                   className="h-auto w-full flex-col items-center justify-center gap-2 p-4 text-xs"
