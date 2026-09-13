@@ -32,6 +32,7 @@ import {
   Trash2,
   UploadCloud,
   X,
+  Upload,
 } from 'lucide-react';
 import { useCreateDirectAdmission } from '@/hooks/api/admin/useAdmissions';
 import {
@@ -77,6 +78,8 @@ function DirectAdmissionForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const supabase = createClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const photoInputRef = React.useRef<HTMLInputElement>(null);
 
   // Form Data State
   const [formData, setFormData] = useState({
@@ -117,7 +120,17 @@ function DirectAdmissionForm() {
     installments: [] as { amount: number; dueDate: string }[],
   });
 
-  // Fetched data
+  useEffect(() => {
+    if (formData.photo) {
+      const url = URL.createObjectURL(formData.photo);
+      setPhotoPreview(url);
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    }
+    setPhotoPreview(null);
+    return undefined;
+  }, [formData.photo]);
   const [academicYears, setAcademicYears] = useState<any[]>([]);
   const [programs, setPrograms] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
@@ -866,14 +879,58 @@ function DirectAdmissionForm() {
                       <Input name="address" value={formData.address} onChange={handleChange} />
                     </div>
                     <div className="space-y-2 md:col-span-3">
-                      <Label>Photo (student_profile_bucket)</Label>
-                      <Input
-                        type="file"
-                        accept="image/jpeg, image/png, image/webp"
-                        onChange={(e) =>
-                          setFormData((p) => ({ ...p, photo: e.target.files?.[0] || null }))
-                        }
-                      />
+                      <Label>Profile Photo</Label>
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                        <div className="border-border bg-muted/30 relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-sm">
+                          <img
+                            src={photoPreview || '/passport.png'}
+                            alt="Student profile preview"
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                        <div className="flex flex-1 flex-col gap-2">
+                          <input
+                            ref={photoInputRef}
+                            type="file"
+                            accept="image/jpeg, image/png, image/webp"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] || null;
+                              setFormData((p) => ({ ...p, photo: file }));
+                            }}
+                          />
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => photoInputRef.current?.click()}
+                              className="flex items-center gap-2"
+                            >
+                              <Upload className="h-4 w-4" />
+                              {formData.photo ? 'Change Photo' : 'Upload Photo'}
+                            </Button>
+                            {formData.photo && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setFormData((p) => ({ ...p, photo: null }));
+                                  if (photoInputRef.current) photoInputRef.current.value = '';
+                                }}
+                                className="text-destructive hover:bg-destructive/10 h-8 px-2 text-xs"
+                              >
+                                <Trash2 className="mr-1 h-3.5 w-3.5" /> Remove
+                              </Button>
+                            )}
+                          </div>
+                          <p className="text-muted-foreground text-xs">
+                            Accepts JPG, PNG, or WEBP. Defaults to standard passport photo if left
+                            blank.
+                          </p>
+                        </div>
+                      </div>
                     </div>
                     <div className="space-y-2 md:col-span-3">
                       <Label>About</Label>
