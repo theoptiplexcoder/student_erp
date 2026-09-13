@@ -23,10 +23,11 @@ import {
   ChevronRight,
   AlertCircle,
   Edit,
+  Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { getDrafts, AdmissionDraft } from '@/hooks/useAdmissionDrafts';
+import { getDrafts, removeDraft, AdmissionDraft } from '@/hooks/useAdmissionDrafts';
 
 export default function AdmissionsDashboard() {
   const { data: stats, isLoading: statsLoading } = useAdmissionsStats();
@@ -36,6 +37,13 @@ export default function AdmissionsDashboard() {
   useEffect(() => {
     getDrafts().then(setDrafts);
   }, []);
+
+  const handleDeleteDraft = async (id: string) => {
+    if (confirm('Are you sure you want to delete this draft?')) {
+      await removeDraft(id);
+      getDrafts().then(setDrafts);
+    }
+  };
 
   const kpis = [
     {
@@ -207,11 +215,22 @@ export default function AdmissionsDashboard() {
                             {draft.data.phone || draft.data.email || 'No contact provided'}
                           </p>
                         </div>
-                        <Button variant="ghost" size="sm" asChild className="h-8 px-2">
-                          <Link href={`/admin/admissions/students/new?draftId=${draft.id}`}>
-                            <Edit className="mr-2 h-3 w-3" /> Resume
-                          </Link>
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="sm" asChild className="h-8 px-2">
+                            <Link href={`/admin/admissions/students/new?draftId=${draft.id}`}>
+                              <Edit className="mr-2 h-3 w-3" /> Resume
+                            </Link>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 w-8"
+                            onClick={() => handleDeleteDraft(draft.id)}
+                            title="Delete draft"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </div>
                     );
                   })}

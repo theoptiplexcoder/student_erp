@@ -1188,7 +1188,9 @@ function DirectAdmissionForm() {
                   )}
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label>Father Name</Label>
+                      <Label>
+                        Father Name <span className="text-red-500">*</span>
+                      </Label>
                       <Input
                         name="fatherName"
                         value={formData.fatherName}
@@ -1196,7 +1198,9 @@ function DirectAdmissionForm() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Father Phone</Label>
+                      <Label>
+                        Father Phone <span className="text-red-500">*</span>
+                      </Label>
                       <PhoneInput
                         international={false}
                         defaultCountry="IN"
@@ -1206,7 +1210,9 @@ function DirectAdmissionForm() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Father Email</Label>
+                      <Label>
+                        Father Email <span className="text-red-500">*</span>
+                      </Label>
                       <Input
                         name="fatherEmail"
                         type="email"
