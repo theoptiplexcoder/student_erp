@@ -94,9 +94,11 @@ export function ProfileBanner() {
         <div className="-mt-16 mb-6 flex flex-col items-center gap-6 sm:-mt-20 sm:flex-row sm:items-end sm:gap-8">
           <div className="relative">
             <Avatar className="border-background bg-background h-32 w-32 border-4 shadow-lg">
-              {student.user?.photoUrl ? (
-                <AvatarImage src={student.user.photoUrl} alt={fullName} />
-              ) : null}
+              <AvatarImage
+                src={student.user?.photoUrl || '/passport.png'}
+                alt={fullName || 'Student profile photo'}
+                className="object-cover"
+              />
               <AvatarFallback className="text-4xl">{firstName.charAt(0)}</AvatarFallback>
             </Avatar>
             <Button

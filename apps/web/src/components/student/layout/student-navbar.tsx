@@ -3,8 +3,7 @@
 import React from 'react';
 import { Menu } from 'lucide-react';
 import { useStudentProfile } from '@student-erp/hooks';
-import { Button } from '@student-erp/ui';
-import { Avatar, AvatarFallback } from '@student-erp/ui';
+import { Avatar, AvatarFallback, AvatarImage, Button } from '@student-erp/ui';
 import { LogoutButton } from '../../shared/logout-button';
 import { Breadcrumbs } from '../../shared/breadcrumbs';
 import { useMobileSidebarStore } from '@/hooks/use-sidebar';
@@ -42,6 +41,11 @@ export function StudentNavbar() {
         {/* Replace with DropdownMenu when available in ui package or use a standard approach */}
         <div className="hover:bg-muted flex cursor-pointer items-center gap-2 rounded-md p-1 transition-colors">
           <Avatar className="h-8 w-8">
+            <AvatarImage
+              src={student?.user?.photoUrl || '/passport.png'}
+              alt={fullName || 'Student profile'}
+              className="object-cover"
+            />
             <AvatarFallback>{firstName.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="hidden flex-col text-sm md:flex">
