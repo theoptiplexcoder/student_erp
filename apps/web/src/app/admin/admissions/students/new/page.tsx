@@ -501,6 +501,10 @@ function DirectAdmissionForm() {
     isActive: true,
   });
 
+  const selectedFeeStructure = React.useMemo(() => {
+    return allFeeStructures.find((fs) => fs.id === formData.feeStructureId) || null;
+  }, [allFeeStructures, formData.feeStructureId]);
+
   // Filter fee structures based on academic year and program if selected
   const matchingFeeStructures = React.useMemo(() => {
     return allFeeStructures.filter((fs) => {
@@ -1765,7 +1769,8 @@ function DirectAdmissionForm() {
                 <div className="flex flex-col gap-1">
                   <h2 className="text-xl font-semibold">Fee Configuration</h2>
                   <p className="text-muted-foreground text-sm">
-                    Select a fee structure blueprint or enter custom fee details for this student.
+                    Fee details are automatically populated based on the selected fee structure
+                    template.
                   </p>
                 </div>
                 {errors['totalFee'] && (
@@ -1786,7 +1791,7 @@ function DirectAdmissionForm() {
                           {isFeeStructuresLoading
                             ? 'Loading fee structures...'
                             : matchingFeeStructures.length > 0
-                              ? 'Select a fee structure (or leave blank for custom fee)...'
+                              ? 'Select a fee structure...'
                               : 'No fee structures match the selected program/year'}
                         </option>
                         {matchingFeeStructures.map((fs) => (
@@ -2106,6 +2111,89 @@ function DirectAdmissionForm() {
                     )}
                   </div>
 
+                  {/* Detailed Overview of Selected Fee Structure */}
+                  {selectedFeeStructure && (
+                    <div className="bg-card space-y-4 rounded-lg border p-4 md:p-6">
+                      <div className="flex flex-col gap-1 border-b pb-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold">{selectedFeeStructure.name}</h3>
+                            {selectedFeeStructure.code && (
+                              <Badge variant="outline" className="text-xs">
+                                {selectedFeeStructure.code}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-muted-foreground text-xs">
+                            {[
+                              selectedFeeStructure.academicYear?.name,
+                              selectedFeeStructure.program?.name,
+                              selectedFeeStructure.batch?.name,
+                            ]
+                              .filter(Boolean)
+                              .join(' • ')}
+                          </p>
+                        </div>
+                        <div className="mt-2 text-left sm:mt-0 sm:text-right">
+                          <span className="text-muted-foreground block text-xs">
+                            Total Structure Fee
+                          </span>
+                          <span className="text-lg font-bold">
+                            ₹{selectedFeeStructure.totalAmount?.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                      </div>
+
+                      {selectedFeeStructure.components &&
+                        selectedFeeStructure.components.length > 0 && (
+                          <div className="space-y-2">
+                            <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                              Fee Components Breakdown
+                            </h4>
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-left text-xs">
+                                <thead className="text-muted-foreground border-b">
+                                  <tr>
+                                    <th className="pb-2 font-medium">Component</th>
+                                    <th className="pb-2 font-medium">Type</th>
+                                    <th className="pb-2 font-medium">Nature</th>
+                                    <th className="pb-2 text-right font-medium">Amount</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y">
+                                  {selectedFeeStructure.components.map((c, i) => (
+                                    <tr key={i} className="hover:bg-muted/40 transition-colors">
+                                      <td className="py-2.5 font-medium">
+                                        {c.name}
+                                        {c.description && (
+                                          <p className="text-muted-foreground text-[11px] font-normal">
+                                            {c.description}
+                                          </p>
+                                        )}
+                                      </td>
+                                      <td className="text-muted-foreground py-2.5">
+                                        <Badge variant="secondary" className="text-[10px]">
+                                          {c.type}
+                                        </Badge>
+                                      </td>
+                                      <td className="py-2.5">
+                                        <Badge variant="outline" className="text-[10px]">
+                                          {c.isOptional ? 'Optional' : 'Mandatory'}
+                                        </Badge>
+                                      </td>
+                                      <td className="py-2.5 text-right font-semibold">
+                                        ₹{Number(c.amount).toLocaleString('en-IN')}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+                    </div>
+                  )}
+
                   <div className="grid max-w-md grid-cols-1 gap-6">
                     <div className="space-y-2">
                       <Label>Annual Fee (₹)</Label>
@@ -2113,7 +2201,8 @@ function DirectAdmissionForm() {
                         name="totalFee"
                         type="number"
                         value={formData.totalFee}
-                        onChange={handleChange}
+                        disabled
+                        className="bg-muted cursor-not-allowed"
                       />
                     </div>
 
@@ -2122,8 +2211,8 @@ function DirectAdmissionForm() {
                         <Label>Installment Plan</Label>
                         <select
                           value={formData.installmentsCount}
-                          onChange={handleInstallmentCountChange}
-                          className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                          disabled
+                          className="border-input bg-muted w-full cursor-not-allowed rounded-md border px-3 py-2 text-sm"
                         >
                           <option value={1}>1 Installment</option>
                           <option value={2}>2 Installments</option>
@@ -2142,22 +2231,16 @@ function DirectAdmissionForm() {
                                 <Input
                                   type="number"
                                   value={inst.amount}
-                                  onChange={(e) => {
-                                    const newInst = [...formData.installments];
-                                    newInst[idx].amount = Number(e.target.value);
-                                    setFormData((p) => ({ ...p, installments: newInst }));
-                                  }}
+                                  disabled
+                                  className="bg-muted cursor-not-allowed"
                                 />
                                 <div className="w-full flex-1">
                                   <Input
                                     type="date"
                                     required
                                     value={inst.dueDate}
-                                    onChange={(e) => {
-                                      const newInst = [...formData.installments];
-                                      newInst[idx].dueDate = e.target.value;
-                                      setFormData((p) => ({ ...p, installments: newInst }));
-                                    }}
+                                    disabled
+                                    className="bg-muted cursor-not-allowed"
                                   />
                                 </div>
                               </div>
