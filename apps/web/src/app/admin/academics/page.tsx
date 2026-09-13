@@ -18,13 +18,6 @@ import {
   TabsList,
   TabsTrigger,
   TabsContent,
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
 } from '@student-erp/ui';
 import { Plus, Eye, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -33,86 +26,14 @@ import { ProgramsTab } from './programs-tab';
 import { useAdminAllCurriculums } from '@/hooks/api/admin/useCurriculums';
 import { useAdminCourses } from '@/hooks/api/admin/useCourses';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
-import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
-import { useRouter } from 'next/navigation';
 
 function NewCurriculumButton() {
-  const [open, setOpen] = useState(false);
-  const [selectedPrograms, setSelectedPrograms] = useState<string[]>([]);
-  const { data: programsData, isLoading } = useAdminPrograms(1, 100);
-  const router = useRouter();
-
-  const handleContinue = () => {
-    if (selectedPrograms.length > 0) {
-      router.push(
-        `/admin/academics/programs/${selectedPrograms[0]}/curriculums/new?programIds=${selectedPrograms.join(',')}`,
-      );
-      setOpen(false);
-    }
-  };
-
-  const toggleProgram = (id: string) => {
-    setSelectedPrograms((prev) =>
-      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id],
-    );
-  };
-
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="mr-2 h-4 w-4" /> New Curriculum
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Create New Curriculum</DialogTitle>
-          <DialogDescription>
-            Select one or multiple programs to include in this curriculum.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Select Programs</label>
-            <p className="text-muted-foreground text-xs">
-              Check all programs that will follow this curriculum.
-            </p>
-            {isLoading ? (
-              <div className="text-muted-foreground text-sm">Loading programs...</div>
-            ) : (
-              <div className="bg-muted/10 max-h-52 space-y-2 overflow-y-auto rounded-md border p-3">
-                {programsData?.data?.map((p) => {
-                  const isChecked = selectedPrograms.includes(p.id);
-                  return (
-                    <label
-                      key={p.id}
-                      className="hover:bg-muted/40 flex cursor-pointer items-center space-x-3 rounded p-1 text-sm"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => toggleProgram(p.id)}
-                        className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
-                      />
-                      <span className="font-medium">{p.name}</span>
-                      <span className="text-muted-foreground text-xs">({p.code})</span>
-                    </label>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleContinue} disabled={selectedPrograms.length === 0}>
-            Continue
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <Link href="/admin/academics/programs/all/curriculums/new">
+      <Button size="sm">
+        <Plus className="mr-2 h-4 w-4" /> New Curriculum
+      </Button>
+    </Link>
   );
 }
 
