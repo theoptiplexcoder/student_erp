@@ -79,7 +79,7 @@ export default function AdmissionsDashboard() {
             className="bg-admin-primary hover:bg-admin-primary/90 text-admin-primary-foreground"
           >
             <Link href="/admin/admissions/students/new">
-              <UserPlus className="mr-2 h-4 w-4" /> Add Student Directly
+              <UserPlus className="mr-2 h-4 w-4" /> Add Student
             </Link>
           </Button>
         </div>

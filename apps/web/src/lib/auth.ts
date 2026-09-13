@@ -30,23 +30,33 @@ export function getDashboardPath(role: string): string {
 export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
   const supabase = await createClient();
 
-  // Validate the token against Supabase's server and refresh if needed.
-  // getSession() returns tokens from cookies without validation — they may be expired.
-  const {
-    data: { user: authUser },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !authUser) {
-    return null;
-  }
-
-  // Get the (now refreshed) session to extract the access_token for the NestJS API
+  // Next.js middleware has already validated and refreshed the session on the request.
+  // We first inspect getSession() from cookies directly to avoid a redundant remote HTTPS hop
+  // to Supabase on every RSC render/page reload. If missing or expired, we fall back to getUser().
+  let sessionToken: string | null = null;
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session) {
+  if (session?.access_token) {
+    sessionToken = session.access_token;
+  } else {
+    const {
+      data: { user: authUser },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !authUser) {
+      return null;
+    }
+
+    const {
+      data: { session: refreshedSession },
+    } = await supabase.auth.getSession();
+    sessionToken = refreshedSession?.access_token ?? null;
+  }
+
+  if (!sessionToken) {
     return null;
   }
 
@@ -58,7 +68,7 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
     const baseUrl = apiUrl.endsWith('/api/v1') ? apiUrl : `${apiUrl.replace(/\/$/, '')}/api/v1`;
     const res = await fetch(`${baseUrl}/auth/me`, {
       headers: {
-        Authorization: `Bearer ${session.access_token}`,
+        Authorization: `Bearer ${sessionToken}`,
       },
       next: {
         revalidate: 0, // Avoid caching stale user data across sessions

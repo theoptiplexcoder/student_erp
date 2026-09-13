@@ -35,6 +35,7 @@ import {
   Upload,
   Camera,
   RefreshCw,
+  ZoomIn,
 } from 'lucide-react';
 import { useCreateDirectAdmission } from '@/hooks/api/admin/useAdmissions';
 import {
@@ -82,6 +83,8 @@ function DirectAdmissionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const photoInputRef = React.useRef<HTMLInputElement>(null);
+  const documentInputRef = React.useRef<HTMLInputElement>(null);
+  const [isPhotoViewOpen, setIsPhotoViewOpen] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -672,6 +675,7 @@ function DirectAdmissionForm() {
     const newErrors: Record<string, string> = {};
     if (step >= 1) {
       if (!formData.firstName) newErrors['firstName'] = 'First name is required';
+      if (!formData.lastName) newErrors['lastName'] = 'Last name is required';
       if (!formData.dateOfBirth) newErrors['dateOfBirth'] = 'Date of birth is required';
       if (!formData.fatherEmail && !formData.motherEmail)
         newErrors['parentEmail'] = 'At least one parent email is required';
@@ -887,12 +891,29 @@ function DirectAdmissionForm() {
                     <div className="space-y-2 md:col-span-3">
                       <Label>Profile Photo</Label>
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        <div className="border-border bg-muted/30 relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-sm">
+                        <div
+                          className="border-border bg-muted/30 group relative flex h-24 w-24 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 shadow-sm transition hover:opacity-90"
+                          onClick={() => {
+                            if (photoPreview || formData.photo) {
+                              setIsPhotoViewOpen(true);
+                            }
+                          }}
+                          title={
+                            photoPreview || formData.photo
+                              ? 'Click to view photo'
+                              : 'Profile photo preview'
+                          }
+                        >
                           <img
                             src={photoPreview || '/passport.png'}
                             alt="Student profile preview"
                             className="h-full w-full object-cover"
                           />
+                          {(photoPreview || formData.photo) && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                              <ZoomIn className="h-5 w-5 text-white" />
+                            </div>
+                          )}
                         </div>
                         <div className="flex flex-1 flex-col gap-2">
                           <input
@@ -1009,6 +1030,33 @@ function DirectAdmissionForm() {
                               </div>
                             </DialogContent>
                           </Dialog>
+
+                          {/* PHOTO PREVIEW MODAL */}
+                          <Dialog open={isPhotoViewOpen} onOpenChange={setIsPhotoViewOpen}>
+                            <DialogContent className="sm:max-w-md">
+                              <DialogHeader>
+                                <DialogTitle>Profile Photo Preview</DialogTitle>
+                              </DialogHeader>
+                              <div className="flex flex-col items-center justify-center gap-4 py-2">
+                                <div className="border-border bg-muted/30 relative max-h-[70vh] w-full max-w-sm overflow-hidden rounded-lg border shadow-sm">
+                                  <img
+                                    src={photoPreview || '/passport.png'}
+                                    alt="Student profile preview"
+                                    className="h-auto w-full object-contain"
+                                  />
+                                </div>
+                                <div className="flex w-full justify-end gap-2">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setIsPhotoViewOpen(false)}
+                                  >
+                                    Close
+                                  </Button>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
                         </div>
                       </div>
                     </div>
@@ -1030,8 +1078,13 @@ function DirectAdmissionForm() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Last Name</Label>
+                      <Label>
+                        Last Name <span className="text-red-500">*</span>
+                      </Label>
                       <Input name="lastName" value={formData.lastName} onChange={handleChange} />
+                      {errors['lastName'] && (
+                        <span className="text-xs text-red-500">{errors['lastName']}</span>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label>
@@ -1214,77 +1267,6 @@ function DirectAdmissionForm() {
                 <Separator />
 
                 <section>
-                  <h2 className="mb-4 text-xl font-semibold">Accomplishments</h2>
-                  <div className="space-y-4">
-                    {formData.accomplishments.map((acc, index) => (
-                      <div key={index} className="flex items-end gap-4 rounded-md border p-4">
-                        <div className="flex-1 space-y-2">
-                          <Label>Type</Label>
-                          <select
-                            value={acc.type}
-                            onChange={(e) => {
-                              const newAcc = [...formData.accomplishments];
-                              newAcc[index].type = e.target.value;
-                              setFormData((p) => ({ ...p, accomplishments: newAcc }));
-                            }}
-                            className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                          >
-                            <option value="PROJECT">Project</option>
-                            <option value="WORKSHOP">Workshop</option>
-                            <option value="CERTIFICATE">Certificate</option>
-                            {institutionType === 'COLLEGE' && (
-                              <option value="PUBLICATION">Publication</option>
-                            )}
-                            {institutionType === 'COLLEGE' && (
-                              <option value="PATENT">Patent</option>
-                            )}
-                          </select>
-                        </div>
-                        <div className="flex-1 space-y-2">
-                          <Label>Title</Label>
-                          <Input
-                            value={acc.title}
-                            onChange={(e) => {
-                              const newAcc = [...formData.accomplishments];
-                              newAcc[index].title = e.target.value;
-                              setFormData((p) => ({ ...p, accomplishments: newAcc }));
-                            }}
-                          />
-                        </div>
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          onClick={() => {
-                            const newAcc = [...formData.accomplishments];
-                            newAcc.splice(index, 1);
-                            setFormData((p) => ({ ...p, accomplishments: newAcc }));
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() =>
-                        setFormData((p) => ({
-                          ...p,
-                          accomplishments: [
-                            ...p.accomplishments,
-                            { type: 'PROJECT', title: '', description: '' },
-                          ],
-                        }))
-                      }
-                    >
-                      <Plus className="mr-2 h-4 w-4" /> Add Accomplishment
-                    </Button>
-                  </div>
-                </section>
-
-                <Separator />
-
-                <section>
                   <h2 className="mb-4 text-xl font-semibold">Student Documents</h2>
                   <div className="space-y-4">
                     {formData.documents.map((doc, index) => (
@@ -1316,10 +1298,11 @@ function DirectAdmissionForm() {
                       </div>
                     ))}
                     <div className="flex items-center gap-4">
-                      <Input
+                      <input
+                        ref={documentInputRef}
                         type="file"
                         accept="application/pdf"
-                        className="w-auto"
+                        className="hidden"
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
                             const file = e.target.files[0];
@@ -1339,6 +1322,14 @@ function DirectAdmissionForm() {
                           }
                         }}
                       />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => documentInputRef.current?.click()}
+                        className="flex items-center gap-2"
+                      >
+                        <Plus className="h-4 w-4" /> Add Document
+                      </Button>
                     </div>
                   </div>
                 </section>

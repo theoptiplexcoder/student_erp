@@ -244,64 +244,6 @@ export function DepartmentsTab() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6 p-4">
-                {/* Programs Section */}
-                <div className="space-y-3">
-                  <h4 className="text-foreground flex items-center gap-2 text-sm font-semibold">
-                    <Layers className="text-muted-foreground h-4 w-4" /> Programs (
-                    {depPrograms.length})
-                  </h4>
-                  {depPrograms.length === 0 ? (
-                    <div className="text-muted-foreground bg-muted/20 rounded-md p-4 text-center text-sm">
-                      No programs defined for this department.
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto rounded-md border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="pl-4">Code</TableHead>
-                            <TableHead>Program Name</TableHead>
-                            <TableHead>Level</TableHead>
-                            <TableHead>Duration</TableHead>
-                            <TableHead className="pr-4 text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {depPrograms.map((prog) => (
-                            <TableRow key={prog.id}>
-                              <TableCell className="pl-4 font-medium">{prog.code}</TableCell>
-                              <TableCell>{prog.name}</TableCell>
-                              <TableCell>
-                                <Badge variant="outline">{prog.level.replace(/_/g, ' ')}</Badge>
-                              </TableCell>
-                              <TableCell>{prog.durationYears} Years</TableCell>
-                              <TableCell className="pr-4 text-right">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    setEditingProg(prog);
-                                    setProgDialogOpen(true);
-                                  }}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleDeleteProgram(prog.id)}
-                                >
-                                  <Trash2 className="text-destructive h-4 w-4" />
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                </div>
-
                 {/* Courses Section */}
                 <div className="space-y-3">
                   <h4 className="text-foreground flex items-center gap-2 text-sm font-semibold">
