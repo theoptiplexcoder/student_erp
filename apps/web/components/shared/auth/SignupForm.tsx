@@ -60,7 +60,6 @@ export function SignupForm() {
   const [institutionType, setInstitutionType] = useState<InstitutionType>('COLLEGE');
   const [legalName, setLegalName] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [institutionPhone, setInstitutionPhone] = useState<string>();
   const [address, setAddress] = useState('');
 
   // Tenant Admin User State (Step 2)
@@ -110,13 +109,12 @@ export function SignupForm() {
         institutionType,
         legalName: legalName.trim(),
         displayName: displayName.trim(),
-        phone: institutionPhone || undefined,
         address: address.trim() || undefined,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         email: email.trim().toLowerCase(),
         password,
-        adminPhone: adminPhone || institutionPhone || undefined,
+        adminPhone: adminPhone || undefined,
       };
 
       await apiClient.post('/auth/register-institution', registerPayload);
@@ -286,29 +284,15 @@ export function SignupForm() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="institutionPhone">Official Contact Phone</Label>
-              <PhoneInput
-                id="institutionPhone"
-                international={false}
-                defaultCountry="IN"
-                value={institutionPhone}
-                onChange={setInstitutionPhone}
-                className="border-input bg-background ring-offset-background focus-within:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-offset-2"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="address">Campus City / Location</Label>
-              <Input
-                id="address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="e.g. Bengaluru, Karnataka"
-                className="h-10"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="address">Campus City / Location</Label>
+            <Input
+              id="address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="e.g. Bengaluru, Karnataka"
+              className="h-10"
+            />
           </div>
 
           <Button type="submit" className="bg-primary hover:bg-primary/90 mt-6 h-11 w-full gap-2">
