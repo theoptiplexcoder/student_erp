@@ -33,6 +33,8 @@ import {
   UploadCloud,
   X,
   Upload,
+  Camera,
+  RefreshCw,
 } from 'lucide-react';
 import { useCreateDirectAdmission } from '@/hooks/api/admin/useAdmissions';
 import {
@@ -80,6 +82,83 @@ function DirectAdmissionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const photoInputRef = React.useRef<HTMLInputElement>(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  const startCamera = async () => {
+    setCameraError(null);
+    setIsCameraOpen(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 720 }, height: { ideal: 720 }, facingMode: 'user' },
+        audio: false,
+      });
+      setCameraStream(stream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err: any) {
+      console.error('Camera access error:', err);
+      setCameraError(
+        err?.message?.includes('Permission denied') || err?.name === 'NotAllowedError'
+          ? 'Camera permission was denied. Please allow camera access in your browser settings.'
+          : 'Unable to access camera. Please check your device camera.',
+      );
+    }
+  };
+
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach((track) => track.stop());
+      setCameraStream(null);
+    }
+    setIsCameraOpen(false);
+    setCameraError(null);
+  };
+
+  const capturePhoto = () => {
+    if (!videoRef.current) return;
+    const video = videoRef.current;
+    const canvas = document.createElement('canvas');
+    const width = video.videoWidth || 640;
+    const height = video.videoHeight || 480;
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0, width, height);
+
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          const file = new File([blob], `profile-capture-${Date.now()}.jpg`, {
+            type: 'image/jpeg',
+          });
+          setFormData((p) => ({ ...p, photo: file }));
+          stopCamera();
+        }
+      },
+      'image/jpeg',
+      0.92,
+    );
+  };
+
+  useEffect(() => {
+    if (isCameraOpen && cameraStream && videoRef.current) {
+      videoRef.current.srcObject = cameraStream;
+    }
+  }, [isCameraOpen, cameraStream]);
+
+  // Clean up camera stream on unmount
+  useEffect(() => {
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [cameraStream]);
 
   // Form Data State
   const [formData, setFormData] = useState({
@@ -837,6 +916,16 @@ function DirectAdmissionForm() {
                               <Upload className="h-4 w-4" />
                               {formData.photo ? 'Change Photo' : 'Upload Photo'}
                             </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={startCamera}
+                              className="flex items-center gap-2"
+                            >
+                              <Camera className="h-4 w-4" />
+                              Take Photo
+                            </Button>
                             {formData.photo && (
                               <Button
                                 type="button"
@@ -853,9 +942,73 @@ function DirectAdmissionForm() {
                             )}
                           </div>
                           <p className="text-muted-foreground text-xs">
-                            Accepts JPG, PNG, or WEBP. Defaults to standard passport photo if left
-                            blank.
+                            Accepts JPG, PNG, or WEBP, or capture directly using your camera.
+                            Defaults to standard passport photo if left blank.
                           </p>
+
+                          {/* CAMERA CAPTURE DIALOG */}
+                          <Dialog
+                            open={isCameraOpen}
+                            onOpenChange={(open) => {
+                              if (!open) stopCamera();
+                            }}
+                          >
+                            <DialogContent className="sm:max-w-md">
+                              <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
+                                  <Camera className="h-5 w-5" />
+                                  Capture Profile Photo
+                                </DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                {cameraError ? (
+                                  <div className="border-destructive/20 bg-destructive/10 text-destructive rounded-md border p-4 text-sm">
+                                    <p className="font-medium">Camera Error</p>
+                                    <p className="mt-1 text-xs">{cameraError}</p>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={startCamera}
+                                      className="mt-3 flex items-center gap-1.5"
+                                    >
+                                      <RefreshCw className="h-3.5 w-3.5" />
+                                      Retry
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border bg-black shadow-inner">
+                                    <video
+                                      ref={videoRef}
+                                      autoPlay
+                                      playsInline
+                                      muted
+                                      className="h-full w-full -scale-x-100 object-cover"
+                                    />
+                                    {/* Passport photo guideline overlay */}
+                                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                                      <div className="h-4/5 w-3/5 rounded-full border-2 border-dashed border-white/60" />
+                                    </div>
+                                  </div>
+                                )}
+                                <div className="flex justify-end gap-2">
+                                  <Button type="button" variant="outline" onClick={stopCamera}>
+                                    Cancel
+                                  </Button>
+                                  {!cameraError && (
+                                    <Button
+                                      type="button"
+                                      onClick={capturePhoto}
+                                      className="flex items-center gap-2"
+                                    >
+                                      <Camera className="h-4 w-4" />
+                                      Capture & Use
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
                         </div>
                       </div>
                     </div>
