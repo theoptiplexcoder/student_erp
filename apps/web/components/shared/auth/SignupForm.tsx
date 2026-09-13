@@ -11,6 +11,8 @@ import {
   GraduationCap,
   ShieldCheck,
   CheckCircle2,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { Button, Input, Label, Checkbox } from '@student-erp/ui';
 import PhoneInput from 'react-phone-number-input';
@@ -67,6 +69,7 @@ export function SignupForm() {
   const [email, setEmail] = useState('');
   const [adminPhone, setAdminPhone] = useState<string>();
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
   const handleNextStep = (e: React.FormEvent) => {
@@ -401,15 +404,25 @@ export function SignupForm() {
             <Label htmlFor="password">
               Account Password <span className="text-red-500">*</span>
             </Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="h-10"
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="h-10 pr-10"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-muted-foreground hover:text-foreground focus-visible:ring-ring absolute top-1/2 right-3 -translate-y-1/2 rounded p-0.5 focus:outline-none focus-visible:ring-2"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
             <PasswordStrength password={password} />
           </div>
 

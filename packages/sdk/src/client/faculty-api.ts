@@ -1,12 +1,7 @@
 import axios from 'axios';
 
-const NEXT_PUBLIC_API_URL =
-  typeof window !== 'undefined'
-    ? process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3001/api/v1'
-    : process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3001/api/v1';
-
 const getApiUrl = () => {
-  const url = NEXT_PUBLIC_API_URL;
+  const url = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:4000';
   return url.endsWith('/api/v1') ? url : `${url.replace(/\/$/, '')}/api/v1`;
 };
 
