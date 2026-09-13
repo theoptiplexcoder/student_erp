@@ -31,7 +31,7 @@ import {
   useDeleteAdminProgram,
 } from '@/hooks/api/admin/usePrograms';
 import { useAdminDepartments } from '@/hooks/api/admin/useDepartments';
-import { useAdminCourses, useCreateCourse } from '@/hooks/api/admin/useCourses';
+import { useAdminCourses, useCreateCourse, useDeleteCourse } from '@/hooks/api/admin/useCourses';
 
 export function ProgramsTab() {
   const { data: programsData, isLoading: isLoadingProgs } = useAdminPrograms(1, 200);
@@ -49,6 +49,7 @@ export function ProgramsTab() {
   const updateProg = useUpdateAdminProgram();
   const deleteProg = useDeleteAdminProgram();
   const createCourse = useCreateCourse();
+  const deleteCourse = useDeleteCourse();
 
   const isLoading = isLoadingProgs || isLoadingDeps || isLoadingCourses;
 
@@ -142,6 +143,16 @@ export function ProgramsTab() {
     }
   };
 
+  const handleDeleteCourse = async (id: string) => {
+    if (confirm('Are you sure you want to delete this course?')) {
+      try {
+        await deleteCourse.mutateAsync(id);
+      } catch (err: any) {
+        alert(err.response?.data?.message || err.message || 'Error deleting course');
+      }
+    }
+  };
+
   const openAddCourseModal = (program: any) => {
     setSelectedProgForCourse(program);
     setCourseDialogOpen(true);
@@ -225,6 +236,7 @@ export function ProgramsTab() {
                             <TableHead>Credits</TableHead>
                             <TableHead>Department</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead className="pr-4 text-right">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -236,6 +248,16 @@ export function ProgramsTab() {
                               <TableCell>{course.department?.name || '—'}</TableCell>
                               <TableCell>
                                 <Badge variant="default">Active</Badge>
+                              </TableCell>
+                              <TableCell className="pr-4 text-right">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDeleteCourse(course.id)}
+                                  title="Delete Course"
+                                >
+                                  <Trash2 className="text-destructive h-4 w-4" />
+                                </Button>
                               </TableCell>
                             </TableRow>
                           ))}

@@ -18,14 +18,20 @@ import {
   TabsList,
   TabsTrigger,
   TabsContent,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from '@student-erp/ui';
-import { Plus, Eye, Loader2 } from 'lucide-react';
+import { Plus, Eye, Loader2, Trash2, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { DepartmentsTab } from './departments-tab';
 import { ProgramsTab } from './programs-tab';
-import { useAdminAllCurriculums } from '@/hooks/api/admin/useCurriculums';
-import { useAdminCourses } from '@/hooks/api/admin/useCourses';
-import { useAdminSections } from '@/hooks/api/admin/useSections';
+import { useAdminAllCurriculums, useDeleteCurriculum } from '@/hooks/api/admin/useCurriculums';
+import { useAdminCourses, useDeleteCourse } from '@/hooks/api/admin/useCourses';
+import { useAdminSections, useDeleteSection } from '@/hooks/api/admin/useSections';
 
 function NewCurriculumButton() {
   return (
@@ -40,10 +46,48 @@ function NewCurriculumButton() {
 export default function AcademicsPage() {
   const [activeTab, setActiveTab] = useState('departments');
 
+  // Delete dialog state for Curriculum with warning
+  const [curriculumToDelete, setCurriculumToDelete] = useState<any>(null);
+
   // Queries
   const { data: curriculumsData, isLoading: isLoadingCurriculums } = useAdminAllCurriculums();
   const { data: coursesData, isLoading: isLoadingCourses } = useAdminCourses(1, 50);
   const { data: sectionsData, isLoading: isLoadingSections } = useAdminSections(1, 50);
+
+  // Mutations
+  const deleteCurriculum = useDeleteCurriculum();
+  const deleteCourse = useDeleteCourse();
+  const deleteSection = useDeleteSection();
+
+  const handleConfirmDeleteCurriculum = async () => {
+    if (!curriculumToDelete) return;
+    try {
+      await deleteCurriculum.mutateAsync(curriculumToDelete.id);
+      setCurriculumToDelete(null);
+    } catch (err: any) {
+      alert(err?.response?.data?.message || err.message || 'Failed to delete curriculum');
+    }
+  };
+
+  const handleDeleteCourse = async (id: string) => {
+    if (confirm('Are you sure you want to delete this course?')) {
+      try {
+        await deleteCourse.mutateAsync(id);
+      } catch (err: any) {
+        alert(err?.response?.data?.message || err.message || 'Failed to delete course');
+      }
+    }
+  };
+
+  const handleDeleteSection = async (id: string) => {
+    if (confirm('Are you sure you want to delete this section?')) {
+      try {
+        await deleteSection.mutateAsync(id);
+      } catch (err: any) {
+        alert(err?.response?.data?.message || err.message || 'Failed to delete section');
+      }
+    }
+  };
 
   return (
     <div className="space-y-6 p-6">
@@ -126,13 +170,23 @@ export default function AcademicsPage() {
                           </TableCell>
                           <TableCell>{curr.status}</TableCell>
                           <TableCell className="text-right">
-                            <Link
-                              href={`/admin/academics/programs/${primaryProgId}/curriculums/${curr.id}`}
-                            >
-                              <Button variant="ghost" size="icon">
-                                <Eye className="h-4 w-4" />
+                            <div className="flex items-center justify-end gap-1">
+                              <Link
+                                href={`/admin/academics/programs/${primaryProgId}/curriculums/${curr.id}`}
+                              >
+                                <Button variant="ghost" size="icon" title="View Curriculum">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </Link>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setCurriculumToDelete(curr)}
+                                title="Delete Curriculum"
+                              >
+                                <Trash2 className="text-destructive h-4 w-4" />
                               </Button>
-                            </Link>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
@@ -184,11 +238,21 @@ export default function AcademicsPage() {
                         <TableCell>{course.creditValue || '—'}</TableCell>
                         <TableCell>{course.department?.name || '—'}</TableCell>
                         <TableCell className="text-right">
-                          <Link href={`/admin/academics/courses/${course.id}`}>
-                            <Button variant="ghost" size="icon">
-                              <Eye className="h-4 w-4" />
+                          <div className="flex items-center justify-end gap-1">
+                            <Link href={`/admin/academics/courses/${course.id}`}>
+                              <Button variant="ghost" size="icon" title="View Course">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteCourse(course.id)}
+                              title="Delete Course"
+                            >
+                              <Trash2 className="text-destructive h-4 w-4" />
                             </Button>
-                          </Link>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -234,11 +298,21 @@ export default function AcademicsPage() {
                         <TableCell>{section.program?.name || '—'}</TableCell>
                         <TableCell>{section.capacity}</TableCell>
                         <TableCell className="text-right">
-                          <Link href={`/admin/academics/sections/${section.id}`}>
-                            <Button variant="ghost" size="icon">
-                              <Eye className="h-4 w-4" />
+                          <div className="flex items-center justify-end gap-1">
+                            <Link href={`/admin/academics/sections/${section.id}`}>
+                              <Button variant="ghost" size="icon" title="View Section">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteSection(section.id)}
+                              title="Delete Section"
+                            >
+                              <Trash2 className="text-destructive h-4 w-4" />
                             </Button>
-                          </Link>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -249,6 +323,59 @@ export default function AcademicsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Curriculum Deletion Warning Dialog */}
+      <Dialog
+        open={!!curriculumToDelete}
+        onOpenChange={(open) => {
+          if (!open) setCurriculumToDelete(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <div className="text-destructive flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              <DialogTitle>Warning: Delete Curriculum</DialogTitle>
+            </div>
+            <DialogDescription className="pt-2">
+              Are you sure you want to permanently delete{' '}
+              <span className="text-foreground font-semibold">{curriculumToDelete?.name}</span> (
+              {curriculumToDelete?.versionNumber})?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-destructive/10 text-destructive border-destructive/20 rounded-md border p-3 text-sm">
+            <p className="font-medium">Please note:</p>
+            <ul className="mt-1 list-inside list-disc space-y-1 text-xs opacity-90">
+              <li>This action cannot be undone.</li>
+              <li>Active curriculums or curriculums with student enrollments cannot be deleted.</li>
+              <li>All associated term configs and course sequences will be permanently removed.</li>
+            </ul>
+          </div>
+          <DialogFooter className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCurriculumToDelete(null)}
+              disabled={deleteCurriculum.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleConfirmDeleteCurriculum}
+              disabled={deleteCurriculum.isPending}
+            >
+              {deleteCurriculum.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="mr-2 h-4 w-4" />
+              )}
+              Delete Curriculum
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

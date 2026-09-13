@@ -66,6 +66,19 @@ export const useUpdateCurriculum = () => {
   });
 };
 
+export const useDeleteCurriculum = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.delete<any>(`/academic/curriculums/${id}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'curriculums'] });
+    },
+  });
+};
+
 export const useValidateCurriculum = () => {
   return useMutation({
     mutationFn: async (id: string) => {
