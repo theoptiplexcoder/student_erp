@@ -805,6 +805,60 @@ function DirectAdmissionForm() {
                 <section>
                   <h2 className="mb-4 text-xl font-semibold">Basic Student Information</h2>
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                    <div className="space-y-2 md:col-span-3">
+                      <Label>Profile Photo</Label>
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                        <div className="border-border bg-muted/30 relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-sm">
+                          <img
+                            src={photoPreview || '/passport.png'}
+                            alt="Student profile preview"
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                        <div className="flex flex-1 flex-col gap-2">
+                          <input
+                            ref={photoInputRef}
+                            type="file"
+                            accept="image/jpeg, image/png, image/webp"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] || null;
+                              setFormData((p) => ({ ...p, photo: file }));
+                            }}
+                          />
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => photoInputRef.current?.click()}
+                              className="flex items-center gap-2"
+                            >
+                              <Upload className="h-4 w-4" />
+                              {formData.photo ? 'Change Photo' : 'Upload Photo'}
+                            </Button>
+                            {formData.photo && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setFormData((p) => ({ ...p, photo: null }));
+                                  if (photoInputRef.current) photoInputRef.current.value = '';
+                                }}
+                                className="text-destructive hover:bg-destructive/10 h-8 px-2 text-xs"
+                              >
+                                <Trash2 className="mr-1 h-3.5 w-3.5" /> Remove
+                              </Button>
+                            )}
+                          </div>
+                          <p className="text-muted-foreground text-xs">
+                            Accepts JPG, PNG, or WEBP. Defaults to standard passport photo if left
+                            blank.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                     <div className="space-y-2">
                       <Label>
                         First Name <span className="text-red-500">*</span>
@@ -877,60 +931,6 @@ function DirectAdmissionForm() {
                     <div className="space-y-2 md:col-span-2">
                       <Label>Address</Label>
                       <Input name="address" value={formData.address} onChange={handleChange} />
-                    </div>
-                    <div className="space-y-2 md:col-span-3">
-                      <Label>Profile Photo</Label>
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        <div className="border-border bg-muted/30 relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-sm">
-                          <img
-                            src={photoPreview || '/passport.png'}
-                            alt="Student profile preview"
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
-                        <div className="flex flex-1 flex-col gap-2">
-                          <input
-                            ref={photoInputRef}
-                            type="file"
-                            accept="image/jpeg, image/png, image/webp"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0] || null;
-                              setFormData((p) => ({ ...p, photo: file }));
-                            }}
-                          />
-                          <div className="flex flex-wrap items-center gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => photoInputRef.current?.click()}
-                              className="flex items-center gap-2"
-                            >
-                              <Upload className="h-4 w-4" />
-                              {formData.photo ? 'Change Photo' : 'Upload Photo'}
-                            </Button>
-                            {formData.photo && (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setFormData((p) => ({ ...p, photo: null }));
-                                  if (photoInputRef.current) photoInputRef.current.value = '';
-                                }}
-                                className="text-destructive hover:bg-destructive/10 h-8 px-2 text-xs"
-                              >
-                                <Trash2 className="mr-1 h-3.5 w-3.5" /> Remove
-                              </Button>
-                            )}
-                          </div>
-                          <p className="text-muted-foreground text-xs">
-                            Accepts JPG, PNG, or WEBP. Defaults to standard passport photo if left
-                            blank.
-                          </p>
-                        </div>
-                      </div>
                     </div>
                     <div className="space-y-2 md:col-span-3">
                       <Label>About</Label>
