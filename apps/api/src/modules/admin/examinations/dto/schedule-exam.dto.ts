@@ -69,8 +69,17 @@ export class ScheduleExamDto {
   @IsOptional()
   name?: string;
 
+  @IsDateString()
+  @IsNotEmpty()
+  startDate!: string;
+
+  @IsDateString()
+  @IsOptional()
+  endDate?: string;
+
   @IsArray()
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => CourseScheduleDto)
-  courses!: CourseScheduleDto[];
+  courses?: CourseScheduleDto[];
 }

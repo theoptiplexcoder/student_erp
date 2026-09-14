@@ -71,7 +71,6 @@ export const useAdminExams = (
   programId = '',
   curriculumId = '',
   termId = '',
-  curriculumTermId = '',
   startDate = '',
   endDate = '',
 ) => {
@@ -85,7 +84,6 @@ export const useAdminExams = (
       programId,
       curriculumId,
       termId,
-      curriculumTermId,
       startDate,
       endDate,
     ],
@@ -98,7 +96,6 @@ export const useAdminExams = (
           programId: programId || undefined,
           curriculumId: curriculumId || undefined,
           termId: termId || undefined,
-          curriculumTermId: curriculumTermId || undefined,
           startDate: startDate || undefined,
           endDate: endDate || undefined,
         },

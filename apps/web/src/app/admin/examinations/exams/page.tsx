@@ -30,7 +30,7 @@ import {
 import { useAdminExams, useDeleteExam } from '@/hooks/api/admin/useExams';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
 import { useAdminCurriculumsByProgram } from '@/hooks/api/admin/useCurriculums';
-import { useCurriculumTerms } from '@/hooks/api/admin/useTerms';
+import { useAdminTerms } from '@/hooks/api/admin/useTerms';
 import { format } from 'date-fns';
 import { ScheduleExamForm } from './ScheduleExamForm';
 
@@ -41,7 +41,7 @@ export default function ExamsPage() {
 
   const [programId, setProgramId] = useState('');
   const [curriculumId, setCurriculumId] = useState('');
-  const [curriculumTermId, setCurriculumTermId] = useState('');
+  const [termId, setTermId] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
@@ -49,22 +49,12 @@ export default function ExamsPage() {
     data: examsData,
     isLoading,
     isError,
-  } = useAdminExams(
-    page,
-    50,
-    search,
-    programId,
-    curriculumId,
-    '',
-    curriculumTermId,
-    startDate,
-    endDate,
-  );
+  } = useAdminExams(page, 50, search, programId, curriculumId, termId, startDate, endDate);
   const deleteMutation = useDeleteExam();
 
   const { data: programsData } = useAdminPrograms(1, 100);
   const { data: curriculumsData } = useAdminCurriculumsByProgram(programId);
-  const { data: curriculumTermsData } = useCurriculumTerms(curriculumId || undefined);
+  const { data: academicTermsData } = useAdminTerms();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -154,7 +144,6 @@ export default function ExamsPage() {
                 onChange={(e) => {
                   setProgramId(e.target.value);
                   setCurriculumId('');
-                  setCurriculumTermId('');
                   setPage(1);
                 }}
               >
@@ -172,7 +161,6 @@ export default function ExamsPage() {
                 disabled={!programId}
                 onChange={(e) => {
                   setCurriculumId(e.target.value);
-                  setCurriculumTermId('');
                   setPage(1);
                 }}
               >
@@ -187,16 +175,15 @@ export default function ExamsPage() {
               </select>
 
               <select
-                className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full max-w-[200px] items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                value={curriculumTermId}
-                disabled={!curriculumId}
+                className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full max-w-[200px] items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
+                value={termId}
                 onChange={(e) => {
-                  setCurriculumTermId(e.target.value);
+                  setTermId(e.target.value);
                   setPage(1);
                 }}
               >
-                <option value="">All Terms</option>
-                {curriculumTermsData?.map((term: any) => (
+                <option value="">All Academic Terms</option>
+                {academicTermsData?.map((term: any) => (
                   <option key={term.id} value={term.id}>
                     {term.name}
                   </option>

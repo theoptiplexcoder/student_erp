@@ -26,7 +26,14 @@ export class ExaminationsService {
         ? (dto.examType as ExamType)
         : ExamType.INTERNAL;
 
+      // Determine initial dates from dto
+      let minDate: Date = dto.startDate ? new Date(dto.startDate) : new Date();
+      let maxDate: Date = dto.endDate ? new Date(dto.endDate) : minDate;
+
       // Find or create Exam
+      const term = await tx.academicTerm.findUnique({ where: { id: dto.termId } });
+      const examName = dto.name || `${term?.name || 'Term'} ${examTypeName} Exam`;
+
       let exam = await tx.exam.findFirst({
         where: {
           institutionId,
@@ -38,8 +45,6 @@ export class ExaminationsService {
       });
 
       if (!exam) {
-        // Fetch term name for auto-naming
-        const term = await tx.academicTerm.findUnique({ where: { id: dto.termId } });
         exam = await tx.exam.create({
           data: {
             institutionId,
@@ -47,85 +52,69 @@ export class ExaminationsService {
             termId: dto.termId,
             examinationTypeId: dto.examinationTypeId || null,
             examType: examTypeEnum,
-            name: dto.name || `${term?.name || 'Term'} ${examTypeName} Exam`,
+            name: examName,
             status: 'SCHEDULED',
+            startDate: minDate,
+            endDate: maxDate,
           },
         });
       } else {
-        await tx.exam.update({
+        exam = await tx.exam.update({
           where: { id: exam.id },
           data: {
             status: 'SCHEDULED',
             name: dto.name || exam.name,
             examinationTypeId: dto.examinationTypeId || exam.examinationTypeId,
+            startDate: minDate,
+            endDate: maxDate,
           },
         });
       }
 
-      // 2. Determine min/max dates
-      let minDate: Date | null = null;
-      let maxDate: Date | null = null;
-
-      // 3. Process courses
-      for (const courseDto of dto.courses) {
+      // 3. Process courses if provided
+      const courses = dto.courses || [];
+      for (const courseDto of courses) {
         const examDate = new Date(courseDto.examDate);
 
         // Parse time
         const [hours, minutes] = courseDto.startTime.split(':').map(Number);
         const startTime = new Date(Date.UTC(1970, 0, 1, hours, minutes, 0));
-
         const endTime = new Date(startTime.getTime() + courseDto.durationMinutes * 60000);
 
-        if (!minDate || examDate < minDate) minDate = examDate;
-        if (!maxDate || examDate > maxDate) maxDate = examDate;
+        if (examDate < minDate) minDate = examDate;
+        if (examDate > maxDate) maxDate = examDate;
 
         // Check Room Conflict
         if (courseDto.roomId) {
-          // A room is considered in conflict if another ExamCourse uses the same room on the same day
-          // and the times overlap.
-          const conflictingCourse = await tx.examCourse.findFirst({
+          const roomExams = await tx.examCourse.findMany({
             where: {
               institutionId,
               roomId: courseDto.roomId,
               examDate: examDate,
-              id: { notIn: [] }, // will exclude this one if we update
+              NOT: {
+                examId: exam.id,
+                courseId: courseDto.courseId,
+              },
             },
           });
 
-          if (conflictingCourse) {
-            // Need a more precise overlap check if needed, but for MVP, let's pull all and check manually
-            const roomExams = await tx.examCourse.findMany({
-              where: {
-                institutionId,
-                roomId: courseDto.roomId,
-                examDate: examDate,
-                NOT: {
-                  examId: exam.id,
-                  courseId: courseDto.courseId,
-                },
-              },
-            });
+          for (const re of roomExams) {
+            const startA = re.startTime.getTime() - new Date(Date.UTC(1970, 0, 1)).getTime();
+            const endA = re.endTime.getTime() - new Date(Date.UTC(1970, 0, 1)).getTime();
+            const startB = startTime.getTime() - new Date(Date.UTC(1970, 0, 1)).getTime();
+            const endB = endTime.getTime() - new Date(Date.UTC(1970, 0, 1)).getTime();
 
-            for (const re of roomExams) {
-              const startA = re.startTime.getTime() - new Date(Date.UTC(1970, 0, 1)).getTime();
-              const endA = re.endTime.getTime() - new Date(Date.UTC(1970, 0, 1)).getTime();
-              const startB = startTime.getTime() - new Date(Date.UTC(1970, 0, 1)).getTime();
-              const endB = endTime.getTime() - new Date(Date.UTC(1970, 0, 1)).getTime();
-
-              if (Math.max(startA, startB) < Math.min(endA, endB)) {
-                // overlap
-                const room = await tx.room.findUnique({ where: { id: courseDto.roomId } });
-                throw new BadRequestException(
-                  `Room conflict: ${room?.name} is already booked on ${courseDto.examDate}.`,
-                );
-              }
+            if (Math.max(startA, startB) < Math.min(endA, endB)) {
+              const room = await tx.room.findUnique({ where: { id: courseDto.roomId } });
+              throw new BadRequestException(
+                `Room conflict: ${room?.name} is already booked on ${courseDto.examDate}.`,
+              );
             }
           }
 
           // Check Capacity
           const room = await tx.room.findUnique({ where: { id: courseDto.roomId } });
           if (room && room.capacity) {
-            // Count students
             const enrollmentsCount = await tx.enrollment.count({
               where: {
                 institutionId,
@@ -171,41 +160,40 @@ export class ExaminationsService {
           },
         });
 
-        // Sync with CalendarEvent
+        // Sync with Course CalendarEvent
         const course = await tx.course.findUnique({ where: { id: courseDto.courseId } });
         const roomName = courseDto.roomId
           ? (await tx.room.findUnique({ where: { id: courseDto.roomId } }))?.name
           : '';
 
-        // Calculate absolute start/end for calendar
         const eventStart = new Date(courseDto.examDate);
         eventStart.setUTCHours(hours, minutes, 0, 0);
-
         const eventEnd = new Date(eventStart.getTime() + courseDto.durationMinutes * 60000);
 
-        const title = `${examTypeName} Exam - ${course?.code ? `[${course.code}] ` : ''}${course?.name || 'Course'}`;
-        const description = `Examination for ${course?.name} (${course?.code || ''})${
+        const courseEventTitle = `${examTypeName} Exam - ${course?.code ? `[${course.code}] ` : ''}${course?.name || 'Course'}`;
+        const courseDescription = `Examination for ${course?.name} (${course?.code || ''})${
           courseDto.maxMarks ? ` | Max Marks: ${courseDto.maxMarks}` : ''
-        }`;
+        } [Ref: EXAM-${exam.id}]`;
 
-        // Find existing calendar event by a convention, or we could add `examCourseId` to CalendarEvent.
-        // Match by title/date or description
-        const existingEvents = await tx.calendarEvent.findMany({
+        const existingCourseEvents = await tx.calendarEvent.findMany({
           where: {
             institutionId,
             eventType: 'EXAM',
-            title: title,
+            OR: [
+              { description: { contains: `[Ref: EXAM-${exam.id}]` }, title: courseEventTitle },
+              { title: courseEventTitle },
+            ],
           },
         });
 
-        if (existingEvents.length > 0) {
+        if (existingCourseEvents.length > 0) {
           await tx.calendarEvent.update({
-            where: { id: existingEvents[0].id },
+            where: { id: existingCourseEvents[0].id },
             data: {
               startAt: eventStart,
               endAt: eventEnd,
               location: roomName || null,
-              description,
+              description: courseDescription,
               programId: dto.programId || null,
             },
           });
@@ -213,8 +201,8 @@ export class ExaminationsService {
           await tx.calendarEvent.create({
             data: {
               institutionId,
-              title,
-              description,
+              title: courseEventTitle,
+              description: courseDescription,
               eventType: 'EXAM',
               startAt: eventStart,
               endAt: eventEnd,
@@ -225,10 +213,55 @@ export class ExaminationsService {
         }
       }
 
-      if (minDate && maxDate) {
-        await tx.exam.update({
-          where: { id: exam.id },
-          data: { startDate: minDate, endDate: maxDate },
+      // Update exam with final envelope dates
+      await tx.exam.update({
+        where: { id: exam.id },
+        data: { startDate: minDate, endDate: maxDate },
+      });
+
+      // Also create or update the primary Exam CalendarEvent
+      const examCalendarTitle = exam.name;
+      const examCalendarDesc = `${examTypeName} Examination - ${term?.name || ''} [Ref: EXAM-${exam.id}]`;
+      const examStart = new Date(minDate);
+      examStart.setUTCHours(0, 0, 0, 0);
+      const examEnd = new Date(maxDate);
+      examEnd.setUTCHours(23, 59, 59, 999);
+
+      const existingExamCalendarEvent = await tx.calendarEvent.findFirst({
+        where: {
+          institutionId,
+          eventType: 'EXAM',
+          OR: [
+            { description: { contains: `[Ref: EXAM-${exam.id}]` } },
+            { title: examCalendarTitle },
+          ],
+        },
+      });
+
+      if (existingExamCalendarEvent) {
+        await tx.calendarEvent.update({
+          where: { id: existingExamCalendarEvent.id },
+          data: {
+            title: examCalendarTitle,
+            startAt: examStart,
+            endAt: examEnd,
+            isAllDay: true,
+            description: examCalendarDesc,
+            programId: dto.programId || null,
+          },
+        });
+      } else {
+        await tx.calendarEvent.create({
+          data: {
+            institutionId,
+            title: examCalendarTitle,
+            description: examCalendarDesc,
+            eventType: 'EXAM',
+            startAt: examStart,
+            endAt: examEnd,
+            isAllDay: true,
+            programId: dto.programId || null,
+          },
         });
       }
 
@@ -246,14 +279,31 @@ export class ExaminationsService {
 
       if (!exam) return { success: false };
 
-      // Delete associated calendar events
+      // Delete associated calendar events by ref tag
+      await tx.calendarEvent.deleteMany({
+        where: {
+          institutionId,
+          eventType: 'EXAM',
+          description: { contains: `[Ref: EXAM-${exam.id}]` },
+        },
+      });
+
+      // Delete by title fallback
+      await tx.calendarEvent.deleteMany({
+        where: {
+          institutionId,
+          eventType: 'EXAM',
+          title: exam.name,
+        },
+      });
+
       for (const ec of exam.examCourses) {
-        const title = `${exam.examType} Exam - ${ec.course.name}`;
+        const fallbackTitle = `${exam.examType} Exam - ${ec.course.name}`;
         await tx.calendarEvent.deleteMany({
           where: {
             institutionId,
             eventType: 'EXAM',
-            title: title,
+            title: fallbackTitle,
           },
         });
       }
@@ -275,7 +325,6 @@ export class ExaminationsService {
     programId?: string,
     curriculumId?: string,
     termId?: string,
-    curriculumTermId?: string,
     startDate?: string,
     endDate?: string,
   ) {
@@ -295,20 +344,6 @@ export class ExaminationsService {
 
     if (termId) {
       where.termId = termId;
-    }
-
-    if (curriculumTermId) {
-      where.examCourses = {
-        some: {
-          course: {
-            curriculumCourses: {
-              some: {
-                curriculumTermId,
-              },
-            },
-          },
-        },
-      };
     }
 
     if (startDate) {
@@ -332,20 +367,11 @@ export class ExaminationsService {
         };
       }
 
-      // Merge with existing examCourses filter if curriculumTermId is also set
-      if (where.examCourses) {
-        where.examCourses = {
-          some: {
-            AND: [where.examCourses as any, { course: courseFilter }],
-          },
-        };
-      } else {
-        where.examCourses = {
-          some: {
-            course: courseFilter,
-          },
-        };
-      }
+      where.examCourses = {
+        some: {
+          course: courseFilter,
+        },
+      };
     }
 
     const [total, data] = await Promise.all([

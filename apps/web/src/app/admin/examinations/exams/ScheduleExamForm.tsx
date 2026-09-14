@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useCurriculumTerms, useAdminTerms } from '@/hooks/api/admin/useTerms';
+import { useAdminTerms } from '@/hooks/api/admin/useTerms';
 import { useAdminCourses } from '@/hooks/api/admin/useCourses';
 import { useAdminRooms } from '@/hooks/api/admin/useRooms';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
@@ -23,7 +23,7 @@ import {
   TableRow,
   Label,
 } from '@student-erp/ui';
-import { Loader2, Calendar as CalendarIcon, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
 
 const FALLBACK_EXAM_TYPES = [
   { value: 'INTERNAL', label: 'Internal' },
@@ -35,29 +35,28 @@ const FALLBACK_EXAM_TYPES = [
 export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
   const [programId, setProgramId] = useState<string>('');
   const [curriculumId, setCurriculumId] = useState<string>('');
-  const [selectedCurriculumTermId, setSelectedCurriculumTermId] = useState<string>('');
   const [selectedAcademicTermId, setSelectedAcademicTermId] = useState<string>('');
   const [selectedExamTypeId, setSelectedExamTypeId] = useState<string>('');
   const [examType, setExamType] = useState<string>('');
   const [examName, setExamName] = useState<string>('');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
 
   const { data: dynamicExamTypes = [], isLoading: isLoadingExamTypes } = useExaminationTypes();
   const { data: programsData, isLoading: isLoadingPrograms } = useAdminPrograms(1, 100);
   const { data: curriculumsData, isLoading: isLoadingCurriculums } =
     useAdminCurriculumsByProgram(programId);
   const { data: academicTermsData, isLoading: isLoadingAcademicTerms } = useAdminTerms();
-  const { data: curriculumTermsData, isLoading: isLoadingTerms } = useCurriculumTerms(
-    curriculumId || undefined,
-  );
   const { data: coursesData, isLoading: isLoadingCourses } = useAdminCourses(
     1,
     500,
     '',
     '',
     curriculumId,
-    selectedCurriculumTermId,
+    '',
+    { enabled: !!programId || !!curriculumId, programId: programId || undefined },
   );
-  const { data: roomsData, isLoading: isLoadingRooms } = useAdminRooms(1, 500);
+  const { data: roomsData } = useAdminRooms(1, 500);
 
   const scheduleMutation = useScheduleExam();
 
@@ -77,12 +76,10 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
 
   // When dynamic exam type changes, auto-populate default marks
   const handleExamTypeSelect = (selectedVal: string) => {
-    // Check if it matches a dynamic exam type
     const found = dynamicExamTypes.find((t) => t.id === selectedVal || t.name === selectedVal);
     if (found) {
       setSelectedExamTypeId(found.id);
       setExamType(found.name);
-      // Auto populate marks for courses
       setScheduleData((prev) => {
         const next = { ...prev };
         Object.keys(next).forEach((cId) => {
@@ -100,6 +97,26 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
     }
   };
 
+  const handleStartDateChange = (val: string) => {
+    setStartDate(val);
+    if (!endDate || endDate < val) {
+      setEndDate(val);
+    }
+    // Auto populate course dates if not yet set
+    setScheduleData((prev) => {
+      const next = { ...prev };
+      Object.keys(next).forEach((cId) => {
+        if (!next[cId].date) {
+          next[cId] = {
+            ...next[cId],
+            date: val,
+          };
+        }
+      });
+      return next;
+    });
+  };
+
   useEffect(() => {
     if (coursesData?.data) {
       const selectedType = dynamicExamTypes.find(
@@ -110,24 +127,24 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
         ? String(selectedType.passingMarks ?? Math.round(selectedType.totalMarks * 0.4))
         : '40';
 
-      const initial: any = {};
-      coursesData.data.forEach((c) => {
-        if (!scheduleData[c.id]) {
-          initial[c.id] = {
-            date: '',
-            startTime: '09:00',
-            duration: '180',
-            roomId: 'none',
-            maxMarks: defaultTotal,
-            passingMarks: defaultPass,
-          };
-        } else {
-          initial[c.id] = scheduleData[c.id];
-        }
+      setScheduleData((prev) => {
+        const next = { ...prev };
+        coursesData.data.forEach((c) => {
+          if (!next[c.id]) {
+            next[c.id] = {
+              date: startDate || '',
+              startTime: '09:00',
+              duration: '180',
+              roomId: 'none',
+              maxMarks: defaultTotal,
+              passingMarks: defaultPass,
+            };
+          }
+        });
+        return next;
       });
-      setScheduleData(initial);
     }
-  }, [coursesData, dynamicExamTypes, selectedExamTypeId, examType]);
+  }, [coursesData, dynamicExamTypes, selectedExamTypeId, examType, startDate]);
 
   const handleFieldChange = (courseId: string, field: string, value: string) => {
     setScheduleData((prev) => ({
@@ -140,8 +157,23 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
   };
 
   const handleSave = async () => {
-    if (!selectedCurriculumTermId || !selectedAcademicTermId || !examType) {
-      alert('Please select a curriculum term, academic term, and exam type.');
+    if (!programId) {
+      alert('Please select a program.');
+      return;
+    }
+
+    if (!selectedAcademicTermId) {
+      alert('Please select an academic term.');
+      return;
+    }
+
+    if (!examType) {
+      alert('Please select an exam type.');
+      return;
+    }
+
+    if (!startDate) {
+      alert('Please select an exam date.');
       return;
     }
 
@@ -167,19 +199,17 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
       }
     }
 
-    if (coursesToSchedule.length === 0) {
-      alert('Please complete the schedule details for at least one course.');
-      return;
-    }
-
     try {
       await scheduleMutation.mutateAsync({
         academicYearId,
         termId: academicTermId,
         programId: programId || undefined,
+        curriculumId: curriculumId || undefined,
         examinationTypeId: selectedExamTypeId || undefined,
         examType,
         name: examName || undefined,
+        startDate,
+        endDate: endDate || startDate,
         courses: coursesToSchedule,
       });
 
@@ -202,8 +232,7 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
               Schedule Examination
             </h1>
             <p className="text-muted-foreground mt-1">
-              Select a program, curriculum term, and configure the exam schedule and scoring for
-              courses.
+              Select a program, dates, and configure the exam schedule and scoring for courses.
             </p>
           </div>
         </div>
@@ -217,10 +246,10 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
         <CardHeader>
           <CardTitle>Examination Context</CardTitle>
           <CardDescription>
-            Define the program, term, and examination type for this schedule.
+            Define the program, term, dates, and examination type for this schedule.
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-4">
+        <CardContent className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           <div className="space-y-2">
             <Label>
               Program <span className="text-destructive">*</span>
@@ -246,7 +275,6 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
                 onChange={(e) => {
                   setProgramId(e.target.value);
                   setCurriculumId('');
-                  setSelectedCurriculumTermId('');
                 }}
               >
                 <option value="">Select a program</option>
@@ -260,72 +288,22 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
           </div>
 
           <div className="space-y-2">
-            <Label>
-              Curriculum <span className="text-destructive">*</span>
-            </Label>
+            <Label>Curriculum (Optional)</Label>
             {isLoadingCurriculums ? (
               <div className="flex h-10 items-center">
                 <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
-              </div>
-            ) : programId && curriculumsData && curriculumsData.length === 0 ? (
-              <div className="text-muted-foreground space-y-1 text-sm">
-                <p>No curriculums found for this program.</p>
-                <Link
-                  href={`/admin/academics/programs/${programId}`}
-                  className="text-primary underline-offset-4 hover:underline"
-                >
-                  Create Curriculum →
-                </Link>
               </div>
             ) : (
               <select
                 className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                 value={curriculumId}
                 disabled={!programId}
-                onChange={(e) => {
-                  setCurriculumId(e.target.value);
-                  setSelectedCurriculumTermId('');
-                }}
+                onChange={(e) => setCurriculumId(e.target.value)}
               >
-                <option value="">Select a curriculum</option>
+                <option value="">All Curriculums</option>
                 {curriculumsData?.map((c: any) => (
                   <option key={c.id} value={c.id}>
                     {c.name} (v{c.versionNumber})
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label>
-              Curriculum Term <span className="text-destructive">*</span>
-            </Label>
-            {isLoadingTerms ? (
-              <div className="flex h-10 items-center">
-                <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
-              </div>
-            ) : curriculumId && curriculumTermsData && curriculumTermsData.length === 0 ? (
-              <div className="text-muted-foreground space-y-1 text-sm">
-                <p>No curriculum terms found.</p>
-                <Link
-                  href={`/admin/academics/programs/${programId}/curriculums/${curriculumId}`}
-                  className="text-primary underline-offset-4 hover:underline"
-                >
-                  Create Curriculum Term →
-                </Link>
-              </div>
-            ) : (
-              <select
-                className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                value={selectedCurriculumTermId}
-                disabled={!curriculumId}
-                onChange={(e) => setSelectedCurriculumTermId(e.target.value)}
-              >
-                <option value="">Select a term</option>
-                {curriculumTermsData?.map((term: any) => (
-                  <option key={term.id} value={term.id}>
-                    {term.name}
                   </option>
                 ))}
               </select>
@@ -410,6 +388,28 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
           </div>
 
           <div className="space-y-2">
+            <Label>
+              Exam Date <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              type="date"
+              value={startDate}
+              onChange={(e) => handleStartDateChange(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>End Date (Optional)</Label>
+            <Input
+              type="date"
+              value={endDate}
+              min={startDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              placeholder="Defaults to exam date"
+            />
+          </div>
+
+          <div className="space-y-2 sm:col-span-2 md:col-span-1 lg:col-span-2">
             <Label>Custom Name (Optional)</Label>
             <Input
               placeholder="e.g. Midterm Exams 2026"
@@ -420,12 +420,12 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
         </CardContent>
       </Card>
 
-      {selectedCurriculumTermId && (
+      {programId && (
         <Card>
           <CardHeader>
             <CardTitle>Course Scheduling & Scoring</CardTitle>
             <CardDescription>
-              Set the date, time, duration, classroom, and total/passing marks for each course.
+              Configure the date, time, duration, classroom, and total/passing marks for courses.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -435,7 +435,7 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
               </div>
             ) : coursesData?.data?.length === 0 ? (
               <div className="text-muted-foreground py-10 text-center">
-                No courses found for this curriculum term.
+                No courses found for this program.
               </div>
             ) : (
               <div className="border-border overflow-x-auto rounded-md border">
@@ -454,7 +454,7 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
                   <TableBody>
                     {coursesData?.data.map((course) => {
                       const s = scheduleData[course.id] || {
-                        date: '',
+                        date: startDate || '',
                         startTime: '09:00',
                         duration: '180',
                         roomId: 'none',

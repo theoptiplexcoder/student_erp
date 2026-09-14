@@ -36,7 +36,6 @@ export class ExaminationsController {
     @Query('programId') programId?: string,
     @Query('curriculumId') curriculumId?: string,
     @Query('termId') termId?: string,
-    @Query('curriculumTermId') curriculumTermId?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
@@ -51,7 +50,6 @@ export class ExaminationsController {
       programId,
       curriculumId,
       termId,
-      curriculumTermId,
       startDate,
       endDate,
     );
