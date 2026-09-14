@@ -7,8 +7,9 @@ export class CreateCourseAssignmentDto {
   @IsUUID()
   sectionId!: string;
 
+  @IsOptional()
   @IsUUID()
-  termId!: string;
+  termId?: string;
 
   @IsOptional()
   @IsBoolean()

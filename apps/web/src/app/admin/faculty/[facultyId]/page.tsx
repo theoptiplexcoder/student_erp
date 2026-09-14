@@ -27,33 +27,28 @@ import Link from 'next/link';
 
 import { useAdminCourses } from '@/hooks/api/admin/useCourses';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
-import { useAdminTerms } from '@/hooks/api/admin/useTerms';
 
 function FacultyAssignments({ facultyId }: { facultyId: string }) {
   const { data: assignments, isLoading } = useFacultyAssignments(facultyId);
   const { data: coursesRes } = useAdminCourses(1, 100);
   const { data: sectionsRes } = useAdminSections(1, 100);
-  const { data: terms } = useAdminTerms();
   const deleteAssignment = useAdminDeleteCourseAssignment();
 
   const courses = coursesRes?.data || [];
   const sections = sectionsRes?.data || [];
-  const termList = terms || [];
 
   const assignClass = useAssignFacultyClass();
   const [courseId, setCourseId] = useState('');
   const [sectionId, setSectionId] = useState('');
-  const [termId, setTermId] = useState('');
 
   const handleAssign = (e: React.FormEvent) => {
     e.preventDefault();
     assignClass.mutate(
-      { id: facultyId, data: { courseId, sectionId, termId } },
+      { id: facultyId, data: { courseId, sectionId } },
       {
         onSuccess: () => {
           setCourseId('');
           setSectionId('');
-          setTermId('');
         },
       },
     );
@@ -95,22 +90,6 @@ function FacultyAssignments({ facultyId }: { facultyId: string }) {
                 {sections.map((s: any) => (
                   <option key={s.id} value={s.id}>
                     {s.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex-1 space-y-2">
-              <label className="text-sm font-medium">Term</label>
-              <select
-                required
-                value={termId}
-                onChange={(e) => setTermId(e.target.value)}
-                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="">Select Term...</option>
-                {termList.map((t: any) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
                   </option>
                 ))}
               </select>

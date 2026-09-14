@@ -194,13 +194,63 @@ export class FacultyService {
     // Verify faculty belongs to institution
     await this.getFacultyById(institutionId, facultyId);
 
+    let termId = data.termId;
+
+    if (!termId) {
+      // Look up section to get its academicYearId
+      const section = await this.prisma.section.findFirst({
+        where: { id: data.sectionId, institutionId },
+        select: { academicYearId: true },
+      });
+
+      // Try finding ACTIVE term in the section's academic year, or any active term
+      let term = null;
+      if (section?.academicYearId) {
+        term = await this.prisma.academicTerm.findFirst({
+          where: {
+            institutionId,
+            academicYearId: section.academicYearId,
+            status: 'ACTIVE',
+          },
+        });
+        if (!term) {
+          term = await this.prisma.academicTerm.findFirst({
+            where: {
+              institutionId,
+              academicYearId: section.academicYearId,
+            },
+            orderBy: { startDate: 'desc' },
+          });
+        }
+      }
+
+      if (!term) {
+        term = await this.prisma.academicTerm.findFirst({
+          where: { institutionId, status: 'ACTIVE' },
+        });
+      }
+
+      if (!term) {
+        term = await this.prisma.academicTerm.findFirst({
+          where: { institutionId },
+          orderBy: { createdAt: 'desc' },
+        });
+      }
+
+      if (!term) {
+        throw new BadRequestException('No academic term available to assign class');
+      }
+
+      termId = term.id;
+    }
+
     return this.prisma.courseAssignment.create({
       data: {
         institutionId,
         facultyId,
         courseId: data.courseId,
         sectionId: data.sectionId,
-        termId: data.termId,
+        termId,
         isPrimary: data.isPrimary ?? true,
       },
       include: {
