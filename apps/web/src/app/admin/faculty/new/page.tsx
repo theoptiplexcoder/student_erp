@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Card, CardHeader, CardTitle, CardContent, Input } from '@student-erp/ui';
 import { useCreateFaculty } from '@/hooks/api/admin/useFaculty';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useAdminDepartments } from '@/hooks/api/admin/useDepartments';
 import PhoneInput from 'react-phone-number-input';
@@ -15,6 +15,7 @@ export default function NewFacultyPage() {
   const createFaculty = useCreateFaculty();
   const { data: departmentsData } = useAdminDepartments(1, 100);
   const departments = departmentsData?.data || [];
+  const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -92,13 +93,24 @@ export default function NewFacultyPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Temporary Password</label>
-              <Input
-                required
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-              />
+              <div className="relative">
+                <Input
+                  required
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="text-muted-foreground hover:text-foreground focus-visible:ring-ring absolute top-1/2 right-3 -translate-y-1/2 rounded p-0.5 focus:outline-none focus-visible:ring-2"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

@@ -10,14 +10,17 @@ export interface Section {
   program?: {
     id: string;
     name: string;
+    code?: string;
   };
   batch?: {
     id: string;
     name: string;
+    code?: string;
   };
   classLevel?: {
     id: string;
     name: string;
+    code?: string;
   };
   academicYear?: {
     id: string;
@@ -82,13 +85,18 @@ export const useAdminSections = (
   page = 1,
   pageSize = 50,
   search = '',
-  options?: { enabled?: boolean },
+  options?: { enabled?: boolean; programId?: string },
 ) => {
   return useQuery({
-    queryKey: ['admin', 'sections', page, pageSize, search],
+    queryKey: ['admin', 'sections', page, pageSize, search, options?.programId],
     queryFn: async () => {
       const response = await apiClient.get<SectionsResponse>('/admin/sections', {
-        params: { page, pageSize, search },
+        params: {
+          page,
+          pageSize,
+          search,
+          ...(options?.programId ? { programId: options.programId } : {}),
+        },
       });
       return response.data;
     },

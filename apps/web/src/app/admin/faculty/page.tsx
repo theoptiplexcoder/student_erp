@@ -19,7 +19,7 @@ import {
   CardTitle,
   CardContent,
 } from '@student-erp/ui';
-import { Search, Plus, User, Building, Briefcase } from 'lucide-react';
+import { Search, Plus, User, Building, Briefcase, BookOpen } from 'lucide-react';
 
 export default function FacultyPage() {
   const [search, setSearch] = useState('');
@@ -121,6 +121,12 @@ export default function FacultyPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="space-x-2 text-right">
+                        <Link href={`/admin/faculty/${faculty.id}?tab=assignments`}>
+                          <Button variant="outline" size="sm" className="gap-1">
+                            <BookOpen className="h-3.5 w-3.5" />
+                            Class Assignments
+                          </Button>
+                        </Link>
                         <Button
                           variant="outline"
                           size="sm"
@@ -190,20 +196,28 @@ export default function FacultyPage() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-2 border-t pt-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-1/2"
-                      onClick={() => setSelectedFacultyForSection(faculty)}
-                    >
-                      Assign Section
-                    </Button>
-                    <Link href={`/admin/faculty/${faculty.id}`} className="w-1/2">
-                      <Button variant="outline" size="sm" className="w-full">
-                        View Details
+                  <div className="flex flex-col gap-2 border-t pt-3">
+                    <Link href={`/admin/faculty/${faculty.id}?tab=assignments`} className="w-full">
+                      <Button variant="outline" size="sm" className="w-full gap-1.5">
+                        <BookOpen className="h-3.5 w-3.5" />
+                        Class Assignments
                       </Button>
                     </Link>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-1/2"
+                        onClick={() => setSelectedFacultyForSection(faculty)}
+                      >
+                        Assign Section
+                      </Button>
+                      <Link href={`/admin/faculty/${faculty.id}`} className="w-1/2">
+                        <Button variant="ghost" size="sm" className="w-full">
+                          View Details
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
               ))

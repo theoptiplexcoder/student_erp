@@ -1,12 +1,13 @@
 'use client';
 
 import { use, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   useAdminFacultyDetails,
   useFacultyAssignments,
   useAssignFacultyClass,
 } from '@/hooks/api/admin/useFaculty';
+import { useAdminDeleteCourseAssignment } from '@/hooks/api/admin/useCourseAssignments';
 import {
   Button,
   Card,
@@ -21,7 +22,7 @@ import {
   TabsTrigger,
   TabsContent,
 } from '@student-erp/ui';
-import { ArrowLeft, User, Building, Briefcase, Mail } from 'lucide-react';
+import { ArrowLeft, User, Building, Briefcase, Mail, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
 import { useAdminCourses } from '@/hooks/api/admin/useCourses';
@@ -33,6 +34,7 @@ function FacultyAssignments({ facultyId }: { facultyId: string }) {
   const { data: coursesRes } = useAdminCourses(1, 100);
   const { data: sectionsRes } = useAdminSections(1, 100);
   const { data: terms } = useAdminTerms();
+  const deleteAssignment = useAdminDeleteCourseAssignment();
 
   const courses = coursesRes?.data || [];
   const sections = sectionsRes?.data || [];
@@ -139,13 +141,36 @@ function FacultyAssignments({ facultyId }: { facultyId: string }) {
                   <div>
                     <h4 className="font-semibold">
                       {assignment.course?.name || assignment.courseId}
+                      {assignment.course?.code && (
+                        <span className="text-muted-foreground ml-2 text-sm font-normal">
+                          ({assignment.course.code})
+                        </span>
+                      )}
                     </h4>
                     <p className="text-muted-foreground text-sm">
                       Section: {assignment.section?.name || assignment.sectionId} | Term:{' '}
-                      {assignment.academicTerm?.name || assignment.termId}
+                      {assignment.term?.name || assignment.academicTerm?.name || assignment.termId}
                     </p>
                   </div>
-                  <Badge variant="outline">Assigned</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">Assigned</Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive h-8 w-8 p-0"
+                      title="Remove Assignment"
+                      disabled={deleteAssignment.isPending}
+                      onClick={() => {
+                        const courseName = assignment.course?.name || 'this course';
+                        const sectionName = assignment.section?.name || 'section';
+                        if (confirm(`Remove assignment for ${courseName} (${sectionName})?`)) {
+                          deleteAssignment.mutate(assignment.id);
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -158,8 +183,12 @@ function FacultyAssignments({ facultyId }: { facultyId: string }) {
 
 export default function FacultyDetailsPage({ params }: { params: Promise<{ facultyId: string }> }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { facultyId } = use(params);
   const { data: faculty, isLoading, error } = useAdminFacultyDetails(facultyId);
+
+  const initialTab = searchParams.get('tab') === 'assignments' ? 'assignments' : 'overview';
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   if (isLoading) {
     return <div className="text-muted-foreground p-6 text-center">Loading faculty details...</div>;
@@ -227,7 +256,7 @@ export default function FacultyDetailsPage({ params }: { params: Promise<{ facul
         </Card>
 
         <div className="md:col-span-2">
-          <Tabs defaultValue="overview" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="mb-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="assignments">Class Assignments</TabsTrigger>

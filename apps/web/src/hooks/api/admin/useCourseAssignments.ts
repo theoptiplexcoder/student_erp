@@ -82,6 +82,7 @@ export const useAdminDeleteCourseAssignment = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'sections'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'course-assignments'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'faculty'] });
     },
   });
 };
