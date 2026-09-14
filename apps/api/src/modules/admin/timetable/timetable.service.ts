@@ -426,8 +426,21 @@ export class TimetableService {
       where: { institutionId },
     });
 
+    // Delete existing entries for the target sections in this term before generating to prevent double counting
+    await this.prisma.timetableEntry.deleteMany({
+      where: {
+        institutionId,
+        termId: dto.termId,
+        sectionId: { in: dto.sectionIds },
+      },
+    });
+
     const existingEntries = await this.prisma.timetableEntry.findMany({
-      where: { institutionId, termId: dto.termId },
+      where: {
+        institutionId,
+        termId: dto.termId,
+        sectionId: { notIn: dto.sectionIds },
+      },
     });
 
     // Fetch faculty availability for the term
@@ -457,14 +470,27 @@ export class TimetableService {
 
     const getCreditsForAssignment = (assignment: any) => {
       if (!assignment.section?.programId) return assignment.course?.creditValue ?? 3;
-      const cc = curriculumCourses.find(
-        (c) =>
-          c.courseId === assignment.courseId &&
-          c.curriculumTerm?.curriculum?.programs?.some(
-            (p) => p.id === assignment.section.programId,
-          ),
-      );
-      return cc?.creditValue ?? assignment.course?.creditValue ?? 3;
+      const targetSemester = assignment.section.semester ?? term.semester;
+      // First try to match curriculum program AND matching semester sequence
+      const matchedCC =
+        curriculumCourses.find(
+          (c) =>
+            c.courseId === assignment.courseId &&
+            c.curriculumTerm?.curriculum?.programs?.some(
+              (p) => p.id === assignment.section.programId,
+            ) &&
+            (targetSemester === undefined ||
+              targetSemester === null ||
+              c.curriculumTerm?.sequence === targetSemester),
+        ) ||
+        curriculumCourses.find(
+          (c) =>
+            c.courseId === assignment.courseId &&
+            c.curriculumTerm?.curriculum?.programs?.some(
+              (p) => p.id === assignment.section.programId,
+            ),
+        );
+      return matchedCC?.creditValue ?? assignment.course?.creditValue ?? 3;
     };
 
     const days: import('@prisma/client').TimetableDay[] = [
@@ -530,32 +556,55 @@ export class TimetableService {
       return null;
     };
 
-    // Group assignments by section for proportional distribution
-    const sectionAssignments = new Map<string, typeof assignments>();
+    // Group assignments by section and course to ensure exact credit proportionality per section
+    interface SectionCourseScheduleItem {
+      courseId: string;
+      course: any;
+      sectionId: string;
+      section: any;
+      facultyIds: string[];
+      credits: number;
+    }
+
+    const sectionCourseMap = new Map<string, Map<string, SectionCourseScheduleItem>>();
     for (const assignment of assignments) {
-      const existing = sectionAssignments.get(assignment.sectionId) || [];
-      existing.push(assignment);
-      sectionAssignments.set(assignment.sectionId, existing);
+      if (!sectionCourseMap.has(assignment.sectionId)) {
+        sectionCourseMap.set(assignment.sectionId, new Map());
+      }
+      const courseMap = sectionCourseMap.get(assignment.sectionId)!;
+      if (!courseMap.has(assignment.courseId)) {
+        courseMap.set(assignment.courseId, {
+          courseId: assignment.courseId,
+          course: assignment.course,
+          sectionId: assignment.sectionId,
+          section: assignment.section,
+          facultyIds: [assignment.facultyId],
+          credits: Math.max(1, Math.floor(getCreditsForAssignment(assignment))),
+        });
+      } else {
+        const item = courseMap.get(assignment.courseId)!;
+        if (!item.facultyIds.includes(assignment.facultyId)) {
+          // Keep primary/first faculty at the start
+          if (assignment.isPrimary) {
+            item.facultyIds.unshift(assignment.facultyId);
+          } else {
+            item.facultyIds.push(assignment.facultyId);
+          }
+        }
+      }
     }
 
     // Process each section
-    for (const [sectionId, sectionAssignmentsList] of sectionAssignments) {
-      // Calculate total credits for proportional distribution
-      const totalCredits = sectionAssignmentsList.reduce(
-        (sum, a) => sum + getCreditsForAssignment(a),
-        0,
-      );
+    for (const [sectionId, courseMap] of sectionCourseMap) {
+      const sectionCoursesList = Array.from(courseMap.values());
 
       // Sort by credits descending to place larger courses first
-      const sortedAssignments = [...sectionAssignmentsList].sort(
-        (a, b) => getCreditsForAssignment(b) - getCreditsForAssignment(a),
-      );
+      const sortedCourses = [...sectionCoursesList].sort((a, b) => b.credits - a.credits);
 
-      for (const assignment of sortedAssignments) {
-        const credits = Math.max(1, Math.floor(getCreditsForAssignment(assignment)));
+      for (const courseItem of sortedCourses) {
         const durationMinutes =
-          dto.sessionDurations?.[assignment.courseId] || dto.defaultSessionDuration || 50;
-        const sessionsNeeded = credits; // Each credit = one session of configured duration
+          dto.sessionDurations?.[courseItem.courseId] || dto.defaultSessionDuration || 50;
+        const sessionsNeeded = courseItem.credits; // Exactly 1 session per credit in this section
 
         let assigned = 0;
 
@@ -567,7 +616,7 @@ export class TimetableService {
           const whEnd = dto.workingHours ? parseInt(dto.workingHours.end.split(':')[0], 10) : 17;
           const half = Math.floor((whStart + whEnd) / 2);
 
-          const startHour = assignment.course.isPractical ? Math.max(whStart, half) : whStart;
+          const startHour = courseItem.course.isPractical ? Math.max(whStart, half) : whStart;
           const endHour = whEnd;
 
           for (let hour = startHour; hour < endHour; hour++) {
@@ -582,28 +631,40 @@ export class TimetableService {
             const start = this.parseTime(startTimeStr);
             const end = this.parseTime(endTimeStr);
 
-            // Check faculty availability
-            if (!isFacultyAvailable(assignment.facultyId, day, start, end)) {
+            // Cycle through assigned faculty or pick first available
+            let availableFacultyId: string | null = null;
+            for (const fId of courseItem.facultyIds) {
+              if (isFacultyAvailable(fId, day, start, end)) {
+                // Check if faculty has conflict
+                const fConflict = checkConflict(day, start, end, fId, courseItem.sectionId, null);
+                if (!fConflict) {
+                  availableFacultyId = fId;
+                  break;
+                }
+              }
+            }
+
+            if (!availableFacultyId) {
               continue;
             }
 
-            // Check for conflicts
-            const conflict = checkConflict(
+            // Check for section conflict
+            const sectionConflict = checkConflict(
               day,
               start,
               end,
-              assignment.facultyId,
-              assignment.sectionId,
+              availableFacultyId,
+              courseItem.sectionId,
               null,
             );
-            if (conflict) {
+            if (sectionConflict) {
               conflicts.push({
-                ...conflict,
-                courseId: assignment.courseId,
-                sectionId: assignment.sectionId,
-                facultyId: assignment.facultyId,
+                ...sectionConflict,
+                courseId: courseItem.courseId,
+                sectionId: courseItem.sectionId,
+                facultyId: availableFacultyId,
               });
-              continue; // Skip this slot but continue trying others
+              continue;
             }
 
             // Find a suitable room
@@ -611,14 +672,14 @@ export class TimetableService {
             for (const room of rooms) {
               if (
                 room.capacity &&
-                assignment.section.capacity &&
-                room.capacity < assignment.section.capacity
+                courseItem.section.capacity &&
+                room.capacity < courseItem.section.capacity
               )
                 continue;
-              if (room.roomType === RoomType.LAB && !assignment.course.isPractical) continue;
+              if (room.roomType === RoomType.LAB && !courseItem.course.isPractical) continue;
               if (
                 (room.roomType === RoomType.CLASSROOM || room.roomType === RoomType.LECTURE_HALL) &&
-                assignment.course.isPractical
+                courseItem.course.isPractical
               )
                 continue;
 
@@ -626,8 +687,8 @@ export class TimetableService {
                 day,
                 start,
                 end,
-                assignment.facultyId,
-                assignment.sectionId,
+                availableFacultyId,
+                courseItem.sectionId,
                 room.id,
               );
               if (!roomConflict) {
@@ -641,9 +702,9 @@ export class TimetableService {
                 institutionId,
                 academicYearId: term.academicYearId,
                 termId: dto.termId,
-                courseId: assignment.courseId,
-                facultyId: assignment.facultyId,
-                sectionId: assignment.sectionId,
+                courseId: courseItem.courseId,
+                facultyId: availableFacultyId,
+                sectionId: courseItem.sectionId,
                 dayOfWeek: day,
                 startTime: start,
                 endTime: end,
@@ -660,10 +721,10 @@ export class TimetableService {
         if (assigned < sessionsNeeded) {
           conflicts.push({
             type: 'UNSCHEDULED',
-            message: `Could not schedule all ${sessionsNeeded} sessions for ${assignment.course.name} (only ${assigned} placed)`,
-            courseId: assignment.courseId,
-            sectionId: assignment.sectionId,
-            facultyId: assignment.facultyId,
+            message: `Could not schedule all ${sessionsNeeded} sessions for ${courseItem.course.name} (only ${assigned} placed)`,
+            courseId: courseItem.courseId,
+            sectionId: courseItem.sectionId,
+            facultyId: courseItem.facultyIds[0],
           });
         }
       }
@@ -686,7 +747,7 @@ export class TimetableService {
       summary: {
         totalSessions: generatedEntries.length,
         totalConflicts: conflicts.length,
-        sectionsProcessed: sectionAssignments.size,
+        sectionsProcessed: sectionCourseMap.size,
       },
     };
   }
