@@ -32,16 +32,16 @@ import {
   AlertCircle,
   AlertTriangle,
   Eye,
+  History,
+  Clock,
+  Sparkles,
+  ChevronRight,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAdminSection, CourseAssignment } from '@/hooks/api/admin/useSections';
 import type { Course } from '@/hooks/api/admin/useCourses';
 import { useAcademicTerms } from '@/hooks/api/admin/useAcademicTerms';
-import {
-  useAdminCurriculumsByProgram,
-  useAdminAllCurriculums,
-} from '@/hooks/api/admin/useCurriculums';
-import { useAdminPrograms, Program } from '@/hooks/api/admin/usePrograms';
+import { useAdminCurriculumsByProgram } from '@/hooks/api/admin/useCurriculums';
 import { useAdminDeleteCourseAssignment } from '@/hooks/api/admin/useCourseAssignments';
 import { AssignCourseFacultyModal } from '@/components/admin/sections/AssignCourseFacultyModal';
 import {
@@ -53,39 +53,24 @@ import {
 import { useAdminRoles } from '@/hooks/api/admin/useRoles';
 import { Trash2, ShieldCheck, UserCheck } from 'lucide-react';
 
-// Aggregate faculty from course assignments into a unique map keyed by faculty ID
-function aggregateFaculty(assignments: CourseAssignment[] | undefined) {
-  const facultyMap = new Map<
-    string,
-    { faculty: CourseAssignment['faculty']; courses: CourseAssignment['course'][] }
-  >();
-
-  if (!assignments)
-    return { list: [], departmentSet: new Set<string>(), courseCount: new Set<string>() };
-
-  const departmentSet = new Set<string>();
-  const courseCount = new Set<string>();
-
-  for (const assignment of assignments) {
-    if (!assignment.faculty) continue;
-    const fid = assignment.faculty.id;
-    const deptName = assignment.faculty.department?.name;
-    if (deptName) departmentSet.add(deptName);
-    if (assignment.course) courseCount.add(assignment.course.id);
-
-    const existing = facultyMap.get(fid);
-    if (existing) {
-      existing.courses.push(assignment.course);
-    } else {
-      facultyMap.set(fid, { faculty: assignment.faculty, courses: [assignment.course] });
-    }
-  }
-
-  return {
-    list: Array.from(facultyMap.values()),
-    departmentSet,
-    courseCount,
-  };
+// Unified Faculty & Role interface for section-level display
+interface UnifiedFacultyRole {
+  facultyId: string;
+  name: string;
+  teacherCode: string;
+  email: string;
+  departmentName?: string | null;
+  roleType: 'SECTION_ROLE' | 'COURSE_FACULTY' | 'BOTH';
+  sectionRole?: string;
+  isPrimaryClassTeacher?: boolean;
+  coursesTeaching: Array<{
+    id: string;
+    code: string;
+    name: string;
+    creditValue?: number | null;
+  }>;
+  facultySectionId?: string;
+  courseAssignmentIds: string[];
 }
 
 export default function SectionDetailPage({ params }: { params: Promise<{ sectionId: string }> }) {
@@ -123,18 +108,40 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
     isPrimary: false,
   });
 
-  // Program selection for course offerings view navigation
-  const [selectedProgramId, setSelectedProgramId] = useState<string>('');
-
-  // Fetch all programs for program-wise navigation tabs
-  const { data: programsData, isLoading: isLoadingPrograms } = useAdminPrograms(1, 100);
-  const allPrograms: Program[] = programsData?.data || [];
-
-  // Fetch all curriculums (for other programs view) and program-specific curriculums
   const { data: programCurriculums = [], isLoading: isLoadingProgramCurriculums } =
     useAdminCurriculumsByProgram(section?.program?.id || '');
-  const { data: allCurriculums = [], isLoading: isLoadingAllCurriculums } =
-    useAdminAllCurriculums();
+
+  // Separate curriculum terms into previous, current, and upcoming relative to this section's semester
+  const sectionSemester = section?.semester ?? null;
+
+  // Flatten all curriculums for the program
+  const activeCurriculum =
+    programCurriculums.find((c: any) => c.status === 'ACTIVE') || programCurriculums[0];
+  const allCurriculumTerms: any[] = activeCurriculum?.curriculumTerms || [];
+
+  // Categorize terms based on sequence vs section semester
+  const previousTerms =
+    sectionSemester != null
+      ? allCurriculumTerms.filter((t: any) => t.sequence < sectionSemester)
+      : [];
+
+  const currentTerms =
+    sectionSemester != null
+      ? allCurriculumTerms.filter((t: any) => t.sequence === sectionSemester)
+      : allCurriculumTerms;
+
+  const upcomingTerms =
+    sectionSemester != null
+      ? allCurriculumTerms.filter((t: any) => t.sequence > sectionSemester)
+      : [];
+
+  // Count total courses in each category
+  const countTermCourses = (terms: any[]) =>
+    terms.reduce((acc, t) => acc + (t.curriculumCourses?.length || 0), 0);
+
+  const previousCoursesCount = countTermCourses(previousTerms);
+  const currentCoursesCount = countTermCourses(currentTerms);
+  const upcomingCoursesCount = countTermCourses(upcomingTerms);
 
   const handleAssignRole = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -211,13 +218,100 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
     );
   }
 
-  const {
-    list: facultyList,
-    departmentSet,
-    courseCount,
-  } = aggregateFaculty(section.courseAssignments);
+  // Unified faculty map across both section-level roles and course assignments
+  const unifiedFacultyMap = new Map<string, UnifiedFacultyRole>();
+  const departmentSet = new Set<string>();
+  const assignedCoursesSet = new Set<string>();
+
+  // 1. Process course assignments (subject teachers)
+  if (section.courseAssignments) {
+    for (const ca of section.courseAssignments) {
+      if (!ca.faculty) continue;
+      const fid = ca.faculty.id;
+      const dept = ca.faculty.department?.name;
+      if (dept) departmentSet.add(dept);
+      if (ca.course) assignedCoursesSet.add(ca.course.id);
+
+      const existing = unifiedFacultyMap.get(fid);
+      if (existing) {
+        if (ca.course && !existing.coursesTeaching.some((c) => c.id === ca.course.id)) {
+          existing.coursesTeaching.push({
+            id: ca.course.id,
+            code: ca.course.code,
+            name: ca.course.name,
+            creditValue: ca.course.creditValue,
+          });
+        }
+        if (!existing.courseAssignmentIds.includes(ca.id)) {
+          existing.courseAssignmentIds.push(ca.id);
+        }
+      } else {
+        unifiedFacultyMap.set(fid, {
+          facultyId: fid,
+          name: `${ca.faculty.user?.firstName || ''} ${ca.faculty.user?.lastName || ''}`.trim(),
+          teacherCode: ca.faculty.teacherCode,
+          email: ca.faculty.user?.email || '',
+          departmentName: ca.faculty.department?.name,
+          roleType: 'COURSE_FACULTY',
+          coursesTeaching: ca.course
+            ? [
+                {
+                  id: ca.course.id,
+                  code: ca.course.code,
+                  name: ca.course.name,
+                  creditValue: ca.course.creditValue,
+                },
+              ]
+            : [],
+          courseAssignmentIds: [ca.id],
+        });
+      }
+    }
+  }
+
+  // 2. Process section-level roles (class teachers, teachers, mentors)
+  if (sectionFacultyList) {
+    for (const sf of sectionFacultyList) {
+      if (!sf.faculty) continue;
+      const fid = sf.faculty.id;
+      const dept = sf.faculty.department?.name;
+      if (dept) departmentSet.add(dept);
+
+      const existing = unifiedFacultyMap.get(fid);
+      if (existing) {
+        existing.roleType = 'BOTH';
+        existing.sectionRole = sf.role;
+        existing.isPrimaryClassTeacher = sf.isPrimary;
+        existing.facultySectionId = sf.id;
+      } else {
+        unifiedFacultyMap.set(fid, {
+          facultyId: fid,
+          name: `${sf.faculty.user?.firstName || ''} ${sf.faculty.user?.lastName || ''}`.trim(),
+          teacherCode: sf.faculty.teacherCode,
+          email: sf.faculty.user?.email || '',
+          departmentName: sf.faculty.department?.name,
+          roleType: 'SECTION_ROLE',
+          sectionRole: sf.role,
+          isPrimaryClassTeacher: sf.isPrimary,
+          coursesTeaching: [],
+          facultySectionId: sf.id,
+          courseAssignmentIds: [],
+        });
+      }
+    }
+  }
+
+  const unifiedFacultyList = Array.from(unifiedFacultyMap.values()).sort((a, b) => {
+    // Primary class teachers first, then section roles, then course faculties
+    if (a.isPrimaryClassTeacher && !b.isPrimaryClassTeacher) return -1;
+    if (!a.isPrimaryClassTeacher && b.isPrimaryClassTeacher) return 1;
+    if (a.sectionRole === 'CLASS_TEACHER' && b.sectionRole !== 'CLASS_TEACHER') return -1;
+    if (a.sectionRole !== 'CLASS_TEACHER' && b.sectionRole === 'CLASS_TEACHER') return 1;
+    return a.name.localeCompare(b.name);
+  });
+
   const studentCount = section._count?.students ?? 0;
-  const facultyCount = facultyList.length;
+  const facultyCount = unifiedFacultyList.length;
 
   // Map existing course assignments by course ID for fast lookup
   const assignmentByCourseId = new Map<string, CourseAssignment>();
@@ -326,9 +420,9 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
             <BookOpen className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{courseCount.size}</div>
+            <div className="text-2xl font-bold">{sectionCourses.length}</div>
             <p className="text-muted-foreground text-xs">
-              {courseCount.size === 1 ? 'course' : 'courses'} offered
+              {sectionCourses.length === 1 ? 'course' : 'courses'} offered
             </p>
           </CardContent>
         </Card>
@@ -416,7 +510,7 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
         </CardContent>
       </Card>
 
-      {/* Course Offerings, Enrolled Curriculum & Program Exploration */}
+      {/* Course Offerings & Curriculum Progression */}
       <Card>
         <CardHeader className="flex flex-col gap-2">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -431,47 +525,56 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
                 )}
               </div>
               <CardDescription>
-                Explore enrolled curriculum courses, current program offerings, and other program
-                curricula.
+                Courses offered in the current program, past terms, and upcoming curriculum courses.
               </CardDescription>
             </div>
+            {section.program?.id && activeCurriculum?.id && (
+              <Button asChild variant="outline" size="sm">
+                <Link
+                  href={`/admin/academics/programs/${section.program.id}/curriculums/${activeCurriculum.id}`}
+                  className="flex items-center gap-1.5 text-xs"
+                >
+                  <Eye className="h-3.5 w-3.5" /> Full Curriculum View
+                </Link>
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <Tabs defaultValue="section-offerings" className="w-full">
+          <Tabs defaultValue="current-program" className="w-full">
             <TabsList className="mb-4 flex h-auto w-full flex-wrap justify-start gap-1 p-1">
-              <TabsTrigger value="section-offerings" className="text-xs sm:text-sm">
-                Section Offerings ({sectionCourses.length})
+              <TabsTrigger value="current-program" className="text-xs sm:text-sm">
+                Current Program Courses (
+                {currentCoursesCount > 0 ? currentCoursesCount : sectionCourses.length})
               </TabsTrigger>
-              <TabsTrigger value="enrolled-curriculum" className="text-xs sm:text-sm">
-                Enrolled Curriculum
+              <TabsTrigger value="upcoming-program" className="text-xs sm:text-sm">
+                Upcoming Courses ({upcomingCoursesCount})
               </TabsTrigger>
-              <TabsTrigger value="program-curricula" className="text-xs sm:text-sm">
-                {section.program?.code
-                  ? `${section.program.code} Program Courses`
-                  : 'Program Courses'}
-              </TabsTrigger>
-              <TabsTrigger value="other-programs" className="text-xs sm:text-sm">
-                Other Programs (View Only)
+              <TabsTrigger value="previous-program" className="text-xs sm:text-sm">
+                Previous Courses ({previousCoursesCount})
               </TabsTrigger>
             </TabsList>
 
-            {/* TAB 1: Current Section Course Offerings with Faculty Assignment */}
-            <TabsContent value="section-offerings" className="space-y-4">
+            {/* TAB 1: Current Program Courses */}
+            <TabsContent value="current-program" className="space-y-4">
               <div className="flex flex-col gap-1 border-b pb-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h4 className="text-sm font-semibold">Active Section Offerings</h4>
+                  <h4 className="text-sm font-semibold">
+                    Current Program Course Offerings{' '}
+                    {section.semester != null ? `(Semester ${section.semester})` : ''}
+                  </h4>
                   <p className="text-muted-foreground text-xs">
-                    Courses offered specifically for this section with faculty assignment
-                    management.
+                    Courses offered for this section and current program semester with faculty
+                    assignments.
                   </p>
                 </div>
                 <div className="text-muted-foreground text-xs">
-                  {sectionCourses.length} course{sectionCourses.length === 1 ? '' : 's'} •{' '}
-                  {sectionCourses.length - unassignedCount} assigned
+                  {sectionCourses.length} active offering{sectionCourses.length === 1 ? '' : 's'} •{' '}
+                  {sectionCourses.length - unassignedCount} faculty assigned
                 </div>
               </div>
 
+              {/* Active Section Course Offerings (with Faculty Assign / Change) */}
               {sectionCourses.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10">
                   <BookOpen className="text-muted-foreground mb-2 h-8 w-8" />
@@ -590,170 +693,193 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
                   })}
                 </div>
               )}
+
+              {/* Current Curriculum Structure if available */}
+              {currentTerms.length > 0 && (
+                <div className="mt-6 space-y-3 border-t pt-4">
+                  <h5 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                    Curriculum Course Breakdown for Current Term
+                  </h5>
+                  {currentTerms.map((term: any) => (
+                    <div key={term.id} className="bg-muted/10 space-y-2 rounded-md border p-3">
+                      <div className="flex items-center justify-between text-xs font-medium">
+                        <span>
+                          {term.name} (Sequence {term.sequence})
+                        </span>
+                        {term.creditRequirement != null && (
+                          <span className="text-muted-foreground">
+                            Required: {term.creditRequirement} credits
+                          </span>
+                        )}
+                      </div>
+                      {term.curriculumCourses && term.curriculumCourses.length > 0 ? (
+                        <div className="overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="w-24 text-xs">Code</TableHead>
+                                <TableHead className="text-xs">Course Name</TableHead>
+                                <TableHead className="w-20 text-xs">Credits</TableHead>
+                                <TableHead className="w-24 text-xs">Type</TableHead>
+                                <TableHead className="text-xs">Department</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {term.curriculumCourses.map((cc: any) => {
+                                const cObj = cc.course || cc;
+                                return (
+                                  <TableRow key={cc.id || cObj.id}>
+                                    <TableCell className="font-mono text-xs font-medium">
+                                      {cObj.code}
+                                    </TableCell>
+                                    <TableCell className="text-xs font-medium">
+                                      {cObj.name}
+                                    </TableCell>
+                                    <TableCell className="text-xs">
+                                      {cc.creditValue ?? cObj.creditValue ?? '-'}
+                                    </TableCell>
+                                    <TableCell className="text-xs">
+                                      <Badge
+                                        variant={cc.isMandatory ? 'default' : 'outline'}
+                                        className="px-1.5 py-0 text-[10px]"
+                                      >
+                                        {cc.isMandatory ? 'Mandatory' : 'Elective'}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground text-xs">
+                                      {cObj.department?.name || '-'}
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground text-xs italic">
+                          No courses in this term.
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
-            {/* TAB 2: Enrolled Curriculum */}
-            <TabsContent value="enrolled-curriculum" className="space-y-4">
+            {/* TAB 2: Upcoming Programs & Courses */}
+            <TabsContent value="upcoming-program" className="space-y-4">
               <div className="flex flex-col gap-1 border-b pb-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h4 className="text-sm font-semibold">Enrolled Curriculum Structure</h4>
+                  <h4 className="flex items-center gap-1.5 text-sm font-semibold">
+                    <Sparkles className="text-primary h-4 w-4" />
+                    Upcoming Terms & Courses
+                  </h4>
                   <p className="text-muted-foreground text-xs">
-                    Curriculum active for {section.program?.name || 'this program'}{' '}
-                    {section.semester != null ? `• Filtered by Semester ${section.semester}` : ''}
+                    Future curriculum terms and scheduled courses following the program curriculum
+                    structure.
                   </p>
                 </div>
-                {section.program?.id && (
-                  <Button asChild variant="outline" size="sm">
-                    <Link
-                      href={`/admin/academics/programs/${section.program.id}`}
-                      className="flex items-center gap-1 text-xs"
-                    >
-                      <Eye className="h-3.5 w-3.5" /> View Program
-                    </Link>
-                  </Button>
-                )}
+                <Badge variant="outline" className="w-fit text-xs">
+                  {upcomingTerms.length} Upcoming Term{upcomingTerms.length === 1 ? '' : 's'}
+                </Badge>
               </div>
 
               {isLoadingProgramCurriculums ? (
                 <div className="text-muted-foreground flex items-center justify-center gap-2 py-8 text-center text-sm">
-                  <Loader2 className="h-4 w-4 animate-spin" /> Loading enrolled curriculum...
+                  <Loader2 className="h-4 w-4 animate-spin" /> Loading upcoming curriculum...
                 </div>
-              ) : programCurriculums.length === 0 ? (
+              ) : upcomingTerms.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10">
                   <BookOpen className="text-muted-foreground mb-2 h-8 w-8" />
-                  <p className="text-lg font-medium">No active curriculum found</p>
+                  <p className="text-lg font-medium">No upcoming courses</p>
                   <p className="text-muted-foreground text-sm">
-                    There are no curriculums registered under{' '}
-                    {section.program?.name || 'this program'}.
+                    {section.semester != null
+                      ? `This section is at Semester ${section.semester}, which is the final term configured in the curriculum.`
+                      : 'No future curriculum terms configured for this program.'}
                   </p>
                 </div>
               ) : (
-                <div className="space-y-6">
-                  {programCurriculums.map((curr: any) => {
-                    // Match current section semester if available, else show all terms
-                    const relevantTerms =
-                      section.semester != null && curr.curriculumTerms?.length
-                        ? curr.curriculumTerms.filter(
-                            (t: any) =>
-                              t.sequence === section.semester ||
-                              t.name?.toLowerCase().includes(`semester ${section.semester}`) ||
-                              t.name?.toLowerCase().includes(`term ${section.semester}`),
-                          )
-                        : curr.curriculumTerms || [];
-
-                    const displayTerms =
-                      relevantTerms.length > 0 ? relevantTerms : curr.curriculumTerms || [];
+                <div className="space-y-4">
+                  {upcomingTerms.map((term: any) => {
+                    const coursesList = term.curriculumCourses || [];
+                    const termCredits = coursesList.reduce(
+                      (sum: number, cc: any) =>
+                        sum + (cc.creditValue || cc.course?.creditValue || 0),
+                      0,
+                    );
 
                     return (
-                      <div key={curr.id} className="space-y-4 rounded-lg border p-4">
-                        <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h5 className="text-foreground font-semibold">{curr.name}</h5>
-                              <Badge variant="secondary" className="text-xs">
-                                {curr.versionNumber}
-                              </Badge>
-                              <Badge
-                                variant={curr.status === 'ACTIVE' ? 'default' : 'outline'}
-                                className="text-xs"
-                              >
-                                {curr.status}
-                              </Badge>
-                            </div>
-                            <p className="text-muted-foreground mt-0.5 text-xs">
-                              Effective from:{' '}
-                              {curr.effectiveFrom
-                                ? new Date(curr.effectiveFrom).toLocaleDateString()
-                                : 'N/A'}
-                            </p>
+                      <div key={term.id} className="bg-card space-y-3 rounded-lg border p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold">{term.name}</span>
+                            <Badge variant="secondary" className="text-xs">
+                              Term Sequence {term.sequence}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              Upcoming
+                            </Badge>
                           </div>
-                          {section.program?.id && (
-                            <Button asChild variant="ghost" size="sm">
-                              <Link
-                                href={`/admin/academics/programs/${section.program.id}/curriculums/${curr.id}`}
-                                className="flex items-center gap-1 text-xs"
-                              >
-                                <Eye className="h-3.5 w-3.5" /> Full Curriculum View
-                              </Link>
-                            </Button>
-                          )}
+                          <div className="text-muted-foreground flex items-center gap-3 text-xs">
+                            <span>
+                              Credits: {termCredits}
+                              {term.creditRequirement
+                                ? ` / ${term.creditRequirement} required`
+                                : ''}
+                            </span>
+                            <span>•</span>
+                            <span>
+                              {coursesList.length} course{coursesList.length === 1 ? '' : 's'}
+                            </span>
+                          </div>
                         </div>
 
-                        {displayTerms.length === 0 ? (
-                          <div className="text-muted-foreground py-2 text-xs">
-                            No terms configured in this curriculum.
-                          </div>
+                        {coursesList.length === 0 ? (
+                          <p className="text-muted-foreground py-2 text-xs italic">
+                            No courses listed under this term yet.
+                          </p>
                         ) : (
-                          <div className="space-y-4">
-                            {displayTerms.map((term: any) => {
-                              const coursesList = term.curriculumCourses || [];
-                              return (
-                                <div
-                                  key={term.id}
-                                  className="bg-muted/20 space-y-2 rounded-md border p-3"
-                                >
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">
-                                      {term.name} (Sequence: {term.sequence})
-                                    </span>
-                                    {term.creditRequirement != null && (
-                                      <span className="text-muted-foreground text-xs">
-                                        Required Credits: {term.creditRequirement}
-                                      </span>
-                                    )}
-                                  </div>
-
-                                  {coursesList.length === 0 ? (
-                                    <p className="text-muted-foreground text-xs italic">
-                                      No courses listed under this term.
-                                    </p>
-                                  ) : (
-                                    <div className="overflow-x-auto">
-                                      <Table>
-                                        <TableHeader>
-                                          <TableRow>
-                                            <TableHead className="w-28 text-xs">Code</TableHead>
-                                            <TableHead className="text-xs">Course Name</TableHead>
-                                            <TableHead className="w-20 text-xs">Credits</TableHead>
-                                            <TableHead className="w-24 text-xs">Type</TableHead>
-                                            <TableHead className="text-xs">Department</TableHead>
-                                          </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                          {coursesList.map((cc: any) => {
-                                            const courseObj = cc.course || cc;
-                                            return (
-                                              <TableRow key={cc.id || courseObj.id}>
-                                                <TableCell className="font-mono text-xs font-medium">
-                                                  {courseObj.code}
-                                                </TableCell>
-                                                <TableCell className="text-xs font-medium">
-                                                  {courseObj.name}
-                                                </TableCell>
-                                                <TableCell className="text-xs">
-                                                  {cc.creditValue ?? courseObj.creditValue ?? '-'}
-                                                </TableCell>
-                                                <TableCell className="text-xs">
-                                                  <Badge
-                                                    variant={cc.isMandatory ? 'default' : 'outline'}
-                                                    className="px-1.5 py-0 text-[10px]"
-                                                  >
-                                                    {cc.isMandatory ? 'Mandatory' : 'Elective'}
-                                                  </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-muted-foreground text-xs">
-                                                  {courseObj.department?.name || '-'}
-                                                </TableCell>
-                                              </TableRow>
-                                            );
-                                          })}
-                                        </TableBody>
-                                      </Table>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
+                          <div className="overflow-x-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead className="w-24 text-xs">Code</TableHead>
+                                  <TableHead className="text-xs">Course Name</TableHead>
+                                  <TableHead className="w-20 text-xs">Credits</TableHead>
+                                  <TableHead className="w-24 text-xs">Type</TableHead>
+                                  <TableHead className="text-xs">Department</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {coursesList.map((cc: any) => {
+                                  const cObj = cc.course || cc;
+                                  return (
+                                    <TableRow key={cc.id || cObj.id}>
+                                      <TableCell className="font-mono text-xs font-medium">
+                                        {cObj.code}
+                                      </TableCell>
+                                      <TableCell className="text-xs font-medium">
+                                        {cObj.name}
+                                      </TableCell>
+                                      <TableCell className="text-xs">
+                                        {cc.creditValue ?? cObj.creditValue ?? '-'}
+                                      </TableCell>
+                                      <TableCell className="text-xs">
+                                        <Badge
+                                          variant={cc.isMandatory ? 'default' : 'outline'}
+                                          className="px-1.5 py-0 text-[10px]"
+                                        >
+                                          {cc.isMandatory ? 'Mandatory' : 'Elective'}
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell className="text-muted-foreground text-xs">
+                                        {cObj.department?.name || '-'}
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
                           </div>
                         )}
                       </div>
@@ -763,317 +889,120 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
               )}
             </TabsContent>
 
-            {/* TAB 3: Courses According to Current Program */}
-            <TabsContent value="program-curricula" className="space-y-4">
+            {/* TAB 3: Previous Programs & Courses */}
+            <TabsContent value="previous-program" className="space-y-4">
               <div className="flex flex-col gap-1 border-b pb-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h4 className="text-sm font-semibold">
-                    Current Program Course Offerings ({section.program?.name || 'Assigned Program'})
+                  <h4 className="flex items-center gap-1.5 text-sm font-semibold">
+                    <History className="text-muted-foreground h-4 w-4" />
+                    Previous Terms & Courses
                   </h4>
                   <p className="text-muted-foreground text-xs">
-                    All courses configured across the curriculum and terms for{' '}
-                    {section.program?.code || 'this program'}.
+                    Courses offered in earlier semesters of this curriculum prior to current
+                    semester.
                   </p>
                 </div>
                 <Badge variant="outline" className="w-fit text-xs">
-                  {section.program?.code || 'PROGRAM'}
+                  {previousTerms.length} Previous Term{previousTerms.length === 1 ? '' : 's'}
                 </Badge>
               </div>
 
               {isLoadingProgramCurriculums ? (
                 <div className="text-muted-foreground flex items-center justify-center gap-2 py-8 text-center text-sm">
-                  <Loader2 className="h-4 w-4 animate-spin" /> Loading program courses...
+                  <Loader2 className="h-4 w-4 animate-spin" /> Loading previous curriculum...
                 </div>
-              ) : programCurriculums.length === 0 ? (
+              ) : previousTerms.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10">
-                  <BookOpen className="text-muted-foreground mb-2 h-8 w-8" />
-                  <p className="text-lg font-medium">No program curriculums found</p>
+                  <Clock className="text-muted-foreground mb-2 h-8 w-8" />
+                  <p className="text-lg font-medium">No previous terms</p>
                   <p className="text-muted-foreground text-sm">
-                    No curriculum data has been created for{' '}
-                    {section.program?.name || 'this program'} yet.
+                    {section.semester === 1
+                      ? 'This section is at Semester 1 (initial entry term). There are no previous curriculum terms.'
+                      : 'No earlier terms found for this program.'}
                   </p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {programCurriculums.map((curr: any) => (
-                    <div key={curr.id} className="space-y-4 rounded-lg border p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
-                        <div className="flex items-center gap-2">
-                          <h5 className="text-sm font-semibold">{curr.name}</h5>
-                          <Badge variant="secondary" className="text-xs">
-                            {curr.versionNumber}
-                          </Badge>
-                        </div>
-                        <span className="text-muted-foreground text-xs">
-                          {curr.curriculumTerms?.length || 0} Terms
-                        </span>
-                      </div>
-
-                      <div className="space-y-3">
-                        {curr.curriculumTerms?.map((term: any) => {
-                          const coursesList = term.curriculumCourses || [];
-                          return (
-                            <div key={term.id} className="bg-muted/10 space-y-2 rounded border p-3">
-                              <div className="flex items-center justify-between text-xs font-semibold">
-                                <span>{term.name}</span>
-                                <span className="text-muted-foreground font-normal">
-                                  {coursesList.length} course{coursesList.length === 1 ? '' : 's'}
-                                </span>
-                              </div>
-                              {coursesList.length > 0 ? (
-                                <div className="overflow-x-auto">
-                                  <Table>
-                                    <TableHeader>
-                                      <TableRow>
-                                        <TableHead className="w-24 text-xs">Code</TableHead>
-                                        <TableHead className="text-xs">Course Name</TableHead>
-                                        <TableHead className="w-20 text-xs">Credits</TableHead>
-                                        <TableHead className="w-24 text-xs">Type</TableHead>
-                                        <TableHead className="text-xs">Department</TableHead>
-                                      </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                      {coursesList.map((cc: any) => {
-                                        const cObj = cc.course || cc;
-                                        return (
-                                          <TableRow key={cc.id || cObj.id}>
-                                            <TableCell className="font-mono text-xs font-medium">
-                                              {cObj.code}
-                                            </TableCell>
-                                            <TableCell className="text-xs font-medium">
-                                              {cObj.name}
-                                            </TableCell>
-                                            <TableCell className="text-xs">
-                                              {cc.creditValue ?? cObj.creditValue ?? '-'}
-                                            </TableCell>
-                                            <TableCell className="text-xs">
-                                              <Badge
-                                                variant={cc.isMandatory ? 'default' : 'outline'}
-                                                className="px-1.5 py-0 text-[10px]"
-                                              >
-                                                {cc.isMandatory ? 'Mandatory' : 'Elective'}
-                                              </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-muted-foreground text-xs">
-                                              {cObj.department?.name || '-'}
-                                            </TableCell>
-                                          </TableRow>
-                                        );
-                                      })}
-                                    </TableBody>
-                                  </Table>
-                                </div>
-                              ) : (
-                                <p className="text-muted-foreground text-xs italic">
-                                  No courses in this term.
-                                </p>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-
-            {/* TAB 4: Other Programs in Curriculum (View Only) */}
-            <TabsContent value="other-programs" className="space-y-4">
-              <div className="flex flex-col gap-1 border-b pb-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-semibold">Other Program Curricula</h4>
-                    <Badge variant="outline" className="text-muted-foreground text-xs">
-                      View Only
-                    </Badge>
-                  </div>
-                  <p className="text-muted-foreground text-xs">
-                    Browse courses and curriculum structures offered across other degree programs.
-                  </p>
-                </div>
-              </div>
-
-              {/* Program Navigation Bar / Tabs */}
-              {isLoadingPrograms ? (
-                <div className="text-muted-foreground flex items-center justify-center gap-2 py-4 text-center text-xs">
-                  <Loader2 className="h-3 w-3 animate-spin" /> Loading programs...
-                </div>
-              ) : allPrograms.length <= 1 ? (
-                <div className="text-muted-foreground py-6 text-center text-sm">
-                  No other programs available to display.
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {/* Horizontal program selector navigation */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-muted-foreground text-xs font-medium">
-                      Select Program:
-                    </span>
-                    {allPrograms
-                      .filter((p) => p.id !== section.program?.id)
-                      .map((prog) => {
-                        const isSelected =
-                          (selectedProgramId ||
-                            allPrograms.filter((p) => p.id !== section.program?.id)[0]?.id) ===
-                          prog.id;
-                        return (
-                          <Button
-                            key={prog.id}
-                            variant={isSelected ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => setSelectedProgramId(prog.id)}
-                            className="h-7 px-2.5 text-xs"
-                          >
-                            {prog.name} ({prog.code})
-                          </Button>
-                        );
-                      })}
-                  </div>
-
-                  {/* Curriculums for the selected other program */}
-                  {(() => {
-                    const activeOtherProgId =
-                      selectedProgramId ||
-                      allPrograms.filter((p) => p.id !== section.program?.id)[0]?.id;
-                    const activeProgObj = allPrograms.find((p) => p.id === activeOtherProgId);
-
-                    // Filter allCurriculums that connect with this program
-                    const currsForOtherProg = allCurriculums.filter(
-                      (c: any) =>
-                        c.programs?.some((p: any) => p.id === activeOtherProgId) ||
-                        c.programId === activeOtherProgId,
+                  {previousTerms.map((term: any) => {
+                    const coursesList = term.curriculumCourses || [];
+                    const termCredits = coursesList.reduce(
+                      (sum: number, cc: any) =>
+                        sum + (cc.creditValue || cc.course?.creditValue || 0),
+                      0,
                     );
-
-                    if (isLoadingAllCurriculums) {
-                      return (
-                        <div className="text-muted-foreground flex items-center justify-center gap-2 py-8 text-center text-sm">
-                          <Loader2 className="h-4 w-4 animate-spin" /> Loading curriculum details...
-                        </div>
-                      );
-                    }
-
-                    if (currsForOtherProg.length === 0) {
-                      return (
-                        <div className="rounded-md border border-dashed p-8 text-center">
-                          <p className="text-sm font-medium">No curriculum on record</p>
-                          <p className="text-muted-foreground mt-1 text-xs">
-                            {activeProgObj?.name || 'Selected program'} does not have any published
-                            curriculums.
-                          </p>
-                        </div>
-                      );
-                    }
 
                     return (
-                      <div className="space-y-4">
-                        {currsForOtherProg.map((curr: any) => (
-                          <div key={curr.id} className="bg-muted/5 space-y-4 rounded-lg border p-4">
-                            <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <h5 className="text-sm font-semibold">{curr.name}</h5>
-                                  <Badge variant="secondary" className="text-xs">
-                                    {curr.versionNumber}
-                                  </Badge>
-                                  <Badge variant="outline" className="text-xs">
-                                    {curr.status}
-                                  </Badge>
-                                </div>
-                                <p className="text-muted-foreground mt-0.5 text-xs">
-                                  Program: {activeProgObj?.name} ({activeProgObj?.code})
-                                </p>
-                              </div>
-                              <Badge variant="outline" className="bg-background text-xs">
-                                Read Only
-                              </Badge>
-                            </div>
+                      <div key={term.id} className="bg-card space-y-3 rounded-lg border p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold">{term.name}</span>
+                            <Badge variant="secondary" className="text-xs">
+                              Term Sequence {term.sequence}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              Completed / Previous
+                            </Badge>
+                          </div>
+                          <div className="text-muted-foreground flex items-center gap-3 text-xs">
+                            <span>Credits: {termCredits}</span>
+                            <span>•</span>
+                            <span>
+                              {coursesList.length} course{coursesList.length === 1 ? '' : 's'}
+                            </span>
+                          </div>
+                        </div>
 
-                            {curr.curriculumTerms && curr.curriculumTerms.length > 0 ? (
-                              <div className="space-y-3">
-                                {curr.curriculumTerms.map((term: any) => {
-                                  const cList = term.curriculumCourses || [];
+                        {coursesList.length === 0 ? (
+                          <p className="text-muted-foreground py-2 text-xs italic">
+                            No courses recorded for this term.
+                          </p>
+                        ) : (
+                          <div className="overflow-x-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead className="w-24 text-xs">Code</TableHead>
+                                  <TableHead className="text-xs">Course Name</TableHead>
+                                  <TableHead className="w-20 text-xs">Credits</TableHead>
+                                  <TableHead className="w-24 text-xs">Type</TableHead>
+                                  <TableHead className="text-xs">Department</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {coursesList.map((cc: any) => {
+                                  const cObj = cc.course || cc;
                                   return (
-                                    <div
-                                      key={term.id}
-                                      className="bg-card space-y-2 rounded border p-3"
-                                    >
-                                      <div className="flex items-center justify-between text-xs font-semibold">
-                                        <span>{term.name}</span>
-                                        <span className="text-muted-foreground font-normal">
-                                          {cList.length} course{cList.length === 1 ? '' : 's'}
-                                        </span>
-                                      </div>
-                                      {cList.length > 0 ? (
-                                        <div className="overflow-x-auto">
-                                          <Table>
-                                            <TableHeader>
-                                              <TableRow>
-                                                <TableHead className="w-24 text-xs">Code</TableHead>
-                                                <TableHead className="text-xs">
-                                                  Course Name
-                                                </TableHead>
-                                                <TableHead className="w-20 text-xs">
-                                                  Credits
-                                                </TableHead>
-                                                <TableHead className="w-24 text-xs">Type</TableHead>
-                                                <TableHead className="text-xs">
-                                                  Department
-                                                </TableHead>
-                                              </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                              {cList.map((cc: any) => {
-                                                const cObj = cc.course || cc;
-                                                return (
-                                                  <TableRow key={cc.id || cObj.id}>
-                                                    <TableCell className="font-mono text-xs font-medium">
-                                                      {cObj.code}
-                                                    </TableCell>
-                                                    <TableCell className="text-xs font-medium">
-                                                      {cObj.name}
-                                                    </TableCell>
-                                                    <TableCell className="text-xs">
-                                                      {cc.creditValue ?? cObj.creditValue ?? '-'}
-                                                    </TableCell>
-                                                    <TableCell className="text-xs">
-                                                      <Badge
-                                                        variant={
-                                                          cc.isMandatory ? 'default' : 'outline'
-                                                        }
-                                                        className="px-1.5 py-0 text-[10px]"
-                                                      >
-                                                        {cc.isMandatory ? 'Mandatory' : 'Elective'}
-                                                      </Badge>
-                                                    </TableCell>
-                                                    <TableCell className="text-muted-foreground text-xs">
-                                                      {cObj.department?.name || '-'}
-                                                    </TableCell>
-                                                  </TableRow>
-                                                );
-                                              })}
-                                            </TableBody>
-                                          </Table>
-                                        </div>
-                                      ) : (
-                                        <p className="text-muted-foreground text-xs italic">
-                                          No courses assigned to this term.
-                                        </p>
-                                      )}
-                                    </div>
+                                    <TableRow key={cc.id || cObj.id}>
+                                      <TableCell className="font-mono text-xs font-medium">
+                                        {cObj.code}
+                                      </TableCell>
+                                      <TableCell className="text-xs font-medium">
+                                        {cObj.name}
+                                      </TableCell>
+                                      <TableCell className="text-xs">
+                                        {cc.creditValue ?? cObj.creditValue ?? '-'}
+                                      </TableCell>
+                                      <TableCell className="text-xs">
+                                        <Badge
+                                          variant={cc.isMandatory ? 'default' : 'outline'}
+                                          className="px-1.5 py-0 text-[10px]"
+                                        >
+                                          {cc.isMandatory ? 'Mandatory' : 'Elective'}
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell className="text-muted-foreground text-xs">
+                                        {cObj.department?.name || '-'}
+                                      </TableCell>
+                                    </TableRow>
                                   );
                                 })}
-                              </div>
-                            ) : (
-                              <p className="text-muted-foreground py-2 text-xs italic">
-                                No terms available in this curriculum.
-                              </p>
-                            )}
+                              </TableBody>
+                            </Table>
                           </div>
-                        ))}
+                        )}
                       </div>
                     );
-                  })()}
+                  })}
                 </div>
               )}
             </TabsContent>
@@ -1083,22 +1012,27 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
 
       {/* Faculty & Roles Card */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle>Faculty & Roles</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle>Faculty & Roles</CardTitle>
+              <Badge variant="outline" className="text-xs">
+                {unifiedFacultyList.length} Total
+              </Badge>
+            </div>
             <CardDescription>
-              Faculty members assigned directly to this section (Class Teachers, Teachers, and
-              Custom Roles)
+              All faculty members and roles responsible for this section — including Class Teachers,
+              Section In-charges, and Course/Subject Teachers.
             </CardDescription>
           </div>
           <Button onClick={() => setIsAssigningRole(!isAssigningRole)} variant="outline" size="sm">
-            <Plus className="mr-2 h-4 w-4" /> Assign Role
+            <Plus className="mr-2 h-4 w-4" /> Assign Section Role
           </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           {isAssigningRole && (
             <div className="bg-muted/50 mb-6 rounded-md border p-4">
-              <h3 className="mb-3 font-semibold">Assign Faculty to Section Role</h3>
+              <h3 className="mb-3 text-sm font-semibold">Assign Faculty to Section Role</h3>
               <form onSubmit={handleAssignRole} className="flex flex-wrap items-end gap-4">
                 <div className="min-w-[200px] flex-1 space-y-2">
                   <label className="text-sm font-medium">Faculty Member</label>
@@ -1129,8 +1063,8 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
                     disabled={createSectionFaculty.isPending}
                   >
                     <optgroup label="Built-in Roles">
-                      <option value="TEACHER">Teacher</option>
                       <option value="CLASS_TEACHER">Class Teacher</option>
+                      <option value="TEACHER">Teacher</option>
                     </optgroup>
                     {customRoles && customRoles.length > 0 && (
                       <optgroup label="Custom Roles">
@@ -1178,45 +1112,50 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
 
           {isLoadingSectionFaculty ? (
             <div className="text-muted-foreground py-6 text-center text-sm">
+              <Loader2 className="mx-auto mb-2 h-4 w-4 animate-spin" />
               Loading faculty roles...
             </div>
-          ) : sectionFacultyList.length === 0 ? (
+          ) : unifiedFacultyList.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10">
               <UserCheck className="text-muted-foreground mb-2 h-8 w-8" />
               <p className="text-lg font-medium">No faculty roles assigned</p>
               <p className="text-muted-foreground text-sm">
-                No class teacher or section roles assigned yet.
+                No class teachers or course faculties are currently assigned to this section.
               </p>
             </div>
           ) : (
             <div className="divide-y rounded-md border">
-              {sectionFacultyList.map((assignment) => (
+              {unifiedFacultyList.map((fMember) => (
                 <div
-                  key={assignment.id}
+                  key={fMember.facultyId}
                   className="flex flex-col justify-between gap-4 p-4 sm:flex-row sm:items-center"
                 >
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-primary/10 flex h-9 w-9 items-center justify-center rounded-full">
+                  <div className="flex items-start space-x-3">
+                    <div className="bg-primary/10 mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
                       <GraduationCap className="text-primary h-5 w-5" />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold">
-                          {assignment.faculty.user.firstName} {assignment.faculty.user.lastName}
-                        </span>
-                        <Badge
-                          variant={
-                            assignment.role === 'CLASS_TEACHER'
-                              ? 'default'
-                              : assignment.role === 'TEACHER'
-                                ? 'outline'
-                                : 'secondary'
-                          }
-                          className="text-xs capitalize"
-                        >
-                          {assignment.role.replace('_', ' ').toLowerCase()}
-                        </Badge>
-                        {assignment.isPrimary && (
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-foreground font-semibold">{fMember.name}</span>
+
+                        {/* Section-level role badge */}
+                        {fMember.sectionRole && (
+                          <Badge
+                            variant={
+                              fMember.sectionRole === 'CLASS_TEACHER'
+                                ? 'default'
+                                : fMember.sectionRole === 'TEACHER'
+                                  ? 'outline'
+                                  : 'secondary'
+                            }
+                            className="text-xs capitalize"
+                          >
+                            {fMember.sectionRole.replace('_', ' ').toLowerCase()}
+                          </Badge>
+                        )}
+
+                        {/* Primary Class Teacher badge */}
+                        {fMember.isPrimaryClassTeacher && (
                           <Badge
                             variant="default"
                             className="bg-emerald-600 text-xs hover:bg-emerald-700"
@@ -1224,39 +1163,76 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
                             <ShieldCheck className="mr-1 h-3 w-3" /> Primary
                           </Badge>
                         )}
+
+                        {/* Subject / Course Teacher badge */}
+                        {fMember.coursesTeaching.length > 0 && (
+                          <Badge
+                            variant="outline"
+                            className="border-blue-500/40 bg-blue-500/10 text-xs text-blue-700 dark:text-blue-400"
+                          >
+                            Subject Teacher
+                          </Badge>
+                        )}
                       </div>
-                      <p className="text-muted-foreground flex items-center gap-2 text-xs">
-                        <span>Code: {assignment.faculty.teacherCode}</span>
+
+                      <p className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                        <span>Code: {fMember.teacherCode}</span>
                         <span>•</span>
-                        <span>{assignment.faculty.user.email}</span>
-                        {assignment.faculty.department?.name && (
+                        <span>{fMember.email}</span>
+                        {fMember.departmentName && (
                           <>
                             <span>•</span>
-                            <span>{assignment.faculty.department.name}</span>
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {fMember.departmentName}
+                            </span>
                           </>
                         )}
                       </p>
+
+                      {/* Taught courses tags */}
+                      {fMember.coursesTeaching.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                          <span className="text-muted-foreground text-xs font-medium">
+                            Courses:
+                          </span>
+                          {fMember.coursesTeaching.map((crs) => (
+                            <Badge
+                              key={crs.id}
+                              variant="secondary"
+                              className="text-[11px] font-normal"
+                            >
+                              {crs.code} — {crs.name}
+                              {crs.creditValue != null ? ` (${crs.creditValue} cr)` : ''}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:bg-destructive/10 h-8 px-2"
-                      disabled={deleteSectionFaculty.isPending}
-                      onClick={() => {
-                        if (
-                          confirm(
-                            `Remove role ${assignment.role} for ${assignment.faculty.user.firstName} ${assignment.faculty.user.lastName}?`,
-                          )
-                        ) {
-                          deleteSectionFaculty.mutate(assignment.id);
-                        }
-                      }}
-                    >
-                      <Trash2 className="mr-1 h-4 w-4" /> Remove
-                    </Button>
+                  {/* Actions */}
+                  <div className="flex items-center justify-end gap-2">
+                    {/* If this faculty has a section role, allow removing the section role */}
+                    {fMember.facultySectionId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:bg-destructive/10 h-8 px-2 text-xs"
+                        disabled={deleteSectionFaculty.isPending}
+                        onClick={() => {
+                          if (
+                            confirm(
+                              `Remove section role "${fMember.sectionRole}" for ${fMember.name}?`,
+                            )
+                          ) {
+                            deleteSectionFaculty.mutate(fMember.facultySectionId!);
+                          }
+                        }}
+                      >
+                        <Trash2 className="mr-1 h-3.5 w-3.5" /> Remove Role
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
