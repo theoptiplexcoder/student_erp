@@ -7,6 +7,7 @@ import { TimetableBulkActions } from '@/components/admin/timetable/timetable-bul
 import { TimetableEntryForm } from '@/components/admin/timetable/timetable-entry-form';
 import { TimetableSessionSettings } from '@/components/admin/timetable/timetable-session-settings';
 import { TimetableProgramSectionsSummary } from '@/components/admin/timetable/timetable-program-sections-summary';
+import { TimetableOverviewHeatmap } from '@/components/admin/timetable/timetable-overview-heatmap';
 import {
   findTimetableConflicts,
   TimetableConflict,
@@ -117,13 +118,26 @@ export default function AdminTimetablePage() {
   // Metadata queries
   const { data: programsResponse } = useAdminPrograms(1, 100);
   const { data: terms } = useAdminTerms();
-  const { data: sectionsResponse, isLoading: isSectionsLoading } = useAdminSections(1, 100, '', {
-    programId: programId || undefined,
-  });
+  // Fetch all sections across programs so all-programs heatmap has the full cross-program view
+  const { data: allSectionsResponse, isLoading: isAllSectionsLoading } = useAdminSections(
+    1,
+    200,
+    '',
+  );
+  const { data: programSectionsResponse, isLoading: isProgramSectionsLoading } = useAdminSections(
+    1,
+    100,
+    '',
+    {
+      programId: programId || undefined,
+    },
+  );
 
   const programs = programsResponse?.data || [];
   const selectedProgram = programs.find((p: any) => p.id === programId);
-  const sections = sectionsResponse?.data || [];
+  const allSections = allSectionsResponse?.data || [];
+  const sections = programId ? programSectionsResponse?.data || [] : allSections;
+  const isSectionsLoading = programId ? isProgramSectionsLoading : isAllSectionsLoading;
 
   // Auto-select active/first term when terms load if none selected
   useEffect(() => {
@@ -449,7 +463,22 @@ export default function AdminTimetablePage() {
         status={timetableStatus}
       />
 
-      {/* Program Sections, Courses & Faculty Overview Card */}
+      {/* Heatmap Overview when "All Programs" is selected (programId === '') */}
+      {!programId && (
+        <TimetableOverviewHeatmap
+          programs={programs}
+          sections={allSections}
+          entries={rawEntries}
+          hasTermSelected={!!termId}
+          onGenerateClick={() => setSessionSettingsOpen(true)}
+          onSelectSectionAndProgram={(selectedProgId, selectedSecId) => {
+            if (selectedProgId) setProgramId(selectedProgId);
+            if (selectedSecId) setSectionId(selectedSecId);
+          }}
+        />
+      )}
+
+      {/* Program Sections, Courses & Faculty Overview Card (when specific program is chosen) */}
       {programId && (
         <TimetableProgramSectionsSummary
           programName={selectedProgram?.name}
