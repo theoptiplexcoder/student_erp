@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
-import { Prisma, ExamType, CalendarEventType } from '@prisma/client';
+import { Prisma, ExamType } from '@prisma/client';
 import { ScheduleExamDto } from './dto/schedule-exam.dto';
 
 @Injectable()
@@ -9,12 +9,31 @@ export class ExaminationsService {
 
   async schedule(institutionId: string, dto: ScheduleExamDto) {
     return this.prisma.$transaction(async (tx) => {
-      // 1. Find or create Exam
+      // 1. Fetch custom ExaminationType if provided
+      let examTypeName = dto.examType;
+      if (dto.examinationTypeId) {
+        const customType = await tx.examinationType.findFirst({
+          where: { id: dto.examinationTypeId, institutionId },
+        });
+        if (customType) {
+          examTypeName = customType.name;
+        }
+      }
+
+      // Valid enum values for ExamType fallback
+      const validExamTypes = ['INTERNAL', 'MIDTERM', 'FINAL', 'MAKEUP'];
+      const examTypeEnum = validExamTypes.includes(dto.examType)
+        ? (dto.examType as ExamType)
+        : ExamType.INTERNAL;
+
+      // Find or create Exam
       let exam = await tx.exam.findFirst({
         where: {
           institutionId,
           termId: dto.termId,
-          examType: dto.examType as ExamType,
+          ...(dto.examinationTypeId
+            ? { examinationTypeId: dto.examinationTypeId }
+            : { examType: examTypeEnum }),
         },
       });
 
@@ -26,15 +45,20 @@ export class ExaminationsService {
             institutionId,
             academicYearId: dto.academicYearId,
             termId: dto.termId,
-            examType: dto.examType as ExamType,
-            name: dto.name || `${term?.name || 'Term'} ${dto.examType} Exam`,
+            examinationTypeId: dto.examinationTypeId || null,
+            examType: examTypeEnum,
+            name: dto.name || `${term?.name || 'Term'} ${examTypeName} Exam`,
             status: 'SCHEDULED',
           },
         });
       } else {
         await tx.exam.update({
           where: { id: exam.id },
-          data: { status: 'SCHEDULED', name: dto.name || exam.name },
+          data: {
+            status: 'SCHEDULED',
+            name: dto.name || exam.name,
+            examinationTypeId: dto.examinationTypeId || exam.examinationTypeId,
+          },
         });
       }
 
@@ -119,7 +143,7 @@ export class ExaminationsService {
         }
 
         // Upsert ExamCourse
-        const examCourse = await tx.examCourse.upsert({
+        await tx.examCourse.upsert({
           where: {
             examId_courseId: {
               examId: exam.id,
@@ -134,12 +158,16 @@ export class ExaminationsService {
             startTime,
             endTime,
             roomId: courseDto.roomId,
+            maxMarks: courseDto.maxMarks ?? null,
+            passingMarks: courseDto.passingMarks ?? null,
           },
           update: {
             examDate,
             startTime,
             endTime,
             roomId: courseDto.roomId,
+            ...(courseDto.maxMarks !== undefined && { maxMarks: courseDto.maxMarks }),
+            ...(courseDto.passingMarks !== undefined && { passingMarks: courseDto.passingMarks }),
           },
         });
 
@@ -155,12 +183,13 @@ export class ExaminationsService {
 
         const eventEnd = new Date(eventStart.getTime() + courseDto.durationMinutes * 60000);
 
-        const title = `${dto.examType} Exam - ${course?.name}`;
+        const title = `${examTypeName} Exam - ${course?.code ? `[${course.code}] ` : ''}${course?.name || 'Course'}`;
+        const description = `Examination for ${course?.name} (${course?.code || ''})${
+          courseDto.maxMarks ? ` | Max Marks: ${courseDto.maxMarks}` : ''
+        }`;
 
         // Find existing calendar event by a convention, or we could add `examCourseId` to CalendarEvent.
-        // Since we didn't add the relation, we can use `description` to store the reference or query by title/date.
-        // Actually, let's just delete the old one if we can identify it, or keep it simple.
-        // Let's find event starting at same time and same title
+        // Match by title/date or description
         const existingEvents = await tx.calendarEvent.findMany({
           where: {
             institutionId,
@@ -176,6 +205,8 @@ export class ExaminationsService {
               startAt: eventStart,
               endAt: eventEnd,
               location: roomName || null,
+              description,
+              programId: dto.programId || null,
             },
           });
         } else {
@@ -183,11 +214,12 @@ export class ExaminationsService {
             data: {
               institutionId,
               title,
-              description: `Examination for ${course?.name} (${course?.code})`,
+              description,
               eventType: 'EXAM',
               startAt: eventStart,
               endAt: eventEnd,
               location: roomName || null,
+              programId: dto.programId || null,
             },
           });
         }
@@ -325,6 +357,13 @@ export class ExaminationsService {
         include: {
           academicYear: true,
           term: true,
+          examinationType: true,
+          examCourses: {
+            include: {
+              course: true,
+              room: true,
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
       }),

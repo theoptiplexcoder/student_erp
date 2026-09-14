@@ -203,18 +203,54 @@ export class StudentService {
         studentId: student.id,
         status: 'ACTIVE',
       },
+      select: {
+        id: true,
+        courseId: true,
+        sectionId: true,
+        section: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
 
     const courseIds = enrollments.map((e) => e.courseId).filter(Boolean) as string[];
 
-    return this.prisma.examCourse.findMany({
+    const examCourses = await this.prisma.examCourse.findMany({
       where: {
+        institutionId,
         courseId: { in: courseIds },
       },
       include: {
-        exam: true,
+        exam: {
+          include: {
+            academicYear: true,
+            term: true,
+            examinationType: true,
+          },
+        },
         course: true,
+        room: true,
+        marks: {
+          where: {
+            studentId: student.id,
+          },
+        },
       },
+      orderBy: { examDate: 'asc' },
+    });
+
+    // Attach student enrollment info and student mark
+    return examCourses.map((ec) => {
+      const enrollment = enrollments.find((e) => e.courseId === ec.courseId);
+      const studentMark = ec.marks?.[0] || null;
+      return {
+        ...ec,
+        section: enrollment?.section || null,
+        myMark: studentMark,
+      };
     });
   }
 

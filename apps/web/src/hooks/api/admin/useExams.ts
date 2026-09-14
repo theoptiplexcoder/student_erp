@@ -130,6 +130,7 @@ export const useScheduleExam = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'exams'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'calendar'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'calendarEvents'] });
     },
   });
 };
@@ -144,6 +145,7 @@ export const useDeleteExam = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'exams'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'calendar'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'calendarEvents'] });
     },
   });
 };

@@ -6,6 +6,7 @@ import { useAdminRooms } from '@/hooks/api/admin/useRooms';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
 import { useAdminCurriculumsByProgram } from '@/hooks/api/admin/useCurriculums';
 import { useScheduleExam } from '@/hooks/api/admin/useExams';
+import { useExaminationTypes } from '@/hooks/api/admin/useExamTypes';
 import {
   Card,
   CardContent,
@@ -22,9 +23,9 @@ import {
   TableRow,
   Label,
 } from '@student-erp/ui';
-import { Loader2, Plus, Calendar as CalendarIcon, ArrowLeft } from 'lucide-react';
+import { Loader2, Calendar as CalendarIcon, ArrowLeft } from 'lucide-react';
 
-const EXAM_TYPES = [
+const FALLBACK_EXAM_TYPES = [
   { value: 'INTERNAL', label: 'Internal' },
   { value: 'MIDTERM', label: 'Midterm' },
   { value: 'FINAL', label: 'Final' },
@@ -36,9 +37,11 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
   const [curriculumId, setCurriculumId] = useState<string>('');
   const [selectedCurriculumTermId, setSelectedCurriculumTermId] = useState<string>('');
   const [selectedAcademicTermId, setSelectedAcademicTermId] = useState<string>('');
+  const [selectedExamTypeId, setSelectedExamTypeId] = useState<string>('');
   const [examType, setExamType] = useState<string>('');
   const [examName, setExamName] = useState<string>('');
 
+  const { data: dynamicExamTypes = [], isLoading: isLoadingExamTypes } = useExaminationTypes();
   const { data: programsData, isLoading: isLoadingPrograms } = useAdminPrograms(1, 100);
   const { data: curriculumsData, isLoading: isLoadingCurriculums } =
     useAdminCurriculumsByProgram(programId);
@@ -66,12 +69,47 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
         startTime: string;
         duration: string;
         roomId: string;
+        maxMarks: string;
+        passingMarks: string;
       }
     >
   >({});
 
+  // When dynamic exam type changes, auto-populate default marks
+  const handleExamTypeSelect = (selectedVal: string) => {
+    // Check if it matches a dynamic exam type
+    const found = dynamicExamTypes.find((t) => t.id === selectedVal || t.name === selectedVal);
+    if (found) {
+      setSelectedExamTypeId(found.id);
+      setExamType(found.name);
+      // Auto populate marks for courses
+      setScheduleData((prev) => {
+        const next = { ...prev };
+        Object.keys(next).forEach((cId) => {
+          next[cId] = {
+            ...next[cId],
+            maxMarks: String(found.totalMarks),
+            passingMarks: String(found.passingMarks ?? Math.round(found.totalMarks * 0.4)),
+          };
+        });
+        return next;
+      });
+    } else {
+      setSelectedExamTypeId('');
+      setExamType(selectedVal);
+    }
+  };
+
   useEffect(() => {
     if (coursesData?.data) {
+      const selectedType = dynamicExamTypes.find(
+        (t) => t.id === selectedExamTypeId || t.name === examType,
+      );
+      const defaultTotal = selectedType ? String(selectedType.totalMarks) : '100';
+      const defaultPass = selectedType
+        ? String(selectedType.passingMarks ?? Math.round(selectedType.totalMarks * 0.4))
+        : '40';
+
       const initial: any = {};
       coursesData.data.forEach((c) => {
         if (!scheduleData[c.id]) {
@@ -80,6 +118,8 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
             startTime: '09:00',
             duration: '180',
             roomId: 'none',
+            maxMarks: defaultTotal,
+            passingMarks: defaultPass,
           };
         } else {
           initial[c.id] = scheduleData[c.id];
@@ -87,7 +127,7 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
       });
       setScheduleData(initial);
     }
-  }, [coursesData]);
+  }, [coursesData, dynamicExamTypes, selectedExamTypeId, examType]);
 
   const handleFieldChange = (courseId: string, field: string, value: string) => {
     setScheduleData((prev) => ({
@@ -121,6 +161,8 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
           startTime: s.startTime,
           durationMinutes: parseInt(s.duration, 10),
           roomId: s.roomId !== 'none' ? s.roomId : undefined,
+          maxMarks: s.maxMarks ? parseFloat(s.maxMarks) : undefined,
+          passingMarks: s.passingMarks ? parseFloat(s.passingMarks) : undefined,
         });
       }
     }
@@ -134,6 +176,8 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
       await scheduleMutation.mutateAsync({
         academicYearId,
         termId: academicTermId,
+        programId: programId || undefined,
+        examinationTypeId: selectedExamTypeId || undefined,
         examType,
         name: examName || undefined,
         courses: coursesToSchedule,
@@ -158,7 +202,8 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
               Schedule Examination
             </h1>
             <p className="text-muted-foreground mt-1">
-              Select a curriculum term and configure the exam schedule for courses.
+              Select a program, curriculum term, and configure the exam schedule and scoring for
+              courses.
             </p>
           </div>
         </div>
@@ -172,7 +217,7 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
         <CardHeader>
           <CardTitle>Examination Context</CardTitle>
           <CardDescription>
-            Define the basic properties for this examination schedule.
+            Define the program, term, and examination type for this schedule.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-4">
@@ -325,18 +370,43 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
             <Label>
               Exam Type <span className="text-destructive">*</span>
             </Label>
-            <select
-              className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-              value={examType}
-              onChange={(e) => setExamType(e.target.value)}
-            >
-              <option value="">Select type</option>
-              {EXAM_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
+            {isLoadingExamTypes ? (
+              <div className="flex h-10 items-center">
+                <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
+              </div>
+            ) : (
+              <select
+                className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                value={selectedExamTypeId || examType}
+                onChange={(e) => handleExamTypeSelect(e.target.value)}
+              >
+                <option value="">Select exam type</option>
+                {dynamicExamTypes.length > 0 ? (
+                  <optgroup label="Institutional Exam Types">
+                    {dynamicExamTypes.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name} (Total: {t.totalMarks}m)
+                      </option>
+                    ))}
+                  </optgroup>
+                ) : null}
+                <optgroup label="Standard Types">
+                  {FALLBACK_EXAM_TYPES.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))}
+                </optgroup>
+              </select>
+            )}
+            {dynamicExamTypes.length === 0 && (
+              <Link
+                href="/admin/examinations/grading"
+                className="text-primary block text-xs underline-offset-4 hover:underline"
+              >
+                Create custom exam types →
+              </Link>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -353,9 +423,9 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
       {selectedCurriculumTermId && (
         <Card>
           <CardHeader>
-            <CardTitle>Course Scheduling</CardTitle>
+            <CardTitle>Course Scheduling & Scoring</CardTitle>
             <CardDescription>
-              Set the date, time, duration, and classroom for each course.
+              Set the date, time, duration, classroom, and total/passing marks for each course.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -372,11 +442,13 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="min-w-[200px]">Course</TableHead>
-                      <TableHead className="w-[150px]">Date</TableHead>
-                      <TableHead className="w-[120px]">Start Time</TableHead>
-                      <TableHead className="w-[120px]">Duration (min)</TableHead>
-                      <TableHead className="min-w-[180px]">Classroom</TableHead>
+                      <TableHead className="min-w-[180px]">Course</TableHead>
+                      <TableHead className="w-[140px]">Date</TableHead>
+                      <TableHead className="w-[110px]">Start Time</TableHead>
+                      <TableHead className="w-[100px]">Duration (m)</TableHead>
+                      <TableHead className="w-[100px]">Total Marks</TableHead>
+                      <TableHead className="w-[100px]">Pass Marks</TableHead>
+                      <TableHead className="min-w-[160px]">Classroom</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -386,6 +458,8 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
                         startTime: '09:00',
                         duration: '180',
                         roomId: 'none',
+                        maxMarks: '100',
+                        passingMarks: '40',
                       };
                       return (
                         <TableRow key={course.id}>
@@ -416,6 +490,26 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
                               value={s.duration}
                               onChange={(e) =>
                                 handleFieldChange(course.id, 'duration', e.target.value)
+                              }
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={s.maxMarks}
+                              onChange={(e) =>
+                                handleFieldChange(course.id, 'maxMarks', e.target.value)
+                              }
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min="0"
+                              value={s.passingMarks}
+                              onChange={(e) =>
+                                handleFieldChange(course.id, 'passingMarks', e.target.value)
                               }
                             />
                           </TableCell>

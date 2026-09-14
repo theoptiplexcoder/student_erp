@@ -19,8 +19,9 @@ import {
   DialogTitle,
   Input,
   Label,
+  Badge,
 } from '@student-erp/ui';
-import { Calendar as CalIcon, Plus, Loader2, Trash2, Info } from 'lucide-react';
+import { Calendar as CalIcon, Plus, Loader2, Trash2, Info, Filter, FileText } from 'lucide-react';
 import {
   useCalendarEvents,
   useCreateCalendarEvent,
@@ -28,6 +29,7 @@ import {
   useDeleteCalendarEvent,
 } from '@/hooks/api/admin/useCalendarEvents';
 import type { CalendarEvent } from '@/hooks/api/admin/useCalendarEvents';
+import Link from 'next/link';
 
 const localizer = dateFnsLocalizer({
   format,
@@ -92,10 +94,22 @@ export default function CalendarPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [filterMode, setFilterMode] = useState<'ALL' | 'EXAM'>('ALL');
+
+  const filteredEvents = useMemo(() => {
+    if (filterMode === 'EXAM') {
+      return events.filter((e) => e.eventType === 'EXAM');
+    }
+    return events;
+  }, [events, filterMode]);
+
+  const examCount = useMemo(() => {
+    return events.filter((e) => e.eventType === 'EXAM').length;
+  }, [events]);
 
   const calEvents = useMemo<BigCalendarEvent[]>(
     () =>
-      events.map((e) => ({
+      filteredEvents.map((e) => ({
         id: e.id,
         title: e.title,
         start: new Date(e.startAt),
@@ -103,7 +117,7 @@ export default function CalendarPage() {
         allDay: e.isAllDay,
         resource: e,
       })),
-    [events],
+    [filteredEvents],
   );
 
   const eventPropGetter = useCallback((event: BigCalendarEvent) => {
@@ -115,6 +129,7 @@ export default function CalendarPage() {
         color: colors.text,
         borderRadius: '4px',
         fontSize: '0.8125rem',
+        fontWeight: event.resource?.eventType === 'EXAM' ? '600' : ' normal',
       },
     };
   }, []);
@@ -191,18 +206,40 @@ export default function CalendarPage() {
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight">
             <CalIcon className="text-primary h-8 w-8" /> Academic Calendar
           </h1>
           <p className="text-muted-foreground mt-1">
-            Schedule events, holidays, exams, and important dates.
+            Schedule events, holidays, examinations, and important institutional dates.
           </p>
         </div>
-        <Button onClick={() => openCreateDialog()}>
-          <Plus className="mr-2 h-4 w-4" /> Add Event
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Filter toggle */}
+          <div className="border-border bg-card inline-flex rounded-lg border p-1">
+            <Button
+              variant={filterMode === 'ALL' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setFilterMode('ALL')}
+            >
+              All Events ({events.length})
+            </Button>
+            <Button
+              variant={filterMode === 'EXAM' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setFilterMode('EXAM')}
+              className="gap-1.5"
+            >
+              <div className="h-2 w-2 rounded-full bg-amber-500" />
+              Exams Only ({examCount})
+            </Button>
+          </div>
+
+          <Button onClick={() => openCreateDialog()}>
+            <Plus className="mr-2 h-4 w-4" /> Add Event
+          </Button>
+        </div>
       </div>
 
       {/* Main content */}
@@ -234,21 +271,63 @@ export default function CalendarPage() {
         </Card>
 
         {/* Legend sidebar */}
-        <Card className="w-full shrink-0 lg:w-56">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Info className="h-4 w-4" /> Event Types
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2.5">
-            {EVENT_TYPES.map((type) => (
-              <div key={type} className="flex items-center gap-2.5">
-                <div className={`h-3 w-3 rounded-sm ${EVENT_COLORS[type].legend}`} />
-                <span className="text-sm">{EVENT_TYPE_LABELS[type]}</span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <div className="flex w-full shrink-0 flex-col gap-4 lg:w-64">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Info className="h-4 w-4" /> Event Types
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2.5">
+              {EVENT_TYPES.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setFilterMode(type === 'EXAM' ? 'EXAM' : 'ALL')}
+                  className="hover:bg-muted flex w-full items-center justify-between rounded-md p-1.5 text-left text-sm transition-colors"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className={`h-3 w-3 rounded-sm ${EVENT_COLORS[type].legend}`} />
+                    <span>{EVENT_TYPE_LABELS[type]}</span>
+                  </div>
+                  {type === 'EXAM' && examCount > 0 && (
+                    <Badge variant="outline" className="text-xs">
+                      {examCount}
+                    </Badge>
+                  )}
+                </button>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <FileText className="h-4 w-4" /> Quick Links
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <Link
+                href="/admin/examinations/exams"
+                className="text-primary block underline-offset-4 hover:underline"
+              >
+                → Schedule Examination
+              </Link>
+              <Link
+                href="/admin/examinations/grading"
+                className="text-primary block underline-offset-4 hover:underline"
+              >
+                → Examination Types
+              </Link>
+              <Link
+                href="/admin/examinations/results"
+                className="text-primary block underline-offset-4 hover:underline"
+              >
+                → Exam Results Directory
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Create / Edit Dialog */}
@@ -363,17 +442,12 @@ export default function CalendarPage() {
               <div />
             )}
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={isPending}>
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} disabled={isPending || !form.title.trim()}>
-                {isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : editingEvent ? (
-                  'Save'
-                ) : (
-                  'Create'
-                )}
+              <Button onClick={handleSubmit} disabled={isPending}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {editingEvent ? 'Save Changes' : 'Create Event'}
               </Button>
             </div>
           </DialogFooter>

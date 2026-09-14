@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   BookOpen,
+  Award,
   CalendarDays,
   GraduationCap,
   LayoutDashboard,
@@ -25,6 +26,7 @@ export const sidebarNavItems = [
   { title: 'Fees & Dues', href: '/student/finance', icon: IndianRupee },
   { title: 'Timetable', href: '/student/timetable', icon: CalendarDays },
   { title: 'My Courses', href: '/student/courses', icon: BookOpen },
+  { title: 'Examinations', href: '/student/examinations', icon: Award },
   { title: 'Calendar', href: '/student/calendar', icon: CalendarDays },
   { title: 'Certificates', href: '/student/certificates', icon: GraduationCap },
   { title: 'Feedback', href: '/student/feedback', icon: MessageSquare },

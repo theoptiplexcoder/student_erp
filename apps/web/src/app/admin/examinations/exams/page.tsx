@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   Card,
   CardContent,
@@ -100,6 +101,31 @@ export default function ExamsPage() {
         <Button onClick={() => setIsScheduling(true)}>
           <Plus className="mr-2 h-4 w-4" /> Schedule Examination
         </Button>
+      </div>
+
+      {/* Tabs navigation for examinations sub-pages */}
+      <div className="border-border flex border-b">
+        <Link
+          href="/admin/examinations/exams"
+          className="border-primary text-primary flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors"
+        >
+          <CalendarIcon className="h-4 w-4" />
+          Scheduled Examinations
+        </Link>
+        <Link
+          href="/admin/examinations/grading"
+          className="text-muted-foreground hover:text-foreground flex items-center gap-2 border-b-2 border-transparent px-4 py-2.5 text-sm font-medium transition-colors"
+        >
+          <FileText className="h-4 w-4" />
+          Examination Types
+        </Link>
+        <Link
+          href="/admin/examinations/results"
+          className="text-muted-foreground hover:text-foreground flex items-center gap-2 border-b-2 border-transparent px-4 py-2.5 text-sm font-medium transition-colors"
+        >
+          <Clock className="h-4 w-4" />
+          Results
+        </Link>
       </div>
 
       <Card>

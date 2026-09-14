@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsNumber,
   IsDateString,
+  Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -27,6 +28,16 @@ export class CourseScheduleDto {
   @IsString()
   @IsOptional()
   roomId?: string;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  maxMarks?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  passingMarks?: number;
 }
 
 export class ScheduleExamDto {
@@ -41,6 +52,18 @@ export class ScheduleExamDto {
   @IsString()
   @IsNotEmpty()
   examType!: string;
+
+  @IsString()
+  @IsOptional()
+  examinationTypeId?: string;
+
+  @IsString()
+  @IsOptional()
+  programId?: string;
+
+  @IsString()
+  @IsOptional()
+  curriculumId?: string;
 
   @IsString()
   @IsOptional()

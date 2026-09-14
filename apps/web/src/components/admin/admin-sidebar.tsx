@@ -44,6 +44,16 @@ const navigation = [
     ],
   },
   { name: 'Academics', href: '/admin/academics', icon: BookOpen },
+  {
+    name: 'Examinations',
+    href: '/admin/examinations',
+    icon: FileText,
+    children: [
+      { name: 'Schedules', href: '/admin/examinations/exams', icon: CalendarCheck },
+      { name: 'Exam Types', href: '/admin/examinations/grading', icon: Award },
+      { name: 'Results', href: '/admin/examinations/results', icon: FileText },
+    ],
+  },
   { name: 'Faculty', href: '/admin/faculty', icon: Users },
   {
     name: 'Timetable',
