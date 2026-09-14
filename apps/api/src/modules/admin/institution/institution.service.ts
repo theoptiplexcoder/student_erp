@@ -31,14 +31,50 @@ export class InstitutionService {
       select: { branding: true },
     });
     if (!institution) throw new NotFoundException('Institution not found');
-    return institution;
+    const branding = (institution.branding as Record<string, any>) || {};
+    return {
+      startTime: branding['startTime'] ?? '08:00',
+      closingTime: branding['closingTime'] ?? '17:00',
+      enableAdmissions: branding['enableAdmissions'] ?? true,
+      autoApproval: branding['autoApproval'] ?? false,
+      notificationsEnabled: branding['notificationsEnabled'] ?? true,
+      ...branding,
+    };
   }
 
   async updateSettings(institutionId: string, dto: UpdateInstitutionSettingsDto) {
-    return this.prisma.institution.update({
+    const institution = await this.prisma.institution.findUnique({
       where: { id: institutionId },
-      data: { branding: dto.branding as any },
+      select: { branding: true },
     });
+    if (!institution) throw new NotFoundException('Institution not found');
+    const currentBranding = (institution.branding as Record<string, any>) || {};
+
+    const updatedBranding = {
+      ...currentBranding,
+      ...(dto.branding || {}),
+      ...(dto.startTime !== undefined ? { startTime: dto.startTime } : {}),
+      ...(dto.closingTime !== undefined ? { closingTime: dto.closingTime } : {}),
+      ...(dto.enableAdmissions !== undefined ? { enableAdmissions: dto.enableAdmissions } : {}),
+      ...(dto.autoApproval !== undefined ? { autoApproval: dto.autoApproval } : {}),
+      ...(dto.notificationsEnabled !== undefined
+        ? { notificationsEnabled: dto.notificationsEnabled }
+        : {}),
+    };
+
+    await this.prisma.institution.update({
+      where: { id: institutionId },
+      data: { branding: updatedBranding },
+    });
+
+    return {
+      startTime: updatedBranding.startTime ?? '08:00',
+      closingTime: updatedBranding.closingTime ?? '17:00',
+      enableAdmissions: updatedBranding.enableAdmissions ?? true,
+      autoApproval: updatedBranding.autoApproval ?? false,
+      notificationsEnabled: updatedBranding.notificationsEnabled ?? true,
+      ...updatedBranding,
+    };
   }
 
   // Academic Year

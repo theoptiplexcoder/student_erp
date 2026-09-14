@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useInstitutionSettings } from '@/hooks/api/admin/useInstitutionSettings';
 import {
   Dialog,
   DialogContent,
@@ -39,6 +40,10 @@ export function TimetableSessionSettings({
   onConfirm,
   courses,
 }: TimetableSessionSettingsProps) {
+  const { data: institutionSettings } = useInstitutionSettings();
+  const institutionStartTime = institutionSettings?.startTime || '08:00';
+  const institutionClosingTime = institutionSettings?.closingTime || '17:00';
+
   const [defaultDuration, setDefaultDuration] = useState(50);
   const [workingHoursStart, setWorkingHoursStart] = useState('08:00');
   const [workingHoursEnd, setWorkingHoursEnd] = useState('17:00');
@@ -50,8 +55,8 @@ export function TimetableSessionSettings({
   useEffect(() => {
     if (open) {
       setDefaultDuration(50);
-      setWorkingHoursStart('08:00');
-      setWorkingHoursEnd('17:00');
+      setWorkingHoursStart(institutionStartTime);
+      setWorkingHoursEnd(institutionClosingTime);
       setOverrides({});
       const initialDurations: Record<string, number> = {};
       courses.forEach((c) => {
@@ -60,7 +65,7 @@ export function TimetableSessionSettings({
       setDurations(initialDurations);
       setShowPerCourse(false);
     }
-  }, [open, courses]);
+  }, [open, courses, institutionStartTime, institutionClosingTime]);
 
   const handleDefaultDurationChange = (value: number) => {
     const clamped = Math.min(180, Math.max(15, value));
@@ -135,24 +140,32 @@ export function TimetableSessionSettings({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="working-hours-start">Working Hours Start</Label>
-              <Input
-                id="working-hours-start"
-                type="time"
-                value={workingHoursStart}
-                onChange={(e) => setWorkingHoursStart(e.target.value)}
-              />
+          <div className="bg-muted/30 space-y-3 rounded-lg border p-3">
+            <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-center">
+              <span className="text-sm font-medium">Daily Working Hours</span>
+              <span className="text-muted-foreground text-xs">
+                Institution Timings: {institutionStartTime} – {institutionClosingTime}
+              </span>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="working-hours-end">Working Hours End</Label>
-              <Input
-                id="working-hours-end"
-                type="time"
-                value={workingHoursEnd}
-                onChange={(e) => setWorkingHoursEnd(e.target.value)}
-              />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="working-hours-start">Working Hours Start</Label>
+                <Input
+                  id="working-hours-start"
+                  type="time"
+                  value={workingHoursStart}
+                  onChange={(e) => setWorkingHoursStart(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="working-hours-end">Working Hours End</Label>
+                <Input
+                  id="working-hours-end"
+                  type="time"
+                  value={workingHoursEnd}
+                  onChange={(e) => setWorkingHoursEnd(e.target.value)}
+                />
+              </div>
             </div>
           </div>
 

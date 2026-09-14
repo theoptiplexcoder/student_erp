@@ -26,6 +26,11 @@ export class InstitutionController {
     return this.institutionService.updateProfile(user.institutionId, dto);
   }
 
+  @Post('profile')
+  saveProfile(@CurrentUser() user: any, @Body() dto: UpdateInstitutionDto) {
+    return this.institutionService.updateProfile(user.institutionId, dto);
+  }
+
   @Get('settings')
   getSettings(@CurrentUser() user: any) {
     return this.institutionService.getSettings(user.institutionId);
@@ -33,6 +38,11 @@ export class InstitutionController {
 
   @Put('settings')
   updateSettings(@CurrentUser() user: any, @Body() dto: UpdateInstitutionSettingsDto) {
+    return this.institutionService.updateSettings(user.institutionId, dto);
+  }
+
+  @Post('settings')
+  saveSettings(@CurrentUser() user: any, @Body() dto: UpdateInstitutionSettingsDto) {
     return this.institutionService.updateSettings(user.institutionId, dto);
   }
 

@@ -4,17 +4,22 @@ import { apiClient } from '../../../../../lib/api-client';
 import { Card, CardHeader, CardTitle, CardContent } from '@student-erp/ui';
 import { Button } from '@student-erp/ui';
 import { Checkbox } from '@student-erp/ui';
+import { Input } from '@student-erp/ui';
 import { Label } from '@student-erp/ui';
 import { motion } from 'framer-motion';
-import { Save, Settings2 } from 'lucide-react';
+import { Save, Settings2, Clock, Check } from 'lucide-react';
 
 export default function InstitutionSettings() {
   const [settings, setSettings] = useState<any>({
     enableAdmissions: true,
     autoApproval: false,
     notificationsEnabled: true,
+    startTime: '08:00',
+    closingTime: '17:00',
   });
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
     apiClient
@@ -24,8 +29,18 @@ export default function InstitutionSettings() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleSave = () => {
-    apiClient.post('/admin/institution/settings', settings);
+  const handleSave = async () => {
+    setSaving(true);
+    setSaveSuccess(false);
+    try {
+      await apiClient.post('/admin/institution/settings', settings);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      console.error('Failed to save preferences', err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -98,12 +113,56 @@ export default function InstitutionSettings() {
                   </div>
                 </div>
 
-                <div className="flex justify-end border-t pt-6">
+                <div className="space-y-4 rounded-lg bg-gray-50 p-4 transition-colors dark:bg-gray-800/50">
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                    <div>
+                      <h3 className="text-base font-semibold">Operating Hours</h3>
+                      <p className="text-sm text-gray-500">
+                        Set the daily institution start and closing times.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 pt-1 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="start-time" className="text-sm font-medium">
+                        Institution Start Time
+                      </Label>
+                      <Input
+                        id="start-time"
+                        type="time"
+                        value={settings.startTime || '08:00'}
+                        onChange={(e) => setSettings({ ...settings, startTime: e.target.value })}
+                        className="h-10 bg-white dark:bg-gray-900"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="closing-time" className="text-sm font-medium">
+                        Institution Closing Time
+                      </Label>
+                      <Input
+                        id="closing-time"
+                        type="time"
+                        value={settings.closingTime || '17:00'}
+                        onChange={(e) => setSettings({ ...settings, closingTime: e.target.value })}
+                        className="h-10 bg-white dark:bg-gray-900"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 border-t pt-6">
+                  {saveSuccess && (
+                    <span className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                      <Check className="h-4 w-4" /> Preferences saved
+                    </span>
+                  )}
                   <Button
                     onClick={handleSave}
+                    disabled={saving}
                     className="flex h-11 items-center gap-2 rounded-full px-6 shadow hover:shadow-md"
                   >
-                    <Save className="h-4 w-4" /> Save Preferences
+                    <Save className="h-4 w-4" /> {saving ? 'Saving...' : 'Save Preferences'}
                   </Button>
                 </div>
               </>
