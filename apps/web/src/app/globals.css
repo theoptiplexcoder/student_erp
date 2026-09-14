@@ -6,92 +6,178 @@
   --font-display: 'Outfit', sans-serif;
   --font-body: 'DM Sans', sans-serif;
 
-  --background: #ffffff;
-  --foreground: #1a1a1a;
+  /* Refined professional base surfaces & neutral palette */
+  --background: #f8fafc;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-foreground: #1a1a1a;
+  --card-foreground: #0f172a;
   --popover: #ffffff;
-  --popover-foreground: #1a1a1a;
-  --primary: #059212;
+  --popover-foreground: #0f172a;
+
+  /* Default primary (professional slate / indigo hybrid) */
+  --primary: #2563eb;
   --primary-foreground: #ffffff;
-  --secondary: #06d001;
-  --secondary-foreground: #ffffff;
-  --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
-  --accent: #9bec00;
-  --accent-foreground: #059212;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f8fafc;
+  --accent-foreground: #0f172a;
+
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #e5e7eb;
-  --input: #e5e7eb;
-  --ring: #059212;
-  --chart-1: #059212;
-  --chart-2: #06d001;
-  --chart-3: #9bec00;
-  --chart-4: #047a0f;
-  --chart-5: #03610c;
-  --radius: 0.5rem;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #1a1a1a;
-  --sidebar-primary: #059212;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f3f4f6;
-  --sidebar-accent-foreground: #1a1a1a;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: #059212;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #2563eb;
 
+  --radius: 0.5rem;
+
+  /* Standard Sidebar tokens */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #2563eb;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #2563eb;
+
+  /* SUPER ADMIN ROLE TOKENS (Deep Indigo / Authority) */
   --admin-primary: #4f46e5;
+  --admin-primary-hover: #4338ca;
   --admin-primary-foreground: #ffffff;
-  --admin-accent: #e0e7ff;
+  --admin-accent: #eef2ff;
   --admin-accent-foreground: #3730a3;
-  --admin-sidebar: #f8fafc;
-  --admin-sidebar-foreground: #0f172a;
-  --admin-sidebar-active: #e2e8f0;
+  --admin-sidebar: #ffffff;
+  --admin-sidebar-foreground: #1e293b;
+  --admin-sidebar-active: #eef2ff;
   --admin-sidebar-border: #e2e8f0;
+
+  /* TENANT ADMIN ROLE TOKENS (Professional Royal Blue) */
+  --tenant-primary: #2563eb;
+  --tenant-primary-hover: #1d4ed8;
+  --tenant-primary-foreground: #ffffff;
+  --tenant-accent: #eff6ff;
+  --tenant-accent-foreground: #1e40af;
+  --tenant-sidebar: #ffffff;
+  --tenant-sidebar-foreground: #1e293b;
+  --tenant-sidebar-active: #eff6ff;
+  --tenant-sidebar-border: #e2e8f0;
+
+  /* FACULTY ROLE TOKENS (Teal / Knowledge-oriented) */
+  --faculty-primary: #0f766e;
+  --faculty-primary-hover: #115e59;
+  --faculty-primary-foreground: #ffffff;
+  --faculty-accent: #f0fdfa;
+  --faculty-accent-foreground: #134e4a;
+  --faculty-sidebar: #ffffff;
+  --faculty-sidebar-foreground: #1e293b;
+  --faculty-sidebar-active: #f0fdfa;
+  --faculty-sidebar-border: #e2e8f0;
+
+  /* STUDENT ROLE TOKENS (Vibrant Violet / Academic Growth) */
+  --student-primary: #7c3aed;
+  --student-primary-hover: #6d28d9;
+  --student-primary-foreground: #ffffff;
+  --student-accent: #f5f3ff;
+  --student-accent-foreground: #5b21b6;
+  --student-sidebar: #ffffff;
+  --student-sidebar-foreground: #1e293b;
+  --student-sidebar-active: #f5f3ff;
+  --student-sidebar-border: #e2e8f0;
+
+  /* Charts */
+  --chart-1: #2563eb;
+  --chart-2: #0f766e;
+  --chart-3: #7c3aed;
+  --chart-4: #f59e0b;
+  --chart-5: #ef4444;
 }
 
 .dark {
-  --background: #0f172a;
+  /* Layered dark surfaces: deep slate-950 background -> slate-900 surfaces -> slate-800 elevated */
+  --background: #090d16;
   --foreground: #f8fafc;
-  --card: #1e293b;
+  --card: #0f172a;
   --card-foreground: #f8fafc;
-  --popover: #1e293b;
+  --popover: #0f172a;
   --popover-foreground: #f8fafc;
-  --primary: #06d001;
-  --primary-foreground: #022c22;
-  --secondary: #059212;
-  --secondary-foreground: #ffffff;
-  --muted: #334155;
+
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+
+  --muted: #1e293b;
   --muted-foreground: #94a3b8;
-  --accent: #9bec00;
-  --accent-foreground: #022c22;
+  --accent: #1e293b;
+  --accent-foreground: #f8fafc;
+
   --destructive: #ef4444;
   --destructive-foreground: #f8fafc;
-  --border: #334155;
-  --input: #334155;
-  --ring: #06d001;
-  --chart-1: #06d001;
-  --chart-2: #059212;
-  --chart-3: #9bec00;
-  --chart-4: #047a0f;
-  --chart-5: #03610c;
-  --sidebar: #1e293b;
-  --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #06d001;
-  --sidebar-primary-foreground: #022c22;
-  --sidebar-accent: #334155;
-  --sidebar-accent-foreground: #f8fafc;
-  --sidebar-border: #334155;
-  --sidebar-ring: #06d001;
+  --border: #1e293b;
+  --input: #1e293b;
+  --ring: #3b82f6;
 
+  --sidebar: #0b1120;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1e293b;
+  --sidebar-accent-foreground: #f8fafc;
+  --sidebar-border: #1e293b;
+  --sidebar-ring: #3b82f6;
+
+  /* SUPER ADMIN DARK TOKENS */
   --admin-primary: #6366f1;
+  --admin-primary-hover: #4f46e5;
   --admin-primary-foreground: #ffffff;
-  --admin-accent: #3730a3;
-  --admin-accent-foreground: #e0e7ff;
-  --admin-sidebar: #0f172a;
+  --admin-accent: rgba(99, 102, 241, 0.15);
+  --admin-accent-foreground: #c7d2fe;
+  --admin-sidebar: #0b1120;
   --admin-sidebar-foreground: #f8fafc;
-  --admin-sidebar-active: #1e293b;
+  --admin-sidebar-active: rgba(99, 102, 241, 0.15);
   --admin-sidebar-border: #1e293b;
+
+  /* TENANT ADMIN DARK TOKENS */
+  --tenant-primary: #3b82f6;
+  --tenant-primary-hover: #2563eb;
+  --tenant-primary-foreground: #ffffff;
+  --tenant-accent: rgba(59, 130, 246, 0.15);
+  --tenant-accent-foreground: #bfdbfe;
+  --tenant-sidebar: #0b1120;
+  --tenant-sidebar-foreground: #f8fafc;
+  --tenant-sidebar-active: rgba(59, 130, 246, 0.15);
+  --tenant-sidebar-border: #1e293b;
+
+  /* FACULTY DARK TOKENS */
+  --faculty-primary: #14b8a6;
+  --faculty-primary-hover: #0d9488;
+  --faculty-primary-foreground: #042f2e;
+  --faculty-accent: rgba(20, 184, 166, 0.15);
+  --faculty-accent-foreground: #99f6e4;
+  --faculty-sidebar: #0b1120;
+  --faculty-sidebar-foreground: #f8fafc;
+  --faculty-sidebar-active: rgba(20, 184, 166, 0.15);
+  --faculty-sidebar-border: #1e293b;
+
+  /* STUDENT DARK TOKENS */
+  --student-primary: #8b5cf6;
+  --student-primary-hover: #7c3aed;
+  --student-primary-foreground: #ffffff;
+  --student-accent: rgba(139, 92, 246, 0.15);
+  --student-accent-foreground: #ddd6fe;
+  --student-sidebar: #0b1120;
+  --student-sidebar-foreground: #f8fafc;
+  --student-sidebar-active: rgba(139, 92, 246, 0.15);
+  --student-sidebar-border: #1e293b;
+
+  --chart-1: #3b82f6;
+  --chart-2: #14b8a6;
+  --chart-3: #8b5cf6;
+  --chart-4: #f59e0b;
+  --chart-5: #ef4444;
 }
 
 @theme inline {
@@ -135,6 +221,7 @@
   --font-body: var(--font-body);
 
   --color-admin-primary: var(--admin-primary);
+  --color-admin-primary-hover: var(--admin-primary-hover);
   --color-admin-primary-foreground: var(--admin-primary-foreground);
   --color-admin-accent: var(--admin-accent);
   --color-admin-accent-foreground: var(--admin-accent-foreground);
@@ -142,6 +229,36 @@
   --color-admin-sidebar-foreground: var(--admin-sidebar-foreground);
   --color-admin-sidebar-active: var(--admin-sidebar-active);
   --color-admin-sidebar-border: var(--admin-sidebar-border);
+
+  --color-tenant-primary: var(--tenant-primary);
+  --color-tenant-primary-hover: var(--tenant-primary-hover);
+  --color-tenant-primary-foreground: var(--tenant-primary-foreground);
+  --color-tenant-accent: var(--tenant-accent);
+  --color-tenant-accent-foreground: var(--tenant-accent-foreground);
+  --color-tenant-sidebar: var(--tenant-sidebar);
+  --color-tenant-sidebar-foreground: var(--tenant-sidebar-foreground);
+  --color-tenant-sidebar-active: var(--tenant-sidebar-active);
+  --color-tenant-sidebar-border: var(--tenant-sidebar-border);
+
+  --color-faculty-primary: var(--faculty-primary);
+  --color-faculty-primary-hover: var(--faculty-primary-hover);
+  --color-faculty-primary-foreground: var(--faculty-primary-foreground);
+  --color-faculty-accent: var(--faculty-accent);
+  --color-faculty-accent-foreground: var(--faculty-accent-foreground);
+  --color-faculty-sidebar: var(--faculty-sidebar);
+  --color-faculty-sidebar-foreground: var(--faculty-sidebar-foreground);
+  --color-faculty-sidebar-active: var(--faculty-sidebar-active);
+  --color-faculty-sidebar-border: var(--faculty-sidebar-border);
+
+  --color-student-primary: var(--student-primary);
+  --color-student-primary-hover: var(--student-primary-hover);
+  --color-student-primary-foreground: var(--student-primary-foreground);
+  --color-student-accent: var(--student-accent);
+  --color-student-accent-foreground: var(--student-accent-foreground);
+  --color-student-sidebar: var(--student-sidebar);
+  --color-student-sidebar-foreground: var(--student-sidebar-foreground);
+  --color-student-sidebar-active: var(--student-sidebar-active);
+  --color-student-sidebar-border: var(--student-sidebar-border);
 }
 
 @layer base {
@@ -149,7 +266,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
     font-family: var(--font-body);
   }
   h1,
@@ -165,7 +282,7 @@
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -174,5 +291,5 @@
 }
 
 .animate-fade-in {
-  animation: fade-in 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: fade-in 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }

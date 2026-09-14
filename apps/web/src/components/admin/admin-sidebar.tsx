@@ -63,28 +63,33 @@ export function AdminSidebar() {
   return (
     <div
       className={cn(
-        'bg-admin-sidebar border-admin-sidebar-border relative z-20 hidden h-screen flex-col border-r transition-all duration-300 md:flex',
+        'bg-card border-admin-sidebar-border relative z-20 hidden h-screen flex-col border-r shadow-xs transition-all duration-300 md:flex',
         isCollapsed ? 'w-20' : 'w-64',
       )}
     >
       <div className="border-admin-sidebar-border flex h-16 items-center justify-between border-b px-4">
         {!isCollapsed && (
-          <span className="font-display text-admin-sidebar-foreground truncate text-lg font-bold">
-            Admin Console
-          </span>
+          <div className="flex items-center gap-2">
+            <div className="bg-admin-primary/10 text-admin-primary rounded-lg p-1.5">
+              <Building2 className="h-5 w-5" />
+            </div>
+            <span className="font-display text-admin-sidebar-foreground truncate text-base font-bold">
+              Admin Console
+            </span>
+          </div>
         )}
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="text-admin-sidebar-foreground hover:bg-admin-sidebar-active"
+          className="text-admin-sidebar-foreground hover:bg-admin-sidebar-active h-8 w-8"
         >
-          {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-4">
-        <nav className="space-y-1 px-2">
+      <div className="flex-1 overflow-y-auto py-3">
+        <nav className="space-y-1 px-2.5">
           {navigation.map((item) => {
             const isActive =
               pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
@@ -93,18 +98,18 @@ export function AdminSidebar() {
                 <Link
                   href={item.href}
                   className={cn(
-                    'group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-colors',
+                    'group flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                     isActive
-                      ? 'bg-admin-sidebar-active text-admin-primary'
-                      : 'text-admin-sidebar-foreground hover:bg-admin-sidebar-active/50',
-                    isCollapsed ? 'justify-center' : '',
+                      ? 'bg-admin-sidebar-active text-admin-primary font-semibold'
+                      : 'text-admin-sidebar-foreground hover:bg-muted/80',
+                    isCollapsed ? 'justify-center px-0' : '',
                   )}
                   title={isCollapsed ? item.name : undefined}
                 >
                   <item.icon
                     className={cn(
-                      'h-5 w-5 flex-shrink-0',
-                      isActive ? 'text-admin-primary' : 'text-admin-sidebar-foreground/70',
+                      'h-4 w-4 flex-shrink-0',
+                      isActive ? 'text-admin-primary' : 'text-muted-foreground',
                       isCollapsed ? '' : 'mr-3',
                     )}
                     aria-hidden="true"

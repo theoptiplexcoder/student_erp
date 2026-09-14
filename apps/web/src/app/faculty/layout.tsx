@@ -7,11 +7,11 @@ export default async function FacultyLayout({ children }: { children: React.Reac
   await requireRoleOrRedirect('FACULTY');
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="bg-background flex h-screen overflow-hidden antialiased">
       <FacultySidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <FacultyNavbar />
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="bg-background flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
   );

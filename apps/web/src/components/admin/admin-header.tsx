@@ -5,6 +5,7 @@ import { Input, Button, Avatar, AvatarFallback } from '@student-erp/ui';
 import { AdminMobileNav } from './admin-mobile-nav';
 import { LogoutButton } from '../shared/logout-button';
 import { Breadcrumbs } from '../shared/breadcrumbs';
+import { ThemeToggle } from '../theme-toggle';
 import { useCurrentUser } from '@/hooks/use-current-user';
 
 export function AdminHeader() {
@@ -16,7 +17,7 @@ export function AdminHeader() {
     : 'AD';
 
   return (
-    <header className="border-border bg-background sticky top-0 z-10 flex h-16 items-center justify-between border-b px-4 sm:px-6">
+    <header className="border-border bg-card/80 sticky top-0 z-10 flex h-16 items-center justify-between border-b px-4 backdrop-blur-md sm:px-6">
       <div className="flex flex-1 items-center">
         <div className="mr-4 md:hidden">
           <AdminMobileNav />
@@ -26,27 +27,29 @@ export function AdminHeader() {
         </div>
       </div>
 
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-3">
         <div className="relative hidden md:block">
           <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
           <Input
             type="search"
             placeholder="Search..."
-            className="bg-muted/50 focus-visible:ring-admin-primary w-64 border-none pl-9"
+            className="bg-muted/60 focus-visible:ring-admin-primary border-border/60 h-9 w-64 pl-9 text-sm"
           />
         </div>
 
-        <Button variant="ghost" size="icon" className="text-muted-foreground">
-          <HelpCircle className="h-5 w-5" />
+        <ThemeToggle />
+
+        <Button variant="ghost" size="icon" className="text-muted-foreground h-9 w-9">
+          <HelpCircle className="h-4 w-4" />
         </Button>
 
-        <Button variant="ghost" size="icon" className="text-muted-foreground relative">
-          <Bell className="h-5 w-5" />
-          <span className="bg-admin-primary absolute top-1.5 right-1.5 h-2 w-2 rounded-full"></span>
+        <Button variant="ghost" size="icon" className="text-muted-foreground relative h-9 w-9">
+          <Bell className="h-4 w-4" />
+          <span className="bg-admin-primary ring-background absolute top-2 right-2 h-2 w-2 rounded-full ring-2"></span>
         </Button>
 
         <Avatar className="border-border h-8 w-8 cursor-pointer border">
-          <AvatarFallback className="bg-admin-accent text-admin-accent-foreground text-xs font-medium">
+          <AvatarFallback className="bg-admin-accent text-admin-accent-foreground text-xs font-semibold">
             {initials}
           </AvatarFallback>
         </Avatar>
@@ -54,7 +57,7 @@ export function AdminHeader() {
         <LogoutButton
           variant="ghost"
           size="icon"
-          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive h-9 w-9"
         />
       </div>
     </header>

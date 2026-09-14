@@ -18,7 +18,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="bg-muted/20 flex min-h-screen flex-col">
+    <div className="bg-background flex min-h-screen flex-col antialiased">
       <Navbar toggleSidebar={toggleSidebar} />
 
       <div className="flex flex-1">
@@ -33,11 +33,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile Drawer Overlay */}
       {mobileOpen && (
         <div
-          className="bg-background/80 fixed inset-0 z-40 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden"
           onClick={() => setMobileOpen(false)}
         >
           <div
-            className="bg-background border-border fixed inset-y-0 left-0 w-[280px] border-r pt-16 shadow-2xl"
+            className="bg-card border-border fixed inset-y-0 left-0 w-[280px] border-r pt-16 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* We can re-use the sidebar content here, but setting collapsed to false */}
@@ -51,7 +51,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Desktop Toggle Button (Float bottom left) */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="bg-background border-border hover:bg-accent text-muted-foreground fixed bottom-4 left-4 z-50 hidden h-8 w-8 items-center justify-center rounded-full border shadow-sm lg:flex"
+        className="bg-card border-border hover:bg-accent text-muted-foreground fixed bottom-4 left-4 z-50 hidden h-8 w-8 items-center justify-center rounded-full border shadow-sm lg:flex"
       >
         <Menu className="h-4 w-4" />
       </button>

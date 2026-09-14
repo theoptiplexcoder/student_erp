@@ -39,7 +39,7 @@ export function TimetableProgramSectionsSummary({
 }: TimetableProgramSectionsSummaryProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
-  if (!programName && (!sections || sections.length === 0)) {
+  if (!programName && !selectedSectionId && (!sections || sections.length === 0)) {
     return null;
   }
 
@@ -55,28 +55,53 @@ export function TimetableProgramSectionsSummary({
     }
   }
 
+  const selectedSection = sections.find((s) => s.id === selectedSectionId);
+
   return (
     <Card className="border-border bg-card shadow-sm transition-all">
       <CardHeader className="p-4 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-lg">
+            <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
               <GraduationCap className="h-5 w-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <CardTitle className="text-base font-semibold sm:text-lg">
-                  {programName || 'Selected Program'}
+                  {selectedSection
+                    ? `Section ${selectedSection.name}`
+                    : programName || 'Academic Sections Overview'}
                 </CardTitle>
-                {programCode && (
+                {selectedSection?.code ? (
+                  <Badge variant="outline" className="text-xs">
+                    {selectedSection.code}
+                  </Badge>
+                ) : programCode ? (
                   <Badge variant="outline" className="text-xs">
                     {programCode}
                   </Badge>
+                ) : null}
+                {selectedSection && (
+                  <Badge variant="secondary" className="text-xs">
+                    {selectedSection.program?.name || programName || 'Program'}
+                  </Badge>
                 )}
               </div>
-              <p className="text-muted-foreground text-xs sm:text-sm">
-                {sections.length} Section{sections.length !== 1 ? 's' : ''} &bull;{' '}
-                {totalAssignments} Course-Faculty Assignment{totalAssignments !== 1 ? 's' : ''}
+              <p className="text-muted-foreground mt-0.5 text-xs sm:text-sm">
+                {selectedSection ? (
+                  <>
+                    {selectedSection.courseAssignments?.length || 0} Assigned Course
+                    {(selectedSection.courseAssignments?.length || 0) !== 1 ? 's' : ''} &bull;{' '}
+                    {selectedSection._count?.students ?? 0} Enrolled Student
+                    {(selectedSection._count?.students ?? 0) !== 1 ? 's' : ''}
+                    {selectedSection.capacity ? ` / ${selectedSection.capacity} Max Capacity` : ''}
+                  </>
+                ) : (
+                  <>
+                    {sections.length} Section{sections.length !== 1 ? 's' : ''} &bull;{' '}
+                    {totalAssignments} Course-Faculty Assignment{totalAssignments !== 1 ? 's' : ''}
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -153,14 +178,18 @@ export function TimetableProgramSectionsSummary({
                               </span>
                             )}
                           </div>
-                          <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-xs">
-                            {section.semester && <span>Sem {section.semester}</span>}
-                            {section.capacity && (
-                              <span className="flex items-center gap-1">
-                                <Users className="h-3 w-3" />
-                                {section.capacity} capacity
-                              </span>
+                          <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-2 text-xs">
+                            {section.program?.name && (
+                              <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+                                {section.program.code || section.program.name}
+                              </Badge>
                             )}
+                            {section.semester && <span>Sem {section.semester}</span>}
+                            <span className="flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              {section._count?.students ?? 0}
+                              {section.capacity ? ` / ${section.capacity}` : ''} students
+                            </span>
                           </div>
                         </div>
 

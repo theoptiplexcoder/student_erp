@@ -49,17 +49,29 @@ export function FacultySidebar() {
   return (
     <aside
       className={cn(
-        'bg-background hidden flex-col border-r transition-all duration-300 md:flex',
+        'bg-card border-border/80 hidden flex-col border-r shadow-xs transition-all duration-300 md:flex',
         isCollapsed ? 'w-[70px]' : 'w-64',
       )}
     >
-      <div className="flex h-14 items-center justify-between border-b px-4">
-        {!isCollapsed && <span className="font-display text-lg font-bold">Faculty Portal</span>}
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleSidebar}>
+      <div className="border-border/60 flex h-14 items-center justify-between border-b px-4">
+        {!isCollapsed && (
+          <div className="flex items-center gap-2">
+            <div className="bg-faculty-primary/10 text-faculty-primary rounded-lg p-1">
+              <ClipboardCheck className="h-5 w-5" />
+            </div>
+            <span className="font-display text-foreground text-base font-bold">Faculty Portal</span>
+          </div>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:text-foreground h-8 w-8"
+          onClick={toggleSidebar}
+        >
           {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>
       </div>
-      <div className="flex-1 overflow-auto py-4">
+      <div className="flex-1 overflow-auto py-3">
         <nav className="grid gap-1 px-2">
           {facultySidebarNavItems.map((item, index) => {
             const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
@@ -69,13 +81,20 @@ export function FacultySidebar() {
                 key={index}
                 href={item.href}
                 className={cn(
-                  'hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all',
-                  isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted',
+                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                  isActive
+                    ? 'bg-faculty-accent text-faculty-primary font-semibold'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                   isCollapsed ? 'justify-center px-0' : '',
                 )}
                 title={isCollapsed ? item.title : undefined}
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon
+                  className={cn(
+                    'h-4 w-4 shrink-0',
+                    isActive ? 'text-faculty-primary' : 'text-muted-foreground',
+                  )}
+                />
                 {!isCollapsed && <span>{item.title}</span>}
               </Link>
             );

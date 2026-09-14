@@ -109,7 +109,7 @@ export function Sidebar({ collapsed }: { collapsed: boolean }) {
 
   return (
     <aside
-      className={`border-border bg-sidebar fixed top-[64px] left-0 z-30 hidden h-[calc(100vh-64px)] overflow-y-auto border-r transition-all duration-300 ease-in-out lg:sticky lg:block ${collapsed ? 'w-[72px]' : 'w-[280px]'}`}
+      className={`border-border/80 bg-card fixed top-[64px] left-0 z-30 hidden h-[calc(100vh-64px)] overflow-y-auto border-r shadow-xs transition-all duration-300 ease-in-out lg:sticky lg:block ${collapsed ? 'w-[72px]' : 'w-[280px]'}`}
     >
       <div className="flex flex-col gap-6 px-3 py-4">
         {sidebarGroups.map((group, idx) => {
@@ -119,11 +119,11 @@ export function Sidebar({ collapsed }: { collapsed: boolean }) {
               {!collapsed && (
                 <button
                   onClick={() => toggleGroup(group.title)}
-                  className="text-muted-foreground hover:text-foreground mb-1 flex items-center justify-between px-2 py-1.5 text-xs font-semibold tracking-wider uppercase transition-colors"
+                  className="text-muted-foreground/80 hover:text-foreground mb-1 flex items-center justify-between px-2.5 py-1.5 text-xs font-semibold tracking-wider uppercase transition-colors"
                 >
                   {group.title}
                   <ChevronDown
-                    className={`h-3 w-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                    className={`h-3 w-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
                   />
                 </button>
               )}
@@ -137,14 +137,16 @@ export function Sidebar({ collapsed }: { collapsed: boolean }) {
                     <a
                       key={itemIdx}
                       href={item.href}
-                      className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${collapsed ? 'justify-center' : 'justify-start'} ${
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${collapsed ? 'justify-center' : 'justify-start'} ${
                         isActive
-                          ? 'bg-primary/10 text-primary font-semibold'
-                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                          ? 'bg-tenant-accent text-tenant-primary font-semibold'
+                          : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground'
                       } `}
                       title={collapsed ? item.name : undefined}
                     >
-                      <item.icon className={`h-4 w-4 ${isActive ? 'text-primary' : ''}`} />
+                      <item.icon
+                        className={`h-4 w-4 shrink-0 ${isActive ? 'text-tenant-primary' : 'text-muted-foreground'}`}
+                      />
                       {!collapsed && <span>{item.name}</span>}
                     </a>
                   );

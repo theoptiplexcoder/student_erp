@@ -8,6 +8,7 @@ import { LogoutButton } from '../../shared/logout-button';
 import { Breadcrumbs } from '../../shared/breadcrumbs';
 import { useMobileSidebarStore } from '@/hooks/use-sidebar';
 import { NotificationBell } from './notification-bell';
+import { ThemeToggle } from '../../theme-toggle';
 
 export function StudentNavbar() {
   const { data: student } = useStudentProfile();
@@ -61,6 +62,8 @@ export function StudentNavbar() {
           size="icon"
           className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
         />
+
+        <ThemeToggle />
       </div>
     </header>
   );

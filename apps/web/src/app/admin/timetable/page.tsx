@@ -478,8 +478,8 @@ export default function AdminTimetablePage() {
         />
       )}
 
-      {/* Program Sections, Courses & Faculty Overview Card (when specific program is chosen) */}
-      {programId && (
+      {/* Section, Courses & Faculty Database Details Card (above timetable grid) */}
+      {(programId || sectionId) && (
         <TimetableProgramSectionsSummary
           programName={selectedProgram?.name}
           programCode={selectedProgram?.code}

@@ -4,7 +4,7 @@ function Skeleton({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>): React.JSX.Element {
-  return <div className={cn('bg-primary/10 animate-pulse rounded-md', className)} {...props} />;
+  return <div className={cn('bg-muted/80 animate-pulse rounded-md', className)} {...props} />;
 }
 
 export { Skeleton };
