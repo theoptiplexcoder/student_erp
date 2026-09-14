@@ -29,6 +29,7 @@ import {
   Edit,
   Loader2,
 } from 'lucide-react';
+import { StudentAcademicProgress } from './components/student-academic-progress';
 
 export default function StudentDetailPage() {
   const params = useParams();
@@ -360,14 +361,7 @@ export default function StudentDetailPage() {
                   </div>
                 </TabsContent>
                 <TabsContent value="academics" className="mt-0">
-                  <div className="space-y-4 py-8 text-center">
-                    <BookOpen className="text-muted-foreground/30 mx-auto h-10 w-10" />
-                    <h3 className="text-foreground text-lg font-semibold">Academic Records</h3>
-                    <p className="text-muted-foreground mx-auto max-w-sm">
-                      Academic details such as enrolled courses, term grades, and degree progress
-                      will appear here.
-                    </p>
-                  </div>
+                  <StudentAcademicProgress studentId={student.id} />
                 </TabsContent>
                 <TabsContent value="attendance" className="mt-0">
                   <div className="space-y-4 py-8 text-center">

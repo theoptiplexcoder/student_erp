@@ -22,6 +22,12 @@ export class StudentsController {
     return this.studentsService.findOne(institutionId, id);
   }
 
+  @Get(':id/academic-progress')
+  getAcademicProgress(@Request() req: any, @Param('id') id: string) {
+    const { institutionId } = req.user;
+    return this.studentsService.getAcademicProgress(institutionId, id);
+  }
+
   @Patch(':id')
   updateStudent(@Request() req: any, @Param('id') id: string, @Body() data: UpdateStudentDto) {
     const { institutionId } = req.user;

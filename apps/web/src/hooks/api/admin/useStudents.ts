@@ -117,3 +117,66 @@ export const useAdminStudent = (id: string) => {
     enabled: !!id,
   });
 };
+
+export interface StudentAcademicCourse {
+  id: string;
+  code: string;
+  name: string;
+  creditValue: number;
+  status: 'COMPLETED' | 'ACTIVE' | 'ENROLLED' | 'NOT_ENROLLED' | string;
+  grade: string | null;
+  gradePoint: number | null;
+  marksObtained: number | null;
+  percentage: number | null;
+  resultStatus: string | null;
+  completedAt: string | null;
+}
+
+export interface StudentAcademicProgram {
+  id: string;
+  name: string;
+  code: string;
+  level: string;
+  isCurrent: boolean;
+  totalCredits: number;
+  totalCourses: number;
+  completedCourses: number;
+  courses: StudentAcademicCourse[];
+}
+
+export interface StudentAcademicProgressResponse {
+  curriculum: {
+    id: string;
+    name: string;
+    versionNumber: string;
+    status: string;
+  } | null;
+  summary: {
+    currentProgram: {
+      id: string;
+      name: string;
+      code: string;
+    } | null;
+    totalCreditsRequired: number;
+    totalCreditsEarned: number;
+    completionPercentage: number;
+    totalCourses: number;
+    completedCourses: number;
+    inProgressCourses: number;
+    cgpa: number | null;
+  };
+  programs: StudentAcademicProgram[];
+}
+
+export const useAdminStudentAcademicProgress = (id: string) => {
+  return useQuery({
+    queryKey: ['admin', 'students', id, 'academic-progress'],
+    queryFn: async () => {
+      const response = await apiClient.get<StudentAcademicProgressResponse>(
+        `/admin/students/${id}/academic-progress`,
+      );
+      return response.data;
+    },
+    enabled: !!id,
+  });
+};
