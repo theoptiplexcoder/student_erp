@@ -51,6 +51,7 @@ import {
   useAdminDeleteFacultySection,
 } from '@/hooks/api/admin/useFacultySections';
 import { useAdminRoles } from '@/hooks/api/admin/useRoles';
+import { SectionTimetableSchedule } from '@/components/admin/sections/SectionTimetableSchedule';
 import { Trash2, ShieldCheck, UserCheck } from 'lucide-react';
 
 // Unified Faculty & Role interface for section-level display
@@ -78,6 +79,7 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
   const { data: section, isLoading, isError, error } = useAdminSection(sectionId);
 
   const { data: termsData } = useAcademicTerms(section?.academicYear?.id || '');
+  const [selectedTermId, setSelectedTermId] = useState<string>('');
   const deleteAssignment = useAdminDeleteCourseAssignment();
 
   // Modal state for assigning faculty to course
@@ -1359,6 +1361,17 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
           )}
         </CardContent>
       </Card>
+
+      {/* Schedule & Flexible Timings (Emergency Overrides & Saturday Flexibility) */}
+      <SectionTimetableSchedule
+        sectionId={section.id}
+        sectionName={section.name}
+        sectionCode={section.code}
+        termId={selectedTermId || termsData?.[0]?.id}
+        terms={termsData || []}
+        onTermChange={(newTermId) => setSelectedTermId(newTermId)}
+        courses={sectionCourses}
+      />
 
       {/* Assign Faculty to Course / Section Modal */}
       {section && (
