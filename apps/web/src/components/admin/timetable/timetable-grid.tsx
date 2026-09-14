@@ -290,28 +290,31 @@ export function TimetableGrid({
               <table className="border-border w-full border-collapse border text-sm">
                 <thead>
                   <tr>
-                    <th className="bg-muted border-border text-muted-foreground w-28 border p-3 text-left text-xs font-semibold tracking-wider uppercase">
-                      Time Slot
+                    <th className="bg-muted border-border text-muted-foreground w-32 border p-3 text-left text-xs font-semibold tracking-wider uppercase">
+                      Day / Time
                     </th>
-                    {displayDays.map((day) => (
-                      <th
-                        key={day}
-                        className="bg-muted border-border text-muted-foreground border p-3 text-center text-xs font-semibold tracking-wider uppercase"
-                      >
-                        {day}
-                      </th>
-                    ))}
+                    {timeSlots.map((slot) => {
+                      const [slotStart, slotEnd] = slot.split('-');
+                      return (
+                        <th
+                          key={slot}
+                          className="bg-muted border-border text-muted-foreground border p-3 text-center text-xs font-semibold tracking-wider whitespace-nowrap uppercase"
+                        >
+                          {slotStart} - {slotEnd}
+                        </th>
+                      );
+                    })}
                   </tr>
                 </thead>
                 <tbody>
-                  {timeSlots.map((slot) => {
-                    const [slotStart, slotEnd] = slot.split('-');
+                  {displayDays.map((day) => {
                     return (
-                      <tr key={slot} className="border-border border-b">
-                        <td className="border-border bg-muted/20 text-muted-foreground border p-2.5 align-top text-xs font-medium whitespace-nowrap">
-                          {slotStart} - {slotEnd}
+                      <tr key={day} className="border-border border-b">
+                        <td className="border-border bg-muted/20 text-muted-foreground border p-3 align-middle text-xs font-semibold whitespace-nowrap uppercase">
+                          {day}
                         </td>
-                        {displayDays.map((day) => {
+                        {timeSlots.map((slot) => {
+                          const [slotStart, slotEnd] = slot.split('-');
                           const dayEntries = entries.filter((e: any) => {
                             if (e.dayOfWeek !== day) return false;
                             const eSlot = `${formatTime(e.startTime)}-${formatTime(e.endTime)}`;
@@ -331,7 +334,7 @@ export function TimetableGrid({
                                   onEmptySlotClick(day, slotStart);
                                 }
                               }}
-                              className={`border-border group/cell relative h-24 min-w-[140px] border p-1.5 align-top transition-colors ${
+                              className={`border-border group/cell relative h-28 min-w-[160px] border p-1.5 align-top transition-colors ${
                                 overId === cellId ? 'bg-primary/10 ring-primary ring-2' : ''
                               } ${dayEntries.length === 0 ? 'hover:bg-muted/40 cursor-pointer' : ''}`}
                             >
