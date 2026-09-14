@@ -66,6 +66,7 @@ export const FacultyApi = {
     facultyApiClient.post(`/examinations/${examCourseId}/marks`, data).then((res) => res.data),
   getStudents: () => facultyApiClient.get('/students').then((res) => res.data),
   getProfile: () => facultyApiClient.get('/profile').then((res) => res.data),
+  updateProfile: (data: any) => facultyApiClient.patch('/profile', data).then((res) => res.data),
   getAnnouncements: () => facultyApiClient.get('/announcements').then((res) => res.data),
   createAnnouncement: (data: any) =>
     facultyApiClient.post('/announcements', data).then((res) => res.data),

@@ -100,6 +100,8 @@ export class StudentService {
           faculty: {
             include: { user: true },
           },
+          section: true,
+          room: true,
         },
       }),
     ]);
@@ -147,6 +149,7 @@ export class StudentService {
     const timetable = await this.prisma.timetableEntry.findMany({
       where: {
         institutionId,
+        ...(student.sectionId ? { sectionId: student.sectionId } : {}),
         courseId: { in: courseIds.filter((id) => id !== null) as string[] },
       },
       include: {
@@ -154,6 +157,8 @@ export class StudentService {
         faculty: {
           include: { user: true },
         },
+        section: true,
+        room: true,
       },
       orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
     });

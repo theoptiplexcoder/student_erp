@@ -106,11 +106,18 @@ function EntryCard({
       </div>
 
       <div className="pr-10">
-        <div
-          className="line-clamp-2 text-xs font-semibold"
-          title={entry.course?.name || entry.courseId}
-        >
-          {entry.course?.name || entry.courseId || 'Course'}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <div
+            className="line-clamp-2 text-xs font-semibold"
+            title={entry.course?.name || entry.courseId}
+          >
+            {entry.course?.name || entry.courseId || 'Course'}
+          </div>
+          {entry.course?.courseType && entry.course?.courseType !== 'STANDARD' && (
+            <span className="bg-primary/20 py-0.2 text-primary rounded px-1.5 text-[9px] font-bold tracking-wider uppercase">
+              {entry.course.courseType}
+            </span>
+          )}
         </div>
         {entry.course?.code && (
           <div className="font-mono text-[10px] opacity-75">{entry.course.code}</div>

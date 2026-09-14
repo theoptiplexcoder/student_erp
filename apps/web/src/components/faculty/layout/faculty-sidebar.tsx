@@ -26,7 +26,6 @@ export const facultySidebarNavItems = [
   { title: 'Dashboard', href: '/faculty/dashboard', icon: LayoutDashboard, exact: true },
   { title: 'Timetable', href: '/faculty/timetable', icon: CalendarCheck },
   { title: 'Courses', href: '/faculty/courses', icon: BookOpen },
-  { title: 'My Sections', href: '/faculty/sections', icon: ClipboardCheck },
   { title: 'Students', href: '/faculty/students', icon: Users },
   { title: 'Announcements', href: '/faculty/announcements', icon: Megaphone },
   { title: 'Grievances', href: '/faculty/grievances', icon: AlertCircle },

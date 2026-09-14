@@ -105,6 +105,16 @@ export const useFacultyProfile = () => {
   });
 };
 
+export const useUpdateFacultyProfile = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => FacultyApi.updateProfile(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['faculty', 'profile'] });
+    },
+  });
+};
+
 export const useFacultyAnnouncements = () => {
   return useQuery({
     queryKey: ['faculty', 'announcements'],

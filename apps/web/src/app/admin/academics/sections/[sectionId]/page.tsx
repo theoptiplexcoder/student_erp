@@ -52,6 +52,7 @@ import {
 } from '@/hooks/api/admin/useFacultySections';
 import { useAdminRoles } from '@/hooks/api/admin/useRoles';
 import { SectionTimetableSchedule } from '@/components/admin/sections/SectionTimetableSchedule';
+import { SessionPlanningCard } from '@/components/admin/sections/SessionPlanningCard';
 import { Trash2, ShieldCheck, UserCheck } from 'lucide-react';
 
 // Unified Faculty & Role interface for section-level display
@@ -1361,6 +1362,16 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
           )}
         </CardContent>
       </Card>
+
+      {/* Session Planning & Instructional Hours Breakdown */}
+      <SessionPlanningCard
+        sectionId={section.id}
+        sectionName={section.name}
+        sectionCode={section.code}
+        termId={selectedTermId || termsData?.[0]?.id}
+        terms={termsData || []}
+        onTermChange={(newTermId) => setSelectedTermId(newTermId)}
+      />
 
       {/* Schedule & Flexible Timings (Emergency Overrides & Saturday Flexibility) */}
       <SectionTimetableSchedule

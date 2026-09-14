@@ -125,6 +125,13 @@ enum TimetableDay {
   SUNDAY
 }
 
+enum SessionOccurrenceStatus {
+  PLANNED
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+}
+
 enum ResourceType {
   PDF
   DOCUMENT
@@ -401,6 +408,7 @@ model Institution {
   timetableEntries          TimetableEntry[]
   attendanceSessions        AttendanceSession[]
   attendanceRecords         AttendanceRecord[]
+  sessionOccurrences        SessionOccurrence[]
   courseResources           CourseResource[]
   assignments               Assignment[]
   assignmentSubmissions     AssignmentSubmission[]
@@ -627,6 +635,8 @@ model Faculty {
   availability       FacultyAvailability[]
   facultySections    FacultySection[]
 
+  sessionOccurrences SessionOccurrence[]
+
   @@unique([institutionId, teacherCode])
   @@index([institutionId])
   @@index([institutionId, departmentId])
@@ -757,6 +767,7 @@ model AcademicTerm {
   studentTerms       StudentTerm[]
   lessonPlans        LessonPlan[]
   timetables         Timetable[]
+  sessionOccurrences SessionOccurrence[]
 
   @@index([institutionId])
   @@index([academicYearId])
@@ -792,6 +803,7 @@ model Section {
   calendarEvents     CalendarEvent[]
   lessonPlanSections LessonPlanSection[]
   facultySections    FacultySection[]
+  sessionOccurrences SessionOccurrence[]
 
   @@index([institutionId])
   @@map("sections")
@@ -833,6 +845,7 @@ model Course {
   classLevelId       String?              @db.Uuid
   lessonPlans        LessonPlan[]
   adminResources     AdminResource[]
+  sessionOccurrences SessionOccurrence[]
 
   @@unique([institutionId, code])
   @@index([institutionId])
@@ -936,7 +949,7 @@ model FacultySection {
   institutionId  String   @map("institution_id") @db.Uuid
   facultyId      String   @map("faculty_id") @db.Uuid
   sectionId      String   @map("section_id") @db.Uuid
-  role           String   // "TEACHER" | "CLASS_TEACHER" | custom role name
+  role           String // "TEACHER" | "CLASS_TEACHER" | custom role name
   academicYearId String   @map("academic_year_id") @db.Uuid
   isPrimary      Boolean  @default(false) @map("is_primary")
   createdAt      DateTime @default(now()) @map("created_at")
@@ -1030,6 +1043,8 @@ model TimetableEntry {
   building     Building?    @relation(fields: [buildingId], references: [id])
   lessonPlan   LessonPlan?  @relation(fields: [lessonPlanId], references: [id])
 
+  sessionOccurrences SessionOccurrence[]
+
   @@unique([termId, sectionId, dayOfWeek, startTime])
   @@unique([termId, facultyId, dayOfWeek, startTime])
   @@unique([termId, roomId, dayOfWeek, startTime])
@@ -1040,6 +1055,43 @@ model TimetableEntry {
   @@index([dayOfWeek])
   @@index([institutionId, termId, sectionId])
   @@map("timetable_entries")
+}
+
+model SessionOccurrence {
+  id                  String                  @id @default(uuid()) @db.Uuid
+  institutionId       String                  @map("institution_id") @db.Uuid
+  timetableEntryId    String                  @map("timetable_entry_id") @db.Uuid
+  courseId            String                  @map("course_id") @db.Uuid
+  sectionId           String                  @map("section_id") @db.Uuid
+  facultyId           String                  @map("faculty_id") @db.Uuid
+  termId              String                  @map("term_id") @db.Uuid
+  date                DateTime                @db.Date
+  startTime           DateTime                @map("start_time") @db.Time
+  endTime             DateTime                @map("end_time") @db.Time
+  status              SessionOccurrenceStatus @default(PLANNED)
+  cancelledReason     String?                 @map("cancelled_reason")
+  rescheduledTo       DateTime?               @map("rescheduled_to") @db.Date
+  attendanceSessionId String?                 @map("attendance_session_id") @db.Uuid
+  createdAt           DateTime                @default(now()) @map("created_at")
+  updatedAt           DateTime                @updatedAt @map("updated_at")
+
+  institution       Institution        @relation(fields: [institutionId], references: [id])
+  timetableEntry    TimetableEntry     @relation(fields: [timetableEntryId], references: [id])
+  course            Course             @relation(fields: [courseId], references: [id])
+  section           Section            @relation(fields: [sectionId], references: [id])
+  faculty           Faculty            @relation(fields: [facultyId], references: [id])
+  term              AcademicTerm       @relation(fields: [termId], references: [id])
+  attendanceSession AttendanceSession? @relation(fields: [attendanceSessionId], references: [id])
+
+  attendanceRecords AttendanceRecord[]
+
+  @@unique([timetableEntryId, date])
+  @@index([institutionId])
+  @@index([termId])
+  @@index([sectionId, date])
+  @@index([courseId, date])
+  @@index([facultyId, date])
+  @@map("session_occurrences")
 }
 
 enum RoomType {
@@ -1115,7 +1167,8 @@ model AttendanceSession {
   faculty     Faculty      @relation(fields: [facultyId], references: [id])
   term        AcademicTerm @relation(fields: [termId], references: [id])
 
-  attendanceRecords AttendanceRecord[]
+  attendanceRecords  AttendanceRecord[]
+  sessionOccurrences SessionOccurrence[]
 
   @@index([institutionId])
   @@map("attendance_sessions")
@@ -1131,9 +1184,11 @@ model AttendanceRecord {
   markedAt            DateTime         @default(now()) @map("marked_at")
   updatedAt           DateTime         @updatedAt @map("updated_at")
 
-  institution       Institution       @relation(fields: [institutionId], references: [id])
-  attendanceSession AttendanceSession @relation(fields: [attendanceSessionId], references: [id], onDelete: Cascade)
-  student           Student           @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  institution         Institution        @relation(fields: [institutionId], references: [id])
+  attendanceSession   AttendanceSession  @relation(fields: [attendanceSessionId], references: [id], onDelete: Cascade)
+  student             Student            @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  sessionOccurrence   SessionOccurrence? @relation(fields: [sessionOccurrenceId], references: [id])
+  sessionOccurrenceId String?            @map("session_occurrence_id") @db.Uuid
 
   @@unique([attendanceSessionId, studentId])
   @@index([institutionId])
@@ -1938,7 +1993,7 @@ model FeeComponent {
   createdAt      DateTime         @default(now()) @map("created_at")
   updatedAt      DateTime         @updatedAt @map("updated_at")
 
-  feeStructure FeeStructure @relation(fields: [feeStructureId], references: [id], onDelete: Cascade)
+  feeStructure             FeeStructure              @relation(fields: [feeStructureId], references: [id], onDelete: Cascade)
   studentFeePlanComponents StudentFeePlanComponent[]
 
   @@index([feeStructureId])
@@ -1946,13 +2001,13 @@ model FeeComponent {
 }
 
 model StudentFeePlanComponent {
-  id               String         @id @default(uuid()) @db.Uuid
-  studentFeePlanId String         @map("student_fee_plan_id") @db.Uuid
-  feeComponentId   String         @map("fee_component_id") @db.Uuid
+  id               String @id @default(uuid()) @db.Uuid
+  studentFeePlanId String @map("student_fee_plan_id") @db.Uuid
+  feeComponentId   String @map("fee_component_id") @db.Uuid
   amount           Float
 
-  studentFeePlan   StudentFeePlan @relation(fields: [studentFeePlanId], references: [id], onDelete: Cascade)
-  feeComponent     FeeComponent   @relation(fields: [feeComponentId], references: [id], onDelete: Restrict)
+  studentFeePlan StudentFeePlan @relation(fields: [studentFeePlanId], references: [id], onDelete: Cascade)
+  feeComponent   FeeComponent   @relation(fields: [feeComponentId], references: [id], onDelete: Restrict)
 
   @@index([studentFeePlanId])
   @@index([feeComponentId])

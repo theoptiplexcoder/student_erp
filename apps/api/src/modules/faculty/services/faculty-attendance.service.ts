@@ -140,6 +140,21 @@ export class FacultyAttendanceService {
         }
       }
 
+      // Link and mark matching SessionOccurrence as COMPLETED
+      await tx.sessionOccurrence.updateMany({
+        where: {
+          institutionId,
+          courseId,
+          sectionId,
+          date: sessionDate,
+          status: { in: ['PLANNED', 'RESCHEDULED'] },
+        },
+        data: {
+          status: 'COMPLETED',
+          attendanceSessionId: session.id,
+        },
+      });
+
       return session;
     });
   }

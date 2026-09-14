@@ -42,19 +42,23 @@ export class FacultyTimetableService {
     const session = await this.prisma.attendanceSession.findFirst({
       where: {
         institutionId,
-        facultyId: faculty.id,
         courseId,
         sectionId,
         date,
       },
       include: {
-        course: true,
+        course: {
+          include: {
+            department: true,
+          },
+        },
         section: {
           include: {
             program: true,
             batch: true,
           },
         },
+        term: true,
         attendanceRecords: {
           include: {
             student: {
@@ -67,6 +71,63 @@ export class FacultyTimetableService {
       },
     });
 
-    return session;
+    const dayNames = [
+      'SUNDAY',
+      'MONDAY',
+      'TUESDAY',
+      'WEDNESDAY',
+      'THURSDAY',
+      'FRIDAY',
+      'SATURDAY',
+    ] as const;
+    const dayOfWeek = dayNames[date.getUTCDay()];
+
+    const timetableEntry = await this.prisma.timetableEntry.findFirst({
+      where: {
+        courseId,
+        sectionId,
+        dayOfWeek,
+      },
+      include: {
+        room: true,
+        building: true,
+        term: true,
+      },
+    });
+
+    if (!session) {
+      const [course, section] = await Promise.all([
+        this.prisma.course.findUnique({
+          where: { id: courseId },
+          include: { department: true },
+        }),
+        this.prisma.section.findUnique({
+          where: { id: sectionId },
+          include: { program: true, batch: true },
+        }),
+      ]);
+
+      return {
+        id: null,
+        institutionId,
+        courseId,
+        sectionId,
+        facultyId: faculty.id,
+        date,
+        startTime: timetableEntry?.startTime || null,
+        endTime: timetableEntry?.endTime || null,
+        topic: null,
+        course,
+        section,
+        term: timetableEntry?.term || null,
+        timetableEntry,
+        attendanceRecords: [],
+      };
+    }
+
+    return {
+      ...session,
+      timetableEntry,
+    };
   }
 }

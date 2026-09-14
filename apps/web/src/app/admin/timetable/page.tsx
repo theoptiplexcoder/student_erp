@@ -5,6 +5,7 @@ import { TimetableGrid } from '@/components/admin/timetable/timetable-grid';
 import { TimetableToolbar } from '@/components/admin/timetable/timetable-toolbar';
 import { TimetableBulkActions } from '@/components/admin/timetable/timetable-bulk-actions';
 import { TimetableEntryForm } from '@/components/admin/timetable/timetable-entry-form';
+import { TimetableMergeModal } from '@/components/admin/timetable/timetable-merge-modal';
 import { TimetableSessionSettings } from '@/components/admin/timetable/timetable-session-settings';
 import { TimetableProgramSectionsSummary } from '@/components/admin/timetable/timetable-program-sections-summary';
 import { TimetableOverviewHeatmap } from '@/components/admin/timetable/timetable-overview-heatmap';
@@ -29,6 +30,7 @@ import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
 import { useAdminTerms } from '@/hooks/api/admin/useTerms';
 import { TimetableImportModal } from '@/components/admin/timetable/timetable-import-modal';
+import { SessionPlanningCard } from '@/components/admin/sections/SessionPlanningCard';
 import { AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 
 const CONFLICT_TYPE_LABELS: Record<string, string> = {
@@ -113,6 +115,7 @@ export default function AdminTimetablePage() {
   const [editingEntry, setEditingEntry] = useState<any>(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [sessionSettingsOpen, setSessionSettingsOpen] = useState(false);
+  const [mergeModalOpen, setMergeModalOpen] = useState(false);
   const [generationConflicts, setGenerationConflicts] = useState<any[]>([]);
 
   // Metadata queries
@@ -427,6 +430,47 @@ export default function AdminTimetablePage() {
     }
   };
 
+  const selectedEntriesForMerge = useMemo(() => {
+    if (selectedIds.length !== 2) return [];
+    return selectedIds.map((id) => entries.find((e: any) => e.id === id)).filter(Boolean);
+  }, [selectedIds, entries]);
+
+  const handleConfirmMerge = async ({
+    primaryEntryId,
+    secondaryEntryId,
+    newStartTime,
+    newEndTime,
+    targetCourseId,
+    targetFacultyId,
+    targetRoomId,
+  }: {
+    primaryEntryId: string;
+    secondaryEntryId: string;
+    newStartTime: string;
+    newEndTime: string;
+    targetCourseId: string;
+    targetFacultyId: string;
+    targetRoomId?: string;
+  }) => {
+    // 1. Delete the secondary slot
+    await deleteEntry(secondaryEntryId);
+
+    // 2. Update the primary slot to extend across both time slots
+    await updateEntry({
+      id: primaryEntryId,
+      data: {
+        startTime: newStartTime,
+        endTime: newEndTime,
+        courseId: targetCourseId,
+        facultyId: targetFacultyId,
+        roomId: targetRoomId || undefined,
+      },
+    });
+
+    clearSelection();
+    setMergeModalOpen(false);
+  };
+
   const clearSelection = () => setSelectedIds([]);
 
   return (
@@ -496,6 +540,18 @@ export default function AdminTimetablePage() {
       {/* Overlapping Conflict Alert Banner */}
       {combinedConflicts.length > 0 && <ConflictAlert conflicts={combinedConflicts} />}
 
+      {/* Session Planning & Instructional Hours (when section is selected) */}
+      {sectionId && termId && (
+        <SessionPlanningCard
+          sectionId={sectionId}
+          sectionName={sections.find((s: any) => s.id === sectionId)?.name || 'Selected Section'}
+          sectionCode={sections.find((s: any) => s.id === sectionId)?.code}
+          termId={termId}
+          terms={terms || []}
+          onTermChange={(newTermId) => setTermId(newTermId)}
+        />
+      )}
+
       {/* Timetable Grid */}
       {termId ? (
         <TimetableGrid
@@ -523,6 +579,16 @@ export default function AdminTimetablePage() {
         onDelete={() => console.log('Bulk delete', selectedIds)}
         onMove={() => console.log('Bulk move', selectedIds)}
         onReassign={() => console.log('Bulk reassign', selectedIds)}
+        onMerge={() => setMergeModalOpen(true)}
+      />
+
+      {/* Merge Two Slots into Extended Session Modal */}
+      <TimetableMergeModal
+        open={mergeModalOpen}
+        onOpenChange={setMergeModalOpen}
+        entries={selectedEntriesForMerge}
+        onConfirmMerge={handleConfirmMerge}
+        isSubmitting={isUpdating || isDeleting}
       />
 
       {/* Entry Create / Edit Modal with Real-time Collision Detection */}

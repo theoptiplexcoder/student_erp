@@ -15,9 +15,11 @@ function formatTime(timeString: string | Date) {
   return `${h}:${m}`;
 }
 
-function getDayIndex(dayName: string) {
-  const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-  return days.indexOf(dayName.toUpperCase());
+function getRoomLabel(entry: any) {
+  if (entry.room?.name) return entry.room.name;
+  if (entry.room?.number) return `Room ${entry.room.number}`;
+  if (typeof entry.room === 'string') return entry.room;
+  return null;
 }
 
 const colors = [
@@ -162,10 +164,10 @@ export function TimetableGrid() {
                                           {entry.faculty?.user?.lastName || 'TBA'}
                                         </span>
                                       </div>
-                                      {entry.room && (
+                                      {getRoomLabel(entry) && (
                                         <div className="flex items-center gap-1 text-[10px] opacity-90">
                                           <MapPin className="h-3 w-3" />
-                                          <span className="truncate">{entry.room}</span>
+                                          <span className="truncate">{getRoomLabel(entry)}</span>
                                         </div>
                                       )}
                                     </div>
@@ -229,10 +231,10 @@ export function TimetableGrid() {
                                   <User className="h-3.5 w-3.5" />
                                   <span>{entry.faculty?.user?.lastName || 'TBA'}</span>
                                 </div>
-                                {entry.room && (
+                                {getRoomLabel(entry) && (
                                   <div className="flex items-center gap-1">
                                     <MapPin className="h-3.5 w-3.5" />
-                                    <span>{entry.room}</span>
+                                    <span>{getRoomLabel(entry)}</span>
                                   </div>
                                 )}
                               </div>

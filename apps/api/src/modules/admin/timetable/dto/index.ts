@@ -7,3 +7,4 @@ export * from './bulk-update-timetable.dto';
 export * from './is-after-time.decorator';
 export * from './bulk-delete-timetable.dto';
 export * from './swap-slots.dto';
+export * from './generate-session-occurrences.dto';
