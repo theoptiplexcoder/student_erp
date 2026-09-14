@@ -1265,7 +1265,7 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
         </CardContent>
       </Card>
 
-      {/* Assign Faculty to Course Modal */}
+      {/* Assign Faculty to Course / Section Modal */}
       {section && (
         <AssignCourseFacultyModal
           isOpen={isModalOpen}
@@ -1278,6 +1278,7 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
             id: section.id,
             name: section.name,
             code: section.code,
+            academicYear: section.academicYear,
           }}
           course={modalCourse}
           availableTerms={termsData || []}

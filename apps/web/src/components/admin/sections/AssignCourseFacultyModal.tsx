@@ -11,12 +11,15 @@ import {
   Button,
   Label,
   Badge,
+  Checkbox,
 } from '@student-erp/ui';
-import { useAdminFaculty } from '@/hooks/api/admin/useFaculty';
+import { useAdminFaculty, useAssignFacultyClass } from '@/hooks/api/admin/useFaculty';
 import {
   useAdminCreateCourseAssignment,
   useAdminCourseAssignments,
 } from '@/hooks/api/admin/useCourseAssignments';
+import { useAdminRoles } from '@/hooks/api/admin/useRoles';
+import { useAdminCreateFacultySection } from '@/hooks/api/admin/useFacultySections';
 import { BookOpen, User, Building, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 interface AssignCourseFacultyModalProps {
@@ -26,8 +29,12 @@ interface AssignCourseFacultyModalProps {
     id: string;
     name: string;
     code: string;
+    academicYear?: {
+      id: string;
+      name?: string;
+    } | null;
   };
-  course: {
+  course?: {
     id: string;
     name: string;
     code: string;
@@ -36,7 +43,7 @@ interface AssignCourseFacultyModalProps {
       name: string;
     } | null;
   } | null;
-  availableTerms: Array<{
+  availableTerms?: Array<{
     id: string;
     name: string;
     code: string;
@@ -64,6 +71,8 @@ export function AssignCourseFacultyModal({
 }: AssignCourseFacultyModalProps) {
   const [selectedFacultyId, setSelectedFacultyId] = useState('');
   const [selectedTermId, setSelectedTermId] = useState('');
+  const [selectedRole, setSelectedRole] = useState('TEACHER');
+  const [isPrimaryRole, setIsPrimaryRole] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Fetch all faculty members (page 1, up to 100) - only when modal is open
@@ -72,6 +81,9 @@ export function AssignCourseFacultyModal({
   });
   const allFaculty = facultyResponse?.data || [];
 
+  // Fetch roles for selection
+  const { data: customRoles = [] } = useAdminRoles({ enabled: isOpen });
+
   // Fetch institution-wide course assignments to determine current workloads - only when modal is open
   const { data: allAssignments = [], isLoading: isLoadingAssignments } = useAdminCourseAssignments(
     undefined,
@@ -79,14 +91,20 @@ export function AssignCourseFacultyModal({
   );
 
   const createAssignment = useAdminCreateCourseAssignment();
+  const assignFacultyClass = useAssignFacultyClass();
+  const createSectionFaculty = useAdminCreateFacultySection();
 
   // Reset/Pre-fill term on open
   useEffect(() => {
     if (isOpen) {
       setErrorMessage(null);
       setSelectedFacultyId(currentAssignment?.faculty?.id || '');
-      if (availableTerms.length > 0 && !selectedTermId) {
+      setSelectedRole('TEACHER');
+      setIsPrimaryRole(false);
+      if (availableTerms && availableTerms.length > 0) {
         setSelectedTermId(availableTerms[0]?.id || '');
+      } else {
+        setSelectedTermId('');
       }
     }
   }, [isOpen, availableTerms, currentAssignment]);
@@ -149,37 +167,49 @@ export function AssignCourseFacultyModal({
     onClose();
   };
 
+  const isSubmitting =
+    createAssignment.isPending || assignFacultyClass.isPending || createSectionFaculty.isPending;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
-
-    if (!course) {
-      setErrorMessage('No course selected.');
-      return;
-    }
 
     if (!selectedFacultyId) {
       setErrorMessage('Please select a faculty member.');
       return;
     }
 
-    if (!selectedTermId) {
-      setErrorMessage('Please select an academic term.');
-      return;
-    }
+    const academicYearId = section.academicYear?.id;
 
     try {
-      await createAssignment.mutateAsync({
-        facultyId: selectedFacultyId,
-        courseId: course.id,
-        sectionId: section.id,
-        termId: selectedTermId,
-        isPrimary: true,
-      });
+      // 1. Assign Section Role if section has an academic year
+      if (academicYearId && selectedRole) {
+        await createSectionFaculty.mutateAsync({
+          facultyId: selectedFacultyId,
+          sectionId: section.id,
+          role: selectedRole,
+          academicYearId,
+          isPrimary: isPrimaryRole,
+        });
+      }
+
+      // 2. Assign Course (termId is optional; backend auto-provisions if not provided)
+      if (course) {
+        await assignFacultyClass.mutateAsync({
+          id: selectedFacultyId,
+          data: {
+            courseId: course.id,
+            sectionId: section.id,
+            ...(selectedTermId ? { termId: selectedTermId } : {}),
+            isPrimary: true,
+          },
+        });
+      }
+
       handleClose();
     } catch (err: any) {
       setErrorMessage(
-        err.response?.data?.message || err.message || 'Failed to assign faculty to course.',
+        err.response?.data?.message || err.message || 'Failed to assign faculty to section/course.',
       );
     }
   };
@@ -190,12 +220,18 @@ export function AssignCourseFacultyModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BookOpen className="text-primary h-5 w-5" />
-            Assign Faculty to Course
+            Assign Faculty to Section & Course
           </DialogTitle>
           <DialogDescription>
-            Assign a faculty member to teach{' '}
-            <strong className="text-foreground">{course?.name}</strong> ({course?.code}) for section{' '}
-            <strong className="text-foreground">{section.name}</strong>.
+            Assign a faculty member to section{' '}
+            <strong className="text-foreground">{section.name}</strong>
+            {course ? (
+              <>
+                {' '}
+                to teach <strong className="text-foreground">{course.name}</strong> ({course.code})
+              </>
+            ) : null}
+            .
           </DialogDescription>
         </DialogHeader>
 
@@ -207,50 +243,32 @@ export function AssignCourseFacultyModal({
             </div>
           )}
 
-          {/* Course & Department Info Badge */}
-          <div className="bg-muted/40 rounded-lg border p-3 text-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-muted-foreground text-xs font-semibold uppercase">
-                Course Department
-              </span>
-              <Badge variant="outline" className="text-xs">
-                {course?.department?.name ? (
-                  <>
-                    <Building className="mr-1 h-3 w-3" />
-                    {course.department.name}
-                  </>
-                ) : (
-                  'No Department Set'
-                )}
-              </Badge>
+          {/* Course & Department Info Badge (if course is provided) */}
+          {course && (
+            <div className="bg-muted/40 rounded-lg border p-3 text-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-muted-foreground text-xs font-semibold uppercase">
+                  Course Department
+                </span>
+                <Badge variant="outline" className="text-xs">
+                  {course?.department?.name ? (
+                    <>
+                      <Building className="mr-1 h-3 w-3" />
+                      {course.department.name}
+                    </>
+                  ) : (
+                    'No Department Set'
+                  )}
+                </Badge>
+              </div>
+              {hasDepartmentMismatchFallback && (
+                <p className="text-muted-foreground mt-2 text-xs">
+                  Note: No faculty found specifically in this department. Showing all available
+                  faculty.
+                </p>
+              )}
             </div>
-            {hasDepartmentMismatchFallback && (
-              <p className="text-muted-foreground mt-2 text-xs">
-                Note: No faculty found specifically in this department. Showing all available
-                faculty.
-              </p>
-            )}
-          </div>
-
-          {/* Academic Term Select */}
-          <div className="space-y-2">
-            <Label htmlFor="assign-term-select">Academic Term</Label>
-            <select
-              id="assign-term-select"
-              className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-              value={selectedTermId}
-              onChange={(e) => setSelectedTermId(e.target.value)}
-              disabled={createAssignment.isPending || availableTerms.length === 0}
-              required
-            >
-              <option value="">Select Academic Term...</option>
-              {availableTerms.map((term) => (
-                <option key={term.id} value={term.id}>
-                  {term.name} ({term.code})
-                </option>
-              ))}
-            </select>
-          </div>
+          )}
 
           {/* Faculty Dropdown with Department Filtering and Teaching Classes Count */}
           <div className="space-y-2">
@@ -268,7 +286,7 @@ export function AssignCourseFacultyModal({
               className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
               value={selectedFacultyId}
               onChange={(e) => setSelectedFacultyId(e.target.value)}
-              disabled={isLoadingFaculty || createAssignment.isPending}
+              disabled={isLoadingFaculty || isSubmitting}
               required
             >
               <option value="">Select Faculty...</option>
@@ -288,6 +306,70 @@ export function AssignCourseFacultyModal({
                 );
               })}
             </select>
+          </div>
+
+          {/* Section Role Select */}
+          <div className="space-y-2">
+            <Label htmlFor="assign-role-select">Section Role</Label>
+            <select
+              id="assign-role-select"
+              className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              disabled={isSubmitting}
+              required
+            >
+              <optgroup label="Standard Roles">
+                <option value="TEACHER">Teacher</option>
+                <option value="CLASS_TEACHER">Class Teacher</option>
+              </optgroup>
+              {customRoles && customRoles.length > 0 && (
+                <optgroup label="Custom Roles">
+                  {customRoles.map((r) => (
+                    <option key={r.id} value={r.name}>
+                      {r.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+            </select>
+          </div>
+
+          {/* Academic Term Select (Optional) */}
+          {availableTerms && availableTerms.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="assign-term-select">
+                Academic Term{' '}
+                <span className="text-muted-foreground text-xs font-normal">(Optional)</span>
+              </Label>
+              <select
+                id="assign-term-select"
+                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                value={selectedTermId}
+                onChange={(e) => setSelectedTermId(e.target.value)}
+                disabled={isSubmitting}
+              >
+                <option value="">Default Term (Auto-assigned)</option>
+                {availableTerms.map((term) => (
+                  <option key={term.id} value={term.id}>
+                    {term.name} ({term.code})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Primary Class Teacher Checkbox */}
+          <div className="flex items-center space-x-2 pt-1">
+            <Checkbox
+              id="is-primary-role"
+              checked={isPrimaryRole}
+              onCheckedChange={(checked) => setIsPrimaryRole(Boolean(checked))}
+              disabled={isSubmitting}
+            />
+            <Label htmlFor="is-primary-role" className="cursor-pointer text-sm font-normal">
+              Primary Section In-Charge / Class Teacher
+            </Label>
           </div>
 
           {/* Selected Faculty Teaching Workload Preview Card */}
@@ -335,19 +417,11 @@ export function AssignCourseFacultyModal({
           )}
 
           <DialogFooter className="pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={createAssignment.isPending}
-            >
+            <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={!selectedFacultyId || !selectedTermId || createAssignment.isPending}
-            >
-              {createAssignment.isPending ? 'Assigning...' : 'Assign Faculty'}
+            <Button type="submit" disabled={!selectedFacultyId || isSubmitting}>
+              {isSubmitting ? 'Assigning...' : 'Assign Faculty'}
             </Button>
           </DialogFooter>
         </form>
