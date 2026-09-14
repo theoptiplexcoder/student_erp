@@ -105,9 +105,14 @@ export const useAdminCreateFacultySection = () => {
       const response = await apiClient.post('/admin/faculty-sections', data);
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'faculty-sections'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'sections'] });
+      if (variables?.facultyId) {
+        queryClient.invalidateQueries({
+          queryKey: ['admin', 'faculty-sections', 'faculty', variables.facultyId],
+        });
+      }
     },
   });
 };

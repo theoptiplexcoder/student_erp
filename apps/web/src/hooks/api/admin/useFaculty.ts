@@ -122,6 +122,12 @@ export const useAssignFacultyClass = () => {
       queryClient.invalidateQueries({
         queryKey: ['admin', 'faculty', variables.id, 'assignments'],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['admin', 'course-assignments'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['admin', 'sections'],
+      });
     },
   });
 };
