@@ -40,6 +40,7 @@ import {
 } from '@student-erp/hooks';
 import { useAdminFaculty } from '@/hooks/api/admin/useFaculty';
 import { useAdminRooms } from '@/hooks/api/admin/useRooms';
+import { useAdminTerms } from '@/hooks/api/admin/useTerms';
 import { useInstitutionSettings } from '@/hooks/api/admin/useInstitutionSettings';
 import { formatTimeSlot, isTimeOverlapping } from '../timetable/timetable-conflict-utils';
 
@@ -48,7 +49,7 @@ interface SectionTimetableScheduleProps {
   sectionName: string;
   sectionCode?: string;
   termId?: string;
-  terms: any[];
+  terms?: any[];
   onTermChange?: (termId: string) => void;
   courses: Array<{
     id: string;
@@ -107,11 +108,19 @@ export function SectionTimetableSchedule({
   sectionName,
   sectionCode,
   termId,
-  terms,
+  terms: passedTerms,
   onTermChange,
   courses,
 }: SectionTimetableScheduleProps) {
-  const activeTermId = termId || (terms && terms.length > 0 ? terms[0].id : '');
+  // Fetch global academic terms as fallback if passedTerms is empty
+  const { data: globalTerms = [] } = useAdminTerms();
+
+  const termsList = useMemo(() => {
+    if (passedTerms && passedTerms.length > 0) return passedTerms;
+    return globalTerms;
+  }, [passedTerms, globalTerms]);
+
+  const activeTermId = termId || (termsList && termsList.length > 0 ? termsList[0].id : '');
 
   // Timetable query for this section and term
   const {
@@ -119,7 +128,7 @@ export function SectionTimetableSchedule({
     isLoading,
     refetch,
   } = useAdminTimetable({
-    termId: activeTermId,
+    termId: activeTermId || 'all',
     sectionId,
   });
 
@@ -142,8 +151,15 @@ export function SectionTimetableSchedule({
   const updateEntry = useUpdateTimetableEntry();
   const deleteEntry = useDeleteTimetableEntry();
 
-  // Active view: 'TODAY' | 'SATURDAY' | 'ALL_WEEK'
-  const [activeView, setActiveView] = useState<'TODAY' | 'SATURDAY' | 'ALL_WEEK'>('TODAY');
+  // Active view: specific day or 'ALL_WEEK'
+  // Default to MONDAY if today is SUNDAY (since academic institutions usually operate Mon-Sat)
+  const currentDayOfWeek: TimetableDayName = useMemo(() => {
+    const dayNum = new Date().getDay();
+    return DAY_MAP_JS[dayNum] || 'MONDAY';
+  }, []);
+
+  const initialView = currentDayOfWeek === 'SUNDAY' ? 'MONDAY' : currentDayOfWeek;
+  const [activeView, setActiveView] = useState<TimetableDayName | 'ALL_WEEK'>(initialView);
   // Display layout mode: 'SLOTS' (showing all institution operation time slots) | 'LIST'
   const [displayMode, setDisplayMode] = useState<'SLOTS' | 'LIST'>('SLOTS');
 
@@ -177,29 +193,26 @@ export function SectionTimetableSchedule({
   });
   const [slotFormError, setSlotFormError] = useState<string | null>(null);
 
-  // Determine current day of week
-  const currentDayOfWeek: TimetableDayName = useMemo(() => {
-    const dayNum = new Date().getDay();
-    return DAY_MAP_JS[dayNum] || 'MONDAY';
-  }, []);
-
-  // Filter entries for Today
-  const todayEntries = useMemo(() => {
-    return entries
-      .filter((e: any) => e.dayOfWeek === currentDayOfWeek)
-      .sort((a: any, b: any) =>
+  // Group entries by day
+  const entriesByDay = useMemo(() => {
+    const map: Record<string, any[]> = {};
+    TIMETABLE_DAYS.forEach((d) => {
+      map[d] = [];
+    });
+    entries.forEach((e: any) => {
+      if (map[e.dayOfWeek]) {
+        map[e.dayOfWeek].push(e);
+      }
+    });
+    Object.keys(map).forEach((d) => {
+      map[d].sort((a: any, b: any) =>
         formatDisplayTime(a.startTime).localeCompare(formatDisplayTime(b.startTime)),
       );
-  }, [entries, currentDayOfWeek]);
-
-  // Filter entries for Saturday
-  const saturdayEntries = useMemo(() => {
-    return entries
-      .filter((e: any) => e.dayOfWeek === 'SATURDAY')
-      .sort((a: any, b: any) =>
-        formatDisplayTime(a.startTime).localeCompare(formatDisplayTime(b.startTime)),
-      );
+    });
+    return map;
   }, [entries]);
+
+  const saturdayEntries = useMemo(() => entriesByDay['SATURDAY'] || [], [entriesByDay]);
 
   // Compute all continuous time slots spanning from institution start time up to institution operations end time
   const fullDaySlots = useMemo(() => {
@@ -384,7 +397,7 @@ export function SectionTimetableSchedule({
         });
       } else {
         await createEntry.mutateAsync({
-          termId: activeTermId,
+          termId: activeTermId || undefined,
           courseId: slotForm.courseId,
           facultyId: slotForm.facultyId,
           sectionId,
@@ -414,11 +427,12 @@ export function SectionTimetableSchedule({
     }
   };
 
-  const activeTargetDay =
-    activeView === 'TODAY' ? currentDayOfWeek : activeView === 'SATURDAY' ? 'SATURDAY' : null;
+  const activeTargetDay: TimetableDayName | null = activeView === 'ALL_WEEK' ? null : activeView;
 
-  const currentViewEntries =
-    activeView === 'TODAY' ? todayEntries : activeView === 'SATURDAY' ? saturdayEntries : entries;
+  const currentViewEntries = useMemo(() => {
+    if (activeView === 'ALL_WEEK') return entries;
+    return entriesByDay[activeView] || [];
+  }, [activeView, entries, entriesByDay]);
 
   return (
     <Card className="border-border">
@@ -433,7 +447,7 @@ export function SectionTimetableSchedule({
               {entries.length} Weekly Sessions
             </Badge>
             <Badge variant="secondary" className="text-xs">
-              Hours: {institutionStartTime} – {institutionClosingTime}
+              Operating Hours: {institutionStartTime} – {institutionClosingTime}
             </Badge>
           </div>
           <CardDescription className="mt-1">
@@ -445,13 +459,13 @@ export function SectionTimetableSchedule({
         {/* Action buttons */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Term Selector */}
-          {terms && terms.length > 1 && (
+          {termsList && termsList.length > 1 && (
             <select
               value={activeTermId}
               onChange={(e) => onTermChange?.(e.target.value)}
               className="border-input bg-background h-8 rounded-md border px-2.5 text-xs font-medium"
             >
-              {terms.map((t: any) => (
+              {termsList.map((t: any) => (
                 <option key={t.id} value={t.id}>
                   {t.name || t.code}
                 </option>
@@ -503,37 +517,46 @@ export function SectionTimetableSchedule({
       <CardContent className="space-y-4">
         {/* Filter Tabs and Display Mode Controls */}
         <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3">
-          <div className="flex flex-wrap gap-1.5">
-            <Button
-              variant={activeView === 'TODAY' ? 'default' : 'outline'}
-              size="sm"
-              className="h-8 text-xs"
-              onClick={() => setActiveView('TODAY')}
-            >
-              <Calendar className="mr-1.5 h-3.5 w-3.5" />
-              Today ({currentDayOfWeek.charAt(0) + currentDayOfWeek.slice(1).toLowerCase()})
-              <Badge variant="secondary" className="ml-1.5 px-1 py-0 text-[10px]">
-                {todayEntries.length}
-              </Badge>
-            </Button>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {TIMETABLE_DAYS.slice(0, 6).map((day) => {
+              const count = (entriesByDay[day] || []).length;
+              const isCurrentDay = day === currentDayOfWeek;
+              const isSat = day === 'SATURDAY';
+              const dayLabel = day.charAt(0) + day.slice(1, 3).toLowerCase();
 
-            <Button
-              variant={activeView === 'SATURDAY' ? 'default' : 'outline'}
-              size="sm"
-              className="h-8 text-xs"
-              onClick={() => setActiveView('SATURDAY')}
-            >
-              <SunMedium className="mr-1.5 h-3.5 w-3.5" />
-              Saturday Schedule
-              <Badge variant="secondary" className="ml-1.5 px-1 py-0 text-[10px]">
-                {saturdayEntries.length}
-              </Badge>
-            </Button>
+              return (
+                <Button
+                  key={day}
+                  variant={activeView === day ? 'default' : 'outline'}
+                  size="sm"
+                  className="h-8 px-2.5 text-xs"
+                  onClick={() => setActiveView(day)}
+                >
+                  {isSat ? (
+                    <SunMedium className="mr-1 h-3.5 w-3.5" />
+                  ) : isCurrentDay ? (
+                    <Calendar className="mr-1 h-3.5 w-3.5" />
+                  ) : null}
+                  <span>{dayLabel}</span>
+                  {isCurrentDay && (
+                    <span className="ml-1 text-[10px] font-normal opacity-75">(Today)</span>
+                  )}
+                  {count > 0 && (
+                    <Badge
+                      variant={activeView === day ? 'secondary' : 'outline'}
+                      className="ml-1.5 px-1 py-0 text-[10px]"
+                    >
+                      {count}
+                    </Badge>
+                  )}
+                </Button>
+              );
+            })}
 
             <Button
               variant={activeView === 'ALL_WEEK' ? 'default' : 'outline'}
               size="sm"
-              className="h-8 text-xs"
+              className="h-8 px-2.5 text-xs"
               onClick={() => setActiveView('ALL_WEEK')}
             >
               <CalendarDays className="mr-1.5 h-3.5 w-3.5" />
@@ -571,12 +594,12 @@ export function SectionTimetableSchedule({
             Loading timetable schedule...
           </div>
         ) : displayMode === 'SLOTS' && activeTargetDay ? (
-          /* Continuous Slots Mode (Displays all slots from institution start to closing time) */
+          /* Single Day Continuous Slots Mode (Displays all slots from institution start to closing time) */
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2 px-1">
               <span className="text-muted-foreground text-xs font-medium">
-                Operating Window: {institutionStartTime} to {institutionClosingTime} (
-                {fullDaySlots.length} operational slots)
+                {activeTargetDay} Operating Window: {institutionStartTime} to{' '}
+                {institutionClosingTime} ({fullDaySlots.length} operational slots)
               </span>
               <span className="text-muted-foreground text-[11px]">
                 Click on any unoccupied slot to schedule a session.
@@ -673,20 +696,20 @@ export function SectionTimetableSchedule({
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap">
                               {matchingEntries.map((slot: any) => (
-                                <div key={slot.id} className="text-muted-foreground text-xs">
+                                <div key={slot.id} className="text-muted-foreground text-sm">
                                   {slot.room?.name || slot.room?.number || 'Unassigned'}
                                 </div>
                               ))}
                             </td>
                             <td className="px-4 py-3 text-right whitespace-nowrap">
-                              <div className="flex items-center justify-end gap-1.5">
+                              <div className="flex items-center justify-end gap-1">
                                 {matchingEntries.map((slot: any) => (
                                   <React.Fragment key={slot.id}>
                                     <Button
                                       variant="ghost"
                                       size="sm"
                                       className="h-8 px-2 text-xs"
-                                      title="Edit slot timing or classroom"
+                                      title="Edit slot"
                                       onClick={() => handleOpenSlotModal(slot)}
                                     >
                                       <Edit2 className="h-3.5 w-3.5" />
@@ -739,16 +762,130 @@ export function SectionTimetableSchedule({
               </table>
             </div>
           </div>
+        ) : displayMode === 'SLOTS' && activeView === 'ALL_WEEK' ? (
+          /* Weekly Matrix View for Continuous Slots Mode */
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+              <span className="text-muted-foreground text-xs font-medium">
+                Full Week Matrix: {institutionStartTime} to {institutionClosingTime} (
+                {fullDaySlots.length} operational slots per day)
+              </span>
+              <span className="text-muted-foreground text-[11px]">
+                Click any cell to edit or schedule that time slot.
+              </span>
+            </div>
+
+            <div className="overflow-x-auto rounded-md border">
+              <table className="w-full border-collapse text-left text-xs">
+                <thead className="bg-muted/50 border-b font-semibold uppercase">
+                  <tr>
+                    <th className="w-28 border-r px-3 py-2.5 whitespace-nowrap">Slot Time</th>
+                    {TIMETABLE_DAYS.slice(0, 6).map((day) => (
+                      <th
+                        key={day}
+                        className={`min-w-[130px] border-r px-3 py-2.5 ${
+                          day === currentDayOfWeek ? 'bg-primary/10 text-primary font-bold' : ''
+                        }`}
+                      >
+                        {day.charAt(0) + day.slice(1).toLowerCase()}
+                        {day === currentDayOfWeek && ' (Today)'}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {fullDaySlots.map((slotWindow) => (
+                    <tr key={slotWindow.label} className="hover:bg-muted/20 transition-colors">
+                      <td className="bg-muted/20 border-r px-3 py-2.5 font-medium whitespace-nowrap">
+                        <div className="flex items-center gap-1">
+                          <Clock className="text-muted-foreground h-3 w-3" />
+                          <span>{slotWindow.label}</span>
+                        </div>
+                      </td>
+                      {TIMETABLE_DAYS.slice(0, 6).map((day) => {
+                        const daySlots = entriesByDay[day] || [];
+                        const matching = daySlots.filter((ent: any) =>
+                          isTimeOverlapping(
+                            ent.startTime,
+                            ent.endTime,
+                            slotWindow.start,
+                            slotWindow.end,
+                          ),
+                        );
+                        const hasClass = matching.length > 0;
+
+                        return (
+                          <td
+                            key={day}
+                            className={`border-r px-2 py-2 align-top transition-colors ${
+                              hasClass
+                                ? day === 'SATURDAY'
+                                  ? 'bg-amber-500/10'
+                                  : 'bg-primary/5'
+                                : 'hover:bg-muted/30'
+                            }`}
+                          >
+                            {hasClass ? (
+                              <div className="space-y-1">
+                                {matching.map((slot: any) => (
+                                  <div
+                                    key={slot.id}
+                                    onClick={() => handleOpenSlotModal(slot)}
+                                    className="hover:bg-background/80 border-border/50 cursor-pointer rounded border p-1.5 transition-colors"
+                                  >
+                                    <p className="text-foreground truncate font-semibold">
+                                      {slot.course?.name || 'Class'}
+                                    </p>
+                                    {slot.faculty?.user && (
+                                      <p className="text-muted-foreground truncate text-[11px]">
+                                        {slot.faculty.user.firstName} {slot.faculty.user.lastName}
+                                      </p>
+                                    )}
+                                    <div className="text-muted-foreground mt-0.5 flex items-center justify-between text-[10px]">
+                                      <span>
+                                        {formatDisplayTime(slot.startTime)} –{' '}
+                                        {formatDisplayTime(slot.endTime)}
+                                      </span>
+                                      {slot.room?.name && <span>{slot.room.name}</span>}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleOpenSlotModal(
+                                    undefined,
+                                    day,
+                                    slotWindow.start,
+                                    slotWindow.end,
+                                  )
+                                }
+                                className="text-muted-foreground/40 hover:text-foreground hover:bg-muted/40 flex h-full min-h-[44px] w-full items-center justify-center rounded text-[11px] transition-colors"
+                              >
+                                <Plus className="mr-0.5 h-3 w-3" /> Slot
+                              </button>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         ) : currentViewEntries.length === 0 ? (
           /* Empty List View */
           <div className="bg-muted/20 flex flex-col items-center justify-center rounded-lg border border-dashed py-8 text-center">
             <Clock className="text-muted-foreground/60 mb-2 h-8 w-8" />
             <p className="text-foreground text-sm font-medium">
-              {activeView === 'TODAY'
+              {activeView === currentDayOfWeek
                 ? `No classes scheduled for today (${currentDayOfWeek}).`
-                : activeView === 'SATURDAY'
-                  ? 'No classes scheduled for Saturday yet.'
-                  : 'No classes scheduled for this section.'}
+                : activeView === 'ALL_WEEK'
+                  ? 'No classes scheduled for this section.'
+                  : `No classes scheduled for ${activeView.charAt(0) + activeView.slice(1).toLowerCase()} yet.`}
             </p>
             <p className="text-muted-foreground mt-1 text-xs">
               Use &quot;Add Slot&quot; to assign a class, or switch to &quot;All Slots&quot; view to
@@ -759,12 +896,7 @@ export function SectionTimetableSchedule({
                 variant="outline"
                 size="sm"
                 className="text-xs"
-                onClick={() =>
-                  handleOpenSlotModal(
-                    undefined,
-                    activeView === 'SATURDAY' ? 'SATURDAY' : currentDayOfWeek,
-                  )
-                }
+                onClick={() => handleOpenSlotModal(undefined, activeTargetDay || currentDayOfWeek)}
               >
                 <Plus className="mr-1 h-3.5 w-3.5" /> Add Class Slot
               </Button>
@@ -800,7 +932,7 @@ export function SectionTimetableSchedule({
                     <tr
                       key={slot.id}
                       className={`hover:bg-muted/30 transition-colors ${
-                        isTodaySlot && activeView === 'TODAY'
+                        isTodaySlot && activeView === currentDayOfWeek
                           ? 'bg-primary/5'
                           : isSatSlot && activeView === 'SATURDAY'
                             ? 'bg-amber-500/5'
