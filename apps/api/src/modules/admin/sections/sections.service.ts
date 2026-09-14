@@ -71,7 +71,15 @@ export class SectionsService {
     const section = await this.prisma.section.findFirst({
       where: { id, institutionId },
       include: {
-        program: true,
+        program: {
+          include: {
+            courses: {
+              include: {
+                department: true,
+              },
+            },
+          },
+        },
         batch: true,
         classLevel: true,
         academicYear: true,

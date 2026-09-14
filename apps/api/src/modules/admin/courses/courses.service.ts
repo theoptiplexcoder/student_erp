@@ -28,52 +28,81 @@ export class CoursesService {
     curriculumTermId?: string,
   ) {
     const skip = (page - 1) * pageSize;
-    const where: Prisma.CourseWhereInput = {};
+    const andConditions: Prisma.CourseWhereInput[] = [];
 
     if (institutionId) {
-      where.institutionId = institutionId;
+      andConditions.push({ institutionId });
     }
 
     if (programId) {
-      where.programOfferings = {
-        some: {
-          id: programId,
-        },
-      };
+      andConditions.push({
+        OR: [
+          {
+            programOfferings: {
+              some: {
+                id: programId,
+              },
+            },
+          },
+          {
+            curriculumCourses: {
+              some: {
+                curriculumTerm: {
+                  curriculum: {
+                    programs: {
+                      some: { id: programId },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+      });
     }
 
     if (curriculumId) {
-      where.curriculumCourses = {
-        some: {
-          curriculumTerm: {
-            curriculumId,
+      andConditions.push({
+        curriculumCourses: {
+          some: {
+            curriculumTerm: {
+              curriculumId,
+            },
           },
         },
-      };
+      });
     }
 
     if (curriculumTermId) {
-      where.curriculumCourses = {
-        some: {
-          curriculumTermId,
+      andConditions.push({
+        curriculumCourses: {
+          some: {
+            curriculumTermId,
+          },
         },
-      };
+      });
     }
 
     if (termId) {
-      where.courseOfferings = {
-        some: {
-          termId,
+      andConditions.push({
+        courseOfferings: {
+          some: {
+            termId,
+          },
         },
-      };
+      });
     }
 
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { code: { contains: search, mode: 'insensitive' } },
-      ];
+      andConditions.push({
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { code: { contains: search, mode: 'insensitive' } },
+        ],
+      });
     }
+
+    const where: Prisma.CourseWhereInput = andConditions.length > 0 ? { AND: andConditions } : {};
 
     const [total, data] = await Promise.all([
       this.prisma.course.count({ where }),

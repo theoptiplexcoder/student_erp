@@ -11,6 +11,7 @@ export interface Section {
     id: string;
     name: string;
     code?: string;
+    courses?: any[];
   };
   batch?: {
     id: string;

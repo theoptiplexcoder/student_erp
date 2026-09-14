@@ -39,7 +39,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAdminSection, CourseAssignment } from '@/hooks/api/admin/useSections';
-import type { Course } from '@/hooks/api/admin/useCourses';
+import { useAdminCourses, type Course } from '@/hooks/api/admin/useCourses';
 import { useAcademicTerms } from '@/hooks/api/admin/useAcademicTerms';
 import { useAdminCurriculumsByProgram } from '@/hooks/api/admin/useCurriculums';
 import { useAdminDeleteCourseAssignment } from '@/hooks/api/admin/useCourseAssignments';
@@ -110,6 +110,18 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
 
   const { data: programCurriculums = [], isLoading: isLoadingProgramCurriculums } =
     useAdminCurriculumsByProgram(section?.program?.id || '');
+
+  const programId = section?.program?.id || '';
+  const { data: programCoursesData, isLoading: isLoadingProgramCourses } = useAdminCourses(
+    1,
+    200,
+    '',
+    '',
+    '',
+    '',
+    { enabled: !!programId, programId },
+  );
+  const programCourses = programCoursesData?.data || [];
 
   // Separate curriculum terms into previous, current, and upcoming relative to this section's semester
   const sectionSemester = section?.semester ?? null;
@@ -324,51 +336,154 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
   }
 
   // Derive section-specific courses:
-  // 1. First from section.courseOfferings (exact courses mapped to this section)
-  // 2. Supplemented by any existing section.courseAssignments
+  // 1. Program courses from the database
+  // 2. Program courses returned on section.program
+  // 3. Section-specific course offerings
+  // 4. Supplemented by existing course assignments
+  // 5. Supplemented by current curriculum term courses
   const sectionCourses: Course[] = (() => {
     const courseMap = new Map<string, Course>();
 
-    // Add section-specific course offerings
-    if (section.courseOfferings) {
-      for (const offering of section.courseOfferings) {
-        if (offering.course) {
-          courseMap.set(offering.course.id, {
-            id: offering.course.id,
-            code: offering.course.code,
-            name: offering.course.name,
-            creditValue: offering.course.creditValue ?? undefined,
-            credits: offering.course.creditValue ?? 0,
-            status: 'ACTIVE',
-            department: offering.course.department
+    // 1. Add program courses fetched from database
+    if (programCourses) {
+      for (const pc of programCourses) {
+        courseMap.set(pc.id, {
+          id: pc.id,
+          code: pc.code,
+          name: pc.name,
+          creditValue: pc.creditValue ?? pc.credits ?? undefined,
+          credits: pc.creditValue ?? pc.credits ?? 0,
+          status: pc.status || 'ACTIVE',
+          department: pc.department
+            ? {
+                id: pc.department.id,
+                name: pc.department.name,
+              }
+            : undefined,
+          program:
+            pc.program ||
+            (section.program ? { id: section.program.id, name: section.program.name } : undefined),
+        });
+      }
+    }
+
+    // 2. Add section program courses if present on section.program
+    if (section.program?.courses) {
+      for (const c of section.program.courses) {
+        if (!courseMap.has(c.id)) {
+          courseMap.set(c.id, {
+            id: c.id,
+            code: c.code,
+            name: c.name,
+            creditValue: c.creditValue ?? undefined,
+            credits: c.creditValue ?? 0,
+            status: c.status || 'ACTIVE',
+            department: c.department
               ? {
-                  id: offering.course.department.id,
-                  name: offering.course.department.name,
+                  id: c.department.id,
+                  name: c.department.name,
                 }
               : undefined,
+            program: { id: section.program.id, name: section.program.name },
           });
         }
       }
     }
 
-    // Add courses from existing course assignments if not already present
+    // 3. Add section-specific course offerings
+    if (section.courseOfferings) {
+      for (const offering of section.courseOfferings) {
+        if (offering.course) {
+          const existing = courseMap.get(offering.course.id);
+          if (existing) {
+            if (!existing.department && offering.course.department) {
+              existing.department = {
+                id: offering.course.department.id,
+                name: offering.course.department.name,
+              };
+            }
+          } else {
+            courseMap.set(offering.course.id, {
+              id: offering.course.id,
+              code: offering.course.code,
+              name: offering.course.name,
+              creditValue: offering.course.creditValue ?? undefined,
+              credits: offering.course.creditValue ?? 0,
+              status: 'ACTIVE',
+              department: offering.course.department
+                ? {
+                    id: offering.course.department.id,
+                    name: offering.course.department.name,
+                  }
+                : undefined,
+              program: section.program
+                ? { id: section.program.id, name: section.program.name }
+                : undefined,
+            });
+          }
+        }
+      }
+    }
+
+    // 4. Add courses from existing course assignments if not already present
     if (section.courseAssignments) {
       for (const ca of section.courseAssignments) {
-        if (ca.course?.id && !courseMap.has(ca.course.id)) {
-          courseMap.set(ca.course.id, {
-            id: ca.course.id,
-            code: ca.course.code,
-            name: ca.course.name,
-            creditValue: ca.course.creditValue ?? undefined,
-            credits: ca.course.creditValue ?? 0,
-            status: 'ACTIVE',
-            department: ca.faculty?.department
-              ? {
-                  id: ca.faculty.department.id,
-                  name: ca.faculty.department.name,
-                }
-              : undefined,
-          });
+        if (ca.course?.id) {
+          const existing = courseMap.get(ca.course.id);
+          if (existing) {
+            if (!existing.department && ca.faculty?.department) {
+              existing.department = {
+                id: ca.faculty.department.id,
+                name: ca.faculty.department.name,
+              };
+            }
+          } else {
+            courseMap.set(ca.course.id, {
+              id: ca.course.id,
+              code: ca.course.code,
+              name: ca.course.name,
+              creditValue: ca.course.creditValue ?? undefined,
+              credits: ca.course.creditValue ?? 0,
+              status: 'ACTIVE',
+              department: ca.faculty?.department
+                ? {
+                    id: ca.faculty.department.id,
+                    name: ca.faculty.department.name,
+                  }
+                : undefined,
+              program: section.program
+                ? { id: section.program.id, name: section.program.name }
+                : undefined,
+            });
+          }
+        }
+      }
+    }
+
+    // 5. Add courses from current curriculum terms if any
+    for (const term of currentTerms) {
+      if (term.curriculumCourses) {
+        for (const cc of term.curriculumCourses) {
+          const cObj = cc.course || cc;
+          if (cObj?.id && !courseMap.has(cObj.id)) {
+            courseMap.set(cObj.id, {
+              id: cObj.id,
+              code: cObj.code,
+              name: cObj.name,
+              creditValue: cc.creditValue ?? cObj.creditValue ?? undefined,
+              credits: cc.creditValue ?? cObj.creditValue ?? 0,
+              status: cObj.status || 'ACTIVE',
+              department: cObj.department
+                ? {
+                    id: cObj.department.id,
+                    name: cObj.department.name,
+                  }
+                : undefined,
+              program: section.program
+                ? { id: section.program.id, name: section.program.name }
+                : undefined,
+            });
+          }
         }
       }
     }
@@ -545,7 +660,7 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
             <TabsList className="mb-4 flex h-auto w-full flex-wrap justify-start gap-1 p-1">
               <TabsTrigger value="current-program" className="text-xs sm:text-sm">
                 Current Program Courses (
-                {currentCoursesCount > 0 ? currentCoursesCount : sectionCourses.length})
+                {sectionCourses.length > 0 ? sectionCourses.length : currentCoursesCount})
               </TabsTrigger>
               <TabsTrigger value="upcoming-program" className="text-xs sm:text-sm">
                 Upcoming Courses ({upcomingCoursesCount})
@@ -575,7 +690,11 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
               </div>
 
               {/* Active Section Course Offerings (with Faculty Assign / Change) */}
-              {sectionCourses.length === 0 ? (
+              {isLoadingProgramCourses ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
+                </div>
+              ) : sectionCourses.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10">
                   <BookOpen className="text-muted-foreground mb-2 h-8 w-8" />
                   <p className="text-lg font-medium">No courses found</p>

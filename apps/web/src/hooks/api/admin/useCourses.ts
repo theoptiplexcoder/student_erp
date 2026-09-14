@@ -41,16 +41,28 @@ export const useAdminCourses = (
   termId = '',
   curriculumId = '',
   curriculumTermId = '',
-  options?: { enabled?: boolean },
+  options?: { enabled?: boolean; programId?: string },
 ) => {
+  const programId = options?.programId;
   return useQuery({
-    queryKey: ['admin', 'courses', page, pageSize, search, termId, curriculumId, curriculumTermId],
+    queryKey: [
+      'admin',
+      'courses',
+      page,
+      pageSize,
+      search,
+      termId,
+      curriculumId,
+      curriculumTermId,
+      programId,
+    ],
     queryFn: async () => {
       const response = await apiClient.get<CoursesResponse>('/admin/courses', {
         params: {
           page,
           pageSize,
           search,
+          programId: programId || undefined,
           termId: termId || undefined,
           curriculumId: curriculumId || undefined,
           curriculumTermId: curriculumTermId || undefined,

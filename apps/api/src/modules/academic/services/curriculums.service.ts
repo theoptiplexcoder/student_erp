@@ -97,6 +97,22 @@ export class CurriculumsService {
         _count: {
           select: { curriculumTerms: true },
         },
+        curriculumTerms: {
+          orderBy: { sequence: 'asc' },
+          include: {
+            electiveGroups: true,
+            curriculumCourses: {
+              orderBy: { sequence: 'asc' },
+              include: {
+                course: {
+                  include: {
+                    department: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
