@@ -63,381 +63,317 @@ function FacultyAssignments({ facultyId }: { facultyId: string }) {
   const courses = coursesRes?.data || [];
   const sections = sectionsRes?.data || [];
 
-  // Form states for Course Assignment
+  // Unified Form state
+  const [sectionId, setSectionId] = useState('');
+  const [role, setRole] = useState('CLASS_TEACHER');
+  const [isPrimary, setIsPrimary] = useState(false);
   const [courseId, setCourseId] = useState('');
-  const [courseSectionId, setCourseSectionId] = useState('');
-  const [assignCourseError, setAssignCourseError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
-  // Form states for Section Role Assignment
-  const [roleSectionId, setRoleSectionId] = useState('');
-  const [selectedRole, setSelectedRole] = useState('TEACHER');
-  const [isPrimaryTeacher, setIsPrimaryTeacher] = useState(false);
-  const [assignRoleError, setAssignRoleError] = useState<string | null>(null);
+  const isSubmitting = createFacultySection.isPending || assignClass.isPending;
+  const isLoading = isLoadingAssignments || isLoadingFacultySections;
 
-  const handleAssignCourse = async (e: React.FormEvent) => {
+  const handleAssign = async (e: React.FormEvent) => {
     e.preventDefault();
-    setAssignCourseError(null);
+    setFormError(null);
 
-    if (!courseId || !courseSectionId) {
-      setAssignCourseError('Please select both a course and a section.');
+    if (!sectionId) {
+      setFormError('Please select a section.');
       return;
     }
 
-    try {
-      await assignClass.mutateAsync({
-        id: facultyId,
-        data: { courseId, sectionId: courseSectionId },
-      });
-      toast.success('Course assigned to faculty successfully');
-      setCourseId('');
-      setCourseSectionId('');
-    } catch (err: any) {
-      const message =
-        err.response?.data?.message || err.message || 'Failed to assign course to faculty.';
-      setAssignCourseError(message);
-      toast.error(message);
-    }
-  };
-
-  const handleAssignSectionRole = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAssignRoleError(null);
-
-    if (!roleSectionId) {
-      setAssignRoleError('Please select a section.');
-      return;
-    }
-
-    const chosenSection = sections.find((s) => s.id === roleSectionId);
+    const chosenSection = sections.find((s) => s.id === sectionId);
     const academicYearId = chosenSection?.academicYear?.id;
 
     if (!academicYearId) {
       const msg = 'The selected section does not have an associated academic year.';
-      setAssignRoleError(msg);
+      setFormError(msg);
       toast.error(msg);
       return;
     }
 
     try {
+      // 1. Assign Section Role (e.g. Class Teacher, Teacher, Custom Role)
       await createFacultySection.mutateAsync({
         facultyId,
-        sectionId: roleSectionId,
-        role: selectedRole,
+        sectionId,
+        role,
         academicYearId,
-        isPrimary: isPrimaryTeacher,
+        isPrimary,
       });
-      toast.success('Section role assigned successfully');
-      setRoleSectionId('');
-      setSelectedRole('TEACHER');
-      setIsPrimaryTeacher(false);
+
+      // 2. If a course is also selected, assign Course to Section
+      if (courseId) {
+        await assignClass.mutateAsync({
+          id: facultyId,
+          data: { courseId, sectionId, isPrimary },
+        });
+      }
+
+      toast.success(
+        courseId
+          ? 'Section role and course assigned successfully'
+          : 'Section role assigned successfully',
+      );
+
+      // Reset form
+      setSectionId('');
+      setCourseId('');
+      setRole('CLASS_TEACHER');
+      setIsPrimary(false);
     } catch (err: any) {
       const message =
-        err.response?.data?.message || err.message || 'Failed to assign section role.';
-      setAssignRoleError(message);
+        err.response?.data?.message || err.message || 'Failed to complete assignment.';
+      setFormError(message);
       toast.error(message);
     }
   };
 
   return (
-    <div className="space-y-8">
-      {/* 1. Section Roles (Class Teacher / Custom Roles) */}
-      <div className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Users className="h-5 w-5" />
-              Section & Role Assignment
-            </CardTitle>
-            <p className="text-muted-foreground text-sm">
-              Assign this faculty member to a section as a Class Teacher, Teacher, or custom role.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {assignRoleError && (
-              <div className="bg-destructive/10 text-destructive rounded-md p-3 text-sm">
-                {assignRoleError}
-              </div>
-            )}
-            <form onSubmit={handleAssignSectionRole} className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Section</label>
-                  <select
-                    required
-                    value={roleSectionId}
-                    onChange={(e) => setRoleSectionId(e.target.value)}
-                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={createFacultySection.isPending}
-                  >
-                    <option value="">Select Section...</option>
-                    {sections.map((s: any) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name} ({s.code}){s.academicYear?.name ? ` - ${s.academicYear.name}` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+    <div className="space-y-6">
+      {/* Unified Assignment Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Users className="h-5 w-5" />
+            Assign Section & Course
+          </CardTitle>
+          <p className="text-muted-foreground text-sm">
+            Assign this faculty member to a section with a role (e.g., Class Teacher, Teacher, or
+            custom role) and optional course assignment.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {formError && (
+            <div className="bg-destructive/10 text-destructive rounded-md p-3 text-sm">
+              {formError}
+            </div>
+          )}
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Role</label>
-                  <select
-                    required
-                    value={selectedRole}
-                    onChange={(e) => setSelectedRole(e.target.value)}
-                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={createFacultySection.isPending}
-                  >
-                    <optgroup label="Standard Roles">
-                      <option value="CLASS_TEACHER">Class Teacher</option>
-                      <option value="TEACHER">Teacher</option>
-                    </optgroup>
-                    {customRoles && customRoles.length > 0 && (
-                      <optgroup label="Custom Roles">
-                        {customRoles.map((role) => (
-                          <option key={role.id} value={role.name}>
-                            {role.name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <label className="flex cursor-pointer items-center space-x-2 text-sm font-normal">
-                  <Checkbox
-                    id="is-primary-section"
-                    checked={isPrimaryTeacher}
-                    onCheckedChange={(checked) => setIsPrimaryTeacher(Boolean(checked))}
-                    disabled={createFacultySection.isPending}
-                  />
-                  <span>Primary Section In-Charge / Class Teacher</span>
+          <form onSubmit={handleAssign} className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {/* Section */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Section <span className="text-destructive">*</span>
                 </label>
-
-                <Button
-                  type="submit"
-                  className="w-full sm:w-auto"
-                  disabled={createFacultySection.isPending || !roleSectionId}
+                <select
+                  required
+                  value={sectionId}
+                  onChange={(e) => setSectionId(e.target.value)}
+                  className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={isSubmitting}
                 >
-                  <Plus className="mr-2 h-4 w-4" />
-                  {createFacultySection.isPending ? 'Assigning...' : 'Assign Section Role'}
-                </Button>
+                  <option value="">Select Section...</option>
+                  {sections.map((s: any) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} ({s.code}){s.academicYear?.name ? ` - ${s.academicYear.name}` : ''}
+                    </option>
+                  ))}
+                </select>
               </div>
-            </form>
-          </CardContent>
-        </Card>
 
-        {/* Section Roles List */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Assigned Sections & Roles</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoadingFacultySections ? (
-              <p className="text-muted-foreground py-4 text-center">Loading section roles...</p>
-            ) : !facultySections || facultySections.length === 0 ? (
-              <p className="text-muted-foreground py-4 text-center">No section roles assigned.</p>
-            ) : (
-              <div className="space-y-3">
-                {facultySections.map((fs: any) => (
-                  <div
-                    key={fs.id}
-                    className="border-border flex flex-col justify-between gap-3 rounded-lg border p-4 sm:flex-row sm:items-center"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold">{fs.section?.name || 'Section'}</span>
-                        {fs.section?.code && (
-                          <span className="text-muted-foreground text-sm">({fs.section.code})</span>
-                        )}
-                        <Badge variant={fs.role === 'CLASS_TEACHER' ? 'default' : 'secondary'}>
-                          {fs.role.replace('_', ' ')}
+              {/* Role */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Section Role <span className="text-destructive">*</span>
+                </label>
+                <select
+                  required
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={isSubmitting}
+                >
+                  <optgroup label="Standard Roles">
+                    <option value="CLASS_TEACHER">Class Teacher</option>
+                    <option value="TEACHER">Teacher</option>
+                  </optgroup>
+                  {customRoles && customRoles.length > 0 && (
+                    <optgroup label="Custom Roles">
+                      {customRoles.map((r) => (
+                        <option key={r.id} value={r.name}>
+                          {r.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                </select>
+              </div>
+
+              {/* Course (Optional) */}
+              <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+                <label className="text-sm font-medium">
+                  Course{' '}
+                  <span className="text-muted-foreground text-xs font-normal">(Optional)</span>
+                </label>
+                <select
+                  value={courseId}
+                  onChange={(e) => setCourseId(e.target.value)}
+                  className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={isSubmitting}
+                >
+                  <option value="">Select Course (or leave empty)...</option>
+                  {courses.map((c: any) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({c.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
+              <label className="flex cursor-pointer items-center space-x-2 text-sm font-normal">
+                <Checkbox
+                  id="is-primary-assignment"
+                  checked={isPrimary}
+                  onCheckedChange={(checked) => setIsPrimary(Boolean(checked))}
+                  disabled={isSubmitting}
+                />
+                <span>Primary Section In-Charge / Class Teacher</span>
+              </label>
+
+              <Button
+                type="submit"
+                className="w-full sm:w-auto"
+                disabled={isSubmitting || !sectionId}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                {isSubmitting ? 'Assigning...' : 'Assign to Section'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Current Assignments (Merged Section Roles & Course Assignments) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Current Section & Course Assignments</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <p className="text-muted-foreground py-4 text-center">Loading assignments...</p>
+          ) : (!facultySections || facultySections.length === 0) &&
+            (!assignments || assignments.length === 0) ? (
+            <p className="text-muted-foreground py-4 text-center">No assignments found.</p>
+          ) : (
+            <div className="space-y-3">
+              {/* Section Roles */}
+              {facultySections?.map((fs: any) => (
+                <div
+                  key={`section-role-${fs.id}`}
+                  className="border-border flex flex-col justify-between gap-3 rounded-lg border p-4 sm:flex-row sm:items-center"
+                >
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Users className="text-muted-foreground h-4 w-4" />
+                      <span className="font-semibold">{fs.section?.name || 'Section'}</span>
+                      {fs.section?.code && (
+                        <span className="text-muted-foreground text-sm">({fs.section.code})</span>
+                      )}
+                      <Badge variant={fs.role === 'CLASS_TEACHER' ? 'default' : 'secondary'}>
+                        {fs.role.replace('_', ' ')}
+                      </Badge>
+                      {fs.isPrimary && (
+                        <Badge variant="outline" className="border-primary text-primary">
+                          Primary
                         </Badge>
-                        {fs.isPrimary && (
-                          <Badge variant="outline" className="border-primary text-primary">
-                            Primary
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-muted-foreground text-xs">
-                        Academic Year: {fs.academicYear?.name || 'N/A'}
-                      </p>
+                      )}
                     </div>
-
-                    <div className="flex items-center justify-end">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive h-8 w-8 p-0"
-                        title="Remove Section Role"
-                        disabled={deleteFacultySection.isPending}
-                        onClick={async () => {
-                          const secName = fs.section?.name || 'this section';
-                          if (confirm(`Remove ${fs.role} role for ${secName}?`)) {
-                            try {
-                              await deleteFacultySection.mutateAsync(fs.id);
-                              toast.success('Section role removed');
-                            } catch (err: any) {
-                              toast.error(
-                                err.response?.data?.message || 'Failed to remove section role',
-                              );
-                            }
-                          }
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <p className="text-muted-foreground text-xs">
+                      Academic Year: {fs.academicYear?.name || 'N/A'}
+                    </p>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* 2. Course Teaching Assignments */}
-      <div className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <BookOpen className="h-5 w-5" />
-              Course Teaching Assignments
-            </CardTitle>
-            <p className="text-muted-foreground text-sm">
-              Assign courses to be taught by this faculty in specific sections.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {assignCourseError && (
-              <div className="bg-destructive/10 text-destructive rounded-md p-3 text-sm">
-                {assignCourseError}
-              </div>
-            )}
-            <form onSubmit={handleAssignCourse} className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Course</label>
-                  <select
-                    required
-                    value={courseId}
-                    onChange={(e) => setCourseId(e.target.value)}
-                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={assignClass.isPending}
-                  >
-                    <option value="">Select Course...</option>
-                    {courses.map((c: any) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name} ({c.code})
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex items-center justify-end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive h-8 w-8 p-0"
+                      title="Remove Section Role"
+                      disabled={deleteFacultySection.isPending}
+                      onClick={async () => {
+                        const secName = fs.section?.name || 'this section';
+                        if (confirm(`Remove ${fs.role} role for ${secName}?`)) {
+                          try {
+                            await deleteFacultySection.mutateAsync(fs.id);
+                            toast.success('Section role removed');
+                          } catch (err: any) {
+                            toast.error(
+                              err.response?.data?.message || 'Failed to remove section role',
+                            );
+                          }
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
+              ))}
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Section</label>
-                  <select
-                    required
-                    value={courseSectionId}
-                    onChange={(e) => setCourseSectionId(e.target.value)}
-                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={assignClass.isPending}
-                  >
-                    <option value="">Select Section...</option>
-                    {sections.map((s: any) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name} ({s.code}){s.academicYear?.name ? ` - ${s.academicYear.name}` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex justify-end">
-                <Button
-                  type="submit"
-                  className="w-full sm:w-auto"
-                  disabled={assignClass.isPending || !courseId || !courseSectionId}
+              {/* Course Teaching Assignments */}
+              {assignments?.map((assignment: any) => (
+                <div
+                  key={`course-assign-${assignment.id}`}
+                  className="border-border flex flex-col justify-between gap-3 rounded-lg border p-4 sm:flex-row sm:items-center"
                 >
-                  <Plus className="mr-2 h-4 w-4" />
-                  {assignClass.isPending ? 'Assigning...' : 'Assign Course'}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Current Course Assignments */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Current Course Assignments</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoadingAssignments ? (
-              <p className="text-muted-foreground py-4 text-center">
-                Loading course assignments...
-              </p>
-            ) : !assignments || assignments.length === 0 ? (
-              <p className="text-muted-foreground py-4 text-center">No courses assigned.</p>
-            ) : (
-              <div className="space-y-3">
-                {assignments.map((assignment: any) => (
-                  <div
-                    key={assignment.id}
-                    className="border-border flex flex-col justify-between gap-3 rounded-lg border p-4 sm:flex-row sm:items-center"
-                  >
-                    <div>
-                      <h4 className="font-semibold">
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <BookOpen className="text-muted-foreground h-4 w-4" />
+                      <span className="font-semibold">
                         {assignment.course?.name || assignment.courseId}
-                        {assignment.course?.code && (
-                          <span className="text-muted-foreground ml-2 text-sm font-normal">
-                            ({assignment.course.code})
-                          </span>
-                        )}
-                      </h4>
-                      <p className="text-muted-foreground text-sm">
-                        Section: {assignment.section?.name || assignment.sectionId}
-                        {assignment.term?.name
-                          ? ` | Term: ${assignment.term.name}`
-                          : assignment.academicTerm?.name
-                            ? ` | Term: ${assignment.academicTerm.name}`
-                            : ''}
-                      </p>
+                      </span>
+                      {assignment.course?.code && (
+                        <span className="text-muted-foreground text-sm">
+                          ({assignment.course.code})
+                        </span>
+                      )}
+                      <Badge variant="outline">Course Teacher</Badge>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">Teaching</Badge>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive h-8 w-8 p-0"
-                        title="Remove Assignment"
-                        disabled={deleteAssignment.isPending}
-                        onClick={async () => {
-                          const courseName = assignment.course?.name || 'this course';
-                          const sectionName = assignment.section?.name || 'section';
-                          if (confirm(`Remove assignment for ${courseName} (${sectionName})?`)) {
-                            try {
-                              await deleteAssignment.mutateAsync(assignment.id);
-                              toast.success('Course assignment removed');
-                            } catch (err: any) {
-                              toast.error(
-                                err.response?.data?.message || 'Failed to remove assignment',
-                              );
-                            }
-                          }
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <p className="text-muted-foreground text-sm">
+                      Section: {assignment.section?.name || assignment.sectionId}
+                      {assignment.term?.name
+                        ? ` | Term: ${assignment.term.name}`
+                        : assignment.academicTerm?.name
+                          ? ` | Term: ${assignment.academicTerm.name}`
+                          : ''}
+                    </p>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+
+                  <div className="flex items-center justify-end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive h-8 w-8 p-0"
+                      title="Remove Course Assignment"
+                      disabled={deleteAssignment.isPending}
+                      onClick={async () => {
+                        const courseName = assignment.course?.name || 'this course';
+                        const sectionName = assignment.section?.name || 'section';
+                        if (confirm(`Remove assignment for ${courseName} (${sectionName})?`)) {
+                          try {
+                            await deleteAssignment.mutateAsync(assignment.id);
+                            toast.success('Course assignment removed');
+                          } catch (err: any) {
+                            toast.error(
+                              err.response?.data?.message || 'Failed to remove assignment',
+                            );
+                          }
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

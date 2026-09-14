@@ -238,7 +238,45 @@ export class FacultyService {
       }
 
       if (!term) {
-        throw new BadRequestException('No academic term available to assign class');
+        // Fallback: If no academic term exists yet for the institution/academic year, auto-create a default active term
+        let academicYearId = section?.academicYearId;
+        if (!academicYearId) {
+          let activeAy = await this.prisma.academicYear.findFirst({
+            where: { institutionId, isActive: true },
+          });
+          if (!activeAy) {
+            activeAy = await this.prisma.academicYear.findFirst({
+              where: { institutionId },
+              orderBy: { createdAt: 'desc' },
+            });
+          }
+          if (!activeAy) {
+            const currentYear = new Date().getFullYear();
+            activeAy = await this.prisma.academicYear.create({
+              data: {
+                institutionId,
+                name: `${currentYear}-${currentYear + 1}`,
+                startDate: new Date(`${currentYear}-01-01`),
+                endDate: new Date(`${currentYear}-12-31`),
+                isActive: true,
+              },
+            });
+          }
+          academicYearId = activeAy.id;
+        }
+
+        const currentYear = new Date().getFullYear();
+        term = await this.prisma.academicTerm.create({
+          data: {
+            institutionId,
+            academicYearId,
+            name: `Default Term ${currentYear}`,
+            code: `TERM-${currentYear}`,
+            startDate: new Date(`${currentYear}-01-01`),
+            endDate: new Date(`${currentYear}-12-31`),
+            status: 'ACTIVE',
+          },
+        });
       }
 
       termId = term.id;
