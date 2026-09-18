@@ -18,7 +18,8 @@
     "setup": "./scripts/setup.sh",
     "clean": "./scripts/clean.sh",
     "test": "nx run-many --target=test --all",
-    "test:e2e": "cd apps/web && npx playwright test"
+    "test:e2e": "cd apps/web && npx playwright test",
+    "seed:superadmin": "dotenv -e .env -- tsx scripts/seed-superadmin.ts"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",
@@ -40,6 +41,7 @@
     "@typescript-eslint/eslint-plugin": "^8.58.0",
     "@typescript-eslint/parser": "^8.58.0",
     "dotenv": "^17.4.2",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^10.0.0",
     "husky": "^9.0.0",
@@ -48,6 +50,7 @@
     "prettier": "^3.0.0",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "prisma": "^6.19.3",
+    "tsx": "^4.7.1",
     "typescript": "6.0.3",
     "typescript-eslint": "^8.58.0"
   },
