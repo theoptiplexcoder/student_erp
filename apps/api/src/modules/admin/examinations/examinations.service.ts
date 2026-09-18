@@ -356,7 +356,30 @@ export class ExaminationsService {
 
     if (programId || curriculumId) {
       const courseFilter: any = {};
-      if (programId) courseFilter.programId = programId;
+      if (programId) {
+        courseFilter.OR = [
+          {
+            programOfferings: {
+              some: {
+                id: programId,
+              },
+            },
+          },
+          {
+            curriculumCourses: {
+              some: {
+                curriculumTerm: {
+                  curriculum: {
+                    programs: {
+                      some: { id: programId },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ];
+      }
       if (curriculumId) {
         courseFilter.curriculumCourses = {
           some: {

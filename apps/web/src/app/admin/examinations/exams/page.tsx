@@ -49,6 +49,7 @@ export default function ExamsPage() {
     data: examsData,
     isLoading,
     isError,
+    error,
   } = useAdminExams(page, 50, search, programId, curriculumId, termId, startDate, endDate);
   const deleteMutation = useDeleteExam();
 
@@ -220,9 +221,11 @@ export default function ExamsPage() {
             <div className="flex justify-center py-10">
               <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
             </div>
-          ) : isError || !examsData ? (
-            <div className="text-destructive py-10 text-center">Failed to load exams.</div>
-          ) : examsData.data.length === 0 ? (
+          ) : isError ? (
+            <div className="text-destructive py-10 text-center">
+              Failed to load exams. {error instanceof Error ? error.message : ''}
+            </div>
+          ) : !examsData || examsData.data.length === 0 ? (
             <div className="text-muted-foreground py-10 text-center">No exams found.</div>
           ) : (
             <>
