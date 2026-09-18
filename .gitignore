@@ -79,3 +79,5 @@ users.txt
 
 .claude/worktrees
 .claude/settings.local.json
+
+graphify-out/

@@ -252,7 +252,12 @@ export default function ExamsPage() {
                         </TableCell>
                         <TableCell>{exam.code || '-'}</TableCell>
                         <TableCell>
-                          <Badge variant="outline">{exam.examType.replace(/_/g, ' ')}</Badge>
+                          <Badge variant="outline">
+                            {(exam.examinationType?.name || exam.examType || 'Exam').replace(
+                              /_/g,
+                              ' ',
+                            )}
+                          </Badge>
                         </TableCell>
                         <TableCell>{exam.academicYear?.name || '-'}</TableCell>
                         <TableCell>{exam.term?.name || '-'}</TableCell>
@@ -324,7 +329,10 @@ export default function ExamsPage() {
                       <div>
                         <div className="text-muted-foreground text-xs">Type</div>
                         <Badge variant="outline" className="mt-1 font-normal">
-                          {exam.examType.replace(/_/g, ' ')}
+                          {(exam.examinationType?.name || exam.examType || 'Exam').replace(
+                            /_/g,
+                            ' ',
+                          )}
                         </Badge>
                       </div>
                       <div>

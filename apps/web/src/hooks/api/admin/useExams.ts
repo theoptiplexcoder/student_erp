@@ -17,6 +17,11 @@ export interface Exam {
     id: string;
     name: string;
   };
+  examinationType?: {
+    id: string;
+    name: string;
+    totalMarks?: number;
+  };
 }
 
 export interface ExamsResponse {
