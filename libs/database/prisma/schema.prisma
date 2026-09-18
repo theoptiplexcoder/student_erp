@@ -35,14 +35,24 @@ enum TermType {
 }
 
 enum UserRole {
+  SUPERADMIN
   ADMIN
   FACULTY
   STUDENT
   GUARDIAN
 }
 
-enum UserStatus {
+enum InstitutionStatus {
+  PENDING
   ACTIVE
+  REJECTED
+  SUSPENDED
+}
+
+enum UserStatus {
+  PENDING_APPROVAL
+  ACTIVE
+  REJECTED
   INACTIVE
   LOCKED
   SUSPENDED
@@ -377,10 +387,14 @@ model Institution {
   institutionType InstitutionType @map("institution_type")
   legalName       String          @map("legal_name")
   displayName     String          @map("display_name")
-  logoUrl         String?         @map("logo_url")
+  logoUrl         String?           @map("logo_url")
   branding        Json?
-  createdAt       DateTime        @default(now()) @map("created_at")
-  updatedAt       DateTime        @updatedAt @map("updated_at")
+  status          InstitutionStatus @default(PENDING)
+  rejectionReason String?           @map("rejection_reason") @db.Text
+  approvedAt      DateTime?         @map("approved_at")
+  approvedBy      String?           @map("approved_by") @db.Uuid
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
 
   users         User[]
   faculty       Faculty[]
@@ -456,7 +470,7 @@ model Institution {
 model User {
   id            String     @id @default(uuid()) @db.Uuid
   authUserId    String?    @unique @map("auth_user_id") @db.Uuid
-  institutionId String     @map("institution_id") @db.Uuid
+  institutionId String?    @map("institution_id") @db.Uuid
   email         String
   firstName     String     @map("first_name")
   lastName      String     @map("last_name")
@@ -468,7 +482,7 @@ model User {
   createdAt     DateTime   @default(now()) @map("created_at")
   updatedAt     DateTime   @updatedAt @map("updated_at")
 
-  institution Institution @relation(fields: [institutionId], references: [id])
+  institution Institution? @relation(fields: [institutionId], references: [id])
   customRole  CustomRole? @relation(fields: [customRoleId], references: [id])
   faculty     Faculty?
   student     Student?

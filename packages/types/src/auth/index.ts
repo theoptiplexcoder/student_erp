@@ -1,7 +1,7 @@
 export interface AuthUser {
   id: string;
   authUserId: string;
-  institutionId: string;
+  institutionId?: string | null;
   role: string;
   status: string;
   email: string;
