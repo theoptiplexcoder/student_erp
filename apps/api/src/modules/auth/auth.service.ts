@@ -94,18 +94,20 @@ export class AuthService {
             lastName: dto.lastName.trim(),
             phone: dto.adminPhone || dto.phone || null,
             role: 'ADMIN',
-            status: 'ACTIVE',
+            status: 'PENDING_APPROVAL',
           },
         });
 
         return {
           success: true,
-          message: 'Institution and admin account created successfully.',
+          message:
+            'Institution registration submitted successfully. Your account is pending Superadmin approval.',
           institution: {
             id: institution.id,
             legalName: institution.legalName,
             displayName: institution.displayName,
             institutionType: institution.institutionType,
+            status: institution.status,
           },
           user: {
             id: user.id,
@@ -113,6 +115,7 @@ export class AuthService {
             firstName: user.firstName,
             lastName: user.lastName,
             role: user.role,
+            status: user.status,
           },
         };
       });

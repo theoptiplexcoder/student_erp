@@ -33,6 +33,14 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('No user found on request');
     }
 
+    if (user.status !== 'ACTIVE') {
+      throw new ForbiddenException(
+        user.status === 'PENDING_APPROVAL'
+          ? 'Your account is pending approval by the platform administrator'
+          : `Account status is ${user.status}`,
+      );
+    }
+
     const hasStaticRole = requiredRoles.includes(user.role);
     const hasCustomRole = user.customRole && requiredRoles.includes(user.customRole.name);
 

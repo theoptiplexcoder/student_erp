@@ -7,6 +7,7 @@ import { DatabaseModule } from './database/database.module';
 import { StudentsModule } from './modules/students/students.module';
 import { FacultyModule } from './modules/faculty/faculty.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { SuperadminModule } from './modules/superadmin/superadmin.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     StudentsModule,
     FacultyModule,
     NotificationsModule,
+    SuperadminModule,
   ],
 })
 export class AppModule {}

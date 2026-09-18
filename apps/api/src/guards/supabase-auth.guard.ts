@@ -118,8 +118,11 @@ export class SupabaseAuthGuard implements CanActivate {
       }
     }
 
-    if (dbUser.status !== 'ACTIVE') {
-      throw new UnauthorizedException('Account is not active');
+    // Allow users to authenticate so their status can be evaluated by guards or /auth/me,
+    // but reject inactive/suspended users. PENDING_APPROVAL and REJECTED users can still inspect /auth/me
+    // but will be gated from role-protected resources.
+    if (dbUser.status === 'INACTIVE' || dbUser.status === 'LOCKED' || dbUser.status === 'SUSPENDED') {
+      throw new UnauthorizedException('Account is suspended or inactive');
     }
 
     request.user = {
