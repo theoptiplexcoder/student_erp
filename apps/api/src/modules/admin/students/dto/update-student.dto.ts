@@ -58,4 +58,9 @@ export class UpdateStudentDto {
   @IsString()
   @MaxLength(15)
   guardianPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  usn?: string;
 }

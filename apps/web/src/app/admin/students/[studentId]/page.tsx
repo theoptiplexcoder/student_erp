@@ -1,8 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAdminStudent } from '@/hooks/api/admin/useStudents';
+import { useAdminStudent, useUpdateStudent } from '@/hooks/api/admin/useStudents';
 import {
   Card,
   CardContent,
@@ -16,6 +17,7 @@ import {
   TabsList,
   TabsTrigger,
   Separator,
+  Input,
 } from '@student-erp/ui';
 import {
   ArrowLeft,
@@ -28,7 +30,12 @@ import {
   User,
   Edit,
   Loader2,
+  Hash,
+  Sparkles,
+  Check,
+  X,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { StudentAcademicProgress } from './components/student-academic-progress';
 
 export default function StudentDetailPage() {
@@ -37,6 +44,37 @@ export default function StudentDetailPage() {
   const studentId = (params as Record<string, string>)['studentId'];
 
   const { data: student, isLoading, isError } = useAdminStudent(studentId);
+  const updateMutation = useUpdateStudent();
+
+  const [isEditingUsn, setIsEditingUsn] = useState(false);
+  const [usnInput, setUsnInput] = useState('');
+  const [usnError, setUsnError] = useState('');
+
+  useEffect(() => {
+    if (student && !isEditingUsn) {
+      setUsnInput(student.usn || '');
+    }
+  }, [student, isEditingUsn]);
+
+  const handleSaveUsn = async () => {
+    if (!student) return;
+    setUsnError('');
+    try {
+      await updateMutation.mutateAsync({
+        id: student.id,
+        data: {
+          usn: usnInput.trim() || null,
+        },
+      });
+      toast.success('USN saved successfully');
+      setIsEditingUsn(false);
+    } catch (err: any) {
+      const msg =
+        err.response?.data?.message || err.message || 'Failed to save USN. Please try again.';
+      setUsnError(msg);
+      toast.error(msg);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -77,10 +115,15 @@ export default function StudentDetailPage() {
           <h1 className="text-foreground text-3xl font-bold tracking-tight">
             {student.user.firstName} {student.user.lastName}
           </h1>
-          <div className="mt-2 flex items-center gap-3">
+          <div className="mt-2 flex flex-wrap items-center gap-2 sm:gap-3">
             <Badge variant="outline" className="bg-background px-3 py-1">
               {student.studentCode}
             </Badge>
+            {student.usn && (
+              <Badge variant="outline" className="bg-background px-3 py-1 font-mono text-xs">
+                USN: {student.usn}
+              </Badge>
+            )}
             <span
               className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                 student.lifecycleStatus === 'ENROLLED'
@@ -135,6 +178,103 @@ export default function StudentDetailPage() {
                   <div className="flex items-center gap-3">
                     <GraduationCap className="text-muted-foreground h-4 w-4" />
                     <span>Section: {student.section.name}</span>
+                  </div>
+                )}
+
+                {/* USN Field */}
+                {!isEditingUsn ? (
+                  <div className="border-border/60 bg-muted/20 flex items-center justify-between gap-2 rounded-md border p-2.5">
+                    <div className="flex items-center gap-2.5 overflow-hidden">
+                      <Hash className="text-muted-foreground h-4 w-4 shrink-0" />
+                      <div className="min-w-0">
+                        <span className="text-muted-foreground block text-xs font-medium">USN</span>
+                        <span className="text-foreground font-mono text-sm font-semibold">
+                          {student.usn || (
+                            <span className="text-muted-foreground font-sans text-xs font-normal italic">
+                              Not assigned
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-7 shrink-0 px-2.5 text-xs"
+                      onClick={() => {
+                        setUsnInput(student.usn || student.suggestedUsn || '');
+                        setIsEditingUsn(true);
+                        setUsnError('');
+                      }}
+                    >
+                      <Edit className="mr-1 h-3 w-3" /> Edit
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="border-border bg-card space-y-2 rounded-md border p-3 shadow-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-foreground text-xs font-semibold">USN</span>
+                      {student.suggestedUsn && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUsnInput(student.suggestedUsn || '');
+                            setUsnError('');
+                          }}
+                          className="text-admin-primary flex items-center gap-1 text-xs hover:underline"
+                          title="Auto-suggest next available USN starting from 1 in this program"
+                        >
+                          <Sparkles className="h-3 w-3" /> Suggest: {student.suggestedUsn}
+                        </button>
+                      )}
+                    </div>
+                    <Input
+                      value={usnInput}
+                      onChange={(e) => {
+                        setUsnInput(e.target.value);
+                        if (usnError) setUsnError('');
+                      }}
+                      placeholder={
+                        student.suggestedUsn ? `e.g. ${student.suggestedUsn}` : 'Enter USN'
+                      }
+                      className="h-8 font-mono text-sm"
+                      autoFocus
+                    />
+                    {usnError && <p className="text-destructive text-xs">{usnError}</p>}
+                    <div className="flex items-center justify-end gap-1.5 pt-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2.5 text-xs"
+                        disabled={updateMutation.isPending}
+                        onClick={() => {
+                          setIsEditingUsn(false);
+                          setUsnInput(student.usn || '');
+                          setUsnError('');
+                        }}
+                      >
+                        <X className="mr-1 h-3 w-3" /> Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="bg-admin-primary hover:bg-admin-primary/90 text-primary-foreground h-7 px-3 text-xs"
+                        disabled={updateMutation.isPending}
+                        onClick={handleSaveUsn}
+                      >
+                        {updateMutation.isPending ? (
+                          <>
+                            <Loader2 className="mr-1 h-3 w-3 animate-spin" /> Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Check className="mr-1 h-3 w-3" /> Save
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -284,6 +424,10 @@ export default function StudentDetailPage() {
                       <div className="space-y-1">
                         <p className="text-muted-foreground text-sm font-medium">Student ID</p>
                         <p className="font-medium">{student.studentCode}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground text-sm font-medium">USN</p>
+                        <p className="font-mono font-medium">{student.usn || 'Not assigned'}</p>
                       </div>
                       <div className="space-y-1">
                         <p className="text-muted-foreground text-sm font-medium">

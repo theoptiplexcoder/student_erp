@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { StudentQueryDto } from './dto/student-query.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
@@ -162,7 +162,29 @@ export class StudentsService {
       throw new NotFoundException('Student not found');
     }
 
-    return student;
+    let suggestedUsn: string | null = null;
+    if (student.programId) {
+      const prefix = student.program?.code || student.program?.name || '';
+      const existingUsns = await this.prisma.student.findMany({
+        where: {
+          institutionId,
+          programId: student.programId,
+          usn: { not: null },
+        },
+        select: { usn: true },
+      });
+      const usnSet = new Set(existingUsns.map((s) => s.usn));
+      let seq = 1;
+      while (usnSet.has(prefix ? `${prefix}-${seq}` : `${seq}`)) {
+        seq++;
+      }
+      suggestedUsn = prefix ? `${prefix}-${seq}` : `${seq}`;
+    }
+
+    return {
+      ...student,
+      suggestedUsn,
+    };
   }
 
   async updateStudent(institutionId: string, id: string, data: UpdateStudentDto) {
@@ -173,6 +195,27 @@ export class StudentsService {
     if (!student) throw new NotFoundException('Student not found');
 
     const { firstName, lastName, phone, ...studentData } = data;
+
+    if (studentData.usn !== undefined) {
+      const trimmedUsn = studentData.usn ? studentData.usn.trim() : null;
+      if (trimmedUsn) {
+        const existing = await this.prisma.student.findFirst({
+          where: {
+            institutionId,
+            usn: trimmedUsn,
+            NOT: { id: student.id },
+          },
+        });
+        if (existing) {
+          throw new ConflictException(
+            `A student with USN "${trimmedUsn}" already exists in the university.`,
+          );
+        }
+        studentData.usn = trimmedUsn;
+      } else {
+        studentData.usn = null;
+      }
+    }
 
     if (
       firstName !== undefined ||

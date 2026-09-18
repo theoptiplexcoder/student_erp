@@ -1,10 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 
 export interface Student {
   id: string;
   studentCode: string;
   admissionNumber: string;
+  rollNumber?: string;
+  usn?: string | null;
+  suggestedUsn?: string | null;
   lifecycleStatus: string;
   user: {
     id: string;
@@ -115,6 +118,36 @@ export const useAdminStudent = (id: string) => {
       return response.data;
     },
     enabled: !!id,
+  });
+};
+
+export interface UpdateStudentInput {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  guardianName?: string;
+  guardianPhone?: string;
+  usn?: string | null;
+}
+
+export const useUpdateStudent = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: UpdateStudentInput }) => {
+      const response = await apiClient.patch<Student>(`/admin/students/${id}`, data);
+      return response.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'students'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'students', variables.id] });
+    },
   });
 };
 
