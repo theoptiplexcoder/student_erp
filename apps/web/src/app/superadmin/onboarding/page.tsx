@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Search,
   CheckCircle,
@@ -11,16 +11,13 @@ import {
   Mail,
   Phone,
   Calendar,
-  AlertTriangle,
-  FileText,
-  Filter,
+  X,
+  RotateCcw,
 } from 'lucide-react';
 import {
   Button,
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
   Badge,
   Input,
   Dialog,
@@ -36,6 +33,7 @@ import {
 } from '@student-erp/ui';
 import {
   useOnboardingRequests,
+  useSuperadminStats,
   useApproveOnboarding,
   useRejectOnboarding,
   OnboardingInstitution,
@@ -44,6 +42,8 @@ import {
 export default function OnboardingRequestsPage() {
   const [selectedTab, setSelectedTab] = useState<string>('PENDING');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedType, setSelectedType] = useState<string>('ALL');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name-asc' | 'name-desc'>('newest');
 
   // Dialog States
   const [approvingItem, setApprovingItem] = useState<OnboardingInstitution | null>(null);
@@ -52,25 +52,79 @@ export default function OnboardingRequestsPage() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   // Queries & Mutations
-  const { data: requests, isLoading, error, refetch } = useOnboardingRequests(selectedTab);
+  const { data: requests, isLoading, error } = useOnboardingRequests(selectedTab);
+  const { data: stats } = useSuperadminStats();
   const approveMutation = useApproveOnboarding();
   const rejectMutation = useRejectOnboarding();
 
-  // Filter by search query
-  const filteredRequests = (requests || []).filter((item) => {
-    const query = searchQuery.toLowerCase();
-    const instMatch =
-      item.legalName?.toLowerCase().includes(query) ||
-      item.displayName?.toLowerCase().includes(query) ||
-      item.institutionType?.toLowerCase().includes(query);
-    const userMatch = item.users?.some(
-      (u) =>
-        u.email?.toLowerCase().includes(query) ||
-        u.firstName?.toLowerCase().includes(query) ||
-        u.lastName?.toLowerCase().includes(query),
-    );
-    return instMatch || userMatch;
-  });
+  // Extract unique institution types across requests for the dropdown
+  const institutionTypes = useMemo(() => {
+    if (!requests) return [];
+    const types = new Set<string>();
+    requests.forEach((r) => {
+      if (r.institutionType) types.add(r.institutionType);
+    });
+    return Array.from(types).sort();
+  }, [requests]);
+
+  // Filter and sort requests
+  const filteredRequests = useMemo(() => {
+    if (!requests) return [];
+
+    return requests
+      .filter((item) => {
+        // Institution type filter
+        if (selectedType !== 'ALL' && item.institutionType !== selectedType) {
+          return false;
+        }
+
+        // Search query filter
+        if (!searchQuery.trim()) return true;
+        const query = searchQuery.toLowerCase().trim();
+        const instMatch =
+          item.legalName?.toLowerCase().includes(query) ||
+          item.displayName?.toLowerCase().includes(query) ||
+          item.institutionType?.toLowerCase().includes(query);
+        const userMatch = item.users?.some(
+          (u) =>
+            u.email?.toLowerCase().includes(query) ||
+            u.firstName?.toLowerCase().includes(query) ||
+            u.lastName?.toLowerCase().includes(query) ||
+            u.phone?.toLowerCase().includes(query),
+        );
+        const addressMatch = (item.branding?.['address'] as string)?.toLowerCase()?.includes(query);
+
+        return instMatch || userMatch || addressMatch;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'newest') {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+        if (sortBy === 'oldest') {
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        }
+        if (sortBy === 'name-asc') {
+          const nameA = (a.displayName || a.legalName || '').toLowerCase();
+          const nameB = (b.displayName || b.legalName || '').toLowerCase();
+          return nameA.localeCompare(nameB);
+        }
+        if (sortBy === 'name-desc') {
+          const nameA = (a.displayName || a.legalName || '').toLowerCase();
+          const nameB = (b.displayName || b.legalName || '').toLowerCase();
+          return nameB.localeCompare(nameA);
+        }
+        return 0;
+      });
+  }, [requests, selectedType, searchQuery, sortBy]);
+
+  const hasActiveFilters =
+    searchQuery.trim() !== '' || selectedType !== 'ALL' || sortBy !== 'newest';
+
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setSelectedType('ALL');
+    setSortBy('newest');
+  };
 
   const handleApproveConfirm = async () => {
     if (!approvingItem) return;
@@ -148,25 +202,196 @@ export default function OnboardingRequestsPage() {
         </div>
       </div>
 
-      {/* Tabs & Search Filter */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full sm:w-auto">
-          <TabsList className="grid w-full grid-cols-4 sm:w-auto">
-            <TabsTrigger value="PENDING">Pending</TabsTrigger>
-            <TabsTrigger value="ACTIVE">Approved</TabsTrigger>
-            <TabsTrigger value="REJECTED">Rejected</TabsTrigger>
-            <TabsTrigger value="ALL">All</TabsTrigger>
-          </TabsList>
-        </Tabs>
+      {/* Redesigned Filters & Search Card */}
+      <div className="bg-card border-border mb-6 space-y-3.5 rounded-xl border p-4 shadow-xs">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          {/* Status Tabs */}
+          <Tabs
+            value={selectedTab}
+            onValueChange={(val) => {
+              setSelectedTab(val);
+            }}
+            className="w-full lg:w-auto"
+          >
+            <TabsList className="bg-muted/70 grid h-auto w-full grid-cols-2 gap-1 p-1 sm:inline-flex sm:h-10 sm:w-auto sm:grid-cols-none">
+              <TabsTrigger
+                value="PENDING"
+                className="gap-1.5 px-3 py-1.5 text-xs font-medium sm:text-sm"
+              >
+                <span>Pending</span>
+                {stats?.pendingRequests !== undefined && (
+                  <span className="rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 sm:text-xs dark:text-amber-300">
+                    {stats.pendingRequests}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger
+                value="ACTIVE"
+                className="gap-1.5 px-3 py-1.5 text-xs font-medium sm:text-sm"
+              >
+                <span>Approved</span>
+                {stats?.activeInstitutions !== undefined && (
+                  <span className="rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 sm:text-xs dark:text-emerald-300">
+                    {stats.activeInstitutions}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger
+                value="REJECTED"
+                className="gap-1.5 px-3 py-1.5 text-xs font-medium sm:text-sm"
+              >
+                <span>Rejected</span>
+                {stats?.rejectedInstitutions !== undefined && (
+                  <span className="bg-destructive/20 text-destructive rounded-full px-1.5 py-0.5 text-[10px] font-semibold sm:text-xs">
+                    {stats.rejectedInstitutions}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger
+                value="ALL"
+                className="gap-1.5 px-3 py-1.5 text-xs font-medium sm:text-sm"
+              >
+                <span>All</span>
+                {stats?.totalInstitutions !== undefined && (
+                  <span className="bg-muted-foreground/20 text-foreground rounded-full px-1.5 py-0.5 text-[10px] font-semibold sm:text-xs">
+                    {stats.totalInstitutions}
+                  </span>
+                )}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-        <div className="relative w-full sm:w-72">
-          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-          <Input
-            placeholder="Search institution or admin..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
+          {/* Search, Institution Type & Sort Controls */}
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center lg:justify-end">
+            {/* Search Input with Clear Button */}
+            <div className="relative w-full sm:w-64 lg:w-72">
+              <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+              <Input
+                placeholder="Search institution, admin, email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 pr-8 pl-9 text-xs sm:text-sm"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="text-muted-foreground hover:text-foreground hover:bg-muted absolute top-1/2 right-2.5 -translate-y-1/2 rounded-full p-0.5"
+                  aria-label="Clear search input"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Institution Type & Sort Selects */}
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+              {/* Institution Type Filter */}
+              <div className="relative">
+                <select
+                  aria-label="Filter by institution type"
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                  className="border-input bg-background text-foreground ring-offset-background focus:ring-ring flex h-9 w-full items-center rounded-md border px-2.5 py-1 text-xs font-medium focus:ring-2 focus:ring-offset-1 focus:outline-none sm:w-auto sm:text-sm"
+                >
+                  <option value="ALL">All Types</option>
+                  {institutionTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sort By Filter */}
+              <div className="relative">
+                <select
+                  aria-label="Sort onboarding requests"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="border-input bg-background text-foreground ring-offset-background focus:ring-ring flex h-9 w-full items-center rounded-md border px-2.5 py-1 text-xs font-medium focus:ring-2 focus:ring-offset-1 focus:outline-none sm:w-auto sm:text-sm"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="name-asc">Name (A-Z)</option>
+                  <option value="name-desc">Name (Z-A)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Active Filters & Summary Row */}
+        <div className="border-border text-muted-foreground flex flex-wrap items-center justify-between gap-2 border-t pt-2.5 text-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <span>
+              Showing{' '}
+              <strong className="text-foreground font-semibold">{filteredRequests.length}</strong>{' '}
+              {filteredRequests.length === 1 ? 'request' : 'requests'}
+              {requests && requests.length !== filteredRequests.length && (
+                <span>
+                  {' '}
+                  of <strong className="text-foreground font-semibold">{requests.length}</strong>
+                </span>
+              )}
+            </span>
+
+            {searchQuery && (
+              <Badge variant="secondary" className="gap-1 py-0.5 text-xs font-normal">
+                <span>&ldquo;{searchQuery}&rdquo;</span>
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="hover:text-foreground text-muted-foreground ml-0.5 rounded-full p-0.5"
+                  aria-label="Clear search"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+
+            {selectedType !== 'ALL' && (
+              <Badge variant="secondary" className="gap-1 py-0.5 text-xs font-normal">
+                <span>Type: {selectedType}</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedType('ALL')}
+                  className="hover:text-foreground text-muted-foreground ml-0.5 rounded-full p-0.5"
+                  aria-label="Clear institution type filter"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+
+            {sortBy !== 'newest' && (
+              <Badge variant="secondary" className="gap-1 py-0.5 text-xs font-normal">
+                <span>
+                  Sort: {sortBy === 'oldest' ? 'Oldest' : sortBy === 'name-asc' ? 'A-Z' : 'Z-A'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSortBy('newest')}
+                  className="hover:text-foreground text-muted-foreground ml-0.5 rounded-full p-0.5"
+                  aria-label="Reset sort"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+          </div>
+
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleResetFilters}
+              className="text-muted-foreground hover:text-foreground h-6 gap-1 px-2 text-xs"
+            >
+              <RotateCcw className="h-3 w-3" />
+              Reset all
+            </Button>
+          )}
         </div>
       </div>
 
@@ -183,11 +408,22 @@ export default function OnboardingRequestsPage() {
         <div className="bg-card border-border rounded-xl border p-12 text-center">
           <Building className="text-muted-foreground mx-auto mb-3 h-12 w-12" />
           <h3 className="text-foreground text-lg font-semibold">No requests found</h3>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {searchQuery
-              ? 'No registrations match your search criteria.'
+          <p className="text-muted-foreground mx-auto mt-1 max-w-md text-sm">
+            {hasActiveFilters
+              ? 'No registrations match your active search and filter criteria. Try adjusting your search query or filters.'
               : `There are currently no ${selectedTab.toLowerCase()} requests.`}
           </p>
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleResetFilters}
+              className="mt-4 gap-1.5"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Reset Filters
+            </Button>
+          )}
         </div>
       ) : (
         <div className="space-y-4">
