@@ -26,8 +26,8 @@ export function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
           </button>
 
           <div className="hidden items-center gap-2.5 lg:flex">
-            <div className="bg-tenant-primary rounded-lg p-1.5 text-white shadow-xs">
-              <GraduationCap className="size-5" />
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center">
+              <img src="/logo.svg" alt="Student ERP" className="h-6 w-6 object-contain" />
             </div>
             <span className="font-display text-foreground text-base font-bold tracking-tight">
               Student ERP

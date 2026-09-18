@@ -127,9 +127,7 @@ export function AdminMobileNav() {
           <div className="bg-card border-border/80 fixed inset-y-0 left-0 flex h-full w-4/5 max-w-xs flex-col border-r p-4 shadow-xl">
             <div className="border-border/60 mb-4 flex items-center justify-between border-b pb-3">
               <div className="flex items-center gap-2">
-                <div className="bg-primary text-primary-foreground flex h-7 w-7 items-center justify-center rounded-md text-xs font-semibold shadow-xs">
-                  <Building2 className="h-4 w-4" />
-                </div>
+                <img src="/logo.svg" alt="Student ERP" className="h-6 w-6 object-contain" />
                 <span className="font-display text-foreground text-sm font-bold">Student ERP</span>
               </div>
               <Button

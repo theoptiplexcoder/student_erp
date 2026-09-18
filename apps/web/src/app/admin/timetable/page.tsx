@@ -552,35 +552,39 @@ export default function AdminTimetablePage() {
         />
       )}
 
-      {/* Timetable Grid */}
-      {termId ? (
-        <TimetableGrid
-          termId={termId}
-          sectionId={sectionId}
-          selectedIds={selectedIds}
-          onToggleSelect={handleToggleSelect}
-          onEntryClick={handleEntryClick}
-          onEmptySlotClick={handleEmptySlotClick}
-          entries={entries}
-          isPending={isTimetablePending}
-          status={timetableStatus}
-          onSwapEntries={handleSwap}
-        />
-      ) : (
-        <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
-          Please select a term above to view and manage the weekly timetable.
-        </div>
-      )}
+      {/* Timetable Grid & Bulk Actions (shown only when a specific Program is selected) */}
+      {programId ? (
+        termId ? (
+          <>
+            <TimetableGrid
+              termId={termId}
+              sectionId={sectionId}
+              selectedIds={selectedIds}
+              onToggleSelect={handleToggleSelect}
+              onEntryClick={handleEntryClick}
+              onEmptySlotClick={handleEmptySlotClick}
+              entries={entries}
+              isPending={isTimetablePending}
+              status={timetableStatus}
+              onSwapEntries={handleSwap}
+            />
 
-      {/* Bulk Actions */}
-      <TimetableBulkActions
-        selectedIds={selectedIds}
-        onClear={clearSelection}
-        onDelete={() => console.log('Bulk delete', selectedIds)}
-        onMove={() => console.log('Bulk move', selectedIds)}
-        onReassign={() => console.log('Bulk reassign', selectedIds)}
-        onMerge={() => setMergeModalOpen(true)}
-      />
+            {/* Bulk Actions */}
+            <TimetableBulkActions
+              selectedIds={selectedIds}
+              onClear={clearSelection}
+              onDelete={() => console.log('Bulk delete', selectedIds)}
+              onMove={() => console.log('Bulk move', selectedIds)}
+              onReassign={() => console.log('Bulk reassign', selectedIds)}
+              onMerge={() => setMergeModalOpen(true)}
+            />
+          </>
+        ) : (
+          <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
+            Please select a term above to view and manage the weekly timetable.
+          </div>
+        )
+      ) : null}
 
       {/* Merge Two Slots into Extended Session Modal */}
       <TimetableMergeModal

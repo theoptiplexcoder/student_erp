@@ -145,8 +145,8 @@ export function AdminSidebar() {
       <div className="border-border/70 flex h-14 items-center justify-between border-b px-3.5">
         {!isCollapsed ? (
           <Link href="/admin" className="flex items-center gap-2.5 overflow-hidden">
-            <div className="bg-primary text-primary-foreground flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs font-semibold shadow-xs">
-              <Building2 className="h-4 w-4" />
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center">
+              <img src="/logo.svg" alt="Student ERP" className="h-6 w-6 object-contain" />
             </div>
             <div className="flex flex-col truncate">
               <span className="font-display text-foreground truncate text-sm font-semibold tracking-tight">
@@ -159,8 +159,8 @@ export function AdminSidebar() {
           </Link>
         ) : (
           <div className="mx-auto">
-            <div className="bg-primary text-primary-foreground flex h-7 w-7 items-center justify-center rounded-md text-xs font-semibold shadow-xs">
-              <Building2 className="h-4 w-4" />
+            <div className="flex h-7 w-7 items-center justify-center">
+              <img src="/logo.svg" alt="Student ERP" className="h-6 w-6 object-contain" />
             </div>
           </div>
         )}

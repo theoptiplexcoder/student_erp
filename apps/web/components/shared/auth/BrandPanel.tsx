@@ -21,10 +21,8 @@ export function BrandPanel() {
       </div>
 
       <div className="relative z-10">
-        <div className="text-primary mb-8 flex items-center gap-3">
-          <div className="bg-primary/10 border-primary/20 rounded-xl border p-2">
-            <GraduationCap className="size-8" />
-          </div>
+        <div className="mb-8 flex items-center gap-3">
+          <img src="/logo.svg" alt="Student ERP Logo" className="h-9 w-9 object-contain" />
           <span className="font-display text-foreground text-2xl font-bold tracking-tight">
             Student ERP
           </span>

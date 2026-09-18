@@ -2,93 +2,83 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Star } from 'lucide-react';
+import { Star, Quote } from 'lucide-react';
 import { Card, Avatar, AvatarFallback, AvatarImage } from '@student-erp/ui';
 
 const testimonials = [
   {
     name: 'Dr. Sarah Jenkins',
-    role: 'Dean of Admissions',
-    institution: 'Westwood University',
-    text: 'Student ERP completely revolutionized how we handle incoming applications. Our processing time dropped by 60%, and the student experience is seamless.',
+    role: 'Dean of Academic Affairs',
+    institution: 'St. Xavier Institute of Technology',
+    text: 'Student ERP modernized our enrollment process. Verifying admissions and calculating term grades used to take weeks of spreadsheet juggling; now it is completely automated.',
     image: 'https://i.pravatar.cc/150?img=47',
   },
   {
     name: 'Prof. Michael Chang',
     role: 'Head of Computer Science',
-    institution: 'Tech Institute of America',
-    text: 'The integration between course management and grading is flawless. I spend less time doing administrative work and more time actually teaching.',
+    institution: 'Apex University',
+    text: 'The timetable scheduling engine solved our faculty clash problems instantly. Our teaching staff love the clean daily schedule and attendance taking views.',
     image: 'https://i.pravatar.cc/150?img=11',
   },
   {
     name: 'Elena Rodriguez',
     role: 'Registrar',
-    institution: 'Global Arts College',
-    text: 'We used to dread registration week. With this platform, it handles thousands of concurrent users without a hiccup. Truly enterprise-grade.',
+    institution: 'Metropolitan College',
+    text: 'Handling over 6,000 student records during semester registration without a single hiccup is testament to the architectural quality of this ERP.',
     image: 'https://i.pravatar.cc/150?img=5',
   },
   {
     name: 'James Wilson',
-    role: 'IT Director',
-    institution: 'National Public Schools',
-    text: "The AI-ready architecture and robust APIs allowed us to connect our legacy systems easily. The rollout was the smoothest I've seen in my 20-year career.",
+    role: 'Director of Operations',
+    institution: 'Oakridge International Schools',
+    text: 'The role-based permission system gives each department exactly what they need while safeguarding sensitive student transcripts and fee dues.',
     image: 'https://i.pravatar.cc/150?img=33',
   },
 ];
 
 export function Testimonials() {
   return (
-    <section className="bg-muted/30 relative py-24">
-      <div className="container mx-auto px-4">
+    <section className="bg-background border-border/60 border-b py-20 sm:py-28">
+      <div className="container mx-auto px-4 sm:px-6">
         <div className="mx-auto mb-16 max-w-3xl text-center">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="font-display mb-6 text-4xl font-bold md:text-5xl"
-          >
-            Trusted by the Best
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-muted-foreground text-lg"
-          >
-            See how forward-thinking institutions are transforming their campus operations with our
-            platform.
-          </motion.p>
+          <h2 className="font-display text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
+            Trusted by Academic Leaders
+          </h2>
+          <p className="text-muted-foreground mt-3 text-sm sm:text-base">
+            Real feedback from deans, registrars, and department chairs managing high-volume
+            campuses.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {testimonials.map((testimonial, i) => (
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {testimonials.map((t, i) => (
             <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 30 }}
+              key={t.name}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.1, duration: 0.5 }}
+              transition={{ delay: i * 0.05, duration: 0.4 }}
+              className="h-full"
             >
-              <Card className="bg-card border-border/50 flex h-full flex-col justify-between p-6 transition-all hover:-translate-y-1 hover:shadow-xl">
+              <Card className="border-border/80 bg-card hover:border-border flex h-full flex-col justify-between p-5 shadow-xs transition-colors">
                 <div>
-                  <div className="mb-4 flex gap-1">
+                  <div className="mb-3 flex items-center gap-1 text-amber-500">
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} className="fill-primary text-primary size-4" />
+                      <Star key={star} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                     ))}
                   </div>
-                  <p className="text-foreground/80 mb-6 text-sm leading-relaxed italic">
-                    "{testimonial.text}"
-                  </p>
+                  <p className="text-muted-foreground text-xs leading-relaxed italic">"{t.text}"</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Avatar className="border-primary/20 h-10 w-10 border">
-                    <AvatarImage src={testimonial.image} alt={testimonial.name} />
-                    <AvatarFallback>{testimonial.name[0]}</AvatarFallback>
+
+                <div className="border-border/50 mt-5 flex items-center gap-3 border-t pt-4">
+                  <Avatar className="border-border/80 h-8 w-8 shrink-0 border">
+                    <AvatarImage src={t.image} alt={t.name} />
+                    <AvatarFallback>{t.name[0]}</AvatarFallback>
                   </Avatar>
-                  <div>
-                    <h4 className="font-display text-sm font-bold">{testimonial.name}</h4>
-                    <p className="text-muted-foreground text-xs">{testimonial.role}</p>
+                  <div className="min-w-0">
+                    <h4 className="text-foreground truncate text-xs font-semibold">{t.name}</h4>
+                    <p className="text-muted-foreground truncate text-[11px]">{t.role}</p>
+                    <p className="text-muted-foreground/80 truncate text-[10px]">{t.institution}</p>
                   </div>
                 </div>
               </Card>

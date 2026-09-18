@@ -2,33 +2,33 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, HelpCircle } from 'lucide-react';
 
 const faqs = [
   {
-    question: 'How long does implementation take?',
+    question: 'How quickly can our institution migrate existing student data?',
     answer:
-      'For most schools, full implementation and data migration takes between 2 to 4 weeks. Our dedicated success team will guide you through every step of the process.',
+      'Most schools and colleges complete initial data import (students, courses, faculty, and historical marks) within 5 to 7 business days using our structured CSV/Excel onboarding pipelines and dedicated support specialists.',
   },
   {
-    question: 'Do you integrate with our existing accounting software?',
+    question: 'Does Student ERP support custom grading schemes and SGPA/CGPA formulas?',
     answer:
-      'Yes, Student ERP integrates with major accounting platforms including QuickBooks, Xero, and Sage. We also offer a robust API for custom integrations.',
+      'Yes. You can configure absolute or relative grading curves, credit distributions, prerequisite structures, and customizable semester grade sheets according to your regional regulatory board guidelines.',
   },
   {
-    question: 'Is training provided for our faculty and staff?',
+    question: 'Can faculty record attendance and marks directly from mobile browsers?',
     answer:
-      'Absolutely. All plans include access to our comprehensive video library. Growth and Enterprise plans include live, instructor-led onboarding sessions for your entire staff.',
+      'Yes, the interface is fully responsive across desktop, tablet, and mobile displays. Instructors can mark session attendance and enter internal marks in seconds from any smartphone.',
   },
   {
-    question: 'How secure is the student data?',
+    question: 'How is student data privacy protected under applicable regulations?',
     answer:
-      'We employ bank-grade AES-256 encryption for data at rest and TLS 1.3 for data in transit. We are fully compliant with FERPA, GDPR, and SOC2 Type II standards.',
+      'We enforce AES-256 database encryption at rest, TLS 1.3 in flight, multi-tenant database isolation, and role-based access control complying with global privacy frameworks (FERPA and GDPR).',
   },
   {
-    question: 'Can parents access the system?',
+    question: 'Can parents receive automatic alerts for student attendance shortages?',
     answer:
-      'Yes, we provide a dedicated Guardian portal and mobile app where parents can view attendance, grades, fee schedules, and communicate directly with teachers.',
+      'Yes. Administrators can define custom attendance thresholds (e.g., below 75%) that automatically flag students in the triage dashboard and trigger notifications.',
   },
 ];
 
@@ -36,31 +36,36 @@ export function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className="bg-card/30 relative py-24">
-      <div className="container mx-auto max-w-3xl px-4">
-        <div className="mb-16 text-center">
-          <h2 className="font-display mb-4 text-3xl font-bold md:text-4xl">
-            Frequently Asked Questions
+    <section id="faq" className="bg-background border-border/60 border-b py-20 sm:py-28">
+      <div className="container mx-auto max-w-3xl px-4 sm:px-6">
+        <div className="mb-14 text-center">
+          <div className="border-border/80 bg-muted/40 text-muted-foreground mb-3 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium">
+            <HelpCircle className="h-3.5 w-3.5" /> Frequently Asked Questions
+          </div>
+          <h2 className="font-display text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
+            Clear Answers to Common Questions
           </h2>
-          <p className="text-muted-foreground text-lg">
-            Everything you need to know about the product and billing.
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base">
+            Everything you need to know about implementing Student ERP on your campus.
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {faqs.map((faq, index) => (
             <div
               key={index}
-              className="border-border bg-background overflow-hidden rounded-xl border"
+              className="border-border/80 bg-card overflow-hidden rounded-lg border shadow-xs transition-colors"
             >
               <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="focus-visible:ring-primary flex w-full items-center justify-between p-6 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                className="hover:bg-muted/30 focus-visible:ring-primary flex w-full items-center justify-between p-4 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none sm:p-5"
               >
-                <span className="text-lg font-semibold">{faq.question}</span>
-                {React.createElement(ChevronDown as any, {
-                  className: `size-5 text-muted-foreground transition-transform duration-300 ${openIndex === index ? 'rotate-180' : ''}`,
-                })}
+                <span className="text-foreground text-sm font-semibold">{faq.question}</span>
+                <ChevronDown
+                  className={`text-muted-foreground ml-4 h-4 w-4 shrink-0 transition-transform duration-200 ${
+                    openIndex === index ? 'text-primary rotate-180' : ''
+                  }`}
+                />
               </button>
 
               <AnimatePresence>
@@ -69,9 +74,11 @@ export function FAQSection() {
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    transition={{ duration: 0.2 }}
                   >
-                    <div className="text-muted-foreground px-6 pb-6">{faq.answer}</div>
+                    <div className="text-muted-foreground border-border/40 border-t px-4 pt-3 pb-4 text-xs leading-relaxed sm:px-5 sm:pb-5 sm:text-sm">
+                      {faq.answer}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>

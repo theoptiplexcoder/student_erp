@@ -54,11 +54,11 @@ export function FacultySidebar() {
     >
       <div className="border-border/60 flex h-14 items-center justify-between border-b px-4">
         {!isCollapsed && (
-          <div className="flex items-center gap-2">
-            <div className="bg-faculty-primary/10 text-faculty-primary rounded-lg p-1">
-              <ClipboardCheck className="h-5 w-5" />
+          <div className="flex items-center gap-2.5">
+            <div className="flex shrink-0 items-center justify-center">
+              <img src="/logo.svg" alt="Student ERP" className="h-6 w-6 object-contain" />
             </div>
-            <span className="font-display text-foreground text-base font-bold">Faculty Portal</span>
+            <span className="font-display text-foreground text-sm font-bold">Faculty Portal</span>
           </div>
         )}
         <Button

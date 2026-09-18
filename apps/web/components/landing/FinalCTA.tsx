@@ -2,37 +2,50 @@
 
 import React from 'react';
 import { Button } from '@student-erp/ui';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 
 export function FinalCTA() {
   return (
-    <section className="bg-primary text-primary-foreground relative overflow-hidden py-32">
-      {/* Decorative background pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent bg-[length:20px_20px] opacity-10" />
+    <section className="from-background to-muted/40 border-border/60 relative overflow-hidden border-b bg-gradient-to-b py-20 sm:py-28">
+      <div className="relative z-10 container mx-auto max-w-3xl px-4 text-center sm:px-6">
+        <div className="border-primary/20 bg-primary/5 text-primary mb-5 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold">
+          <Sparkles className="h-3.5 w-3.5" /> Modernize Campus Operations Today
+        </div>
 
-      <div className="relative z-10 container mx-auto px-4 text-center">
-        <h2 className="font-display mx-auto mb-8 max-w-3xl text-5xl font-bold tracking-tight md:text-6xl">
-          Ready to Modernize Your Institution?
+        <h2 className="font-display text-foreground text-3xl font-bold tracking-tight text-balance sm:text-4xl md:text-5xl">
+          Ready to Elevate Your Institution's Standard?
         </h2>
-        <p className="mx-auto mb-12 max-w-2xl text-xl opacity-90 md:text-2xl">
-          Join 500+ institutions already using Student ERP to transform their academic operations.
+
+        <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-sm leading-relaxed sm:text-base md:text-lg">
+          Join institutions already providing seamless digital academic experiences for faculty,
+          administrators, and students.
         </p>
 
-        <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button
-            size="xl"
-            className="text-primary w-full bg-white transition-transform hover:-translate-y-1 hover:bg-white/90 sm:w-auto"
+            asChild
+            size="lg"
+            className="h-11 w-full gap-2 px-6 font-semibold shadow-xs sm:w-auto"
           >
-            Sign Up
-            <ArrowRight className="ml-2 size-5" />
+            <Link href="/signup">
+              Get Started Now
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </Button>
           <Button
-            size="xl"
+            asChild
+            size="lg"
             variant="outline"
-            className="w-full border-white/20 text-white hover:bg-white/10 sm:w-auto"
+            className="border-border/80 h-11 w-full px-6 font-semibold sm:w-auto"
           >
-            Schedule Consultation
+            <Link href="/login">Sign In to Your Campus</Link>
           </Button>
+        </div>
+
+        <div className="text-muted-foreground mt-8 flex items-center justify-center gap-2 text-xs">
+          <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+          <span>No credit card required • Fully guided onboarding</span>
         </div>
       </div>
     </section>

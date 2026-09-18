@@ -7,73 +7,78 @@ import { motion } from 'framer-motion';
 
 const securityFeatures = [
   {
-    icon: <ShieldCheck className="size-6 text-emerald-500" />,
-    title: 'Enterprise Security',
-    description: 'Bank-grade encryption for all data at rest and in transit.',
+    icon: ShieldCheck,
+    title: 'Bank-Grade Encryption',
+    description: 'AES-256 for all stored academic documents and TLS 1.3 encryption in transit.',
   },
   {
-    icon: <KeyRound className="size-6 text-emerald-500" />,
-    title: 'Single Sign-On (SSO)',
-    description: 'Integrate with SAML, OAuth, and Active Directory.',
+    icon: KeyRound,
+    title: 'Multi-Tenant Isolation',
+    description: 'Complete data boundary segregation ensuring institutional data never overlaps.',
   },
   {
-    icon: <Lock className="size-6 text-emerald-500" />,
-    title: 'Role-Based Access',
-    description: 'Granular permission controls for every user type.',
+    icon: Lock,
+    title: 'Role-Based Permissions (RBAC)',
+    description:
+      'Granular policy enforcement across faculty, administrators, students, and guardians.',
   },
   {
-    icon: <FileSearch className="size-6 text-emerald-500" />,
-    title: 'Audit Logs',
-    description: 'Comprehensive tracking of all system modifications.',
+    icon: FileSearch,
+    title: 'Immutable Audit Trail',
+    description: 'Timestamped logging for grade changes, fee modifications, and profile edits.',
   },
   {
-    icon: <Server className="size-6 text-emerald-500" />,
-    title: 'Compliance',
-    description: 'Built to meet FERPA, GDPR, and SOC2 standards.',
+    icon: Server,
+    title: 'Disaster Recovery & Backups',
+    description:
+      'Automated point-in-time recovery and geographically redundant database clustering.',
   },
   {
-    icon: <Activity className="size-6 text-emerald-500" />,
-    title: '99.99% Uptime',
-    description: 'Highly available infrastructure with global edge routing.',
+    icon: Activity,
+    title: 'High Availability SLA',
+    description:
+      'Engineered for 99.99% uptime to withstand high-volume admissions and exam result peaks.',
   },
 ];
 
 export function SecuritySection() {
   return (
-    <section className="bg-card/10 relative overflow-hidden py-24">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col items-center gap-16 lg:flex-row">
-          <div className="lg:w-1/3">
-            <h2 className="font-display mb-6 text-3xl font-bold md:text-5xl">
-              Enterprise Grade. By Default.
-            </h2>
-            <p className="text-muted-foreground mb-8 text-lg">
-              We take the security of your institution's data seriously. Our infrastructure is built
-              from the ground up to protect student privacy and ensure compliance at scale.
-            </p>
-            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-              <ShieldCheck className="size-4" />
-              SOC2 Type II Certified
+    <section id="security" className="bg-muted/20 border-border/60 border-b py-20 sm:py-28">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="flex flex-col gap-12 lg:flex-row lg:items-center">
+          <div className="space-y-4 lg:w-1/3">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+              <ShieldCheck className="h-3.5 w-3.5" /> Institutional Trust & Compliance
             </div>
+            <h2 className="font-display text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
+              Security Built For Educational Integrity
+            </h2>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              Educational institutions hold highly sensitive identity, financial, and academic
+              records. We adhere to rigorous compliance standards so your campus remains
+              safeguarded.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:w-2/3">
-            {securityFeatures.map((feature, idx) => (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:w-2/3 lg:grid-cols-3">
+            {securityFeatures.map((feat, idx) => (
               <motion.div
-                key={idx}
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                key={feat.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
+                transition={{ delay: idx * 0.04 }}
               >
-                <Card className="bg-background border-border/50 hover:border-border h-full transition-colors">
-                  <CardContent className="p-6">
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-500/10">
-                      {feature.icon}
+                <Card className="border-border/80 bg-card h-full p-4 shadow-xs">
+                  <div className="mb-2 flex items-center gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                      <feat.icon className="h-4 w-4" />
                     </div>
-                    <h4 className="font-display mb-2 font-bold">{feature.title}</h4>
-                    <p className="text-muted-foreground text-sm">{feature.description}</p>
-                  </CardContent>
+                    <h4 className="text-foreground text-xs font-semibold">{feat.title}</h4>
+                  </div>
+                  <p className="text-muted-foreground text-xs leading-relaxed">
+                    {feat.description}
+                  </p>
                 </Card>
               </motion.div>
             ))}

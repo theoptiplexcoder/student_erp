@@ -59,8 +59,8 @@ export function StudentSidebar() {
           )}
         >
           <Link href="/student" className="flex items-center gap-2.5 font-semibold">
-            <div className="bg-student-primary/10 text-student-primary rounded-lg p-1.5">
-              <GraduationCap className="h-5 w-5 flex-shrink-0" />
+            <div className="flex shrink-0 items-center justify-center">
+              <img src="/logo.svg" alt="Student ERP" className="h-6 w-6 object-contain" />
             </div>
             {!collapsed && (
               <span className="font-display text-foreground truncate font-bold">
