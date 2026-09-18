@@ -13,6 +13,9 @@ import {
   Calendar,
   X,
   RotateCcw,
+  Filter,
+  ChevronDown,
+  SlidersHorizontal,
 } from 'lucide-react';
 import {
   Button,
@@ -44,6 +47,7 @@ export default function OnboardingRequestsPage() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedType, setSelectedType] = useState<string>('ALL');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name-asc' | 'name-desc'>('newest');
+  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
 
   // Dialog States
   const [approvingItem, setApprovingItem] = useState<OnboardingInstitution | null>(null);
@@ -261,10 +265,10 @@ export default function OnboardingRequestsPage() {
             </TabsList>
           </Tabs>
 
-          {/* Search, Institution Type & Sort Controls */}
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center lg:justify-end">
+          {/* Quick Search & Toggle Filter Button */}
+          <div className="flex items-center gap-2">
             {/* Search Input with Clear Button */}
-            <div className="relative w-full sm:w-64 lg:w-72">
+            <div className="relative flex-1 sm:w-64 lg:w-72">
               <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
               <Input
                 placeholder="Search institution, admin, email..."
@@ -284,42 +288,89 @@ export default function OnboardingRequestsPage() {
               )}
             </div>
 
-            {/* Institution Type & Sort Selects */}
-            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
-              {/* Institution Type Filter */}
-              <div className="relative">
-                <select
-                  aria-label="Filter by institution type"
-                  value={selectedType}
-                  onChange={(e) => setSelectedType(e.target.value)}
-                  className="border-input bg-background text-foreground ring-offset-background focus:ring-ring flex h-9 w-full items-center rounded-md border px-2.5 py-1 text-xs font-medium focus:ring-2 focus:ring-offset-1 focus:outline-none sm:w-auto sm:text-sm"
-                >
-                  <option value="ALL">All Types</option>
-                  {institutionTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Sort By Filter */}
-              <div className="relative">
-                <select
-                  aria-label="Sort onboarding requests"
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  className="border-input bg-background text-foreground ring-offset-background focus:ring-ring flex h-9 w-full items-center rounded-md border px-2.5 py-1 text-xs font-medium focus:ring-2 focus:ring-offset-1 focus:outline-none sm:w-auto sm:text-sm"
-                >
-                  <option value="newest">Newest First</option>
-                  <option value="oldest">Oldest First</option>
-                  <option value="name-asc">Name (A-Z)</option>
-                  <option value="name-desc">Name (Z-A)</option>
-                </select>
-              </div>
-            </div>
+            {/* Collapsible Filter Toggle Button */}
+            <Button
+              type="button"
+              variant={
+                isFilterOpen || selectedType !== 'ALL' || sortBy !== 'newest'
+                  ? 'secondary'
+                  : 'outline'
+              }
+              size="sm"
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="h-9 shrink-0 gap-1.5 px-3 text-xs font-medium sm:text-sm"
+              aria-expanded={isFilterOpen}
+              aria-controls="onboarding-filters-panel"
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Filters</span>
+              {(selectedType !== 'ALL' || sortBy !== 'newest') && (
+                <span className="bg-primary h-2 w-2 rounded-full" />
+              )}
+              <ChevronDown
+                className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                  isFilterOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </Button>
           </div>
         </div>
+
+        {/* Collapsible Filter Drawer / Panel */}
+        {isFilterOpen && (
+          <div
+            id="onboarding-filters-panel"
+            className="border-border/60 bg-muted/30 grid grid-cols-1 gap-3 rounded-lg border p-3 transition-all sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {/* Institution Type Filter */}
+            <div className="space-y-1.5">
+              <label className="text-muted-foreground text-xs font-medium">Institution Type</label>
+              <select
+                aria-label="Filter by institution type"
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                className="border-input bg-background text-foreground ring-offset-background focus:ring-ring flex h-9 w-full items-center rounded-md border px-2.5 py-1 text-xs font-medium focus:ring-2 focus:ring-offset-1 focus:outline-none sm:text-sm"
+              >
+                <option value="ALL">All Types</option>
+                {institutionTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Sort By Filter */}
+            <div className="space-y-1.5">
+              <label className="text-muted-foreground text-xs font-medium">Sort Order</label>
+              <select
+                aria-label="Sort onboarding requests"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="border-input bg-background text-foreground ring-offset-background focus:ring-ring flex h-9 w-full items-center rounded-md border px-2.5 py-1 text-xs font-medium focus:ring-2 focus:ring-offset-1 focus:outline-none sm:text-sm"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="name-asc">Name (A-Z)</option>
+                <option value="name-desc">Name (Z-A)</option>
+              </select>
+            </div>
+
+            {/* Quick Actions / Reset inside drawer */}
+            <div className="flex items-end sm:col-span-2 lg:col-span-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleResetFilters}
+                disabled={!hasActiveFilters}
+                className="h-9 w-full gap-1.5 text-xs font-medium sm:text-sm"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                Reset All Filters
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Active Filters & Summary Row */}
         <div className="border-border text-muted-foreground flex flex-wrap items-center justify-between gap-2 border-t pt-2.5 text-xs">
