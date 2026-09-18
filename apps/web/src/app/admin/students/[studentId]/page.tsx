@@ -11,32 +11,36 @@ import {
   CardTitle,
   CardDescription,
   Button,
-  Badge,
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
   Separator,
   Input,
+  PageHeader,
+  PageContainer,
+  StatusBadge,
+  EmptyState,
 } from '@student-erp/ui';
 import {
   ArrowLeft,
   Mail,
-  BookOpen,
-  GraduationCap,
-  MapPin,
   Phone,
   Calendar,
   User,
-  Edit,
+  Edit2,
   Loader2,
   Hash,
-  Sparkles,
   Check,
   X,
+  FileText,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { StudentAcademicProgress } from './components/student-academic-progress';
+
+function getInitials(firstName?: string, lastName?: string) {
+  return `${(firstName?.[0] || '').toUpperCase()}${(lastName?.[0] || '').toUpperCase()}`;
+}
 
 export default function StudentDetailPage() {
   const params = useParams();
@@ -78,449 +82,298 @@ export default function StudentDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-[400px] w-full items-center justify-center">
-        <Loader2 className="text-admin-primary h-8 w-8 animate-spin" />
-      </div>
+      <PageContainer>
+        <div className="flex h-[360px] w-full items-center justify-center">
+          <Loader2 className="text-primary h-7 w-7 animate-spin" />
+        </div>
+      </PageContainer>
     );
   }
 
   if (isError || !student) {
     return (
-      <div className="flex flex-col items-center justify-center space-y-4 py-20 text-center">
-        <h2 className="text-2xl font-bold tracking-tight">Student Not Found</h2>
-        <p className="text-muted-foreground">
-          The student you are looking for does not exist or an error occurred.
-        </p>
-        <Button onClick={() => router.push('/admin/students')} variant="outline">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Students
-        </Button>
-      </div>
+      <PageContainer>
+        <EmptyState
+          icon={User}
+          title="Student Record Not Found"
+          description="The student record you are looking for does not exist or may have been archived."
+          action={{
+            label: 'Back to Directory',
+            onClick: () => router.push('/admin/students'),
+            icon: ArrowLeft,
+          }}
+        />
+      </PageContainer>
     );
   }
 
+  const fullName = `${student.user.firstName} ${student.user.lastName}`.trim();
+
   return (
-    <div className="space-y-6">
-      {/* Header and Back navigation */}
-      <div className="mb-2 flex items-center gap-2">
-        <Link href="/admin/students" className="text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" />
-        </Link>
-        <div className="text-muted-foreground text-sm">
-          Students / <span className="text-foreground">{student.studentCode}</span>
-        </div>
-      </div>
-
-      <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <h1 className="text-foreground text-3xl font-bold tracking-tight">
-            {student.user.firstName} {student.user.lastName}
-          </h1>
-          <div className="mt-2 flex flex-wrap items-center gap-2 sm:gap-3">
-            <Badge variant="outline" className="bg-background px-3 py-1">
-              {student.studentCode}
-            </Badge>
-            {student.usn && (
-              <Badge variant="outline" className="bg-background px-3 py-1 font-mono text-xs">
-                USN: {student.usn}
-              </Badge>
-            )}
-            <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                student.lifecycleStatus === 'ENROLLED'
-                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-500'
-                  : student.lifecycleStatus === 'APPLICANT'
-                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-500'
-                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-500'
-              }`}
-            >
-              {student.lifecycleStatus}
-            </span>
+    <PageContainer>
+      {/* Stripe-style Object Detail Header */}
+      <PageHeader
+        breadcrumbs={
+          <div className="flex items-center gap-1.5">
+            <Link href="/admin/students" className="hover:text-foreground transition-colors">
+              Students
+            </Link>
+            <span>/</span>
+            <span className="text-foreground font-mono">{student.studentCode}</span>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="border-border">
-            <Edit className="mr-2 h-4 w-4" /> Edit Profile
-          </Button>
-          <Button className="bg-admin-primary hover:bg-admin-primary/90">View Transcript</Button>
-        </div>
-      </div>
+        }
+        title={fullName}
+        badge={<StatusBadge status={student.lifecycleStatus?.toLowerCase() as any} size="sm" />}
+        description={
+          <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+            <span className="font-mono">ID: {student.studentCode}</span>
+            <span>•</span>
+            <span>{student.program?.name || 'No program assigned'}</span>
+            <span>•</span>
+            <span>Section: {student.section?.name || 'Unassigned'}</span>
+          </div>
+        }
+        actions={
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5 text-xs"
+              onClick={() => router.push('/admin/students')}
+            >
+              <ArrowLeft className="h-3.5 w-3.5" /> Back
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+              <FileText className="h-3.5 w-3.5" />
+              Download Transcript
+            </Button>
+          </div>
+        }
+      />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Left Column: Quick Profile */}
-        <div className="space-y-6 lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Overview</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex flex-col items-center justify-center space-y-3 pb-2 text-center">
-                <div className="bg-admin-sidebar-active border-background flex h-24 w-24 items-center justify-center rounded-full border-4 shadow-sm">
-                  <User className="text-muted-foreground h-10 w-10" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold">
-                    {student.user.firstName} {student.user.lastName}
-                  </h3>
-                  <p className="text-muted-foreground text-sm">{student.program?.name}</p>
-                </div>
-              </div>
-              <Separator />
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center gap-3">
-                  <Mail className="text-muted-foreground h-4 w-4" />
-                  <span className="truncate">{student.user.email}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <BookOpen className="text-muted-foreground h-4 w-4" />
-                  <span>Admission No: {student.admissionNumber}</span>
-                </div>
-                {student.section && (
-                  <div className="flex items-center gap-3">
-                    <GraduationCap className="text-muted-foreground h-4 w-4" />
-                    <span>Section: {student.section.name}</span>
+      {/* Tabs Navigation (Atlassian / Stripe Detail View) */}
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="bg-muted/50 border-border/70 border p-1">
+          <TabsTrigger value="overview" className="px-3 py-1.5 text-xs">
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="academics" className="px-3 py-1.5 text-xs">
+            Academic Progress
+          </TabsTrigger>
+          <TabsTrigger value="family" className="px-3 py-1.5 text-xs">
+            Family & Guardians
+          </TabsTrigger>
+        </TabsList>
+
+        {/* OVERVIEW TAB */}
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-3">
+            {/* Primary Profile Summary Card */}
+            <Card className="border-border/80 shadow-xs md:col-span-1">
+              <CardHeader className="p-4 pb-3 sm:p-5">
+                <CardTitle className="text-sm font-semibold">Student Profile</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 p-4 pt-0 sm:p-5">
+                <div className="flex items-center gap-3.5">
+                  <div className="bg-primary/10 text-primary border-primary/20 font-display flex h-14 w-14 shrink-0 items-center justify-center rounded-full border text-base font-bold">
+                    {getInitials(student.user.firstName, student.user.lastName)}
                   </div>
-                )}
+                  <div className="min-w-0">
+                    <h3 className="text-foreground truncate text-sm font-bold">{fullName}</h3>
+                    <p className="text-muted-foreground truncate text-xs">{student.user.email}</p>
+                    <p className="text-muted-foreground mt-0.5 font-mono text-[11px]">
+                      Code: {student.studentCode}
+                    </p>
+                  </div>
+                </div>
 
-                {/* USN Field */}
-                {!isEditingUsn ? (
-                  <div className="border-border/60 bg-muted/20 flex items-center justify-between gap-2 rounded-md border p-2.5">
-                    <div className="flex items-center gap-2.5 overflow-hidden">
-                      <Hash className="text-muted-foreground h-4 w-4 shrink-0" />
-                      <div className="min-w-0">
-                        <span className="text-muted-foreground block text-xs font-medium">USN</span>
-                        <span className="text-foreground font-mono text-sm font-semibold">
-                          {student.usn || (
-                            <span className="text-muted-foreground font-sans text-xs font-normal italic">
-                              Not assigned
-                            </span>
-                          )}
+                <Separator className="bg-border/60" />
+
+                <div className="space-y-3 text-xs">
+                  <div className="flex items-start justify-between">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <Hash className="h-3.5 w-3.5" /> USN
+                    </span>
+                    {isEditingUsn ? (
+                      <div className="flex items-center gap-1">
+                        <Input
+                          value={usnInput}
+                          onChange={(e) => setUsnInput(e.target.value)}
+                          className="h-6 w-28 px-1.5 text-xs"
+                          placeholder="USN"
+                        />
+                        <button
+                          onClick={handleSaveUsn}
+                          className="rounded p-1 text-emerald-600 hover:bg-emerald-50"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setIsEditingUsn(false)}
+                          className="rounded p-1 text-red-600 hover:bg-red-50"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <span className="text-foreground font-mono font-medium">
+                          {student.usn || 'Not assigned'}
                         </span>
+                        <button
+                          onClick={() => setIsEditingUsn(true)}
+                          className="text-muted-foreground hover:text-foreground ml-1 p-0.5"
+                        >
+                          <Edit2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <Mail className="h-3.5 w-3.5" /> Email
+                    </span>
+                    <span className="text-foreground max-w-[160px] truncate font-medium">
+                      {student.user.email}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <Phone className="h-3.5 w-3.5" /> Phone
+                    </span>
+                    <span className="text-foreground font-medium">{student.user.phone || '—'}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5" /> Admitted On
+                    </span>
+                    <span className="text-foreground font-medium">
+                      {student.admissionDate
+                        ? new Date(student.admissionDate).toLocaleDateString()
+                        : '—'}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Academic Information & Enrollment */}
+            <div className="space-y-6 md:col-span-2">
+              <Card className="border-border/80 shadow-xs">
+                <CardHeader className="p-4 pb-3 sm:p-5">
+                  <CardTitle className="text-sm font-semibold">Academic Enrollment</CardTitle>
+                  <CardDescription className="text-xs">
+                    Current program placement and administrative section allocations.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 pt-0 sm:p-5">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="border-border/60 bg-muted/20 space-y-1 rounded-lg border p-3">
+                      <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+                        Program
+                      </span>
+                      <p className="text-foreground text-sm font-semibold">
+                        {student.program?.name || 'Not Enrolled'}
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        ID: {student.program?.id || '—'}
+                      </p>
+                    </div>
+
+                    <div className="border-border/60 bg-muted/20 space-y-1 rounded-lg border p-3">
+                      <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+                        Section
+                      </span>
+                      <p className="text-foreground text-sm font-semibold">
+                        {student.section?.name || 'Unassigned'}
+                      </p>
+                      <p className="text-muted-foreground text-xs">Cohort Class</p>
+                    </div>
+
+                    <div className="border-border/60 bg-muted/20 space-y-1 rounded-lg border p-3">
+                      <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+                        Admission Number
+                      </span>
+                      <p className="text-foreground font-mono text-sm font-semibold">
+                        {student.admissionNumber || student.studentCode}
+                      </p>
+                      <p className="text-muted-foreground text-xs">Official Enrollment Record</p>
+                    </div>
+
+                    <div className="border-border/60 bg-muted/20 space-y-1 rounded-lg border p-3">
+                      <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+                        Lifecycle Status
+                      </span>
+                      <div className="mt-1">
+                        <StatusBadge
+                          status={student.lifecycleStatus?.toLowerCase() as any}
+                          size="sm"
+                        />
                       </div>
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-7 shrink-0 px-2.5 text-xs"
-                      onClick={() => {
-                        setUsnInput(student.usn || student.suggestedUsn || '');
-                        setIsEditingUsn(true);
-                        setUsnError('');
-                      }}
-                    >
-                      <Edit className="mr-1 h-3 w-3" /> Edit
-                    </Button>
                   </div>
-                ) : (
-                  <div className="border-border bg-card space-y-2 rounded-md border p-3 shadow-xs">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-foreground text-xs font-semibold">USN</span>
-                      {student.suggestedUsn && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setUsnInput(student.suggestedUsn || '');
-                            setUsnError('');
-                          }}
-                          className="text-admin-primary flex items-center gap-1 text-xs hover:underline"
-                          title="Auto-suggest next available USN starting from 1 in this program"
-                        >
-                          <Sparkles className="h-3 w-3" /> Suggest: {student.suggestedUsn}
-                        </button>
-                      )}
-                    </div>
-                    <Input
-                      value={usnInput}
-                      onChange={(e) => {
-                        setUsnInput(e.target.value);
-                        if (usnError) setUsnError('');
-                      }}
-                      placeholder={
-                        student.suggestedUsn ? `e.g. ${student.suggestedUsn}` : 'Enter USN'
-                      }
-                      className="h-8 font-mono text-sm"
-                      autoFocus
-                    />
-                    {usnError && <p className="text-destructive text-xs">{usnError}</p>}
-                    <div className="flex items-center justify-end gap-1.5 pt-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 px-2.5 text-xs"
-                        disabled={updateMutation.isPending}
-                        onClick={() => {
-                          setIsEditingUsn(false);
-                          setUsnInput(student.usn || '');
-                          setUsnError('');
-                        }}
-                      >
-                        <X className="mr-1 h-3 w-3" /> Cancel
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        className="bg-admin-primary hover:bg-admin-primary/90 text-primary-foreground h-7 px-3 text-xs"
-                        disabled={updateMutation.isPending}
-                        onClick={handleSaveUsn}
-                      >
-                        {updateMutation.isPending ? (
-                          <>
-                            <Loader2 className="mr-1 h-3 w-3 animate-spin" /> Saving...
-                          </>
-                        ) : (
-                          <>
-                            <Check className="mr-1 h-3 w-3" /> Save
-                          </>
-                        )}
-                      </Button>
-                    </div>
+                </CardContent>
+              </Card>
+
+              {/* Progress Summary Component */}
+              <StudentAcademicProgress studentId={student.id} />
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* ACADEMICS TAB */}
+        <TabsContent value="academics">
+          <StudentAcademicProgress studentId={student.id} />
+        </TabsContent>
+
+        {/* FAMILY & GUARDIANS TAB */}
+        <TabsContent value="family">
+          <Card className="border-border/80 shadow-xs">
+            <CardHeader className="p-4 sm:p-5">
+              <CardTitle className="text-sm font-semibold">Family & Guardian Contacts</CardTitle>
+              <CardDescription className="text-xs">
+                Emergency contacts and parent information recorded at admission.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 sm:p-5">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="border-border/60 bg-muted/20 space-y-2 rounded-lg border p-3.5">
+                  <p className="text-foreground text-xs font-semibold">Father's Details</p>
+                  <p className="text-muted-foreground text-xs">
+                    Name: {student.fatherName || 'Not recorded'}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    Phone: {student.fatherPhone || 'Not recorded'}
+                  </p>
+                </div>
+                <div className="border-border/60 bg-muted/20 space-y-2 rounded-lg border p-3.5">
+                  <p className="text-foreground text-xs font-semibold">Mother's Details</p>
+                  <p className="text-muted-foreground text-xs">
+                    Name: {student.motherName || 'Not recorded'}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    Phone: {student.motherPhone || 'Not recorded'}
+                  </p>
+                </div>
+                {(student.guardianName || student.guardianPhone) && (
+                  <div className="border-border/60 bg-muted/20 space-y-2 rounded-lg border p-3.5 sm:col-span-2">
+                    <p className="text-foreground text-xs font-semibold">Primary Guardian</p>
+                    <p className="text-muted-foreground text-xs">
+                      Name: {student.guardianName || '—'}
+                    </p>
+                    <p className="text-muted-foreground text-xs">
+                      Phone: {student.guardianPhone || '—'}
+                    </p>
                   </div>
                 )}
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Right Column: Detailed Info Tabs */}
-        <div className="lg:col-span-2">
-          <Card className="h-full">
-            <Tabs defaultValue="overview" className="w-full">
-              <CardHeader className="pb-0">
-                <TabsList className="mb-4 h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
-                  <TabsTrigger
-                    value="overview"
-                    className="data-[state=active]:border-admin-primary rounded-none px-4 py-2 data-[state=active]:border-b-2"
-                  >
-                    Overview
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="academics"
-                    className="data-[state=active]:border-admin-primary rounded-none px-4 py-2 data-[state=active]:border-b-2"
-                  >
-                    Academics
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="attendance"
-                    className="data-[state=active]:border-admin-primary rounded-none px-4 py-2 data-[state=active]:border-b-2"
-                  >
-                    Attendance
-                  </TabsTrigger>
-                </TabsList>
-              </CardHeader>
-              <CardContent>
-                <TabsContent value="overview" className="mt-0 space-y-6">
-                  <div>
-                    <h3 className="mb-4 text-lg font-semibold">Personal Information</h3>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground text-sm font-medium">Full Name</p>
-                        <p className="font-medium">
-                          {student.user.firstName} {student.user.lastName}
-                        </p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground text-sm font-medium">Date of Birth</p>
-                        <p className="font-medium">
-                          {student.dateOfBirth
-                            ? new Date(student.dateOfBirth).toLocaleDateString()
-                            : 'N/A'}
-                        </p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground text-sm font-medium">Gender</p>
-                        <p className="font-medium">{student.gender || 'N/A'}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground text-sm font-medium">Blood Group</p>
-                        <p className="font-medium">{student.bloodGroup || 'N/A'}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <h3 className="mb-4 text-lg font-semibold">Contact Information</h3>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground text-sm font-medium">Email</p>
-                        <p className="font-medium">{student.user.email}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground text-sm font-medium">Phone</p>
-                        <p className="font-medium">{student.user.phone || 'N/A'}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <h3 className="mb-4 text-lg font-semibold">Address</h3>
-                    <div className="grid grid-cols-1 gap-4">
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground text-sm font-medium">Full Address</p>
-                        <p className="font-medium">
-                          {[
-                            student.address,
-                            student.city,
-                            student.state,
-                            student.country,
-                            student.postalCode,
-                          ]
-                            .filter(Boolean)
-                            .join(', ') || 'N/A'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <h3 className="mb-4 text-lg font-semibold">Guardian Information</h3>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground text-sm font-medium">Father's Name</p>
-                        <p className="font-medium">{student.fatherName || 'N/A'}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground text-sm font-medium">Father's Phone</p>
-                        <p className="font-medium">{student.fatherPhone || 'N/A'}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground text-sm font-medium">Mother's Name</p>
-                        <p className="font-medium">{student.motherName || 'N/A'}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground text-sm font-medium">Mother's Phone</p>
-                        <p className="font-medium">{student.motherPhone || 'N/A'}</p>
-                      </div>
-                      {student.guardianName && (
-                        <>
-                          <div className="space-y-1">
-                            <p className="text-muted-foreground text-sm font-medium">
-                              Local Guardian
-                            </p>
-                            <p className="font-medium">{student.guardianName}</p>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-muted-foreground text-sm font-medium">
-                              Guardian Phone
-                            </p>
-                            <p className="font-medium">{student.guardianPhone || 'N/A'}</p>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <h3 className="mb-4 text-lg font-semibold">Admission Details</h3>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground text-sm font-medium">Student ID</p>
-                        <p className="font-medium">{student.studentCode}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground text-sm font-medium">USN</p>
-                        <p className="font-mono font-medium">{student.usn || 'Not assigned'}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground text-sm font-medium">
-                          Admission Number
-                        </p>
-                        <p className="font-medium">{student.admissionNumber}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground text-sm font-medium">Admission Date</p>
-                        <p className="font-medium">
-                          {student.admissionDate
-                            ? new Date(student.admissionDate).toLocaleDateString()
-                            : 'N/A'}
-                        </p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground text-sm font-medium">Status</p>
-                        <p className="font-medium">{student.lifecycleStatus}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <h3 className="mb-4 text-lg font-semibold">Academic History</h3>
-                    {student.studentPreviousEducations &&
-                    student.studentPreviousEducations.length > 0 ? (
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        {student.studentPreviousEducations.map((edu) => (
-                          <div key={edu.id} className="rounded-md border p-4">
-                            <p className="font-semibold">{edu.degreeName}</p>
-                            <p className="text-muted-foreground text-sm">{edu.institutionName}</p>
-                            <p className="text-sm">
-                              Graduated: {edu.yearOfPassing} | {edu.percentage}%
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground text-sm">
-                        No academic history available.
-                      </p>
-                    )}
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <h3 className="mb-4 text-lg font-semibold">Documents</h3>
-                    {student.studentDocuments && student.studentDocuments.length > 0 ? (
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        {student.studentDocuments.map((doc) => (
-                          <div
-                            key={doc.id}
-                            className="flex items-center justify-between rounded-md border p-4"
-                          >
-                            <div>
-                              <p className="font-medium">{doc.title}</p>
-                              <p className="text-muted-foreground text-xs">{doc.documentType}</p>
-                            </div>
-                            <Badge
-                              variant={
-                                doc.verificationStatus === 'VERIFIED' ? 'default' : 'outline'
-                              }
-                            >
-                              {doc.verificationStatus}
-                            </Badge>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground text-sm">No documents available.</p>
-                    )}
-                  </div>
-                </TabsContent>
-                <TabsContent value="academics" className="mt-0">
-                  <StudentAcademicProgress studentId={student.id} />
-                </TabsContent>
-                <TabsContent value="attendance" className="mt-0">
-                  <div className="space-y-4 py-8 text-center">
-                    <Calendar className="text-muted-foreground/30 mx-auto h-10 w-10" />
-                    <h3 className="text-foreground text-lg font-semibold">Attendance Logs</h3>
-                    <p className="text-muted-foreground mx-auto max-w-sm">
-                      Daily and per-course attendance records will be displayed in this section.
-                    </p>
-                  </div>
-                </TabsContent>
-              </CardContent>
-            </Tabs>
-          </Card>
-        </div>
-      </div>
-    </div>
+        </TabsContent>
+      </Tabs>
+    </PageContainer>
   );
 }

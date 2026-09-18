@@ -40,7 +40,6 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
   const [examType, setExamType] = useState<string>('');
   const [examName, setExamName] = useState<string>('');
   const [startDate, setStartDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
 
   const { data: dynamicExamTypes = [], isLoading: isLoadingExamTypes } = useExaminationTypes();
   const { data: programsData, isLoading: isLoadingPrograms } = useAdminPrograms(1, 100);
@@ -99,9 +98,6 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
 
   const handleStartDateChange = (val: string) => {
     setStartDate(val);
-    if (!endDate || endDate < val) {
-      setEndDate(val);
-    }
     // Auto populate course dates if not yet set
     setScheduleData((prev) => {
       const next = { ...prev };
@@ -209,7 +205,7 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
         examType,
         name: examName || undefined,
         startDate,
-        endDate: endDate || startDate,
+        endDate: startDate,
         courses: coursesToSchedule,
       });
 
@@ -395,17 +391,6 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
               type="date"
               value={startDate}
               onChange={(e) => handleStartDateChange(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>End Date (Optional)</Label>
-            <Input
-              type="date"
-              value={endDate}
-              min={startDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              placeholder="Defaults to exam date"
             />
           </div>
 

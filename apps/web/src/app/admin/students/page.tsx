@@ -18,10 +18,14 @@ import {
   TableRow,
   TableHead,
   TableCell,
+  PageHeader,
+  PageContainer,
+  StatCard,
+  StatusBadge,
+  EmptyState,
 } from '@student-erp/ui';
 import {
   Plus,
-  MoreHorizontal,
   Users,
   UserCheck,
   UserPlus,
@@ -29,32 +33,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
+  ArrowRight,
+  Download,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
-
-// Status helpers
-function getStatusBadge(status: string) {
-  switch (status) {
-    case 'ENROLLED':
-      return (
-        <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
-          {status}
-        </span>
-      );
-    case 'APPLICANT':
-      return (
-        <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
-          {status}
-        </span>
-      );
-    default:
-      return (
-        <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-xs font-semibold text-gray-700 dark:border-gray-800 dark:bg-gray-900/30 dark:text-gray-400">
-          {status}
-        </span>
-      );
-  }
-}
 
 function getInitials(firstName?: string, lastName?: string) {
   return `${(firstName?.[0] || '').toUpperCase()}${(lastName?.[0] || '').toUpperCase()}`;
@@ -71,19 +52,12 @@ function InitialsAvatar({
 }) {
   return (
     <div
-      className={`bg-admin-accent text-admin-primary dark:bg-admin-accent dark:text-admin-accent-foreground flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${className}`}
+      className={`bg-primary/10 text-primary border-primary/20 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-semibold select-none ${className}`}
     >
       {getInitials(firstName, lastName)}
     </div>
   );
 }
-
-const statCardColors = [
-  { border: 'border-l-blue-500', icon: 'text-blue-500', bg: 'bg-blue-500/10' },
-  { border: 'border-l-emerald-500', icon: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-  { border: 'border-l-amber-500', icon: 'text-amber-500', bg: 'bg-amber-500/10' },
-  { border: 'border-l-gray-400', icon: 'text-gray-500', bg: 'bg-gray-500/10' },
-];
 
 function StudentsList() {
   const searchParams = useSearchParams();
@@ -107,6 +81,7 @@ function StudentsList() {
     data: studentsData,
     isLoading,
     isError,
+    refetch,
   } = useAdminStudents({
     page,
     pageSize: 50,
@@ -129,7 +104,6 @@ function StudentsList() {
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  // Compute stats from current data
   const totalStudents = studentsData?.meta?.total ?? 0;
   const enrolledCount =
     studentsData?.data?.filter((s) => s.lifecycleStatus === 'ENROLLED').length ?? 0;
@@ -138,88 +112,62 @@ function StudentsList() {
   const otherCount = totalStudents - enrolledCount - applicantCount;
 
   const statCards = [
-    { label: 'Total Students', value: totalStudents, icon: Users },
-    { label: 'Enrolled', value: enrolledCount, icon: UserCheck },
-    { label: 'Applicants', value: applicantCount, icon: UserPlus },
-    { label: 'Other', value: otherCount, icon: GraduationCap },
+    { label: 'Total Students', value: totalStudents.toLocaleString(), icon: Users },
+    { label: 'Enrolled', value: enrolledCount.toLocaleString(), icon: UserCheck },
+    { label: 'Applicants', value: applicantCount.toLocaleString(), icon: UserPlus },
+    { label: 'Other Statuses', value: otherCount.toLocaleString(), icon: GraduationCap },
   ];
 
   return (
-    <div className="min-h-screen space-y-6 bg-gray-50/50 p-6 md:p-8 dark:bg-gray-900/50">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <nav className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-            <Link href="/admin" className="hover:text-gray-700 dark:hover:text-gray-300">
-              Admin
+    <PageContainer>
+      <PageHeader
+        title="Students"
+        description="Directory of enrolled students, applicants, and academic records across all departments."
+        actions={
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+              <Download className="h-3.5 w-3.5" />
+              Export
+            </Button>
+            <Link href="/admin/admissions/students/new">
+              <Button size="sm" className="h-8 gap-1.5 text-xs shadow-xs">
+                <Plus className="h-3.5 w-3.5" />
+                Add Student
+              </Button>
             </Link>
-            <span className="mx-2">/</span>
-            <span className="text-gray-900 dark:text-white">Students</span>
-          </nav>
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 md:text-4xl dark:text-white">
-            Students
-          </h1>
-        </div>
-        <Link href="/admin/admissions/students/new">
-          <Button className="bg-admin-primary hover:bg-admin-primary/90 text-admin-primary-foreground">
-            <Plus className="mr-2 h-4 w-4" /> Add Student
-          </Button>
-        </Link>
-      </div>
+          </div>
+        }
+      />
 
-      {/* Stats Strip */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        {statCards.map((stat, i) => (
-          <motion.div
+      {/* Stats Ribbon */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {statCards.map((stat) => (
+          <StatCard
             key={stat.label}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-          >
-            <Card
-              className={`overflow-hidden border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-800 ${statCardColors[i].border} border-l-4`}
-            >
-              <CardContent className="flex items-center justify-between p-4">
-                <div>
-                  <p className="text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
-                    {stat.label}
-                  </p>
-                  <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
-                    {isLoading ? (
-                      <Skeleton className="inline-block h-7 w-12" />
-                    ) : (
-                      stat.value.toLocaleString()
-                    )}
-                  </p>
-                </div>
-                <div className={`rounded-full p-2 ${statCardColors[i].bg}`}>
-                  <stat.icon className={`h-4 w-4 ${statCardColors[i].icon}`} />
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+            label={stat.label}
+            value={isLoading ? <Skeleton className="h-7 w-12" /> : stat.value}
+            icon={stat.icon}
+          />
         ))}
       </div>
 
-      {/* Filters */}
-      <Card className="shadow-sm">
-        <CardHeader className="px-6 pt-6 pb-3">
-          <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-            Filter and search students
+      {/* GitHub/Primer-style Filter and Query Bar */}
+      <Card className="border-border/80 shadow-xs">
+        <CardHeader className="p-4 pb-3 sm:p-5">
+          <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+            Filters & Search
           </CardTitle>
           <StudentFilters />
         </CardHeader>
       </Card>
 
-      {/* Table / Content */}
+      {/* Main Table / State Section */}
       {isLoading ? (
-        <Card className="shadow-sm">
+        <Card className="border-border/80 shadow-xs">
           <CardContent className="p-0">
-            {/* Table skeleton */}
             <div className="hidden overflow-x-auto md:block">
               <div className="w-full">
-                {/* Header row */}
-                <div className="flex border-b border-gray-200 bg-gray-50/50 px-4 py-3 dark:border-gray-800 dark:bg-gray-800/50">
+                <div className="border-border/70 bg-muted/30 flex border-b px-4 py-2.5">
                   <div className="flex-1">
                     <Skeleton className="h-4 w-28" />
                   </div>
@@ -239,55 +187,43 @@ function StudentsList() {
                     <Skeleton className="h-4 w-12" />
                   </div>
                 </div>
-                {/* Data rows */}
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div
-                    key={i}
-                    className="flex items-center border-b border-gray-100 px-4 py-3 dark:border-gray-800"
-                  >
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="border-border/50 flex items-center border-b px-4 py-3">
                     <div className="flex flex-1 items-center gap-3">
-                      <Skeleton className="h-9 w-9 shrink-0 rounded-full" />
+                      <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
                       <div className="space-y-1">
-                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3.5 w-32" />
                         <Skeleton className="h-3 w-40" />
                       </div>
                     </div>
                     <div className="w-28">
-                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-3.5 w-16" />
                     </div>
                     <div className="w-32">
-                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-3.5 w-24" />
                     </div>
                     <div className="w-24">
-                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-3.5 w-16" />
                     </div>
                     <div className="w-24">
                       <Skeleton className="h-5 w-16 rounded-full" />
                     </div>
                     <div className="w-20">
-                      <Skeleton className="h-8 w-8 rounded" />
+                      <Skeleton className="h-7 w-7 rounded" />
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-            {/* Mobile skeleton */}
-            <div className="space-y-4 p-4 md:hidden">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="rounded-lg border border-gray-200 p-4 dark:border-gray-800">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
-                      <div className="space-y-1">
-                        <Skeleton className="h-4 w-28" />
-                        <Skeleton className="h-3 w-20" />
-                      </div>
+            <div className="space-y-3 p-4 md:hidden">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="border-border/70 rounded-lg border p-3.5">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-9 w-9 shrink-0 rounded-full" />
+                    <div className="flex-1 space-y-1.5">
+                      <Skeleton className="h-4 w-28" />
+                      <Skeleton className="h-3 w-20" />
                     </div>
-                    <Skeleton className="h-8 w-8 rounded" />
-                  </div>
-                  <div className="mt-3 flex items-center justify-between">
-                    <Skeleton className="h-3 w-24" />
-                    <Skeleton className="h-5 w-16 rounded-full" />
                   </div>
                 </div>
               ))}
@@ -295,93 +231,111 @@ function StudentsList() {
           </CardContent>
         </Card>
       ) : isError || !studentsData ? (
-        <Card className="shadow-sm">
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="mb-4 rounded-full bg-red-50 p-3 dark:bg-red-900/20">
-              <Search className="h-6 w-6 text-red-500" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Failed to load students
-            </h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              There was an error communicating with the server.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Search}
+          title="Failed to load students"
+          description="Could not communicate with the student records server. Please verify your connection or try again."
+          action={{
+            label: 'Retry Request',
+            onClick: () => refetch(),
+          }}
+        />
       ) : studentsData.data.length === 0 ? (
-        <Card className="shadow-sm">
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="mb-4 rounded-full bg-gray-100 p-3 dark:bg-gray-800">
-              <Users className="h-6 w-6 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              No students found
-            </h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              No students match your current filters.
-            </p>
-            <Link href="/admin/admissions/students/new" className="mt-4">
-              <Button className="bg-admin-primary hover:bg-admin-primary/90 text-admin-primary-foreground">
-                <Plus className="mr-2 h-4 w-4" /> Add your first student
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Users}
+          title="No students match your criteria"
+          description="Try broadening or clearing your active filters to find student records."
+          action={{
+            label: 'Add New Student',
+            onClick: () => router.push('/admin/admissions/students/new'),
+            icon: Plus,
+          }}
+        />
       ) : (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <Card className="shadow-sm">
+        <div className="space-y-4">
+          <Card className="border-border/80 overflow-hidden shadow-xs">
             <CardContent className="p-0">
               {/* Desktop Table */}
               <div className="hidden overflow-x-auto md:block">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-gray-200 dark:border-gray-800">
-                      <TableHead className="text-xs font-medium uppercase">Student Name</TableHead>
-                      <TableHead className="text-xs font-medium uppercase">Admission No</TableHead>
-                      <TableHead className="text-xs font-medium uppercase">Program</TableHead>
-                      <TableHead className="text-xs font-medium uppercase">Section</TableHead>
-                      <TableHead className="text-xs font-medium uppercase">Status</TableHead>
-                      <TableHead className="w-20 text-right text-xs font-medium uppercase">
+                    <TableRow className="border-border/70 bg-muted/40">
+                      <TableHead className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                        Student
+                      </TableHead>
+                      <TableHead className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                        Admission / USN
+                      </TableHead>
+                      <TableHead className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                        Program
+                      </TableHead>
+                      <TableHead className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                        Section
+                      </TableHead>
+                      <TableHead className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                        Status
+                      </TableHead>
+                      <TableHead className="text-muted-foreground w-20 text-right text-xs font-semibold tracking-wider uppercase">
                         Actions
                       </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {studentsData.data.map((student) => (
-                      <TableRow key={student.id} className="border-gray-100 dark:border-gray-800">
-                        <TableCell>
+                      <TableRow
+                        key={student.id}
+                        className="hover:bg-muted/40 border-border/60 cursor-pointer transition-colors"
+                        onClick={() => router.push(`/admin/students/${student.id}`)}
+                      >
+                        <TableCell className="py-2.5">
                           <div className="flex items-center gap-3">
                             <InitialsAvatar
                               firstName={student.user?.firstName}
                               lastName={student.user?.lastName}
                             />
-                            <div>
-                              <div className="font-medium text-gray-900 dark:text-white">
+                            <div className="min-w-0">
+                              <p className="text-foreground truncate text-xs font-medium">
                                 {student.user?.firstName} {student.user?.lastName}
-                              </div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400">
-                                {student.user?.email}
-                              </div>
+                              </p>
+                              <p className="text-muted-foreground truncate text-[11px]">
+                                {student.user?.email || student.studentCode}
+                              </p>
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="text-gray-600 dark:text-gray-400">
-                          {student.studentCode || student.admissionNumber}
+                        <TableCell className="py-2.5">
+                          <div className="text-foreground font-mono text-xs font-medium">
+                            {student.studentCode}
+                          </div>
+                          {student.usn && (
+                            <div className="text-muted-foreground font-mono text-[10px]">
+                              {student.usn}
+                            </div>
+                          )}
                         </TableCell>
-                        <TableCell className="text-gray-600 dark:text-gray-400">
-                          {student.program?.name || '-'}
+                        <TableCell className="py-2.5">
+                          <div className="text-foreground max-w-[200px] truncate text-xs">
+                            {student.program?.name || '—'}
+                          </div>
                         </TableCell>
-                        <TableCell className="text-gray-600 dark:text-gray-400">
-                          {student.section?.name || '-'}
+                        <TableCell className="py-2.5">
+                          <div className="text-foreground text-xs">
+                            {student.section?.name || 'Unassigned'}
+                          </div>
                         </TableCell>
-                        <TableCell>{getStatusBadge(student.lifecycleStatus)}</TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="py-2.5">
+                          <StatusBadge
+                            status={student.lifecycleStatus?.toLowerCase() as any}
+                            size="sm"
+                          />
+                        </TableCell>
+                        <TableCell className="py-2.5 text-right">
                           <Link
-                            href={`/admin/students/${encodeURIComponent(student.studentCode || student.id)}`}
+                            href={`/admin/students/${student.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="hover:bg-muted/80 text-muted-foreground hover:text-foreground inline-flex h-7 w-7 items-center justify-center rounded-md transition-colors"
                           >
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
+                            <ArrowRight className="h-3.5 w-3.5" />
                           </Link>
                         </TableCell>
                       </TableRow>
@@ -390,73 +344,80 @@ function StudentsList() {
                 </Table>
               </div>
 
-              {/* Mobile Cards */}
-              <div className="space-y-3 p-4 md:hidden">
+              {/* Mobile Card List */}
+              <div className="divide-border/60 divide-y md:hidden">
                 {studentsData.data.map((student) => (
-                  <Link
+                  <div
                     key={student.id}
-                    href={`/admin/students/${encodeURIComponent(student.studentCode || student.id)}`}
-                    className="block rounded-lg border border-gray-200 bg-white p-4 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-800 dark:hover:bg-gray-700/50"
+                    onClick={() => router.push(`/admin/students/${student.id}`)}
+                    className="hover:bg-muted/30 active:bg-muted/50 cursor-pointer space-y-2 p-3.5 transition-colors"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex min-w-0 items-center gap-2.5">
                         <InitialsAvatar
                           firstName={student.user?.firstName}
                           lastName={student.user?.lastName}
-                          className="h-10 w-10"
                         />
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">
+                        <div className="min-w-0">
+                          <p className="text-foreground truncate text-xs font-medium">
                             {student.user?.firstName} {student.user?.lastName}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {student.studentCode || student.admissionNumber}
-                          </div>
+                          </p>
+                          <p className="text-muted-foreground truncate text-[11px]">
+                            {student.studentCode}
+                          </p>
                         </div>
                       </div>
-                      {getStatusBadge(student.lifecycleStatus)}
+                      <StatusBadge
+                        status={student.lifecycleStatus?.toLowerCase() as any}
+                        size="sm"
+                      />
                     </div>
-                    <div className="mt-3 flex items-center justify-between text-sm">
-                      <span className="text-gray-500 dark:text-gray-400">
-                        {student.program?.name || '-'}
-                        {student.section?.name ? ` · ${student.section.name}` : ''}
-                      </span>
+                    <div className="text-muted-foreground border-border/40 flex items-center justify-between border-t pt-1 text-[11px]">
+                      <span>{student.program?.name || 'No program'}</span>
+                      <span>Sec: {student.section?.name || 'N/A'}</span>
                     </div>
-                  </Link>
+                  </div>
                 ))}
-              </div>
-
-              {/* Pagination */}
-              <div className="flex flex-col items-center justify-between gap-4 border-t border-gray-200 px-4 py-3 text-sm text-gray-500 sm:flex-row dark:border-gray-800 dark:text-gray-400">
-                <div>
-                  Showing {Math.min((page - 1) * 50 + 1, studentsData.meta.total)} to{' '}
-                  {Math.min(page * 50, studentsData.meta.total)} of{' '}
-                  {studentsData.meta.total.toLocaleString()} students
-                </div>
-                <div className="flex gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page === 1}
-                    onClick={() => setPage(page - 1)}
-                  >
-                    <ChevronLeft className="mr-1 h-4 w-4" /> Prev
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page >= studentsData.meta.totalPages}
-                    onClick={() => setPage(page + 1)}
-                  >
-                    Next <ChevronRight className="ml-1 h-4 w-4" />
-                  </Button>
-                </div>
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+
+          {/* GitHub/Stripe-style Compact Pagination Bar */}
+          <div className="text-muted-foreground flex items-center justify-between px-1 py-1 text-xs">
+            <div>
+              Showing{' '}
+              <span className="text-foreground font-medium">{studentsData.data.length}</span> of{' '}
+              <span className="text-foreground font-medium">{totalStudents}</span> students
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 px-2.5 text-xs"
+                disabled={page <= 1}
+                onClick={() => setPage(page - 1)}
+              >
+                <ChevronLeft className="mr-1 h-3.5 w-3.5" />
+                Previous
+              </Button>
+              <div className="text-foreground px-2 text-xs font-medium">
+                Page {page} of {Math.max(1, Math.ceil(totalStudents / 50))}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 px-2.5 text-xs"
+                disabled={page * 50 >= totalStudents}
+                onClick={() => setPage(page + 1)}
+              >
+                Next
+                <ChevronRight className="ml-1 h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
-    </div>
+    </PageContainer>
   );
 }
 
@@ -464,23 +425,17 @@ export default function StudentsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen space-y-6 bg-gray-50/50 p-6 md:p-8 dark:bg-gray-900/50">
-          {/* Header skeleton */}
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-10 w-48" />
+        <PageContainer>
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-48" />
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-20 rounded-xl" />
+              ))}
+            </div>
+            <Skeleton className="h-96 rounded-xl" />
           </div>
-          {/* Stats skeleton */}
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-24 rounded-xl" />
-            ))}
-          </div>
-          {/* Filters skeleton */}
-          <Skeleton className="h-40 rounded-xl" />
-          {/* Table skeleton */}
-          <Skeleton className="h-80 rounded-xl" />
-        </div>
+        </PageContainer>
       }
     >
       <StudentsList />
