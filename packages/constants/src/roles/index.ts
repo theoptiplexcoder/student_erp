@@ -3,6 +3,7 @@ export enum UserRole {
   ADMIN = 'ADMIN',
   FACULTY = 'FACULTY',
   STUDENT = 'STUDENT',
+  GUARDIAN = 'GUARDIAN',
 }
 
 export enum InstitutionStatus {

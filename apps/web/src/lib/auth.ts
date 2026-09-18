@@ -5,17 +5,25 @@ import { createClient } from './supabase/server';
 export interface AuthUser {
   id: string;
   authUserId: string;
-  institutionId: string;
+  institutionId?: string | null;
   role: string;
   status: string;
   email: string;
   firstName: string;
   lastName: string;
   photoUrl: string | null;
+  institution?: {
+    id: string;
+    legalName: string;
+    displayName: string;
+    status?: string;
+  } | null;
 }
 
 export function getDashboardPath(role: string): string {
   switch (role) {
+    case 'SUPERADMIN':
+      return '/superadmin';
     case 'ADMIN':
       return '/admin';
     case 'FACULTY':
@@ -95,6 +103,14 @@ export async function requireAuth(): Promise<AuthUser> {
     unauthorized();
   }
 
+  if (user.status === 'PENDING_APPROVAL') {
+    redirect('/pending-approval');
+  }
+
+  if (user.status === 'REJECTED') {
+    redirect('/access-denied?reason=rejected');
+  }
+
   if (user.status !== 'ACTIVE') {
     forbidden();
   }
@@ -119,6 +135,14 @@ export async function requireRoleOrRedirect(...roles: string[]): Promise<AuthUse
 
   if (!user) {
     redirect('/login');
+  }
+
+  if (user.status === 'PENDING_APPROVAL') {
+    redirect('/pending-approval');
+  }
+
+  if (user.status === 'REJECTED') {
+    redirect('/access-denied?reason=rejected');
   }
 
   if (user.status !== 'ACTIVE') {

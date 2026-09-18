@@ -97,6 +97,14 @@ export class SupabaseAuthGuard implements CanActivate {
           firstName: true,
           lastName: true,
           photoUrl: true,
+          institution: {
+            select: {
+              id: true,
+              legalName: true,
+              displayName: true,
+              status: true,
+            },
+          },
           customRole: {
             include: {
               permissions: true,
@@ -121,7 +129,11 @@ export class SupabaseAuthGuard implements CanActivate {
     // Allow users to authenticate so their status can be evaluated by guards or /auth/me,
     // but reject inactive/suspended users. PENDING_APPROVAL and REJECTED users can still inspect /auth/me
     // but will be gated from role-protected resources.
-    if (dbUser.status === 'INACTIVE' || dbUser.status === 'LOCKED' || dbUser.status === 'SUSPENDED') {
+    if (
+      dbUser.status === 'INACTIVE' ||
+      dbUser.status === 'LOCKED' ||
+      dbUser.status === 'SUSPENDED'
+    ) {
       throw new UnauthorizedException('Account is suspended or inactive');
     }
 
@@ -135,6 +147,7 @@ export class SupabaseAuthGuard implements CanActivate {
       firstName: dbUser.firstName,
       lastName: dbUser.lastName,
       photoUrl: dbUser.photoUrl,
+      institution: dbUser.institution,
       customRole: dbUser.customRole,
     };
 

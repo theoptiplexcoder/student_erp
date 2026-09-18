@@ -1,14 +1,48 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { InstitutionStatus, UserStatus } from '@prisma/client';
 import { RejectOnboardingDto } from './dto/reject-onboarding.dto';
+import Redis from 'ioredis';
 
 @Injectable()
 export class SuperadminService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(SuperadminService.name);
+  private redis?: Redis;
+
+  constructor(private readonly prisma: PrismaService) {
+    if (process.env['REDIS_URL']) {
+      try {
+        this.redis = new Redis(process.env['REDIS_URL']);
+      } catch (err: any) {
+        this.logger.warn(`Failed to initialize Redis client in SuperadminService: ${err?.message}`);
+      }
+    }
+  }
+
+  private async invalidateUserAuthCache(institutionId: string): Promise<void> {
+    if (!this.redis) return;
+    try {
+      const users = await this.prisma.user.findMany({
+        where: { institutionId, role: 'ADMIN' },
+        select: { authUserId: true },
+      });
+      const keys = users
+        .map((u) => u.authUserId)
+        .filter((authId): authId is string => Boolean(authId))
+        .map((authId) => `user_auth:${authId}`);
+
+      if (keys.length > 0) {
+        await this.redis.del(...keys);
+      }
+    } catch (err: any) {
+      this.logger.warn(
+        `Failed to invalidate Redis cache for institution ${institutionId}: ${err?.message}`,
+      );
+    }
+  }
 
   async listOnboardingRequests(statusFilter?: string) {
-    let whereClause: any = {};
+    const whereClause: any = {};
 
     if (statusFilter && statusFilter !== 'ALL') {
       const normalized = statusFilter === 'APPROVED' ? 'ACTIVE' : statusFilter;
@@ -49,6 +83,7 @@ export class SuperadminService {
       approvedAt: inst.approvedAt,
       approvedBy: inst.approvedBy,
       adminUser: inst.users[0] || null,
+      users: inst.users,
     }));
   }
 
@@ -106,7 +141,7 @@ export class SuperadminService {
 
     const now = new Date();
 
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const updatedInstitution = await tx.institution.update({
         where: { id },
         data: {
@@ -134,6 +169,11 @@ export class SuperadminService {
         institution: updatedInstitution,
       };
     });
+
+    // Invalidate Redis cache so approved user can immediately authenticate as ACTIVE
+    await this.invalidateUserAuthCache(id);
+
+    return result;
   }
 
   async rejectOnboardingRequest(id: string, dto: RejectOnboardingDto) {
@@ -145,7 +185,7 @@ export class SuperadminService {
       throw new NotFoundException(`Institution with id ${id} not found`);
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const updatedInstitution = await tx.institution.update({
         where: { id },
         data: {
@@ -170,6 +210,11 @@ export class SuperadminService {
         institution: updatedInstitution,
       };
     });
+
+    // Invalidate Redis cache so rejected status reflects immediately
+    await this.invalidateUserAuthCache(id);
+
+    return result;
   }
 
   async getStats() {
@@ -185,6 +230,7 @@ export class SuperadminService {
       pendingRequests,
       activeInstitutions,
       rejectedRequests,
+      rejectedInstitutions: rejectedRequests,
       totalInstitutions,
     };
   }

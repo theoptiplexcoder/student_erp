@@ -10,5 +10,13 @@ export default async function PostLoginPage() {
     redirect('/api/auth/logout');
   }
 
+  if (user.status === 'PENDING_APPROVAL') {
+    redirect('/pending-approval');
+  }
+
+  if (user.status === 'REJECTED') {
+    redirect('/access-denied?reason=rejected');
+  }
+
   redirect(getDashboardPath(user.role));
 }
