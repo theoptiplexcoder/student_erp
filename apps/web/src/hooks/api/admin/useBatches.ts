@@ -27,12 +27,22 @@ export interface BatchesResponse {
   };
 }
 
-export const useAdminBatches = (page = 1, pageSize = 50, search = '') => {
+export const useAdminBatches = (
+  page = 1,
+  pageSize = 50,
+  search = '',
+  options?: { programId?: string },
+) => {
   return useQuery({
-    queryKey: ['admin', 'batches', page, pageSize, search],
+    queryKey: ['admin', 'batches', page, pageSize, search, options?.programId],
     queryFn: async () => {
       const response = await apiClient.get<BatchesResponse>('/admin/batches', {
-        params: { page, pageSize, search },
+        params: {
+          page,
+          pageSize,
+          search,
+          ...(options?.programId ? { programId: options.programId } : {}),
+        },
       });
       return response.data;
     },

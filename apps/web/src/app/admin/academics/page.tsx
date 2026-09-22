@@ -31,7 +31,15 @@ import { DepartmentsTab } from './departments-tab';
 import { ProgramsTab } from './programs-tab';
 import { useAdminAllCurriculums, useDeleteCurriculum } from '@/hooks/api/admin/useCurriculums';
 import { useAdminCourses, useDeleteCourse } from '@/hooks/api/admin/useCourses';
-import { useAdminSections, useDeleteSection } from '@/hooks/api/admin/useSections';
+import {
+  useAdminSections,
+  useDeleteSection,
+  useCreateSection,
+} from '@/hooks/api/admin/useSections';
+import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
+import { useAcademicYears } from '@/hooks/api/admin/useAcademicYears';
+import { useAdminBatches } from '@/hooks/api/admin/useBatches';
+import { Label, Input } from '@student-erp/ui';
 
 function NewCurriculumButton() {
   return (
@@ -49,15 +57,66 @@ export default function AcademicsPage() {
   // Delete dialog state for Curriculum with warning
   const [curriculumToDelete, setCurriculumToDelete] = useState<any>(null);
 
+  // Add Section dialog state
+  const [isAddSectionOpen, setIsAddSectionOpen] = useState(false);
+  const [selectedProgramIdForSection, setSelectedProgramIdForSection] = useState('');
+
   // Queries
   const { data: curriculumsData, isLoading: isLoadingCurriculums } = useAdminAllCurriculums();
   const { data: coursesData, isLoading: isLoadingCourses } = useAdminCourses(1, 50);
   const { data: sectionsData, isLoading: isLoadingSections } = useAdminSections(1, 50);
+  const { data: programsData } = useAdminPrograms(1, 200);
+  const { data: academicYears = [] } = useAcademicYears();
+  const { data: batchesData } = useAdminBatches(1, 100, '', {
+    programId: selectedProgramIdForSection || undefined,
+  });
+
+  const programs = programsData?.data || [];
+  const batches = batchesData?.data || [];
 
   // Mutations
   const deleteCurriculum = useDeleteCurriculum();
   const deleteCourse = useDeleteCourse();
   const deleteSection = useDeleteSection();
+  const createSection = useCreateSection();
+
+  const handleCreateSectionSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const programId = fd.get('programId') as string;
+    const academicYearId = fd.get('academicYearId') as string;
+    const batchId = (fd.get('batchId') as string) || undefined;
+    const name = (fd.get('name') as string).trim();
+    const code = (fd.get('code') as string).trim();
+    const capacity = parseInt(fd.get('capacity') as string, 10);
+    const semesterStr = fd.get('semester') as string;
+    const semester = semesterStr ? parseInt(semesterStr, 10) : undefined;
+
+    if (!programId) {
+      alert('Please select a program.');
+      return;
+    }
+    if (!academicYearId) {
+      alert('Please select an academic year.');
+      return;
+    }
+
+    try {
+      await createSection.mutateAsync({
+        name,
+        code,
+        capacity,
+        semester,
+        programId,
+        academicYearId,
+        batchId,
+      });
+      setIsAddSectionOpen(false);
+      setSelectedProgramIdForSection('');
+    } catch (err: any) {
+      alert(err?.response?.data?.message || err.message || 'Failed to create section');
+    }
+  };
 
   const handleConfirmDeleteCurriculum = async () => {
     if (!curriculumToDelete) return;
@@ -271,6 +330,9 @@ export default function AcademicsPage() {
                 <CardTitle>Sections</CardTitle>
                 <CardDescription>View and manage sections</CardDescription>
               </div>
+              <Button size="sm" onClick={() => setIsAddSectionOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" /> Add Section
+              </Button>
             </CardHeader>
             <CardContent>
               {isLoadingSections ? (
@@ -323,6 +385,147 @@ export default function AcademicsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Add Section Dialog */}
+      <Dialog
+        open={isAddSectionOpen}
+        onOpenChange={(open) => {
+          setIsAddSectionOpen(open);
+          if (!open) setSelectedProgramIdForSection('');
+        }}
+      >
+        <DialogContent className="sm:max-w-[500px]">
+          <form onSubmit={handleCreateSectionSubmit}>
+            <DialogHeader>
+              <DialogTitle>Add Section</DialogTitle>
+              <DialogDescription>
+                Create a new section under a specific academic program.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="sec-program">
+                  Program <span className="text-destructive">*</span>
+                </Label>
+                <select
+                  id="sec-program"
+                  name="programId"
+                  required
+                  value={selectedProgramIdForSection}
+                  onChange={(e) => setSelectedProgramIdForSection(e.target.value)}
+                  className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  <option value="">Select Program</option>
+                  {programs.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sec-academic-year">
+                  Academic Year <span className="text-destructive">*</span>
+                </Label>
+                <select
+                  id="sec-academic-year"
+                  name="academicYearId"
+                  required
+                  defaultValue={
+                    academicYears.find((ay) => ay.isCurrent || ay['isActive'])?.id ||
+                    academicYears[0]?.id ||
+                    ''
+                  }
+                  className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  <option value="">Select Academic Year</option>
+                  {academicYears.map((ay) => (
+                    <option key={ay.id} value={ay.id}>
+                      {ay.name} {ay.isCurrent ? '(Current)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="sec-name">
+                    Section Name <span className="text-destructive">*</span>
+                  </Label>
+                  <Input id="sec-name" name="name" required placeholder="e.g. Section A" />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sec-code">
+                    Section Code <span className="text-destructive">*</span>
+                  </Label>
+                  <Input id="sec-code" name="code" required placeholder="e.g. SEC-A" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="sec-capacity">
+                    Capacity <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="sec-capacity"
+                    name="capacity"
+                    type="number"
+                    min="1"
+                    required
+                    defaultValue={60}
+                    placeholder="e.g. 60"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sec-semester">Semester / Term (Optional)</Label>
+                  <Input
+                    id="sec-semester"
+                    name="semester"
+                    type="number"
+                    min="1"
+                    placeholder="e.g. 1"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sec-batch">Batch (Optional)</Label>
+                <select
+                  id="sec-batch"
+                  name="batchId"
+                  className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  <option value="">Select Batch (Optional)</option>
+                  {batches.map((b: any) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsAddSectionOpen(false);
+                  setSelectedProgramIdForSection('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createSection.isPending}>
+                {createSection.isPending ? 'Saving...' : 'Add Section'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Curriculum Deletion Warning Dialog */}
       <Dialog

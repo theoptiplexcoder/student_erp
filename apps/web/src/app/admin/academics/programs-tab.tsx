@@ -33,6 +33,9 @@ import {
 } from '@/hooks/api/admin/usePrograms';
 import { useAdminDepartments } from '@/hooks/api/admin/useDepartments';
 import { useAdminCourses, useCreateCourse, useDeleteCourse } from '@/hooks/api/admin/useCourses';
+import { useCreateSection } from '@/hooks/api/admin/useSections';
+import { useAcademicYears } from '@/hooks/api/admin/useAcademicYears';
+import { useAdminBatches } from '@/hooks/api/admin/useBatches';
 
 export function ProgramsTab() {
   const { data: programsData, isLoading: isLoadingProgs } = useAdminPrograms(1, 200);
@@ -55,11 +58,22 @@ export function ProgramsTab() {
   const [courseDialogOpen, setCourseDialogOpen] = useState(false);
   const [selectedProgForCourse, setSelectedProgForCourse] = useState<any>(null);
 
+  // Add Section modal state
+  const [sectionDialogOpen, setSectionDialogOpen] = useState(false);
+  const [selectedProgForSection, setSelectedProgForSection] = useState<any>(null);
+
+  const { data: academicYears = [] } = useAcademicYears();
+  const { data: programBatchesData } = useAdminBatches(1, 100, '', {
+    programId: selectedProgForSection?.id,
+  });
+  const programBatches = programBatchesData?.data || [];
+
   const createProg = useCreateAdminProgram();
   const updateProg = useUpdateAdminProgram();
   const deleteProg = useDeleteAdminProgram();
   const createCourse = useCreateCourse();
   const deleteCourse = useDeleteCourse();
+  const createSection = useCreateSection();
 
   const isLoading = isLoadingProgs || isLoadingDeps || isLoadingCourses;
 
@@ -177,6 +191,45 @@ export function ProgramsTab() {
     setCourseDialogOpen(true);
   };
 
+  const openAddSectionModal = (program: any) => {
+    setSelectedProgForSection(program);
+    setSectionDialogOpen(true);
+  };
+
+  const handleSaveSectionForProgram = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!selectedProgForSection?.id) return;
+    const fd = new FormData(e.currentTarget);
+    const academicYearId = fd.get('academicYearId') as string;
+    const batchId = (fd.get('batchId') as string) || undefined;
+    const name = (fd.get('name') as string).trim();
+    const code = (fd.get('code') as string).trim();
+    const capacity = parseInt(fd.get('capacity') as string, 10);
+    const semesterStr = fd.get('semester') as string;
+    const semester = semesterStr ? parseInt(semesterStr, 10) : undefined;
+
+    if (!academicYearId) {
+      alert('Please select an Academic Year.');
+      return;
+    }
+
+    try {
+      await createSection.mutateAsync({
+        name,
+        code,
+        capacity,
+        semester,
+        programId: selectedProgForSection.id,
+        academicYearId,
+        batchId,
+      });
+      setSectionDialogOpen(false);
+      setSelectedProgForSection(null);
+    } catch (err: any) {
+      alert(err.response?.data?.message || err.message || 'Error creating section');
+    }
+  };
+
   const toggleCourseSelection = (courseId: string) => {
     setSelectedCourseIds((prev) =>
       prev.includes(courseId) ? prev.filter((id) => id !== courseId) : [...prev, courseId],
@@ -222,7 +275,10 @@ export function ProgramsTab() {
                     <span>• {progCourses.length} Courses Linked</span>
                   </CardDescription>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => openAddSectionModal(prog)}>
+                    <Plus className="mr-2 h-4 w-4" /> Add Section
+                  </Button>
                   <Button variant="outline" size="sm" onClick={() => openAddCourseModal(prog)}>
                     <Plus className="mr-2 h-4 w-4" /> Add Course
                   </Button>
@@ -468,6 +524,123 @@ export function ProgramsTab() {
               </Button>
               <Button type="submit" disabled={createCourse.isPending}>
                 {createCourse.isPending ? 'Saving...' : 'Link Course'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Section to Program Dialog */}
+      <Dialog
+        open={sectionDialogOpen}
+        onOpenChange={(open) => {
+          setSectionDialogOpen(open);
+          if (!open) setSelectedProgForSection(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-[500px]">
+          <form onSubmit={handleSaveSectionForProgram}>
+            <DialogHeader>
+              <DialogTitle>Add Section to {selectedProgForSection?.name}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="section-academic-year">
+                  Academic Year <span className="text-destructive">*</span>
+                </Label>
+                <select
+                  id="section-academic-year"
+                  name="academicYearId"
+                  required
+                  defaultValue={
+                    academicYears.find((ay) => ay.isCurrent || ay['isActive'])?.id ||
+                    academicYears[0]?.id ||
+                    ''
+                  }
+                  className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  <option value="">Select Academic Year</option>
+                  {academicYears.map((ay) => (
+                    <option key={ay.id} value={ay.id}>
+                      {ay.name} {ay.isCurrent ? '(Current)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="section-name">
+                    Section Name <span className="text-destructive">*</span>
+                  </Label>
+                  <Input id="section-name" name="name" required placeholder="e.g. Section A" />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="section-code">
+                    Section Code <span className="text-destructive">*</span>
+                  </Label>
+                  <Input id="section-code" name="code" required placeholder="e.g. SEC-A" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="section-capacity">
+                    Capacity <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="section-capacity"
+                    name="capacity"
+                    type="number"
+                    min="1"
+                    required
+                    defaultValue={60}
+                    placeholder="e.g. 60"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="section-semester">Semester / Term (Optional)</Label>
+                  <Input
+                    id="section-semester"
+                    name="semester"
+                    type="number"
+                    min="1"
+                    placeholder="e.g. 1"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="section-batch">Batch (Optional)</Label>
+                <select
+                  id="section-batch"
+                  name="batchId"
+                  className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  <option value="">Select Batch (Optional)</option>
+                  {programBatches.map((b: any) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setSectionDialogOpen(false);
+                  setSelectedProgForSection(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createSection.isPending}>
+                {createSection.isPending ? 'Saving...' : 'Add Section'}
               </Button>
             </DialogFooter>
           </form>
