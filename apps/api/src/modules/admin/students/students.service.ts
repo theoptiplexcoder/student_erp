@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { PrismaService } from '../../../database/prisma.service';
 import { StudentQueryDto } from './dto/student-query.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
+import { ChangeStudentProgramDto } from './dto/change-student-program.dto';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -545,5 +546,166 @@ export class StudentsService {
       },
       programs,
     };
+  }
+
+  async deleteStudent(institutionId: string, id: string) {
+    const student = await this.prisma.student.findFirst({
+      where: { id, institutionId },
+      include: {
+        feePlans: {
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Delete dependent transactional records
+      await tx.attendanceRecord.deleteMany({ where: { studentId: id } });
+      await tx.assignmentSubmission.deleteMany({ where: { studentId: id } });
+      await tx.mark.deleteMany({ where: { studentId: id } });
+      await tx.feedbackSubmission.deleteMany({ where: { studentId: id } });
+      await tx.serviceRequest.deleteMany({ where: { studentId: id } });
+      await tx.certificateRequest.deleteMany({ where: { studentId: id } });
+      await tx.certificate.deleteMany({ where: { studentId: id } });
+      await tx.clubMembership.deleteMany({ where: { studentId: id } });
+      await tx.clubEventRegistration.deleteMany({ where: { studentId: id } });
+
+      // 2. Finance: delete payments & allocations, fee plans & components/installments/waivers
+      await tx.paymentAllocation.deleteMany({
+        where: {
+          installment: {
+            studentFeePlan: {
+              studentId: id,
+            },
+          },
+        },
+      });
+      await tx.payment.deleteMany({ where: { studentId: id } });
+      await tx.studentFeePlan.deleteMany({ where: { studentId: id } });
+
+      // 3. Academic term links & enrollments
+      await tx.studentTerm.deleteMany({ where: { studentId: id } });
+      await tx.enrollment.deleteMany({ where: { studentId: id } });
+
+      // 4. Grievances & applications
+      await tx.grievance.deleteMany({ where: { studentId: id } });
+      await tx.application.deleteMany({ where: { studentId: id } });
+
+      // 5. Delete the Student profile
+      await tx.student.delete({ where: { id } });
+
+      // 6. Delete the associated User record
+      if (student.userId) {
+        await tx.user.delete({ where: { id: student.userId } });
+      }
+
+      return { success: true, message: 'Student deleted successfully from the database' };
+    });
+  }
+
+  async changeProgram(institutionId: string, id: string, data: ChangeStudentProgramDto) {
+    const student = await this.prisma.student.findFirst({
+      where: { ...this.resolveIdentifier(id), institutionId },
+      include: {
+        program: true,
+        section: true,
+      },
+    });
+
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+
+    // Verify target program exists in this institution
+    const targetProgram = await this.prisma.program.findFirst({
+      where: { id: data.programId, institutionId },
+    });
+
+    if (!targetProgram) {
+      throw new NotFoundException('Selected target program not found');
+    }
+
+    // Verify section if provided
+    let newSectionId: string | null = null;
+    if (data.sectionId) {
+      const section = await this.prisma.section.findFirst({
+        where: { id: data.sectionId, institutionId },
+      });
+      if (!section) {
+        throw new NotFoundException('Selected section not found');
+      }
+      if (section.programId && section.programId !== data.programId) {
+        throw new BadRequestException('Selected section does not belong to the chosen program');
+      }
+      newSectionId = section.id;
+    }
+
+    // Check if USN is provided or changed
+    let finalUsn = student.usn;
+    if (data.usn !== undefined) {
+      const trimmedUsn = data.usn ? data.usn.trim() : null;
+      if (trimmedUsn && trimmedUsn !== student.usn) {
+        const existing = await this.prisma.student.findFirst({
+          where: {
+            institutionId,
+            usn: trimmedUsn,
+            NOT: { id: student.id },
+          },
+        });
+        if (existing) {
+          throw new ConflictException(
+            `A student with USN "${trimmedUsn}" already exists in the institution.`,
+          );
+        }
+        finalUsn = trimmedUsn;
+      } else if (!trimmedUsn) {
+        finalUsn = null;
+      }
+    }
+
+    // Find active curriculum for the new program
+    const activeCurriculum = await this.prisma.curriculum.findFirst({
+      where: {
+        institutionId,
+        status: 'ACTIVE',
+        programs: {
+          some: { id: data.programId },
+        },
+      },
+    });
+
+    await this.prisma.$transaction(async (tx) => {
+      // 1. Update the student's program, section, curriculum, and USN
+      await tx.student.update({
+        where: { id: student.id },
+        data: {
+          programId: data.programId,
+          sectionId: newSectionId,
+          curriculumId: activeCurriculum ? activeCurriculum.id : null,
+          usn: finalUsn,
+        },
+      });
+
+      // 2. Update active enrollment records for this student
+      await tx.enrollment.updateMany({
+        where: {
+          studentId: student.id,
+          status: 'ACTIVE',
+        },
+        data: {
+          programId: data.programId,
+          sectionId: newSectionId,
+          curriculumId: activeCurriculum ? activeCurriculum.id : null,
+          ...(data.batchId ? { batchId: data.batchId } : {}),
+          ...(finalUsn ? { rollNumber: finalUsn } : {}),
+        },
+      });
+    });
+
+    return this.findOne(institutionId, student.id);
   }
 }

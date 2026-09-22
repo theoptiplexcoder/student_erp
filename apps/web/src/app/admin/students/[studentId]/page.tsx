@@ -3,7 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAdminStudent, useUpdateStudent } from '@/hooks/api/admin/useStudents';
+import {
+  useAdminStudent,
+  useUpdateStudent,
+  useDeleteStudent,
+  useChangeStudentProgram,
+} from '@/hooks/api/admin/useStudents';
+import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
+import { useAdminSections } from '@/hooks/api/admin/useSections';
+import { useAdminBatches } from '@/hooks/api/admin/useBatches';
 import {
   Card,
   CardContent,
@@ -21,6 +29,12 @@ import {
   PageContainer,
   StatusBadge,
   EmptyState,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from '@student-erp/ui';
 import {
   ArrowLeft,
@@ -34,6 +48,8 @@ import {
   Check,
   X,
   FileText,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { StudentAcademicProgress } from './components/student-academic-progress';
@@ -49,10 +65,36 @@ export default function StudentDetailPage() {
 
   const { data: student, isLoading, isError } = useAdminStudent(studentId);
   const updateMutation = useUpdateStudent();
+  const deleteMutation = useDeleteStudent();
+  const changeProgramMutation = useChangeStudentProgram();
+
+  const { data: programsData, isLoading: isLoadingPrograms } = useAdminPrograms(1, 100);
+  const programs = programsData?.data || [];
 
   const [isEditingUsn, setIsEditingUsn] = useState(false);
   const [usnInput, setUsnInput] = useState('');
   const [usnError, setUsnError] = useState('');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  // Change Program Dialog states
+  const [isChangeProgramOpen, setIsChangeProgramOpen] = useState(false);
+  const [selectedProgramId, setSelectedProgramId] = useState('');
+  const [selectedSectionId, setSelectedSectionId] = useState('');
+  const [selectedBatchId, setSelectedBatchId] = useState('');
+
+  const { data: sectionsData, isLoading: isLoadingSections } = useAdminSections(1, 100, '', {
+    enabled: isChangeProgramOpen && !!selectedProgramId,
+    programId: selectedProgramId || undefined,
+  });
+  const availableSections = sectionsData?.data || [];
+
+  const { data: batchesData, isLoading: isLoadingBatches } = useAdminBatches(1, 100);
+  const availableBatches = (batchesData?.data || []).filter(
+    (b: any) =>
+      !selectedProgramId ||
+      b.programId === selectedProgramId ||
+      b.program?.id === selectedProgramId,
+  );
 
   useEffect(() => {
     if (student && !isEditingUsn) {
@@ -76,6 +118,47 @@ export default function StudentDetailPage() {
       const msg =
         err.response?.data?.message || err.message || 'Failed to save USN. Please try again.';
       setUsnError(msg);
+      toast.error(msg);
+    }
+  };
+
+  const handleOpenChangeProgram = () => {
+    if (!student) return;
+    setSelectedProgramId(student.program?.id || student.programId || '');
+    setSelectedSectionId(student.section?.id || student.sectionId || '');
+    setSelectedBatchId('');
+    setIsChangeProgramOpen(true);
+  };
+
+  const handleChangeProgram = async () => {
+    if (!student || !selectedProgramId) return;
+    try {
+      await changeProgramMutation.mutateAsync({
+        id: student.id,
+        data: {
+          programId: selectedProgramId,
+          sectionId: selectedSectionId || undefined,
+          batchId: selectedBatchId || undefined,
+        },
+      });
+      toast.success('Student program updated successfully');
+      setIsChangeProgramOpen(false);
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'Failed to update student program.';
+      toast.error(msg);
+    }
+  };
+
+  const handleDeleteStudent = async () => {
+    if (!student) return;
+    try {
+      await deleteMutation.mutateAsync(student.id);
+      toast.success('Student deleted successfully from the database');
+      setIsDeleteDialogOpen(false);
+      router.push('/admin/students');
+    } catch (err: any) {
+      const msg =
+        err.response?.data?.message || err.message || 'Failed to delete student from the database.';
       toast.error(msg);
     }
   };
@@ -134,7 +217,7 @@ export default function StudentDetailPage() {
           </div>
         }
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -146,6 +229,15 @@ export default function StudentDetailPage() {
             <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
               <FileText className="h-3.5 w-3.5" />
               Download Transcript
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="h-8 gap-1.5 text-xs"
+              onClick={() => setIsDeleteDialogOpen(true)}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete Student
             </Button>
           </div>
         }
@@ -263,11 +355,22 @@ export default function StudentDetailPage() {
             {/* Academic Information & Enrollment */}
             <div className="space-y-6 md:col-span-2">
               <Card className="border-border/80 shadow-xs">
-                <CardHeader className="p-4 pb-3 sm:p-5">
-                  <CardTitle className="text-sm font-semibold">Academic Enrollment</CardTitle>
-                  <CardDescription className="text-xs">
-                    Current program placement and administrative section allocations.
-                  </CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between p-4 pb-3 sm:p-5">
+                  <div>
+                    <CardTitle className="text-sm font-semibold">Academic Enrollment</CardTitle>
+                    <CardDescription className="text-xs">
+                      Current program placement and administrative section allocations.
+                    </CardDescription>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1.5 text-xs"
+                    onClick={handleOpenChangeProgram}
+                  >
+                    <Edit2 className="h-3.5 w-3.5" />
+                    Change Program
+                  </Button>
                 </CardHeader>
                 <CardContent className="p-4 pt-0 sm:p-5">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -374,6 +477,176 @@ export default function StudentDetailPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Change Program Confirmation & Selection Dialog */}
+      <Dialog open={isChangeProgramOpen} onOpenChange={setIsChangeProgramOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <div className="text-foreground flex items-center gap-2">
+              <Edit2 className="text-primary h-5 w-5" />
+              <DialogTitle>Change Student Program</DialogTitle>
+            </div>
+            <DialogDescription className="pt-1 text-xs leading-relaxed">
+              Update the academic program and section for{' '}
+              <span className="text-foreground font-semibold">{fullName}</span>. This will update
+              their student profile, active enrollment, and associate the matching curriculum.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {/* Target Program */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="change-program-select"
+                className="text-foreground text-xs font-semibold"
+              >
+                Academic Program <span className="text-destructive">*</span>
+              </label>
+              <select
+                id="change-program-select"
+                value={selectedProgramId}
+                onChange={(e) => {
+                  setSelectedProgramId(e.target.value);
+                  setSelectedSectionId('');
+                  setSelectedBatchId('');
+                }}
+                disabled={isLoadingPrograms || changeProgramMutation.isPending}
+                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-xs focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">Select a Program</option>
+                {programs.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} ({p.code})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Optional Section */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="change-section-select"
+                className="text-foreground text-xs font-semibold"
+              >
+                Section (Optional)
+              </label>
+              <select
+                id="change-section-select"
+                value={selectedSectionId}
+                onChange={(e) => setSelectedSectionId(e.target.value)}
+                disabled={
+                  !selectedProgramId || isLoadingSections || changeProgramMutation.isPending
+                }
+                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-xs focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">No Section / Unassigned</option>
+                {availableSections.map((sec) => (
+                  <option key={sec.id} value={sec.id}>
+                    {sec.name} {sec.code ? `(${sec.code})` : ''}
+                  </option>
+                ))}
+              </select>
+              {isLoadingSections && (
+                <p className="text-muted-foreground text-[11px]">
+                  Loading sections for selected program...
+                </p>
+              )}
+            </div>
+
+            {/* Optional Batch */}
+            {availableBatches.length > 0 && (
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="change-batch-select"
+                  className="text-foreground text-xs font-semibold"
+                >
+                  Batch (Optional)
+                </label>
+                <select
+                  id="change-batch-select"
+                  value={selectedBatchId}
+                  onChange={(e) => setSelectedBatchId(e.target.value)}
+                  disabled={
+                    !selectedProgramId || isLoadingBatches || changeProgramMutation.isPending
+                  }
+                  className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-xs focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Keep current batch or none</option>
+                  {availableBatches.map((b: any) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name} ({b.admissionYear})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              onClick={() => setIsChangeProgramOpen(false)}
+              disabled={changeProgramMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              className="gap-1.5 text-xs"
+              onClick={handleChangeProgram}
+              disabled={!selectedProgramId || changeProgramMutation.isPending}
+            >
+              {changeProgramMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Student Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <div className="text-destructive flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              <DialogTitle>Delete Student Record</DialogTitle>
+            </div>
+            <DialogDescription className="pt-2 text-xs leading-relaxed">
+              Are you sure you want to delete{' '}
+              <span className="text-foreground font-semibold">{fullName}</span> (
+              {student.studentCode}) from the database? This action is permanent and will remove the
+              student profile, user account, enrollments, and all associated academic records.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={deleteMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="gap-1.5 text-xs"
+              onClick={handleDeleteStudent}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="h-3.5 w-3.5" />
+              )}
+              {deleteMutation.isPending ? 'Deleting...' : 'Delete from Database'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageContainer>
   );
 }

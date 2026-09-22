@@ -151,6 +151,43 @@ export const useUpdateStudent = () => {
   });
 };
 
+export const useDeleteStudent = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.delete(`/admin/students/${id}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'students'] });
+    },
+  });
+};
+
+export interface ChangeStudentProgramInput {
+  programId: string;
+  sectionId?: string;
+  batchId?: string;
+  usn?: string;
+}
+
+export const useChangeStudentProgram = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: ChangeStudentProgramInput }) => {
+      const response = await apiClient.post<Student>(`/admin/students/${id}/change-program`, data);
+      return response.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'students'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'students', variables.id] });
+      queryClient.invalidateQueries({
+        queryKey: ['admin', 'students', variables.id, 'academic-progress'],
+      });
+    },
+  });
+};
+
 export interface StudentAcademicCourse {
   id: string;
   code: string;

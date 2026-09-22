@@ -117,12 +117,9 @@ export const useDeleteAdminProgram = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      id,
-      options,
-    }: { id: string; options?: DeleteProgramOptions } | string) => {
-      const programId = typeof id === 'string' ? id : id.id;
-      const data = typeof id === 'string' ? {} : id.options || {};
+    mutationFn: async (payload: { id: string; options?: DeleteProgramOptions } | string) => {
+      const programId = typeof payload === 'string' ? payload : payload.id;
+      const data = typeof payload === 'string' ? {} : payload.options || {};
       const response = await apiClient.delete(`/admin/programs/${programId}`, { data });
       return response.data;
     },
