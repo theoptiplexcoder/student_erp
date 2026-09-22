@@ -195,7 +195,7 @@ export class ProgramsService {
     const program = await this.prisma.program.findFirst({
       where: { id, institutionId },
       include: {
-        courses: { select: { id: true, programs: { select: { id: true } } } },
+        courses: { select: { id: true, programOfferings: { select: { id: true } } } },
         curriculums: { select: { id: true, programs: { select: { id: true } } } },
         _count: {
           select: {
@@ -284,7 +284,7 @@ export class ProgramsService {
       if (dto?.deleteCourses) {
         // If deleteCourses is true, delete only courses that are exclusively linked to this program
         const exclusiveCourseIds = program.courses
-          .filter((c) => c.programs.length <= 1)
+          .filter((c) => c.programOfferings.length <= 1)
           .map((c) => c.id);
 
         if (exclusiveCourseIds.length > 0) {
