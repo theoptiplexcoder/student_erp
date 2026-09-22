@@ -136,7 +136,7 @@ export default function AdminDashboard() {
         description="Monitor institutional health, academic operations, and prioritize pending administrative actions."
         actions={
           <div className="flex items-center gap-2">
-            <Link href="/admin/timetable/generate">
+            <Link href="/admin/timetable">
               <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
                 <CalendarCheck className="h-3.5 w-3.5" />
                 Generate Timetable

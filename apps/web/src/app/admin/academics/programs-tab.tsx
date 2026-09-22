@@ -22,8 +22,9 @@ import {
   Input,
   Label,
   Badge,
+  Checkbox,
 } from '@student-erp/ui';
-import { Plus, Edit, Trash2, GraduationCap, Loader2, BookOpen } from 'lucide-react';
+import { Plus, Edit, Trash2, GraduationCap, Loader2, BookOpen, AlertTriangle } from 'lucide-react';
 import {
   useAdminPrograms,
   useCreateAdminProgram,
@@ -41,6 +42,15 @@ export function ProgramsTab() {
   const [progDialogOpen, setProgDialogOpen] = useState(false);
   const [editingProg, setEditingProg] = useState<any>(null);
   const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([]);
+
+  // Flexible delete dialog state
+  const [programToDelete, setProgramToDelete] = useState<any>(null);
+  const [deleteOptions, setDeleteOptions] = useState({
+    deleteBatches: false,
+    deleteSections: false,
+    deleteCourses: false,
+    deleteCurriculums: false,
+  });
 
   const [courseDialogOpen, setCourseDialogOpen] = useState(false);
   const [selectedProgForCourse, setSelectedProgForCourse] = useState<any>(null);
@@ -100,17 +110,26 @@ export function ProgramsTab() {
     }
   };
 
-  const handleDeleteProgram = async (id: string) => {
-    if (confirm('Are you sure you want to delete this program?')) {
-      try {
-        await deleteProg.mutateAsync(id);
-      } catch (err: any) {
-        alert(
-          err.response?.data?.message ||
-            err.message ||
-            'Error deleting program. Ensure no dependent courses exist.',
-        );
-      }
+  const handleDeleteProgram = (prog: any) => {
+    setProgramToDelete(prog);
+    setDeleteOptions({
+      deleteBatches: false,
+      deleteSections: false,
+      deleteCourses: false,
+      deleteCurriculums: false,
+    });
+  };
+
+  const handleConfirmDeleteProgram = async () => {
+    if (!programToDelete) return;
+    try {
+      await deleteProg.mutateAsync({
+        id: programToDelete.id,
+        options: deleteOptions,
+      });
+      setProgramToDelete(null);
+    } catch (err: any) {
+      alert(err.response?.data?.message || err.message || 'Error deleting program');
     }
   };
 
@@ -210,7 +229,7 @@ export function ProgramsTab() {
                   <Button variant="ghost" size="icon" onClick={() => openProgramModal(prog)}>
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDeleteProgram(prog.id)}>
+                  <Button variant="ghost" size="icon" onClick={() => handleDeleteProgram(prog)}>
                     <Trash2 className="text-destructive h-4 w-4" />
                   </Button>
                 </div>
@@ -452,6 +471,160 @@ export function ProgramsTab() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Program Deletion Warning & Flexible Deletion Dialog */}
+      <Dialog
+        open={!!programToDelete}
+        onOpenChange={(open) => {
+          if (!open) setProgramToDelete(null);
+        }}
+      >
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[540px]">
+          <DialogHeader>
+            <div className="text-destructive flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              <DialogTitle>Delete Program: {programToDelete?.name}</DialogTitle>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="bg-destructive/10 text-destructive border-destructive/20 rounded-md border p-3 text-sm">
+              <p className="font-semibold">
+                Warning: This action permanently deletes this program.
+              </p>
+              <p className="mt-1 text-xs opacity-90">
+                By default, this program is deleted while connected courses and curriculums remain
+                intact in your institution (they will simply be detached from this program). Select
+                the options below if you also wish to delete associated records.
+              </p>
+            </div>
+
+            {/* Checkboxes for flexible deletion */}
+            <div className="space-y-3 rounded-md border p-4">
+              <p className="text-foreground text-sm font-medium">
+                Choose related elements to delete:
+              </p>
+
+              <div className="flex items-start space-x-3 pt-1">
+                <Checkbox
+                  id="del-courses"
+                  checked={deleteOptions.deleteCourses}
+                  onCheckedChange={(checked) =>
+                    setDeleteOptions((prev) => ({ ...prev, deleteCourses: !!checked }))
+                  }
+                />
+                <div className="grid gap-1 leading-none">
+                  <label
+                    htmlFor="del-courses"
+                    className="text-foreground cursor-pointer text-sm leading-none font-medium"
+                  >
+                    Delete linked courses ({programToDelete?.courses?.length || 0})
+                  </label>
+                  <p className="text-muted-foreground text-xs">
+                    {deleteOptions.deleteCourses
+                      ? 'Courses exclusively tied to this program will be deleted.'
+                      : 'Courses will be preserved and kept in the institution catalogue.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3 pt-1">
+                <Checkbox
+                  id="del-curriculums"
+                  checked={deleteOptions.deleteCurriculums}
+                  onCheckedChange={(checked) =>
+                    setDeleteOptions((prev) => ({ ...prev, deleteCurriculums: !!checked }))
+                  }
+                />
+                <div className="grid gap-1 leading-none">
+                  <label
+                    htmlFor="del-curriculums"
+                    className="text-foreground cursor-pointer text-sm leading-none font-medium"
+                  >
+                    Delete linked curriculums
+                  </label>
+                  <p className="text-muted-foreground text-xs">
+                    {deleteOptions.deleteCurriculums
+                      ? 'Curriculums exclusively tied to this program will be deleted.'
+                      : 'Curriculums will be preserved and kept in the institution catalogue.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3 pt-1">
+                <Checkbox
+                  id="del-sections"
+                  checked={deleteOptions.deleteSections}
+                  onCheckedChange={(checked) =>
+                    setDeleteOptions((prev) => ({ ...prev, deleteSections: !!checked }))
+                  }
+                />
+                <div className="grid gap-1 leading-none">
+                  <label
+                    htmlFor="del-sections"
+                    className="text-foreground cursor-pointer text-sm leading-none font-medium"
+                  >
+                    Delete program sections
+                  </label>
+                  <p className="text-muted-foreground text-xs">
+                    {deleteOptions.deleteSections
+                      ? 'All sections created under this program will be permanently deleted.'
+                      : 'Sections will be preserved and unlinked from this program.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3 pt-1">
+                <Checkbox
+                  id="del-batches"
+                  checked={deleteOptions.deleteBatches}
+                  onCheckedChange={(checked) =>
+                    setDeleteOptions((prev) => ({ ...prev, deleteBatches: !!checked }))
+                  }
+                />
+                <div className="grid gap-1 leading-none">
+                  <label
+                    htmlFor="del-batches"
+                    className="text-foreground cursor-pointer text-sm leading-none font-medium"
+                  >
+                    Delete program batches
+                  </label>
+                  <p className="text-muted-foreground text-xs">
+                    {deleteOptions.deleteBatches
+                      ? 'Batches created under this program will be deleted.'
+                      : 'Batches will be kept (if batches exist, you must select this or reassign them first).'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setProgramToDelete(null)}
+              disabled={deleteProg.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleConfirmDeleteProgram}
+              disabled={deleteProg.isPending}
+            >
+              {deleteProg.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Deleting...
+                </>
+              ) : (
+                'Delete Program'
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -16,6 +16,7 @@ import { RolesGuard } from '../../../guards/roles.guard';
 import { Roles } from '../../../decorators/roles.decorator';
 import { CreateProgramDto } from './dto/create-program.dto';
 import { UpdateProgramDto } from './dto/update-program.dto';
+import { DeleteProgramDto } from './dto/delete-program.dto';
 
 @Controller('admin/programs')
 @UseGuards(SupabaseAuthGuard, RolesGuard)
@@ -55,7 +56,11 @@ export class ProgramsController {
   }
 
   @Delete(':id')
-  async removeProgram(@CurrentUser() user: any, @Param('id') id: string) {
-    return this.programsService.removeProgram(user.institutionId, id);
+  async removeProgram(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+    @Body() dto: DeleteProgramDto,
+  ) {
+    return this.programsService.removeProgram(user.institutionId, id, dto);
   }
 }

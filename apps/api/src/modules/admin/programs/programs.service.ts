@@ -3,6 +3,7 @@ import { PrismaService } from '../../../database/prisma.service';
 import { Prisma } from '@prisma/client';
 import { CreateProgramDto } from './dto/create-program.dto';
 import { UpdateProgramDto } from './dto/update-program.dto';
+import { DeleteProgramDto } from './dto/delete-program.dto';
 
 @Injectable()
 export class ProgramsService {
@@ -72,7 +73,13 @@ export class ProgramsService {
           orderBy: { versionNumber: 'desc' },
         },
         _count: {
-          select: { students: true, courses: true },
+          select: {
+            students: true,
+            courses: true,
+            curriculums: true,
+            sections: true,
+            batches: true,
+          },
         },
       },
     });
@@ -112,7 +119,13 @@ export class ProgramsService {
             },
           },
           _count: {
-            select: { students: true, courses: true },
+            select: {
+              students: true,
+              courses: true,
+              curriculums: true,
+              sections: true,
+              batches: true,
+            },
           },
         },
         orderBy: { name: 'asc' },
@@ -178,10 +191,12 @@ export class ProgramsService {
     });
   }
 
-  async removeProgram(institutionId: string, id: string) {
+  async removeProgram(institutionId: string, id: string, dto?: DeleteProgramDto) {
     const program = await this.prisma.program.findFirst({
       where: { id, institutionId },
       include: {
+        courses: { select: { id: true, programs: { select: { id: true } } } },
+        curriculums: { select: { id: true, programs: { select: { id: true } } } },
         _count: {
           select: {
             students: true,
@@ -189,6 +204,7 @@ export class ProgramsService {
             curriculums: true,
             sections: true,
             enrollments: true,
+            batches: true,
           },
         },
       },
@@ -198,17 +214,114 @@ export class ProgramsService {
       throw new NotFoundException('Program not found');
     }
 
-    if (program._count) {
-      const { students, courses, curriculums, sections, enrollments } = program._count;
-      if (students > 0 || courses > 0 || curriculums > 0 || sections > 0 || enrollments > 0) {
-        throw new BadRequestException(
-          `Cannot delete program. It has dependent records (${students} students, ${courses} courses, ${curriculums} curriculums, ${sections} sections, ${enrollments} enrollments).`,
-        );
-      }
+    const { students, enrollments, sections, batches } = program._count;
+
+    if (students > 0 || enrollments > 0) {
+      throw new BadRequestException(
+        `Cannot delete program. It has active students (${students}) or student enrollments (${enrollments}). Please reassign or graduate students first.`,
+      );
     }
 
-    return this.prisma.program.delete({
-      where: { id },
+    if (sections > 0 && !dto?.deleteSections) {
+      throw new BadRequestException(
+        `Cannot delete program. It has ${sections} linked sections. Choose whether to delete sections or reassign them first.`,
+      );
+    }
+
+    if (batches > 0 && !dto?.deleteBatches) {
+      throw new BadRequestException(
+        `Cannot delete program. It has ${batches} linked batches. Choose whether to delete batches or reassign them first.`,
+      );
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Unlink foreign keys pointing to this program (for tables where program_id is optional)
+      await tx.calendarEvent.updateMany({
+        where: { programId: id, institutionId },
+        data: { programId: null },
+      });
+
+      await tx.feeStructure.updateMany({
+        where: { programId: id, institutionId },
+        data: { programId: null },
+      });
+
+      await tx.courseOffering.updateMany({
+        where: { programId: id, institutionId },
+        data: { programId: null },
+      });
+
+      // 2. Handle sections
+      if (dto?.deleteSections) {
+        await tx.section.deleteMany({
+          where: { programId: id, institutionId },
+        });
+      } else {
+        await tx.section.updateMany({
+          where: { programId: id, institutionId },
+          data: { programId: null },
+        });
+      }
+
+      // 3. Handle batches (Batch has non-nullable program_id, so if deleted it deletes; if any exist they must have been authorized to delete)
+      if (dto?.deleteBatches) {
+        await tx.batch.deleteMany({
+          where: { programId: id, institutionId },
+        });
+      }
+
+      // 4. Handle courses
+      // First disconnect all courses from this program
+      await tx.program.update({
+        where: { id },
+        data: {
+          courses: {
+            set: [],
+          },
+        },
+      });
+
+      if (dto?.deleteCourses) {
+        // If deleteCourses is true, delete only courses that are exclusively linked to this program
+        const exclusiveCourseIds = program.courses
+          .filter((c) => c.programs.length <= 1)
+          .map((c) => c.id);
+
+        if (exclusiveCourseIds.length > 0) {
+          await tx.course.deleteMany({
+            where: { id: { in: exclusiveCourseIds }, institutionId },
+          });
+        }
+      }
+
+      // 5. Handle curriculums
+      // First disconnect all curriculums from this program
+      await tx.program.update({
+        where: { id },
+        data: {
+          curriculums: {
+            set: [],
+          },
+        },
+      });
+
+      if (dto?.deleteCurriculums) {
+        // If deleteCurriculums is true, delete only curriculums that are exclusively linked to this program
+        const exclusiveCurriculumIds = program.curriculums
+          .filter((c) => c.programs.length <= 1)
+          .map((c) => c.id);
+
+        if (exclusiveCurriculumIds.length > 0) {
+          await tx.curriculum.deleteMany({
+            where: { id: { in: exclusiveCurriculumIds }, institutionId },
+          });
+        }
+      }
+
+      // 6. Finally delete the program
+      return tx.program.delete({
+        where: { id },
+      });
     });
   }
 }

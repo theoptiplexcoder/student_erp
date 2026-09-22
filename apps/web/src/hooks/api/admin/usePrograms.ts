@@ -106,16 +106,32 @@ export const useUpdateAdminProgram = () => {
   });
 };
 
+export interface DeleteProgramOptions {
+  deleteBatches?: boolean;
+  deleteSections?: boolean;
+  deleteCourses?: boolean;
+  deleteCurriculums?: boolean;
+}
+
 export const useDeleteAdminProgram = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const response = await apiClient.delete(`/admin/programs/${id}`);
+    mutationFn: async ({
+      id,
+      options,
+    }: { id: string; options?: DeleteProgramOptions } | string) => {
+      const programId = typeof id === 'string' ? id : id.id;
+      const data = typeof id === 'string' ? {} : id.options || {};
+      const response = await apiClient.delete(`/admin/programs/${programId}`, { data });
       return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'programs'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'curriculums'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'sections'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'batches'] });
     },
   });
 };
