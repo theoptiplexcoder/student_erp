@@ -151,14 +151,11 @@ function StudentsList() {
         ))}
       </div>
 
-      {/* GitHub/Primer-style Filter and Query Bar */}
+      {/* Compact Filter Card */}
       <Card className="border-border/80 shadow-xs">
-        <CardHeader className="p-4 pb-3 sm:p-5">
-          <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-            Filters & Search
-          </CardTitle>
+        <CardContent className="p-3 sm:p-4">
           <StudentFilters />
-        </CardHeader>
+        </CardContent>
       </Card>
 
       {/* Main Table / State Section */}

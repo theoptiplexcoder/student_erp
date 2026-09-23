@@ -12,7 +12,7 @@ import {
   DialogFooter,
   Label,
 } from '@student-erp/ui';
-import { Search, Filter, X } from 'lucide-react';
+import { Search, Filter, X, ChevronDown, SlidersHorizontal, RotateCcw } from 'lucide-react';
 import { useAdminDepartments } from '@/hooks/api/admin/useDepartments';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
 import { useAdminBatches } from '@/hooks/api/admin/useBatches';
@@ -29,6 +29,8 @@ export function StudentFilters() {
 
   // Dialog state
   const [isMoreFiltersOpen, setIsMoreFiltersOpen] = useState(false);
+  // Collapsible panel state
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Queries
   const { data: deptData } = useAdminDepartments(1, 1000);
@@ -115,6 +117,19 @@ export function StudentFilters() {
     ? sections.filter((s) => s.batch?.id === batchId || (s as any).batchId === batchId)
     : sections;
 
+  // Active secondary filters count (filters inside the collapsible section)
+  const secondaryFiltersCount = [
+    academicYearId,
+    departmentId,
+    programId,
+    batchId,
+    sectionId,
+    gender,
+    admissionDateFrom,
+    admissionDateTo,
+    guardianLinked,
+  ].filter(Boolean).length;
+
   // Active filters count
   const activeFiltersCount = [
     academicYearId,
@@ -175,109 +190,40 @@ export function StudentFilters() {
   );
 
   return (
-    <div className="mb-4 space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative max-w-sm min-w-[200px] flex-1">
-          <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+    <div className="space-y-3">
+      {/* Compact Primary Bar */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        {/* Search Input with quick clear */}
+        <div className="relative min-w-[200px] flex-1">
+          <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2" />
           <Input
             type="search"
-            placeholder="Search students..."
-            className="pl-9"
+            placeholder="Search by name, email, roll number..."
+            className="h-9 pr-8 pl-8 text-xs sm:text-sm"
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
           />
+          {localSearch && (
+            <button
+              type="button"
+              onClick={() => {
+                setLocalSearch('');
+                updateFilter('search', null);
+              }}
+              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 rounded-full p-0.5"
+              aria-label="Clear search"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
 
+        {/* Quick Lifecycle Status Dropdown */}
         <select
-          className={SELECT_CLASS + ' w-auto'}
-          value={academicYearId}
-          onChange={(e) => updateFilter('academicYearId', e.target.value)}
-        >
-          <option value="">All Academic Years</option>
-          {academicYears?.map((y) => (
-            <option key={y.id} value={y.id}>
-              {y.name}
-            </option>
-          ))}
-        </select>
-
-        <select
-          className={SELECT_CLASS + ' w-auto'}
-          value={departmentId}
-          onChange={(e) => {
-            updateMultipleFilters({
-              departmentId: e.target.value,
-              programId: null, // cascade clear
-              batchId: null,
-              sectionId: null,
-            });
-          }}
-        >
-          <option value="">All Departments</option>
-          {departments.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.name}
-            </option>
-          ))}
-        </select>
-
-        <select
-          className={SELECT_CLASS + ' w-auto'}
-          value={programId}
-          onChange={(e) => {
-            updateMultipleFilters({
-              programId: e.target.value,
-              batchId: null, // cascade clear
-              sectionId: null,
-            });
-          }}
-          disabled={!!departmentId && filteredPrograms.length === 0}
-        >
-          <option value="">All Programs</option>
-          {filteredPrograms.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-
-        <select
-          className={SELECT_CLASS + ' w-auto'}
-          value={batchId}
-          onChange={(e) => {
-            updateMultipleFilters({
-              batchId: e.target.value,
-              sectionId: null, // cascade clear
-            });
-          }}
-          disabled={!!programId && filteredBatches.length === 0}
-        >
-          <option value="">All Batches</option>
-          {filteredBatches.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </select>
-
-        <select
-          className={SELECT_CLASS + ' w-auto'}
-          value={sectionId}
-          onChange={(e) => updateFilter('sectionId', e.target.value)}
-          disabled={!!batchId && filteredSections.length === 0}
-        >
-          <option value="">All Sections</option>
-          {filteredSections.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-
-        <select
-          className={SELECT_CLASS + ' w-auto'}
+          className={SELECT_CLASS + ' h-9 w-full text-xs sm:w-36'}
           value={status}
           onChange={(e) => updateFilter('status', e.target.value)}
+          aria-label="Filter by lifecycle status"
         >
           <option value="">All Statuses</option>
           <option value="APPLICANT">Applicant</option>
@@ -291,44 +237,223 @@ export function StudentFilters() {
           <option value="WITHDRAWN">Withdrawn</option>
         </select>
 
+        {/* Toggle Collapse Filter Button */}
         <Button
-          variant="outline"
-          onClick={() => setIsMoreFiltersOpen(true)}
-          className="border-border gap-2"
+          type="button"
+          variant={isExpanded || secondaryFiltersCount > 0 ? 'secondary' : 'outline'}
+          size="sm"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="h-9 shrink-0 gap-1.5 px-3 text-xs"
+          aria-expanded={isExpanded}
         >
-          <Filter className="h-4 w-4" />
-          More Filters
-          {activeFiltersCount > 6 && (
-            <span className="bg-primary text-primary-foreground ml-1 flex h-5 w-5 items-center justify-center rounded-full text-xs">
-              {activeFiltersCount - 6}
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          <span>Filters</span>
+          {secondaryFiltersCount > 0 && (
+            <span className="bg-primary text-primary-foreground flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold">
+              {secondaryFiltersCount}
             </span>
           )}
+          <ChevronDown
+            className={`h-3.5 w-3.5 transition-transform duration-200 ${
+              isExpanded ? 'rotate-180' : ''
+            }`}
+          />
         </Button>
 
         {activeFilterEntries.length > 0 && (
           <Button
+            type="button"
             variant="ghost"
+            size="sm"
             onClick={clearAllFilters}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground h-9 gap-1 px-2 text-xs"
           >
-            Reset
+            <RotateCcw className="h-3 w-3" />
+            <span className="hidden sm:inline">Reset</span>
           </Button>
         )}
       </div>
 
+      {/* Collapsible Secondary Filter Drawer */}
+      {isExpanded && (
+        <div className="border-border/60 bg-muted/20 animate-in fade-in-50 slide-in-from-top-1 space-y-3 rounded-md border p-3">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-1">
+              <label className="text-muted-foreground text-[11px] font-medium">Academic Year</label>
+              <select
+                className={SELECT_CLASS + ' h-8 text-xs'}
+                value={academicYearId}
+                onChange={(e) => updateFilter('academicYearId', e.target.value)}
+              >
+                <option value="">All Academic Years</option>
+                {academicYears?.map((y) => (
+                  <option key={y.id} value={y.id}>
+                    {y.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-muted-foreground text-[11px] font-medium">Department</label>
+              <select
+                className={SELECT_CLASS + ' h-8 text-xs'}
+                value={departmentId}
+                onChange={(e) => {
+                  updateMultipleFilters({
+                    departmentId: e.target.value,
+                    programId: null, // cascade clear
+                    batchId: null,
+                    sectionId: null,
+                  });
+                }}
+              >
+                <option value="">All Departments</option>
+                {departments.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-muted-foreground text-[11px] font-medium">Program</label>
+              <select
+                className={SELECT_CLASS + ' h-8 text-xs'}
+                value={programId}
+                onChange={(e) => {
+                  updateMultipleFilters({
+                    programId: e.target.value,
+                    batchId: null, // cascade clear
+                    sectionId: null,
+                  });
+                }}
+                disabled={!!departmentId && filteredPrograms.length === 0}
+              >
+                <option value="">All Programs</option>
+                {filteredPrograms.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-muted-foreground text-[11px] font-medium">Batch</label>
+              <select
+                className={SELECT_CLASS + ' h-8 text-xs'}
+                value={batchId}
+                onChange={(e) => {
+                  updateMultipleFilters({
+                    batchId: e.target.value,
+                    sectionId: null, // cascade clear
+                  });
+                }}
+                disabled={!!programId && filteredBatches.length === 0}
+              >
+                <option value="">All Batches</option>
+                {filteredBatches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-muted-foreground text-[11px] font-medium">Section</label>
+              <select
+                className={SELECT_CLASS + ' h-8 text-xs'}
+                value={sectionId}
+                onChange={(e) => updateFilter('sectionId', e.target.value)}
+                disabled={!!batchId && filteredSections.length === 0}
+              >
+                <option value="">All Sections</option>
+                {filteredSections.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-3">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsMoreFiltersOpen(true)}
+                className="h-8 gap-1.5 text-xs"
+              >
+                <Filter className="h-3.5 w-3.5" />
+                More Filters (Gender, Date, Guardian)
+                {[gender, admissionDateFrom, admissionDateTo, guardianLinked].filter(Boolean)
+                  .length > 0 && (
+                  <span className="bg-primary text-primary-foreground ml-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold">
+                    {
+                      [gender, admissionDateFrom, admissionDateTo, guardianLinked].filter(Boolean)
+                        .length
+                    }
+                  </span>
+                )}
+              </Button>
+
+              {secondaryFiltersCount > 0 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    updateMultipleFilters({
+                      academicYearId: null,
+                      departmentId: null,
+                      programId: null,
+                      batchId: null,
+                      sectionId: null,
+                      gender: null,
+                      admissionDateFrom: null,
+                      admissionDateTo: null,
+                      guardianLinked: null,
+                    });
+                  }}
+                  className="text-muted-foreground hover:text-foreground h-8 text-xs"
+                >
+                  Clear secondary filters
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Active filter badges */}
       {activeFilterEntries.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 pt-1">
           {activeFilterEntries.map(([key, value]) => (
             <div
               key={key}
-              className="bg-muted text-muted-foreground flex items-center gap-1 rounded-full px-3 py-1 text-xs"
+              className="bg-muted text-muted-foreground inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs"
             >
               <span>{getFilterLabel(key, value)}</span>
-              <button onClick={() => removeFilter(key)} className="hover:text-foreground ml-1">
+              <button
+                type="button"
+                onClick={() => removeFilter(key)}
+                className="hover:text-foreground hover:bg-muted-foreground/20 rounded-full p-0.5"
+                aria-label={`Remove filter ${key}`}
+              >
                 <X className="h-3 w-3" />
               </button>
             </div>
           ))}
+          <button
+            type="button"
+            onClick={clearAllFilters}
+            className="text-muted-foreground hover:text-foreground text-xs underline underline-offset-2"
+          >
+            Clear all
+          </button>
         </div>
       )}
 

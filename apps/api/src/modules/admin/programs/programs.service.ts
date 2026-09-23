@@ -253,9 +253,74 @@ export class ProgramsService {
 
       // 2. Handle sections
       if (dto?.deleteSections) {
-        await tx.section.deleteMany({
+        // Find sections belonging to this program to cleanly clean up dependent references
+        const sectionsToDelete = await tx.section.findMany({
           where: { programId: id, institutionId },
+          select: { id: true },
         });
+        const sectionIds = sectionsToDelete.map((s) => s.id);
+
+        if (sectionIds.length > 0) {
+          // Unlink or delete foreign relations pointing to these sections
+          // Nullable sectionId relations:
+          await tx.student.updateMany({
+            where: { sectionId: { in: sectionIds }, institutionId },
+            data: { sectionId: null },
+          });
+
+          await tx.enrollment.updateMany({
+            where: { sectionId: { in: sectionIds }, institutionId },
+            data: { sectionId: null },
+          });
+
+          await tx.courseOffering.updateMany({
+            where: { sectionId: { in: sectionIds }, institutionId },
+            data: { sectionId: null },
+          });
+
+          await tx.calendarEvent.updateMany({
+            where: { sectionId: { in: sectionIds }, institutionId },
+            data: { sectionId: null },
+          });
+
+          // Non-nullable sectionId relations:
+          await tx.facultySection.deleteMany({
+            where: { sectionId: { in: sectionIds }, institutionId },
+          });
+
+          await tx.courseAssignment.deleteMany({
+            where: { sectionId: { in: sectionIds }, institutionId },
+          });
+
+          // Session occurrences and attendance records
+          await tx.attendanceRecord.deleteMany({
+            where: {
+              attendanceSession: {
+                sectionId: { in: sectionIds },
+              },
+            },
+          });
+
+          await tx.attendanceSession.deleteMany({
+            where: { sectionId: { in: sectionIds }, institutionId },
+          });
+
+          await tx.sessionOccurrence.deleteMany({
+            where: { sectionId: { in: sectionIds }, institutionId },
+          });
+
+          await tx.timetableEntry.deleteMany({
+            where: { sectionId: { in: sectionIds }, institutionId },
+          });
+
+          await tx.lessonPlanSection.deleteMany({
+            where: { sectionId: { in: sectionIds } },
+          });
+
+          await tx.section.deleteMany({
+            where: { id: { in: sectionIds }, institutionId },
+          });
+        }
       } else {
         await tx.section.updateMany({
           where: { programId: id, institutionId },

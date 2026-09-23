@@ -746,6 +746,16 @@ export function ProgramsTab() {
                       ? 'All sections created under this program will be permanently deleted.'
                       : 'Sections will be preserved and unlinked from this program.'}
                   </p>
+                  {deleteOptions.deleteSections && (
+                    <div className="border-destructive/30 bg-destructive/10 text-destructive mt-1.5 rounded-md border p-2 text-xs">
+                      <p className="font-semibold">⚠️ Warning:</p>
+                      <p className="mt-0.5">
+                        Students assigned to these sections will have their section unlinked. Make
+                        sure to reassign or delete the students of those sections if they should not
+                        remain unassigned.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
