@@ -4,7 +4,6 @@ import { Download, Upload, Zap, Loader2 } from 'lucide-react';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
 import { useAdminTerms } from '@/hooks/api/admin/useTerms';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
-import { useAdminFaculty } from '@/hooks/api/admin/useFaculty';
 
 interface TimetableToolbarProps {
   onGenerate: () => void;
@@ -48,11 +47,9 @@ export function TimetableToolbar({
   const { data: programsResponse, isLoading: isLoadingPrograms } = useAdminPrograms(1, 100);
   const { data: terms, isLoading: isLoadingTerms } = useAdminTerms();
   const { data: sectionsResponse, isLoading: isLoadingSections } = useAdminSections(1, 100);
-  const { data: facultyResponse, isLoading: isLoadingFaculty } = useAdminFaculty(1, 100);
 
   const programs = programsResponse?.data || [];
   const allSections = sectionsResponse?.data || [];
-  const faculties = facultyResponse?.data || [];
 
   // 1. Filter sections by program if selected
   const programSections = programId
@@ -126,24 +123,7 @@ export function TimetableToolbar({
           ))}
         </select>
 
-        {/* 4. Faculty Selector (optional) */}
-        {setFacultyId && (
-          <select
-            value={facultyId || ''}
-            onChange={(e) => setFacultyId(e.target.value)}
-            className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm md:w-[180px]"
-            disabled={isLoadingFaculty}
-          >
-            <option value="">All Faculty</option>
-            {faculties.map((faculty: any) => (
-              <option key={faculty.id} value={faculty.id}>
-                {faculty.user?.firstName} {faculty.user?.lastName} ({faculty.teacherCode})
-              </option>
-            ))}
-          </select>
-        )}
-
-        {/* 5. Day Selector (optional) */}
+        {/* 4. Day Selector (optional) */}
         {setDayOfWeek && (
           <select
             value={dayOfWeek || ''}

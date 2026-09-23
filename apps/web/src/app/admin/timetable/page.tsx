@@ -108,7 +108,6 @@ export default function AdminTimetablePage() {
   const [programId, setProgramId] = useState('');
   const [termId, setTermId] = useState('');
   const [sectionId, setSectionId] = useState('');
-  const [facultyId, setFacultyId] = useState('');
   const [dayOfWeek, setDayOfWeek] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [formOpen, setFormOpen] = useState(false);
@@ -154,7 +153,6 @@ export default function AdminTimetablePage() {
   const { data: timetableData, isPending: isTimetablePending } = useAdminTimetable({
     termId,
     sectionId: sectionId || undefined,
-    facultyId: facultyId || undefined,
     dayOfWeek: dayOfWeek || undefined,
   });
 
@@ -494,8 +492,6 @@ export default function AdminTimetablePage() {
         setTermId={setTermId}
         sectionId={sectionId}
         setSectionId={setSectionId}
-        facultyId={facultyId}
-        setFacultyId={setFacultyId}
         dayOfWeek={dayOfWeek}
         setDayOfWeek={setDayOfWeek}
         onGenerate={() => setSessionSettingsOpen(true)}
@@ -514,7 +510,6 @@ export default function AdminTimetablePage() {
           sections={allSections}
           entries={rawEntries}
           hasTermSelected={!!termId}
-          onGenerateClick={() => setSessionSettingsOpen(true)}
           onSelectSectionAndProgram={(selectedProgId, selectedSecId) => {
             if (selectedProgId) setProgramId(selectedProgId);
             if (selectedSecId) setSectionId(selectedSecId);
@@ -531,7 +526,6 @@ export default function AdminTimetablePage() {
           isLoading={isSectionsLoading}
           selectedSectionId={sectionId}
           onSelectSection={(secId) => setSectionId(secId)}
-          onGenerateClick={() => setSessionSettingsOpen(true)}
           isGenerating={isGenerating}
           hasTermSelected={!!termId}
         />
