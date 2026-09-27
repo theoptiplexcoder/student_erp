@@ -45,6 +45,12 @@ adminApiClient.interceptors.response.use(
 );
 
 export const AdminApi = {
+  notifications: {
+    list: () => adminApiClient.get('/notifications').then((res) => res.data),
+    markAsRead: (id: string) =>
+      adminApiClient.patch(`/notifications/${id}/read`).then((res) => res.data),
+    markAllAsRead: () => adminApiClient.patch('/notifications/read-all').then((res) => res.data),
+  },
   attendance: {
     getStats: () => adminApiClient.get('/attendance/stats').then((res) => res.data),
     getSessions: (params?: {

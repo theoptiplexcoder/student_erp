@@ -139,3 +139,30 @@ export const useImportTimetable = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'timetable'] }),
   });
 };
+
+export const useAdminNotifications = () => {
+  return useQuery({
+    queryKey: ['admin', 'notifications'],
+    queryFn: AdminApi.notifications.list,
+  });
+};
+
+export const useMarkAdminNotificationAsRead = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => AdminApi.notifications.markAsRead(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'notifications'] });
+    },
+  });
+};
+
+export const useMarkAllAdminNotificationsAsRead = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => AdminApi.notifications.markAllAsRead(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'notifications'] });
+    },
+  });
+};

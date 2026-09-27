@@ -4,6 +4,7 @@ import { Search, Bell, HelpCircle, ChevronDown, GraduationCap, Menu } from 'luci
 import { LogoutButton } from '../shared/logout-button';
 import { ThemeToggle } from '../theme-toggle';
 import { useCurrentUser } from '@/hooks/use-current-user';
+import { AdminNotificationBell } from './admin-notification-bell';
 
 export function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
   const { data } = useCurrentUser();
@@ -62,11 +63,7 @@ export function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
 
           <ThemeToggle />
 
-          <button className="hover:bg-accent hover:text-accent-foreground relative inline-flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition-colors">
-            <Bell className="text-muted-foreground h-4 w-4" />
-            <span className="bg-tenant-primary ring-background absolute top-2 right-2 flex h-2 w-2 rounded-full ring-2" />
-            <span className="sr-only">Notifications</span>
-          </button>
+          <AdminNotificationBell />
 
           <button className="hover:bg-accent hover:text-accent-foreground hidden h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition-colors sm:inline-flex">
             <HelpCircle className="text-muted-foreground h-4 w-4" />

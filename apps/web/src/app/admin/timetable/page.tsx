@@ -26,6 +26,7 @@ import {
   useDeleteTimetableEntry,
 } from '@student-erp/hooks';
 import { TimetableConflictBadge } from '@/components/admin/timetable/timetable-conflict-badge';
+import { useAdminAllCurriculums } from '@/hooks/api/admin/useCurriculums';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
 import { useAdminTerms } from '@/hooks/api/admin/useTerms';
@@ -105,6 +106,7 @@ function ConflictAlert({ conflicts }: { conflicts: any[] }) {
 }
 
 export default function AdminTimetablePage() {
+  const [curriculumId, setCurriculumId] = useState('');
   const [programId, setProgramId] = useState('');
   const [termId, setTermId] = useState('');
   const [sectionId, setSectionId] = useState('');
@@ -118,8 +120,9 @@ export default function AdminTimetablePage() {
   const [generationConflicts, setGenerationConflicts] = useState<any[]>([]);
 
   // Metadata queries
+  const { data: curriculumsData } = useAdminAllCurriculums();
   const { data: programsResponse } = useAdminPrograms(1, 100);
-  const { data: terms } = useAdminTerms();
+  const { data: terms } = useAdminTerms(curriculumId);
   // Fetch all sections across programs so all-programs heatmap has the full cross-program view
   const { data: allSectionsResponse, isLoading: isAllSectionsLoading } = useAdminSections(
     1,
@@ -135,10 +138,38 @@ export default function AdminTimetablePage() {
     },
   );
 
-  const programs = programsResponse?.data || [];
+  const curriculums = curriculumsData || [];
+  const rawPrograms = programsResponse?.data || [];
+
+  // Filter programs by curriculum if curriculum is selected
+  const programs = useMemo(() => {
+    if (!curriculumId) return rawPrograms;
+    const selectedCurr = curriculums.find((c: any) => c.id === curriculumId);
+    if (selectedCurr?.programs && selectedCurr.programs.length > 0) {
+      return selectedCurr.programs;
+    }
+    return rawPrograms;
+  }, [curriculumId, curriculums, rawPrograms]);
+
   const selectedProgram = programs.find((p: any) => p.id === programId);
   const allSections = allSectionsResponse?.data || [];
-  const sections = programId ? programSectionsResponse?.data || [] : allSections;
+
+  // If a curriculum is selected but no specific program, filter sections to that curriculum's programs
+  const curriculumSections = useMemo(() => {
+    if (!curriculumId) return allSections;
+    const allowedProgIds = new Set(programs.map((p: any) => p.id));
+    return allSections.filter(
+      (s: any) =>
+        (s.programId && allowedProgIds.has(s.programId)) ||
+        (s.program?.id && allowedProgIds.has(s.program.id)),
+    );
+  }, [curriculumId, programs, allSections]);
+
+  const sections = programId
+    ? programSectionsResponse?.data || []
+    : curriculumId
+      ? curriculumSections
+      : allSections;
   const isSectionsLoading = programId ? isProgramSectionsLoading : isAllSectionsLoading;
 
   // Auto-select active/first term when terms load if none selected
@@ -173,19 +204,19 @@ export default function AdminTimetablePage() {
   // Filter entries to program sections if program is selected
   const entries = useMemo(() => {
     const arr = Array.isArray(rawEntries) ? rawEntries : [];
-    if (!programId) return arr;
+    if (!programId && !curriculumId) return arr;
 
     if (sectionId) {
       return arr.filter((e: any) => e.sectionId === sectionId);
     }
 
     if (sections.length > 0) {
-      const programSecIds = new Set(sections.map((s: any) => s.id));
-      return arr.filter((e: any) => programSecIds.has(e.sectionId));
+      const activeSecIds = new Set(sections.map((s: any) => s.id));
+      return arr.filter((e: any) => activeSecIds.has(e.sectionId));
     }
 
     return arr;
-  }, [rawEntries, programId, sections, sectionId]);
+  }, [rawEntries, programId, curriculumId, sections, sectionId]);
 
   const timetableStatus = 'NO_TIMETABLE';
 
@@ -329,13 +360,18 @@ export default function AdminTimetablePage() {
 
     let sectionIds: string[] = [];
     if (sectionId) {
+      // If a specific section is chosen in the dropdown, generate for that section
       sectionIds = [sectionId];
     } else if (sections.length > 0) {
+      // If "All Sections" is chosen (or no section selected), generate for ALL sections currently in scope
       sectionIds = sections.map((s) => s.id);
+    } else if (allSections.length > 0) {
+      // Fallback: generate for all institutional sections
+      sectionIds = allSections.map((s) => s.id);
     }
 
     if (sectionIds.length === 0) {
-      alert('No sections found to generate timetable. Please select a program with sections.');
+      alert('No sections found to generate timetable. Please ensure sections are created.');
       return;
     }
 
@@ -496,6 +532,8 @@ export default function AdminTimetablePage() {
 
       {/* Toolbar with Program & Term Filter Controls */}
       <TimetableToolbar
+        curriculumId={curriculumId}
+        setCurriculumId={setCurriculumId}
         programId={programId}
         setProgramId={setProgramId}
         termId={termId}
@@ -556,8 +594,8 @@ export default function AdminTimetablePage() {
         />
       )}
 
-      {/* Timetable Grid & Bulk Actions (shown only when a specific Program is selected) */}
-      {programId ? (
+      {/* Timetable Grid & Bulk Actions (shown when viewing a specific Section or Program) */}
+      {programId || sectionId ? (
         termId ? (
           <>
             <TimetableGrid

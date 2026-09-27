@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Button } from '@student-erp/ui';
 import { Download, Upload, Zap, Loader2 } from 'lucide-react';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
 import { useAdminTerms } from '@/hooks/api/admin/useTerms';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
+import { useAdminAllCurriculums } from '@/hooks/api/admin/useCurriculums';
 
 interface TimetableToolbarProps {
   onGenerate: () => void;
@@ -11,6 +12,8 @@ interface TimetableToolbarProps {
   onImport: () => void;
   onExport: () => void;
   onPublish: () => void;
+  curriculumId?: string;
+  setCurriculumId?: (val: string) => void;
   programId?: string;
   setProgramId?: (val: string) => void;
   termId: string;
@@ -30,6 +33,8 @@ export function TimetableToolbar({
   onImport,
   onExport,
   onPublish,
+  curriculumId,
+  setCurriculumId,
   programId,
   setProgramId,
   termId,
@@ -44,17 +49,43 @@ export function TimetableToolbar({
   status,
   isPublishing,
 }: TimetableToolbarProps) {
+  const { data: curriculumsData, isLoading: isLoadingCurriculums } = useAdminAllCurriculums();
   const { data: programsResponse, isLoading: isLoadingPrograms } = useAdminPrograms(1, 100);
-  const { data: terms, isLoading: isLoadingTerms } = useAdminTerms();
+  const { data: terms, isLoading: isLoadingTerms } = useAdminTerms(curriculumId);
   const { data: sectionsResponse, isLoading: isLoadingSections } = useAdminSections(1, 100);
 
-  const programs = programsResponse?.data || [];
+  const curriculums = curriculumsData || [];
+  const rawPrograms = programsResponse?.data || [];
+
+  // Filter programs based on selected curriculum if one is selected
+  const programs = useMemo(() => {
+    if (!curriculumId) return rawPrograms;
+    const selectedCurr = curriculums.find((c: any) => c.id === curriculumId);
+    if (selectedCurr?.programs && selectedCurr.programs.length > 0) {
+      return selectedCurr.programs;
+    }
+    return rawPrograms;
+  }, [curriculumId, curriculums, rawPrograms]);
+
   const allSections = sectionsResponse?.data || [];
 
-  // 1. Filter sections by program if selected
-  const programSections = programId
-    ? allSections.filter((s: any) => s.programId === programId || s.program?.id === programId)
-    : allSections;
+  // 1. Filter sections by program if selected. If curriculum is selected but no program, filter by curriculum's programs
+  const programSections = useMemo(() => {
+    if (programId) {
+      return allSections.filter(
+        (s: any) => s.programId === programId || s.program?.id === programId,
+      );
+    }
+    if (curriculumId) {
+      const allowedProgIds = new Set(programs.map((p: any) => p.id));
+      return allSections.filter(
+        (s: any) =>
+          (s.programId && allowedProgIds.has(s.programId)) ||
+          (s.program?.id && allowedProgIds.has(s.program.id)),
+      );
+    }
+    return allSections;
+  }, [programId, curriculumId, programs, allSections]);
 
   // 2. Filter sections relevant to selected term if term is also chosen
   const selectedTerm = terms?.find((t: any) => t.id === termId);
@@ -64,7 +95,9 @@ export function TimetableToolbar({
           (s.semester === undefined ||
             s.semester === null ||
             s.semester === selectedTerm.semester) &&
-          (!selectedTerm.academicYearId || s.academicYearId === selectedTerm.academicYearId),
+          (!selectedTerm.academicYearId ||
+            !s.academicYearId ||
+            s.academicYearId === selectedTerm.academicYearId),
       )
     : programSections;
 
@@ -73,7 +106,28 @@ export function TimetableToolbar({
   return (
     <div className="bg-card mb-6 flex flex-col items-start justify-between gap-4 rounded-lg border p-4 shadow-sm md:flex-row md:items-center">
       <div className="flex w-full flex-wrap gap-2 md:w-auto">
-        {/* 1. Program Selector */}
+        {/* 1. Curriculum Selector */}
+        {setCurriculumId && (
+          <select
+            value={curriculumId || ''}
+            onChange={(e) => {
+              setCurriculumId(e.target.value);
+              if (setProgramId) setProgramId('');
+              setSectionId('');
+            }}
+            className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm md:w-[190px]"
+            disabled={isLoadingCurriculums}
+          >
+            <option value="">All Curriculums</option>
+            {curriculums.map((curr: any) => (
+              <option key={curr.id} value={curr.id}>
+                {curr.name} (v{curr.versionNumber})
+              </option>
+            ))}
+          </select>
+        )}
+
+        {/* 2. Program Selector */}
         {setProgramId && (
           <select
             value={programId || ''}
@@ -93,7 +147,7 @@ export function TimetableToolbar({
           </select>
         )}
 
-        {/* 2. Term Selector */}
+        {/* 3. Term Selector */}
         <select
           value={termId}
           onChange={(e) => setTermId(e.target.value)}
@@ -108,7 +162,7 @@ export function TimetableToolbar({
           ))}
         </select>
 
-        {/* 3. Section Selector */}
+        {/* 4. Section Selector */}
         <select
           value={sectionId}
           onChange={(e) => setSectionId(e.target.value)}
@@ -123,7 +177,7 @@ export function TimetableToolbar({
           ))}
         </select>
 
-        {/* 4. Day Selector (optional) */}
+        {/* 5. Day Selector (optional) */}
         {setDayOfWeek && (
           <select
             value={dayOfWeek || ''}
@@ -144,8 +198,8 @@ export function TimetableToolbar({
       <div className="flex w-full flex-wrap gap-2 md:w-auto">
         <Button
           onClick={onGenerate}
-          variant="outline"
-          className="gap-2 text-xs sm:text-sm"
+          variant="default"
+          className="gap-2 text-xs font-medium sm:text-sm"
           disabled={isGenerating || !termId}
           title={!termId ? 'Please select a term before generating' : 'Generate weekly timetable'}
         >
@@ -154,7 +208,7 @@ export function TimetableToolbar({
           ) : (
             <Zap className="h-4 w-4" />
           )}
-          Generate
+          Generate Timetable
         </Button>
         <Button onClick={onImport} variant="outline" className="gap-2 text-xs sm:text-sm">
           <Upload className="h-4 w-4" />

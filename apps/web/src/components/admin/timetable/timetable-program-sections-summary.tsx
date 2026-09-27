@@ -107,16 +107,6 @@ export function TimetableProgramSectionsSummary({
           </div>
 
           <div className="flex items-center gap-2 self-end sm:self-auto">
-            {onGenerateClick && (
-              <Button
-                size="sm"
-                onClick={onGenerateClick}
-                disabled={isGenerating || !hasTermSelected || sections.length === 0}
-                className="gap-2 text-xs sm:text-sm"
-              >
-                {isGenerating ? 'Generating...' : 'Generate Timetable'}
-              </Button>
-            )}
             <Button
               variant="ghost"
               size="sm"
