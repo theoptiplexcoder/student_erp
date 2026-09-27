@@ -10,6 +10,12 @@ import { Roles } from '../../../decorators/roles.decorator';
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
+  @Get('stats')
+  async getStats(@Request() req: any) {
+    const institutionId = req.user.institutionId;
+    return this.attendanceService.getStats(institutionId);
+  }
+
   @Get('sessions')
   async getSessions(
     @Request() req: any,

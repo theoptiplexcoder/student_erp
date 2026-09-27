@@ -46,6 +46,7 @@ adminApiClient.interceptors.response.use(
 
 export const AdminApi = {
   attendance: {
+    getStats: () => adminApiClient.get('/attendance/stats').then((res) => res.data),
     getSessions: (params?: {
       page?: number;
       pageSize?: number;

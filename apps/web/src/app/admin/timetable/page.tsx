@@ -172,10 +172,20 @@ export default function AdminTimetablePage() {
 
   // Filter entries to program sections if program is selected
   const entries = useMemo(() => {
-    if (!programId || sections.length === 0) return rawEntries;
-    const programSecIds = new Set(sections.map((s: any) => s.id));
-    return rawEntries.filter((e: any) => programSecIds.has(e.sectionId));
-  }, [rawEntries, programId, sections]);
+    const arr = Array.isArray(rawEntries) ? rawEntries : [];
+    if (!programId) return arr;
+
+    if (sectionId) {
+      return arr.filter((e: any) => e.sectionId === sectionId);
+    }
+
+    if (sections.length > 0) {
+      const programSecIds = new Set(sections.map((s: any) => s.id));
+      return arr.filter((e: any) => programSecIds.has(e.sectionId));
+    }
+
+    return arr;
+  }, [rawEntries, programId, sections, sectionId]);
 
   const timetableStatus = 'NO_TIMETABLE';
 

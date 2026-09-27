@@ -14,27 +14,36 @@ import {
   StatusBadge,
 } from '@student-erp/ui';
 import { AdminApi } from '@student-erp/sdk';
-import { ClipboardList, Users, CheckCircle2, Calendar, Clock } from 'lucide-react';
+import { ClipboardList, Users, CheckCircle2, Calendar } from 'lucide-react';
 
 export default function AttendancePage() {
   const [sessions, setSessions] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSessions = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await AdminApi.attendance.getSessions();
-        if (res && res.data) {
-          setSessions(res.data);
+        const [statsRes, sessionsRes] = await Promise.all([
+          AdminApi.attendance.getStats(),
+          AdminApi.attendance.getSessions(),
+        ]);
+
+        if (statsRes) {
+          setStats(statsRes);
+        }
+
+        if (sessionsRes && sessionsRes.data) {
+          setSessions(sessionsRes.data);
         }
       } catch (error) {
-        console.error('Failed to fetch attendance sessions', error);
+        console.error('Failed to fetch attendance data', error);
       } finally {
         setLoading(false);
       }
     };
-    fetchSessions();
+    fetchData();
   }, []);
 
   return (
@@ -48,19 +57,19 @@ export default function AttendancePage() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
           label="Total Logged Sessions"
-          value={loading ? '...' : sessions.length.toLocaleString()}
+          value={loading || !stats ? '...' : stats.totalSessions.toLocaleString()}
           icon={ClipboardList}
           subtitle="Recorded in current academic cycle"
         />
         <StatCard
           label="Average Attendance"
-          value="92.4%"
+          value={loading || !stats ? '...' : `${stats.averageAttendance.toFixed(1)}%`}
           icon={CheckCircle2}
-          trend={{ value: '+1.2%', direction: 'up', label: 'vs last week' }}
+          trend={stats?.trend || { value: '+0%', direction: 'up', label: 'vs last week' }}
         />
         <StatCard
           label="Absence Flag Threshold"
-          value="75.0%"
+          value={loading || !stats ? '...' : `${stats.threshold.toFixed(1)}%`}
           icon={Users}
           subtitle="Mandatory minimum compliance"
         />

@@ -4,7 +4,7 @@ import { useAdminTerms } from '@/hooks/api/admin/useTerms';
 import { useAdminCourses } from '@/hooks/api/admin/useCourses';
 import { useAdminRooms } from '@/hooks/api/admin/useRooms';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
-import { useAdminCurriculumsByProgram } from '@/hooks/api/admin/useCurriculums';
+import { useAdminAllCurriculums } from '@/hooks/api/admin/useCurriculums';
 import { useScheduleExam } from '@/hooks/api/admin/useExams';
 import { useExaminationTypes } from '@/hooks/api/admin/useExamTypes';
 import {
@@ -42,9 +42,11 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
   const [startDate, setStartDate] = useState<string>('');
 
   const { data: dynamicExamTypes = [], isLoading: isLoadingExamTypes } = useExaminationTypes();
+  const { data: curriculumsData, isLoading: isLoadingCurriculums } = useAdminAllCurriculums();
+
+  // programsData will now be filtered based on the selected curriculum
   const { data: programsData, isLoading: isLoadingPrograms } = useAdminPrograms(1, 100);
-  const { data: curriculumsData, isLoading: isLoadingCurriculums } =
-    useAdminCurriculumsByProgram(programId);
+
   const { data: academicTermsData, isLoading: isLoadingAcademicTerms } = useAdminTerms();
   const { data: coursesData, isLoading: isLoadingCourses } = useAdminCourses(
     1,
@@ -153,6 +155,11 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
   };
 
   const handleSave = async () => {
+    if (!curriculumId) {
+      alert('Please select a curriculum.');
+      return;
+    }
+
     if (!programId) {
       alert('Please select a program.');
       return;
@@ -248,43 +255,8 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
         <CardContent className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           <div className="space-y-2">
             <Label>
-              Program <span className="text-destructive">*</span>
+              Curriculum <span className="text-destructive">*</span>
             </Label>
-            {isLoadingPrograms ? (
-              <div className="flex h-10 items-center">
-                <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
-              </div>
-            ) : programsData?.data && programsData.data.length === 0 ? (
-              <div className="text-muted-foreground space-y-1 text-sm">
-                <p>No programs found.</p>
-                <Link
-                  href="/admin/academics"
-                  className="text-primary underline-offset-4 hover:underline"
-                >
-                  Create Program →
-                </Link>
-              </div>
-            ) : (
-              <select
-                className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                value={programId}
-                onChange={(e) => {
-                  setProgramId(e.target.value);
-                  setCurriculumId('');
-                }}
-              >
-                <option value="">Select a program</option>
-                {programsData?.data?.map((p: any) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label>Curriculum (Optional)</Label>
             {isLoadingCurriculums ? (
               <div className="flex h-10 items-center">
                 <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
@@ -293,15 +265,53 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
               <select
                 className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                 value={curriculumId}
-                disabled={!programId}
-                onChange={(e) => setCurriculumId(e.target.value)}
+                onChange={(e) => {
+                  setCurriculumId(e.target.value);
+                  setProgramId('');
+                }}
               >
-                <option value="">All Curriculums</option>
+                <option value="">Select a curriculum</option>
                 {curriculumsData?.map((c: any) => (
                   <option key={c.id} value={c.id}>
                     {c.name} (v{c.versionNumber})
                   </option>
                 ))}
+              </select>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label>
+              Program <span className="text-destructive">*</span>
+            </Label>
+            {isLoadingCurriculums || isLoadingPrograms ? (
+              <div className="flex h-10 items-center">
+                <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
+              </div>
+            ) : (
+              <select
+                className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                value={programId}
+                disabled={!curriculumId}
+                onChange={(e) => {
+                  setProgramId(e.target.value);
+                }}
+              >
+                <option value="">Select a program</option>
+                {curriculumsData
+                  ?.find((c: any) => c.id === curriculumId)
+                  ?.programs?.map((p: any) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                {/* Fallback if programs are not included in curriculum response, we can filter from programsData */}
+                {!curriculumsData?.find((c: any) => c.id === curriculumId)?.programs &&
+                  programsData?.data?.map((p: any) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
               </select>
             )}
           </div>

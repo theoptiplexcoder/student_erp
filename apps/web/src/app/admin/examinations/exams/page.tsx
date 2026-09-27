@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { useAdminExams, useDeleteExam } from '@/hooks/api/admin/useExams';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
-import { useAdminCurriculumsByProgram } from '@/hooks/api/admin/useCurriculums';
+import { useAdminAllCurriculums } from '@/hooks/api/admin/useCurriculums';
 import { useAdminTerms } from '@/hooks/api/admin/useTerms';
 import { format } from 'date-fns';
 import { ScheduleExamForm } from './ScheduleExamForm';
@@ -54,7 +54,7 @@ export default function ExamsPage() {
   const deleteMutation = useDeleteExam();
 
   const { data: programsData } = useAdminPrograms(1, 100);
-  const { data: curriculumsData } = useAdminCurriculumsByProgram(programId);
+  const { data: curriculumsData } = useAdminAllCurriculums();
   const { data: academicTermsData } = useAdminTerms();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,27 +141,10 @@ export default function ExamsPage() {
             <div className="flex flex-wrap items-center gap-3">
               <select
                 className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full max-w-[200px] items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
-                value={programId}
-                onChange={(e) => {
-                  setProgramId(e.target.value);
-                  setCurriculumId('');
-                  setPage(1);
-                }}
-              >
-                <option value="">All Programs</option>
-                {programsData?.data?.map((p: any) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full max-w-[200px] items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                 value={curriculumId}
-                disabled={!programId}
                 onChange={(e) => {
                   setCurriculumId(e.target.value);
+                  setProgramId('');
                   setPage(1);
                 }}
               >
@@ -171,6 +154,32 @@ export default function ExamsPage() {
                   .map((c: any) => (
                     <option key={c.id} value={c.id}>
                       {c.name} (v{c.versionNumber})
+                    </option>
+                  ))}
+              </select>
+
+              <select
+                className="border-input bg-background ring-offset-background focus:ring-ring flex h-10 w-full max-w-[200px] items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                value={programId}
+                disabled={!curriculumId}
+                onChange={(e) => {
+                  setProgramId(e.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value="">All Programs</option>
+                {curriculumsData
+                  ?.find((c: any) => c.id === curriculumId)
+                  ?.programs?.map((p: any) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                {/* Fallback if programs are not included in curriculum response */}
+                {!curriculumsData?.find((c: any) => c.id === curriculumId)?.programs &&
+                  programsData?.data?.map((p: any) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
                     </option>
                   ))}
               </select>
