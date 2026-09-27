@@ -204,15 +204,20 @@ export default function AdminTimetablePage() {
   // Filter entries to program sections if program is selected
   const entries = useMemo(() => {
     const arr = Array.isArray(rawEntries) ? rawEntries : [];
-    if (!programId && !curriculumId) return arr;
 
+    // If a section is specifically requested, the API already filters it.
+    // We just return arr to avoid any client-side strict equality mismatches.
     if (sectionId) {
-      return arr.filter((e: any) => e.sectionId === sectionId);
+      return arr;
     }
+
+    if (!programId && !curriculumId) return arr;
 
     if (sections.length > 0) {
       const activeSecIds = new Set(sections.map((s: any) => s.id));
-      return arr.filter((e: any) => activeSecIds.has(e.sectionId));
+      return arr.filter(
+        (e: any) => activeSecIds.has(e.sectionId) || (e.section && activeSecIds.has(e.section.id)),
+      );
     }
 
     return arr;
