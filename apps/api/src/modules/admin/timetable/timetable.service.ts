@@ -545,7 +545,26 @@ export class TimetableService {
         (f) => f.facultyId === facultyId && f.dayOfWeek === day,
       );
       if (avail.length === 0) return true; // No availability records = always available
-      return avail.some((a) => !a.isAvailable || overlaps(start, end, a.startTime, a.endTime));
+
+      // If explicit available slots exist (isAvailable: true), candidate session must fall within one
+      const availableSlots = avail.filter((a) => a.isAvailable);
+      if (availableSlots.length > 0) {
+        const withinAvailable = availableSlots.some(
+          (a) => start >= a.startTime && end <= a.endTime,
+        );
+        if (!withinAvailable) return false;
+      }
+
+      // If explicit blackout/unavailable slots exist (isAvailable: false), candidate session must NOT overlap
+      const unavailableSlots = avail.filter((a) => !a.isAvailable);
+      if (unavailableSlots.length > 0) {
+        const inBlackout = unavailableSlots.some((a) =>
+          overlaps(start, end, a.startTime, a.endTime),
+        );
+        if (inBlackout) return false;
+      }
+
+      return true;
     };
 
     // Check for conflicts with existing or generated entries
