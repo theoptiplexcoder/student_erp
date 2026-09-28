@@ -11,7 +11,6 @@ export interface FacultyLoadSummaryProps {
 
 function getDayIndex(day: any): number {
   if (typeof day === 'number') {
-    // 0 is Sunday, 7 is also Sunday in some conventions
     if (day === 7) return 0;
     return day;
   }
@@ -31,11 +30,10 @@ const DAYS = [
 ];
 
 function getDurationInHours(startTime: string | Date, endTime: string | Date): number {
-  if (!startTime || !endTime) return 1; // default fallback 1 hour
+  if (!startTime || !endTime) return 1;
   const start = new Date(startTime);
   const end = new Date(endTime);
   if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-    // If times are "HH:mm" strings or ISO strings without full date
     const sStr = String(startTime).includes('T')
       ? String(startTime).substring(11, 16)
       : String(startTime);
@@ -56,6 +54,8 @@ function getDurationInHours(startTime: string | Date, endTime: string | Date): n
 }
 
 export function FacultyLoadSummary({ entries = [], isLoading }: FacultyLoadSummaryProps) {
+  const todayDayIndex = new Date().getDay();
+
   const loadStats = useMemo(() => {
     if (!entries || entries.length === 0) {
       return {
@@ -87,19 +87,16 @@ export function FacultyLoadSummary({ entries = [], isLoading }: FacultyLoadSumma
       const durationHours = getDurationInHours(entry.startTime, entry.endTime);
       totalMinutes += durationHours * 60;
 
-      // Track sections
       if (entry.sectionId || entry.section?.id) {
         distinctSections.add(entry.sectionId || entry.section?.id);
       }
 
-      // Track by Day
       const dayIdx = getDayIndex(entry.dayOfWeek);
       if (dayHoursMap[dayIdx]) {
         dayHoursMap[dayIdx].hours += durationHours;
         dayHoursMap[dayIdx].count += 1;
       }
 
-      // Track by Course
       const courseId = entry.courseId || entry.course?.id || 'unknown';
       const courseCode = entry.course?.code || 'Unknown';
       const courseName = entry.course?.name || '';
@@ -148,36 +145,36 @@ export function FacultyLoadSummary({ entries = [], isLoading }: FacultyLoadSumma
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader className="pb-3">
+      <Card className="shadow-sm">
+        <CardHeader className="border-b pb-3">
           <CardTitle className="flex items-center gap-2 text-base font-semibold">
             <BarChart3 className="text-primary h-4 w-4" />
-            Weekly Load Overview
+            Weekly Workload
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Top Quick Stats */}
+        <CardContent className="space-y-4 pt-4">
+          {/* Quick Metrics */}
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="bg-muted/50 rounded-lg p-2.5">
-              <div className="text-muted-foreground flex items-center justify-center gap-1 text-xs">
+            <div className="bg-muted/40 rounded-lg p-2.5">
+              <div className="text-muted-foreground flex items-center justify-center gap-1 text-[11px]">
                 <Clock className="h-3 w-3" />
                 <span>Hours</span>
               </div>
-              <p className="mt-1 text-lg font-bold">{loadStats.totalHours}h</p>
+              <p className="mt-1 text-base font-bold tracking-tight">{loadStats.totalHours}h</p>
             </div>
-            <div className="bg-muted/50 rounded-lg p-2.5">
-              <div className="text-muted-foreground flex items-center justify-center gap-1 text-xs">
+            <div className="bg-muted/40 rounded-lg p-2.5">
+              <div className="text-muted-foreground flex items-center justify-center gap-1 text-[11px]">
                 <BookOpen className="h-3 w-3" />
                 <span>Sessions</span>
               </div>
-              <p className="mt-1 text-lg font-bold">{loadStats.totalSessions}</p>
+              <p className="mt-1 text-base font-bold tracking-tight">{loadStats.totalSessions}</p>
             </div>
-            <div className="bg-muted/50 rounded-lg p-2.5">
-              <div className="text-muted-foreground flex items-center justify-center gap-1 text-xs">
+            <div className="bg-muted/40 rounded-lg p-2.5">
+              <div className="text-muted-foreground flex items-center justify-center gap-1 text-[11px]">
                 <Layers className="h-3 w-3" />
                 <span>Sections</span>
               </div>
-              <p className="mt-1 text-lg font-bold">{loadStats.sectionCount}</p>
+              <p className="mt-1 text-base font-bold tracking-tight">{loadStats.sectionCount}</p>
             </div>
           </div>
 
@@ -189,12 +186,17 @@ export function FacultyLoadSummary({ entries = [], isLoading }: FacultyLoadSumma
             <div className="space-y-2">
               {loadStats.dayLoad.map((day) => {
                 const percentage = Math.round((day.hours / maxDayHours) * 100);
+                const isToday = day.index === todayDayIndex;
                 return (
                   <div key={day.index} className="flex items-center gap-2 text-xs">
-                    <span className="text-muted-foreground w-8 font-medium">{day.name}</span>
+                    <span
+                      className={`w-8 font-medium ${isToday ? 'text-primary font-bold' : 'text-muted-foreground'}`}
+                    >
+                      {day.name}
+                    </span>
                     <div className="bg-muted h-2 flex-1 overflow-hidden rounded-full">
                       <div
-                        className="bg-primary h-full transition-all duration-300"
+                        className={`h-full transition-all duration-300 ${isToday ? 'bg-primary' : 'bg-primary/70'}`}
                         style={{ width: `${day.hours > 0 ? Math.max(percentage, 5) : 0}%` }}
                       />
                     </div>
@@ -211,13 +213,13 @@ export function FacultyLoadSummary({ entries = [], isLoading }: FacultyLoadSumma
           {loadStats.courseLoad.length > 0 && (
             <div className="space-y-2 border-t pt-3">
               <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                Courses
+                Courses Breakdown
               </h4>
               <div className="space-y-2">
                 {loadStats.courseLoad.map((course) => (
                   <div
                     key={course.id}
-                    className="bg-muted/30 flex items-center justify-between rounded p-2 text-xs"
+                    className="bg-muted/30 flex items-center justify-between rounded-lg p-2.5 text-xs"
                   >
                     <div className="min-w-0 pr-2">
                       <div className="text-foreground truncate font-semibold">{course.code}</div>
@@ -228,8 +230,9 @@ export function FacultyLoadSummary({ entries = [], isLoading }: FacultyLoadSumma
                       )}
                     </div>
                     <div className="shrink-0 text-right">
-                      <Badge variant="secondary" className="text-[10px]">
-                        {course.hours}h ({course.sessions})
+                      <Badge variant="secondary" className="text-[10px] font-medium">
+                        {course.hours}h • {course.sessions}{' '}
+                        {course.sessions === 1 ? 'class' : 'classes'}
                       </Badge>
                     </div>
                   </div>

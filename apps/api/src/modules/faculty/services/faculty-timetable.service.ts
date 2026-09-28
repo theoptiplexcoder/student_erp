@@ -18,6 +18,8 @@ export class FacultyTimetableService {
         course: true,
         section: true,
         term: true,
+        room: true,
+        building: true,
       },
       orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
     });

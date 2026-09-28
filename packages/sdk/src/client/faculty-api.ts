@@ -114,4 +114,11 @@ export const FacultyApi = {
     facultyApiClient
       .post(`/courses/${courseId}/lesson-plans/${id}/complete`, data)
       .then((res) => res.data),
+
+  // Notifications
+  getNotifications: () => facultyApiClient.get('/notifications').then((res) => res.data),
+  markNotificationAsRead: (id: string) =>
+    facultyApiClient.patch(`/notifications/${id}/read`).then((res) => res.data),
+  markAllNotificationsAsRead: () =>
+    facultyApiClient.patch('/notifications/read-all').then((res) => res.data),
 };

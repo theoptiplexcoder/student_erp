@@ -1,10 +1,29 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { Card, CardHeader, CardTitle, CardContent, Skeleton, Badge, Button } from '@student-erp/ui';
-import { Clock, MapPin, Calendar as CalendarIcon, ExternalLink } from 'lucide-react';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Skeleton,
+  Badge,
+  Button,
+  Input,
+} from '@student-erp/ui';
+import {
+  Clock,
+  MapPin,
+  Calendar as CalendarIcon,
+  ExternalLink,
+  Search,
+  BookOpen,
+  Filter,
+  Building2,
+  CalendarDays,
+} from 'lucide-react';
 
 export interface FacultyTimetableGridProps {
   entries: any[];
@@ -13,7 +32,6 @@ export interface FacultyTimetableGridProps {
 
 function getDayIndex(day: any): number {
   if (typeof day === 'number') {
-    // 0 is Sunday, 7 is also Sunday in some conventions
     if (day === 7) return 0;
     return day;
   }
@@ -23,7 +41,6 @@ function getDayIndex(day: any): number {
   return idx >= 0 ? idx : -1;
 }
 
-// Format time consistently in 24h format for slot keys (HH:mm)
 function formatTime(timeString: string | Date) {
   if (!timeString) return '';
   const date = new Date(timeString);
@@ -37,71 +54,107 @@ function formatTime(timeString: string | Date) {
 function formatDisplayTime(timeString: string | Date) {
   if (!timeString) return '';
   const date = new Date(timeString);
-  if (isNaN(date.getTime())) return String(timeString);
+  if (isNaN(date.getTime())) {
+    const s = String(timeString);
+    const timeOnly = s.includes('T') ? s.substring(11, 16) : s.substring(0, 5);
+    const [h, m] = timeOnly.split(':').map(Number);
+    if (!isNaN(h) && !isNaN(m)) {
+      const period = h >= 12 ? 'PM' : 'AM';
+      const hours12 = h % 12 || 12;
+      return `${hours12}:${String(m).padStart(2, '0')} ${period}`;
+    }
+    return String(timeString);
+  }
   return format(date, 'hh:mm a');
 }
 
 const DAYS = [
-  { index: 1, name: 'Monday' },
-  { index: 2, name: 'Tuesday' },
-  { index: 3, name: 'Wednesday' },
-  { index: 4, name: 'Thursday' },
-  { index: 5, name: 'Friday' },
-  { index: 6, name: 'Saturday' },
+  { index: 1, name: 'Monday', short: 'Mon' },
+  { index: 2, name: 'Tuesday', short: 'Tue' },
+  { index: 3, name: 'Wednesday', short: 'Wed' },
+  { index: 4, name: 'Thursday', short: 'Thu' },
+  { index: 5, name: 'Friday', short: 'Fri' },
+  { index: 6, name: 'Saturday', short: 'Sat' },
 ];
 
 const colors = [
-  'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800',
-  'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800',
-  'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800',
-  'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800',
-  'bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800',
-  'bg-teal-100 text-teal-800 border-teal-200 dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-800',
-  'bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800',
+  'bg-blue-50/80 text-blue-900 border-blue-200 dark:bg-blue-950/40 dark:text-blue-200 dark:border-blue-800',
+  'bg-emerald-50/80 text-emerald-900 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-800',
+  'bg-violet-50/80 text-violet-900 border-violet-200 dark:bg-violet-950/40 dark:text-violet-200 dark:border-violet-800',
+  'bg-amber-50/80 text-amber-900 border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800',
+  'bg-rose-50/80 text-rose-900 border-rose-200 dark:bg-rose-950/40 dark:text-rose-200 dark:border-rose-800',
+  'bg-cyan-50/80 text-cyan-900 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-200 dark:border-cyan-800',
+  'bg-indigo-50/80 text-indigo-900 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-200 dark:border-indigo-800',
 ];
 
 export function FacultyTimetableGrid({ entries = [], isLoading }: FacultyTimetableGridProps) {
   const todayDayIndex = new Date().getDay();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDayFilter, setSelectedDayFilter] = useState<number | 'all'>('all');
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-[450px] w-full" />
-      </div>
-    );
-  }
+  const filteredEntries = useMemo(() => {
+    return entries.filter((entry: any) => {
+      // Day filter
+      if (selectedDayFilter !== 'all') {
+        const dayIdx = getDayIndex(entry.dayOfWeek);
+        if (dayIdx !== selectedDayFilter) return false;
+      }
 
-  // Generate unique time slots from entries
-  const timeSlotsSet = new Set<string>();
-  entries.forEach((entry: any) => {
-    if (entry.startTime && entry.endTime) {
-      timeSlotsSet.add(`${formatTime(entry.startTime)}-${formatTime(entry.endTime)}`);
-    }
-  });
+      // Search query filter (course code, name, section, room)
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const code = (entry.course?.code || '').toLowerCase();
+        const name = (entry.course?.name || '').toLowerCase();
+        const section = (entry.section?.name || '').toLowerCase();
+        const room = (entry.room?.number || entry.room?.name || '').toLowerCase();
+        const building = (entry.building?.name || '').toLowerCase();
 
-  const timeSlots = Array.from(timeSlotsSet).sort((a, b) => {
-    const aTime = a.split('-')[0];
-    const bTime = b.split('-')[0];
-    return aTime.localeCompare(bTime);
-  });
+        return (
+          code.includes(q) ||
+          name.includes(q) ||
+          section.includes(q) ||
+          room.includes(q) ||
+          building.includes(q)
+        );
+      }
+
+      return true;
+    });
+  }, [entries, selectedDayFilter, searchQuery]);
+
+  // Unique time slots across all available entries
+  const timeSlots = useMemo(() => {
+    const timeSlotsSet = new Set<string>();
+    entries.forEach((entry: any) => {
+      if (entry.startTime && entry.endTime) {
+        timeSlotsSet.add(`${formatTime(entry.startTime)}-${formatTime(entry.endTime)}`);
+      }
+    });
+
+    return Array.from(timeSlotsSet).sort((a, b) => {
+      const aTime = a.split('-')[0];
+      const bTime = b.split('-')[0];
+      return aTime.localeCompare(bTime);
+    });
+  }, [entries]);
 
   // Assign distinct color per courseId + sectionId combo
-  const comboColors: Record<string, string> = {};
-  let colorIndex = 0;
-
-  entries.forEach((entry: any) => {
-    const comboKey = `${entry.courseId || entry.course?.id}-${entry.sectionId || entry.section?.id}`;
-    if (!comboColors[comboKey]) {
-      comboColors[comboKey] = colors[colorIndex % colors.length];
-      colorIndex++;
-    }
-  });
+  const comboColors: Record<string, string> = useMemo(() => {
+    const mapping: Record<string, string> = {};
+    let colorIndex = 0;
+    entries.forEach((entry: any) => {
+      const comboKey = `${entry.courseId || entry.course?.id}-${entry.sectionId || entry.section?.id}`;
+      if (!mapping[comboKey]) {
+        mapping[comboKey] = colors[colorIndex % colors.length];
+        colorIndex++;
+      }
+    });
+    return mapping;
+  }, [entries]);
 
   const getTargetDate = (dayOfWeek: any) => {
     const targetDayIndex = getDayIndex(dayOfWeek);
     const todayDate = new Date();
-    // Normalize current day so Monday is 1 ... Saturday is 6, Sunday is 0 or 7
     const currentDay = todayDate.getDay();
     const dayOffset = (targetDayIndex >= 0 ? targetDayIndex : 0) - currentDay;
     const targetDate = new Date(todayDate);
@@ -109,23 +162,127 @@ export function FacultyTimetableGrid({ entries = [], isLoading }: FacultyTimetab
     return format(targetDate, 'yyyy-MM-dd');
   };
 
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-[450px] w-full" />
+      </div>
+    );
+  }
+
+  // Count today's upcoming sessions
+  const todaysSessions = entries.filter((e) => getDayIndex(e.dayOfWeek) === todayDayIndex);
+
   return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between pb-4">
-        <CardTitle className="flex items-center gap-2 text-xl font-semibold">
-          <CalendarIcon className="h-5 w-5" />
-          Weekly Schedule
-        </CardTitle>
-        <span className="text-muted-foreground text-sm font-medium">
-          {entries.length} {entries.length === 1 ? 'session' : 'sessions'} this week
-        </span>
+    <Card className="w-full shadow-sm">
+      <CardHeader className="border-b pb-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-xl font-bold">
+              <CalendarIcon className="text-primary h-5 w-5" />
+              Weekly Schedule
+            </CardTitle>
+            <p className="text-muted-foreground mt-1 text-xs">
+              {entries.length} scheduled {entries.length === 1 ? 'session' : 'sessions'} this week
+              {todaysSessions.length > 0 ? ` • ${todaysSessions.length} today` : ''}
+            </p>
+          </div>
+
+          {/* Search bar & Today shortcut */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative min-w-[200px]">
+              <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+              <Input
+                placeholder="Filter course, section, room..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 pl-8 text-xs"
+              />
+            </div>
+            {todayDayIndex >= 1 && todayDayIndex <= 6 && (
+              <Button
+                variant={selectedDayFilter === todayDayIndex ? 'default' : 'outline'}
+                size="sm"
+                onClick={() =>
+                  setSelectedDayFilter(selectedDayFilter === todayDayIndex ? 'all' : todayDayIndex)
+                }
+                className="h-9 gap-1.5 text-xs font-medium"
+              >
+                <CalendarDays className="h-3.5 w-3.5" />
+                Today's Sessions
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Day Pills Bar */}
+        <div className="mt-2 flex flex-wrap items-center gap-1.5 pt-2">
+          <span className="text-muted-foreground mr-1 flex items-center gap-1 text-xs font-medium">
+            <Filter className="h-3 w-3" /> Day:
+          </span>
+          <Button
+            variant={selectedDayFilter === 'all' ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setSelectedDayFilter('all')}
+            className="h-7 px-2.5 text-xs font-medium"
+          >
+            All Days
+          </Button>
+          {DAYS.map((day) => {
+            const isToday = day.index === todayDayIndex;
+            const count = entries.filter((e) => getDayIndex(e.dayOfWeek) === day.index).length;
+            return (
+              <Button
+                key={day.index}
+                variant={selectedDayFilter === day.index ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setSelectedDayFilter(day.index)}
+                className={`h-7 gap-1 px-2 text-xs font-medium ${
+                  isToday && selectedDayFilter !== day.index ? 'border-primary/40 border' : ''
+                }`}
+              >
+                <span>{day.short}</span>
+                {count > 0 && (
+                  <span className="bg-muted text-muted-foreground py-0.2 ml-0.5 rounded-full px-1.5 text-[10px] font-semibold">
+                    {count}
+                  </span>
+                )}
+              </Button>
+            );
+          })}
+        </div>
       </CardHeader>
+
       <CardContent className="p-0 md:p-6">
         {entries.length === 0 ? (
+          <div className="text-muted-foreground flex h-60 flex-col items-center justify-center p-8 text-center">
+            <CalendarIcon className="mb-3 h-10 w-10 opacity-30" />
+            <p className="text-foreground text-base font-semibold">
+              No timetable entries scheduled
+            </p>
+            <p className="text-muted-foreground mt-1 max-w-sm text-xs">
+              There are currently no classes assigned to your schedule for this academic term.
+            </p>
+          </div>
+        ) : filteredEntries.length === 0 ? (
           <div className="text-muted-foreground flex h-48 flex-col items-center justify-center p-8 text-center">
-            <CalendarIcon className="mb-2 h-8 w-8 opacity-40" />
-            <p className="text-base font-medium">No timetable entries scheduled</p>
-            <p className="text-sm">There are no classes assigned to your schedule for this week.</p>
+            <Search className="mb-2 h-8 w-8 opacity-30" />
+            <p className="text-foreground text-sm font-semibold">No matching sessions found</p>
+            <p className="text-muted-foreground mt-1 text-xs">
+              Try adjusting your filter or search query.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedDayFilter('all');
+              }}
+              className="mt-3 h-7 text-xs"
+            >
+              Reset Filters
+            </Button>
           </div>
         ) : (
           <>
@@ -135,22 +292,24 @@ export function FacultyTimetableGrid({ entries = [], isLoading }: FacultyTimetab
                 <table className="border-border w-full border-collapse border text-sm">
                   <thead>
                     <tr>
-                      <th className="bg-muted border-border w-32 border p-3 text-left font-medium">
-                        Time
+                      <th className="bg-muted/80 border-border w-32 border p-3 text-left font-semibold">
+                        Time Slot
                       </th>
-                      {DAYS.map((day) => {
+                      {DAYS.filter(
+                        (day) => selectedDayFilter === 'all' || selectedDayFilter === day.index,
+                      ).map((day) => {
                         const isToday = day.index === todayDayIndex;
                         return (
                           <th
                             key={day.index}
-                            className={`border-border border p-3 text-center font-medium ${
-                              isToday ? 'bg-primary/10 font-semibold' : 'bg-muted'
+                            className={`border-border border p-3 text-center font-semibold ${
+                              isToday ? 'bg-primary/10 text-primary' : 'bg-muted/80'
                             }`}
                           >
                             <div className="flex items-center justify-center gap-1.5">
                               <span>{day.name}</span>
                               {isToday && (
-                                <span className="bg-primary text-primary-foreground inline-block rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase">
+                                <span className="bg-primary text-primary-foreground inline-block rounded-full px-1.5 py-0.5 text-[10px] font-bold tracking-wide uppercase">
                                   Today
                                 </span>
                               )}
@@ -163,19 +322,23 @@ export function FacultyTimetableGrid({ entries = [], isLoading }: FacultyTimetab
                   <tbody>
                     {timeSlots.map((slot) => {
                       const [start, end] = slot.split('-');
+                      const activeDays = DAYS.filter(
+                        (day) => selectedDayFilter === 'all' || selectedDayFilter === day.index,
+                      );
+
                       return (
-                        <tr key={slot}>
+                        <tr key={slot} className="hover:bg-muted/20 transition-colors">
                           <td className="border-border text-muted-foreground border p-3 align-top font-medium whitespace-nowrap">
                             <div className="flex items-center gap-1.5">
-                              <Clock className="h-3.5 w-3.5" />
-                              <span>
+                              <Clock className="text-primary/70 h-3.5 w-3.5" />
+                              <span className="font-mono text-xs">
                                 {start} - {end}
                               </span>
                             </div>
                           </td>
-                          {DAYS.map((day) => {
+                          {activeDays.map((day) => {
                             const isToday = day.index === todayDayIndex;
-                            const dayEntries = entries.filter(
+                            const dayEntries = filteredEntries.filter(
                               (e: any) =>
                                 getDayIndex(e.dayOfWeek) === day.index &&
                                 `${formatTime(e.startTime)}-${formatTime(e.endTime)}` === slot,
@@ -184,8 +347,8 @@ export function FacultyTimetableGrid({ entries = [], isLoading }: FacultyTimetab
                             return (
                               <td
                                 key={`${day.index}-${slot}`}
-                                className={`border-border h-28 min-w-[140px] border p-2 align-top ${
-                                  isToday ? 'bg-primary/5' : ''
+                                className={`border-border h-28 min-w-[150px] border p-2 align-top ${
+                                  isToday ? 'bg-primary/[0.03]' : ''
                                 }`}
                               >
                                 {dayEntries.map((entry: any) => {
@@ -198,44 +361,55 @@ export function FacultyTimetableGrid({ entries = [], isLoading }: FacultyTimetab
                                   return (
                                     <div
                                       key={entry.id || comboKey}
-                                      className={`flex h-full flex-col justify-between rounded border p-2.5 shadow-sm transition-all hover:shadow-md ${colorClass}`}
+                                      className={`flex h-full flex-col justify-between rounded-lg border p-2.5 shadow-xs transition-all hover:shadow-md ${colorClass}`}
                                     >
                                       <div>
                                         <div className="mb-1 flex items-start justify-between gap-1">
-                                          <span className="font-bold tracking-tight">
+                                          <span className="flex items-center gap-1 text-xs font-bold tracking-tight">
+                                            <BookOpen className="h-3 w-3 shrink-0 opacity-70" />
                                             {entry.course?.code}
                                           </span>
                                           {entry.section?.name && (
                                             <Badge
                                               variant="outline"
-                                              className="border-current/30 px-1.5 py-0 text-[10px] font-semibold"
+                                              className="bg-background/50 border-current/30 px-1.5 py-0 text-[10px] font-semibold"
                                             >
-                                              {entry.section.name}
+                                              Sec {entry.section.name}
                                             </Badge>
                                           )}
                                         </div>
                                         <div
-                                          className="line-clamp-2 text-xs font-medium"
+                                          className="line-clamp-2 text-xs leading-snug font-medium"
                                           title={entry.course?.name}
                                         >
                                           {entry.course?.name || 'Class Session'}
                                         </div>
                                       </div>
 
-                                      <div className="mt-2 space-y-2">
-                                        {entry.room?.number && (
-                                          <div className="flex items-center gap-1 text-[11px] opacity-90">
-                                            <MapPin className="h-3 w-3 shrink-0" />
-                                            <span className="truncate">
-                                              Room {entry.room.number}
-                                            </span>
-                                          </div>
-                                        )}
+                                      <div className="mt-2.5 space-y-2">
+                                        <div className="flex flex-col gap-0.5 text-[11px] opacity-90">
+                                          {entry.room?.number && (
+                                            <div className="flex items-center gap-1">
+                                              <MapPin className="h-3 w-3 shrink-0" />
+                                              <span className="truncate font-medium">
+                                                Room {entry.room.number}
+                                              </span>
+                                            </div>
+                                          )}
+                                          {entry.building?.name && (
+                                            <div className="flex items-center gap-1 text-[10px] opacity-75">
+                                              <Building2 className="h-2.5 w-2.5 shrink-0" />
+                                              <span className="truncate">
+                                                {entry.building.name}
+                                              </span>
+                                            </div>
+                                          )}
+                                        </div>
                                         <Button
                                           asChild
                                           size="sm"
                                           variant="secondary"
-                                          className="h-7 w-full text-xs font-medium"
+                                          className="h-7 w-full text-[11px] font-semibold shadow-xs"
                                         >
                                           <Link
                                             href={`/faculty/timetable/session?courseId=${courseId}&sectionId=${sectionId}&date=${targetDateStr}`}
@@ -262,8 +436,10 @@ export function FacultyTimetableGrid({ entries = [], isLoading }: FacultyTimetab
             {/* Mobile Card-per-Day View */}
             <div className="block md:hidden">
               <div className="divide-border divide-y border-t">
-                {DAYS.map((day) => {
-                  const dayEntries = entries
+                {DAYS.filter(
+                  (day) => selectedDayFilter === 'all' || selectedDayFilter === day.index,
+                ).map((day) => {
+                  const dayEntries = filteredEntries
                     .filter((e: any) => getDayIndex(e.dayOfWeek) === day.index)
                     .sort((a: any, b: any) =>
                       formatTime(a.startTime).localeCompare(formatTime(b.startTime)),
@@ -276,7 +452,12 @@ export function FacultyTimetableGrid({ entries = [], isLoading }: FacultyTimetab
                   return (
                     <div key={day.index} className={`p-4 ${isToday ? 'bg-primary/5' : ''}`}>
                       <div className="mb-3 flex items-center justify-between">
-                        <h3 className="text-base font-semibold">{day.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-base font-semibold">{day.name}</h3>
+                          <Badge variant="outline" className="text-xs">
+                            {dayEntries.length} {dayEntries.length === 1 ? 'class' : 'classes'}
+                          </Badge>
+                        </div>
                         {isToday && (
                           <Badge variant="default" className="text-[10px]">
                             Today
@@ -294,7 +475,7 @@ export function FacultyTimetableGrid({ entries = [], isLoading }: FacultyTimetab
                           return (
                             <div
                               key={entry.id || comboKey}
-                              className={`flex flex-col rounded-lg border p-3.5 shadow-sm ${colorClass}`}
+                              className={`flex flex-col rounded-lg border p-3.5 shadow-xs ${colorClass}`}
                             >
                               <div className="mb-2 flex items-start justify-between gap-2">
                                 <div>
@@ -310,7 +491,7 @@ export function FacultyTimetableGrid({ entries = [], isLoading }: FacultyTimetab
                                     variant="outline"
                                     className="border-current/30 text-xs font-semibold"
                                   >
-                                    {entry.section.name}
+                                    Sec {entry.section.name}
                                   </Badge>
                                 )}
                               </div>
@@ -326,7 +507,10 @@ export function FacultyTimetableGrid({ entries = [], isLoading }: FacultyTimetab
                                 {entry.room?.number && (
                                   <div className="flex items-center gap-1.5">
                                     <MapPin className="h-3.5 w-3.5 shrink-0" />
-                                    <span>Room {entry.room.number}</span>
+                                    <span>
+                                      Room {entry.room.number}
+                                      {entry.building?.name ? ` (${entry.building.name})` : ''}
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -335,7 +519,7 @@ export function FacultyTimetableGrid({ entries = [], isLoading }: FacultyTimetab
                                 asChild
                                 size="sm"
                                 variant="secondary"
-                                className="mt-3 h-8 w-full text-xs font-medium"
+                                className="mt-3 h-8 w-full text-xs font-semibold"
                               >
                                 <Link
                                   href={`/faculty/timetable/session?courseId=${courseId}&sectionId=${sectionId}&date=${targetDateStr}`}

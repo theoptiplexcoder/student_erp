@@ -136,21 +136,23 @@ export class StudentService {
   async getTimetable(userId: string, institutionId: string) {
     const student = await this.getStudentProfile(userId, institutionId);
 
-    const enrollments = await this.prisma.enrollment.findMany({
-      where: {
-        institutionId,
-        studentId: student.id,
-        status: 'ACTIVE',
-      },
-    });
-
-    const courseIds = enrollments.map((e) => e.courseId);
-
+    // If student has an assigned section, get the timetable entries generated for that section
     const timetable = await this.prisma.timetableEntry.findMany({
       where: {
         institutionId,
-        ...(student.sectionId ? { sectionId: student.sectionId } : {}),
-        courseId: { in: courseIds.filter((id) => id !== null) as string[] },
+        ...(student.sectionId
+          ? { sectionId: student.sectionId }
+          : {
+              // Fallback to active enrollments if no section is assigned
+              course: {
+                enrollments: {
+                  some: {
+                    studentId: student.id,
+                    status: 'ACTIVE',
+                  },
+                },
+              },
+            }),
       },
       include: {
         course: true,

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Button } from '@student-erp/ui';
-import { Download, Upload, Zap, Loader2 } from 'lucide-react';
+import { Download, Upload, Zap, Loader2, Sparkles, Send } from 'lucide-react';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
 import { useAdminTerms } from '@/hooks/api/admin/useTerms';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
@@ -69,7 +69,7 @@ export function TimetableToolbar({
 
   const allSections = sectionsResponse?.data || [];
 
-  // 1. Filter sections by program if selected. If curriculum is selected but no program, filter by curriculum's programs
+  // Filter sections by program if selected. If curriculum is selected but no program, filter by curriculum's programs
   const programSections = useMemo(() => {
     if (programId) {
       return allSections.filter(
@@ -87,7 +87,6 @@ export function TimetableToolbar({
     return allSections;
   }, [programId, curriculumId, programs, allSections]);
 
-  // 2. Filter sections relevant to selected term if term is also chosen
   const selectedTerm = terms?.find((t: any) => t.id === termId);
   const sections = selectedTerm
     ? programSections.filter(
@@ -105,6 +104,7 @@ export function TimetableToolbar({
 
   return (
     <div className="bg-card mb-6 flex flex-col items-start justify-between gap-4 rounded-lg border p-4 shadow-sm md:flex-row md:items-center">
+      {/* Scope Selectors */}
       <div className="flex w-full flex-wrap gap-2 md:w-auto">
         {/* 1. Curriculum Selector */}
         {setCurriculumId && (
@@ -115,7 +115,7 @@ export function TimetableToolbar({
               if (setProgramId) setProgramId('');
               setSectionId('');
             }}
-            className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm md:w-[190px]"
+            className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-xs md:w-[170px]"
             disabled={isLoadingCurriculums}
           >
             <option value="">All Curriculums</option>
@@ -135,7 +135,7 @@ export function TimetableToolbar({
               setProgramId(e.target.value);
               setSectionId('');
             }}
-            className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm md:w-[190px]"
+            className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-xs md:w-[170px]"
             disabled={isLoadingPrograms}
           >
             <option value="">All Programs</option>
@@ -151,7 +151,7 @@ export function TimetableToolbar({
         <select
           value={termId}
           onChange={(e) => setTermId(e.target.value)}
-          className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm md:w-[180px]"
+          className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-xs md:w-[170px]"
           disabled={isLoadingTerms}
         >
           <option value="">Select Term *</option>
@@ -166,7 +166,7 @@ export function TimetableToolbar({
         <select
           value={sectionId}
           onChange={(e) => setSectionId(e.target.value)}
-          className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm md:w-[180px]"
+          className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-xs md:w-[170px]"
           disabled={isLoadingSections || noSectionsAvailable}
         >
           <option value="">{noSectionsAvailable ? 'No sections available' : 'All Sections'}</option>
@@ -176,59 +176,48 @@ export function TimetableToolbar({
             </option>
           ))}
         </select>
-
-        {/* 5. Day Selector (optional) */}
-        {setDayOfWeek && (
-          <select
-            value={dayOfWeek || ''}
-            onChange={(e) => setDayOfWeek(e.target.value)}
-            className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm md:w-[150px]"
-          >
-            <option value="">All Days</option>
-            <option value="MONDAY">Monday</option>
-            <option value="TUESDAY">Tuesday</option>
-            <option value="WEDNESDAY">Wednesday</option>
-            <option value="THURSDAY">Thursday</option>
-            <option value="FRIDAY">Friday</option>
-            <option value="SATURDAY">Saturday</option>
-          </select>
-        )}
       </div>
 
-      <div className="flex w-full flex-wrap gap-2 md:w-auto">
+      {/* Main Actions */}
+      <div className="flex w-full flex-wrap items-center gap-2 md:w-auto">
         <Button
           onClick={onGenerate}
           variant="default"
-          className="gap-2 text-xs font-medium sm:text-sm"
+          size="sm"
+          className="gap-1.5 text-xs font-semibold shadow-xs"
           disabled={isGenerating || !termId}
           title={!termId ? 'Please select a term before generating' : 'Generate weekly timetable'}
         >
           {isGenerating ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
           ) : (
-            <Zap className="h-4 w-4" />
+            <Sparkles className="h-3.5 w-3.5" />
           )}
           Generate Timetable
         </Button>
-        <Button onClick={onImport} variant="outline" className="gap-2 text-xs sm:text-sm">
-          <Upload className="h-4 w-4" />
+        <Button onClick={onImport} variant="outline" size="sm" className="gap-1.5 text-xs">
+          <Upload className="h-3.5 w-3.5" />
           Import
         </Button>
         <Button
           onClick={onExport}
           variant="outline"
-          className="gap-2 text-xs sm:text-sm"
+          size="sm"
+          className="gap-1.5 text-xs"
           disabled={!termId || status === 'NO_TIMETABLE'}
         >
-          <Download className="h-4 w-4" />
+          <Download className="h-3.5 w-3.5" />
           Export
         </Button>
         <Button
           onClick={onPublish}
-          className="gap-2 text-xs sm:text-sm"
+          variant="secondary"
+          size="sm"
+          className="gap-1.5 text-xs font-medium"
           disabled={isPublishing || !termId || status === 'NO_TIMETABLE'}
         >
-          {isPublishing ? 'Publishing...' : 'Publish'}
+          <Send className="h-3.5 w-3.5" />
+          Publish
         </Button>
       </div>
     </div>

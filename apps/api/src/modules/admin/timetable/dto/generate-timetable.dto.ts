@@ -46,4 +46,11 @@ export class GenerateTimetableDto {
   @ValidateNested()
   @Type(() => WorkingHoursDto)
   workingHours?: WorkingHoursDto;
+
+  @IsOptional()
+  @IsString({ each: true })
+  days?: import('@prisma/client').TimetableDay[];
+
+  @IsOptional()
+  breakPeriods?: { start: string; end: string }[];
 }

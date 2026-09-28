@@ -130,7 +130,7 @@ export class TimetableService {
         ...(filters.facultyId && { facultyId: filters.facultyId }),
         ...(filters.dayOfWeek && { dayOfWeek: filters.dayOfWeek }),
       },
-      include: { course: true, faculty: { include: { user: true } }, section: true },
+      include: { course: true, faculty: { include: { user: true } }, section: true, room: true },
       orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
     });
   }
@@ -493,13 +493,10 @@ export class TimetableService {
       return matchedCC?.creditValue ?? assignment.course?.creditValue ?? 3;
     };
 
-    const days: import('@prisma/client').TimetableDay[] = [
-      'MONDAY',
-      'TUESDAY',
-      'WEDNESDAY',
-      'THURSDAY',
-      'FRIDAY',
-    ];
+    const days: import('@prisma/client').TimetableDay[] =
+      dto.days && dto.days.length > 0
+        ? dto.days
+        : ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
     const generatedEntries: Prisma.TimetableEntryCreateManyInput[] = [];
     const conflicts: Array<{
       type: string;
@@ -630,6 +627,18 @@ export class TimetableService {
 
             const start = this.parseTime(startTimeStr);
             const end = this.parseTime(endTimeStr);
+
+            // Check if slot falls into configured break periods
+            if (dto.breakPeriods && dto.breakPeriods.length > 0) {
+              const inBreak = dto.breakPeriods.some((bp) => {
+                const bpStart = this.parseTime(bp.start);
+                const bpEnd = this.parseTime(bp.end);
+                return overlaps(start, end, bpStart, bpEnd);
+              });
+              if (inBreak) {
+                continue;
+              }
+            }
 
             // Cycle through assigned faculty or pick first available
             let availableFacultyId: string | null = null;

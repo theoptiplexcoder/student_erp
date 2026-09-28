@@ -283,3 +283,31 @@ export const useCompleteLessonPlan = (courseId: string) => {
     },
   });
 };
+
+// Faculty Notification Hooks
+export const useFacultyNotifications = () => {
+  return useQuery({
+    queryKey: ['faculty', 'notifications'],
+    queryFn: FacultyApi.getNotifications,
+  });
+};
+
+export const useMarkFacultyNotificationAsRead = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => FacultyApi.markNotificationAsRead(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['faculty', 'notifications'] });
+    },
+  });
+};
+
+export const useMarkAllFacultyNotificationsAsRead = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => FacultyApi.markAllNotificationsAsRead(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['faculty', 'notifications'] });
+    },
+  });
+};

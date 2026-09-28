@@ -5,6 +5,7 @@ import { Menu } from 'lucide-react';
 import { Button } from '@student-erp/ui';
 import { UserNav } from '../../admin/user-nav';
 import { ThemeToggle } from '../../theme-toggle';
+import { FacultyNotificationBell } from './faculty-notification-bell';
 
 export function FacultyNavbar() {
   return (
@@ -14,6 +15,7 @@ export function FacultyNavbar() {
           <span className="font-display font-bold md:hidden">ERP</span>
         </div>
         <div className="flex items-center gap-4">
+          <FacultyNotificationBell />
           <ThemeToggle />
           <UserNav />
         </div>

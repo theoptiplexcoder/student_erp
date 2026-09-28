@@ -6,7 +6,17 @@ import { TimetableToolbar } from '@/components/admin/timetable/timetable-toolbar
 import { TimetableBulkActions } from '@/components/admin/timetable/timetable-bulk-actions';
 import { TimetableEntryForm } from '@/components/admin/timetable/timetable-entry-form';
 import { TimetableMergeModal } from '@/components/admin/timetable/timetable-merge-modal';
-import { TimetableSessionSettings } from '@/components/admin/timetable/timetable-session-settings';
+import {
+  TimetableGenerationModal,
+  TimetableGenerationConfig,
+} from '@/components/admin/timetable/timetable-generation-modal';
+import { TimetableOverwriteWarningDialog } from '@/components/admin/timetable/timetable-overwrite-warning-dialog';
+import {
+  TimetableGenerationProgressBanner,
+  GenerationResultSummary,
+} from '@/components/admin/timetable/timetable-generation-progress';
+import { TimetableContextConflictPanel } from '@/components/admin/timetable/timetable-context-conflict-panel';
+import { TimetablePublishModal } from '@/components/admin/timetable/timetable-publish-modal';
 import { TimetableProgramSectionsSummary } from '@/components/admin/timetable/timetable-program-sections-summary';
 import { TimetableOverviewHeatmap } from '@/components/admin/timetable/timetable-overview-heatmap';
 import {
@@ -24,85 +34,31 @@ import {
   useCreateTimetableEntry,
   useUpdateTimetableEntry,
   useDeleteTimetableEntry,
+  useMoveTimetableEntry,
 } from '@student-erp/hooks';
 import { TimetableConflictBadge } from '@/components/admin/timetable/timetable-conflict-badge';
 import { useAdminAllCurriculums } from '@/hooks/api/admin/useCurriculums';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
 import { useAdminTerms } from '@/hooks/api/admin/useTerms';
+import { useAcademicYears } from '@/hooks/api/admin/useAcademicYears';
 import { TimetableImportModal } from '@/components/admin/timetable/timetable-import-modal';
 import { SessionPlanningCard } from '@/components/admin/sections/SessionPlanningCard';
-import { AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronUp, Save, Undo2, CheckCircle2 } from 'lucide-react';
+import { Button, Badge } from '@student-erp/ui';
 
-const CONFLICT_TYPE_LABELS: Record<string, string> = {
-  FACULTY: 'Faculty Conflicts (Overlapping Teacher Schedule)',
-  SECTION: 'Section Conflicts (Overlapping Section Classes)',
-  ROOM: 'Room Conflicts (Classroom Double-Booking)',
-  UNSCHEDULED: 'Unscheduled Sessions',
-};
-
-function ConflictAlert({ conflicts }: { conflicts: any[] }) {
-  const [expandedTypes, setExpandedTypes] = useState<Record<string, boolean>>({
-    FACULTY: true,
-    ROOM: true,
-    SECTION: true,
-  });
-
-  const grouped = conflicts.reduce<Record<string, any[]>>((acc, c) => {
-    const type = c.type || 'OTHER';
-    if (!acc[type]) acc[type] = [];
-    acc[type].push(c);
-    return acc;
-  }, {});
-
-  const toggleType = (type: string) => {
-    setExpandedTypes((prev) => ({ ...prev, [type]: !prev[type] }));
+interface UnsavedMove {
+  entryId: string;
+  previous: {
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
   };
-
-  return (
-    <div className="space-y-2 rounded-lg border border-red-200 bg-red-50 p-4 text-red-900 shadow-sm dark:border-red-800 dark:bg-red-950/40 dark:text-red-200">
-      <div className="flex items-center gap-2 text-sm font-semibold text-red-800 dark:text-red-300">
-        <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
-        <span>
-          {conflicts.length} Overlapping Conflict{conflicts.length !== 1 ? 's' : ''} Detected in
-          Timetable
-        </span>
-      </div>
-
-      {Object.entries(grouped).map(([type, items]) => (
-        <div key={type} className="border-t border-red-200/60 pt-2 dark:border-red-800/60">
-          <button
-            type="button"
-            className="flex w-full items-center justify-between text-xs font-medium text-red-800 hover:underline sm:text-sm dark:text-red-300"
-            onClick={() => toggleType(type)}
-          >
-            <div className="flex items-center gap-2">
-              <span className="rounded-full bg-red-200/70 px-2 py-0.5 text-xs font-semibold text-red-900 dark:bg-red-900 dark:text-red-200">
-                {items.length}
-              </span>
-              <span>{CONFLICT_TYPE_LABELS[type] || type}</span>
-            </div>
-            {expandedTypes[type] ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
-          </button>
-
-          {expandedTypes[type] && (
-            <ul className="mt-1.5 ml-4 list-disc space-y-1 text-xs text-red-700 dark:text-red-300">
-              {items.map((conflict, i) => (
-                <li key={i}>
-                  {conflict.message ||
-                    `${conflict.type} conflict at ${conflict.time || 'unknown time'}`}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ))}
-    </div>
-  );
+  target: {
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
+  };
 }
 
 export default function AdminTimetablePage() {
@@ -115,15 +71,27 @@ export default function AdminTimetablePage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<any>(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
-  const [sessionSettingsOpen, setSessionSettingsOpen] = useState(false);
+  const [generationModalOpen, setGenerationModalOpen] = useState(false);
+  const [overwriteWarningOpen, setOverwriteWarningOpen] = useState(false);
+  const [pendingGenerationConfig, setPendingGenerationConfig] =
+    useState<TimetableGenerationConfig | null>(null);
+  const [publishModalOpen, setPublishModalOpen] = useState(false);
   const [mergeModalOpen, setMergeModalOpen] = useState(false);
   const [generationConflicts, setGenerationConflicts] = useState<any[]>([]);
+  const [generationSummary, setGenerationSummary] = useState<GenerationResultSummary | null>(null);
+
+  // Selected entry for live Context / Conflict Inspector side-panel
+  const [inspectorEntry, setInspectorEntry] = useState<any | null>(null);
+
+  // Unsaved changes tracking for manual adjustments
+  const [unsavedMoves, setUnsavedMoves] = useState<UnsavedMove[]>([]);
+  const [isSavingChanges, setIsSavingChanges] = useState(false);
 
   // Metadata queries
   const { data: curriculumsData } = useAdminAllCurriculums();
   const { data: programsResponse } = useAdminPrograms(1, 100);
   const { data: terms } = useAdminTerms(curriculumId);
-  // Fetch all sections across programs so all-programs heatmap has the full cross-program view
+  const { data: academicYears } = useAcademicYears();
   const { data: allSectionsResponse, isLoading: isAllSectionsLoading } = useAdminSections(
     1,
     200,
@@ -141,7 +109,6 @@ export default function AdminTimetablePage() {
   const curriculums = curriculumsData || [];
   const rawPrograms = programsResponse?.data || [];
 
-  // Filter programs by curriculum if curriculum is selected
   const programs = useMemo(() => {
     if (!curriculumId) return rawPrograms;
     const selectedCurr = curriculums.find((c: any) => c.id === curriculumId);
@@ -154,7 +121,6 @@ export default function AdminTimetablePage() {
   const selectedProgram = programs.find((p: any) => p.id === programId);
   const allSections = allSectionsResponse?.data || [];
 
-  // If a curriculum is selected but no specific program, filter sections to that curriculum's programs
   const curriculumSections = useMemo(() => {
     if (!curriculumId) return allSections;
     const allowedProgIds = new Set(programs.map((p: any) => p.id));
@@ -179,6 +145,11 @@ export default function AdminTimetablePage() {
     }
   }, [terms, termId]);
 
+  const selectedTerm = terms?.find((t: any) => t.id === termId);
+  const selectedAcademicYear = academicYears?.find(
+    (ay: any) => ay.id === selectedTerm?.academicYearId,
+  );
+
   // Timetable data & conflict queries
   const { data: serverConflicts } = useAdminTimetableConflicts(termId);
   const { data: timetableData, isPending: isTimetablePending } = useAdminTimetable({
@@ -192,6 +163,7 @@ export default function AdminTimetablePage() {
   const { mutate: exportTimetable } = useExportTimetable();
   const { mutate: importTimetable } = useImportTimetable();
   const { mutate: swapSlots } = useSwapTimetableSlots();
+  const { mutateAsync: moveEntry } = useMoveTimetableEntry();
 
   const { mutateAsync: createEntry, isPending: isCreating } = useCreateTimetableEntry();
   const { mutateAsync: updateEntry, isPending: isUpdating } = useUpdateTimetableEntry();
@@ -201,36 +173,74 @@ export default function AdminTimetablePage() {
     ? timetableData
     : (timetableData as any)?.data || [];
 
-  // Filter entries to program sections if program is selected
+  // Active entries filtered by program/section + applied optimistic unsaved moves
   const entries = useMemo(() => {
     const arr = Array.isArray(rawEntries) ? rawEntries : [];
 
-    // If a section is specifically requested, the API already filters it.
-    // We just return arr to avoid any client-side strict equality mismatches.
+    let filtered = arr;
     if (sectionId) {
-      return arr;
+      filtered = arr.filter((e: any) => e.sectionId === sectionId || e.section?.id === sectionId);
+    } else if (programId || curriculumId) {
+      if (sections.length > 0) {
+        const activeSecIds = new Set(sections.map((s: any) => s.id));
+        filtered = arr.filter(
+          (e: any) =>
+            activeSecIds.has(e.sectionId) || (e.section && activeSecIds.has(e.section.id)),
+        );
+      }
     }
 
-    if (!programId && !curriculumId) return arr;
-
-    if (sections.length > 0) {
-      const activeSecIds = new Set(sections.map((s: any) => s.id));
-      return arr.filter(
-        (e: any) => activeSecIds.has(e.sectionId) || (e.section && activeSecIds.has(e.section.id)),
-      );
+    // Apply unsaved moves optimistically to visual grid
+    if (unsavedMoves.length > 0) {
+      const moveMap = new Map(unsavedMoves.map((m) => [m.entryId, m.target]));
+      return filtered.map((e: any) => {
+        const mv = moveMap.get(e.id);
+        if (mv) {
+          return {
+            ...e,
+            dayOfWeek: mv.dayOfWeek,
+            startTime: mv.startTime,
+            endTime: mv.endTime,
+          };
+        }
+        return e;
+      });
     }
 
-    return arr;
-  }, [rawEntries, programId, curriculumId, sections, sectionId]);
+    return filtered;
+  }, [rawEntries, programId, curriculumId, sections, sectionId, unsavedMoves]);
 
-  const timetableStatus = 'NO_TIMETABLE';
+  // Keep inspectorEntry synced with updated entries
+  useEffect(() => {
+    if (inspectorEntry) {
+      const updated = entries.find((e: any) => e.id === inspectorEntry.id);
+      if (updated) {
+        setInspectorEntry(updated);
+      }
+    }
+  }, [entries, inspectorEntry]);
 
-  // Live client-side conflicts calculated across the active entries
+  // Warn before browser navigation if unsaved changes exist
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (unsavedMoves.length > 0) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [unsavedMoves]);
+
+  const timetableStatus =
+    entries.length === 0 ? 'NO_TIMETABLE' : (rawEntries[0]?.timetable?.status as any) || 'DRAFT';
+
+  // Live client-side conflicts calculated across active entries
   const clientConflicts = useMemo<TimetableConflict[]>(() => {
     return findTimetableConflicts(entries);
   }, [entries]);
 
-  // Combined conflict list for header badge & banner
+  // Combined conflict list
   const combinedConflicts = useMemo(() => {
     const list: any[] = [...generationConflicts];
     const seenMessages = new Set(list.map((c) => c.message));
@@ -265,7 +275,6 @@ export default function AdminTimetablePage() {
       isPractical: boolean;
     }> = [];
 
-    // First collect from program sections
     for (const sec of sections) {
       for (const ca of sec.courseAssignments || []) {
         if (ca.course && !seen.has(ca.course.id)) {
@@ -281,7 +290,6 @@ export default function AdminTimetablePage() {
       }
     }
 
-    // Then add from existing entries
     for (const entry of entries) {
       const course = entry.course || entry.courseOffering?.course;
       if (course && !seen.has(course.id)) {
@@ -298,10 +306,161 @@ export default function AdminTimetablePage() {
     return result;
   }, [sections, entries]);
 
-  const handlePublish = () => {
+  // Execute timetable generation
+  const executeGeneration = (config: TimetableGenerationConfig) => {
+    generateTimetable(
+      {
+        termId: config.termId,
+        sectionIds: config.sectionIds,
+        days: config.days,
+        workingHours: config.workingHours,
+        breakPeriods: config.breakPeriods,
+        defaultSessionDuration: config.defaultSessionDuration,
+        ...(config.sessionDurations && Object.keys(config.sessionDurations).length > 0
+          ? { sessionDurations: config.sessionDurations }
+          : {}),
+      },
+      {
+        onSuccess: (response: any) => {
+          const newConflicts = response?.conflicts || [];
+          const newSummary = response?.summary || null;
+          setGenerationConflicts(newConflicts);
+
+          const totalSessions =
+            newSummary?.totalSessions ??
+            newSummary?.total ??
+            response?.timetable?.entries?.length ??
+            0;
+
+          // Count how many sections have conflicts
+          const conflictSectionIds = new Set<string>();
+          for (const c of newConflicts) {
+            if (c.sectionId) conflictSectionIds.add(c.sectionId);
+          }
+
+          setGenerationSummary({
+            sectionsProcessed: newSummary?.sectionsProcessed || config.sectionIds.length,
+            sessionsGenerated: totalSessions,
+            conflictsFound: newConflicts.length,
+            sectionsRequiringAdjustment: conflictSectionIds.size,
+          });
+
+          // Clear unsaved moves on fresh generation
+          setUnsavedMoves([]);
+        },
+        onError: (err: any) => {
+          alert('Failed to generate timetable: ' + err.message);
+        },
+      },
+    );
+  };
+
+  // Pre-flight check: trigger overwrite warning dialog if existing timetable entries exist
+  const handleRequestGeneration = (config: TimetableGenerationConfig) => {
+    const existingInScope = rawEntries.filter((e: any) => config.sectionIds.includes(e.sectionId));
+
+    if (existingInScope.length > 0) {
+      setPendingGenerationConfig(config);
+      setOverwriteWarningOpen(true);
+    } else {
+      executeGeneration(config);
+    }
+  };
+
+  // Drag and drop handler
+  const handleMoveEntry = (
+    entryId: string,
+    targetDay: string,
+    targetStartTime: string,
+    targetEndTime: string,
+  ) => {
+    const existingEntry = entries.find((e: any) => e.id === entryId);
+    if (!existingEntry) return;
+
+    // Check if slot actually changed
+    const currentStart = String(existingEntry.startTime).includes('T')
+      ? String(existingEntry.startTime).substring(11, 16)
+      : String(existingEntry.startTime);
+
+    if (existingEntry.dayOfWeek === targetDay && currentStart === targetStartTime) {
+      return;
+    }
+
+    // Add to unsaved moves queue
+    setUnsavedMoves((prev) => {
+      const filtered = prev.filter((m) => m.entryId !== entryId);
+      return [
+        ...filtered,
+        {
+          entryId,
+          previous: {
+            dayOfWeek: existingEntry.dayOfWeek,
+            startTime: currentStart,
+            endTime: String(existingEntry.endTime).includes('T')
+              ? String(existingEntry.endTime).substring(11, 16)
+              : String(existingEntry.endTime),
+          },
+          target: {
+            dayOfWeek: targetDay,
+            startTime: targetStartTime,
+            endTime: targetEndTime,
+          },
+        },
+      ];
+    });
+
+    // Update inspector
+    setInspectorEntry({
+      ...existingEntry,
+      dayOfWeek: targetDay,
+      startTime: targetStartTime,
+      endTime: targetEndTime,
+    });
+  };
+
+  // Save changes batch
+  const handleSaveChanges = async () => {
+    if (unsavedMoves.length === 0) return;
+    setIsSavingChanges(true);
+
+    try {
+      for (const mv of unsavedMoves) {
+        await moveEntry({
+          id: mv.entryId,
+          data: {
+            dayOfWeek: mv.target.dayOfWeek as any,
+            startTime: mv.target.startTime,
+            endTime: mv.target.endTime,
+          },
+        });
+      }
+      setUnsavedMoves([]);
+      alert('Timetable adjustments saved successfully.');
+    } catch (err: any) {
+      alert('Failed to save timetable changes: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setIsSavingChanges(false);
+    }
+  };
+
+  const handleDiscardChanges = () => {
+    if (window.confirm('Discard all unsaved session moves?')) {
+      setUnsavedMoves([]);
+    }
+  };
+
+  // Publish workflow handler
+  const handleConfirmPublish = () => {
     if (!termId) return;
     publishTimetable(termId, {
-      onSuccess: () => alert('Timetable published successfully'),
+      onSuccess: () => {
+        setPublishModalOpen(false);
+        alert(
+          `Timetable published successfully for ${
+            sections.length || allSections.length
+          } sections. Now live for faculty and students.`,
+        );
+      },
       onError: (err: any) => alert('Failed to publish timetable: ' + err.message),
     });
   };
@@ -345,75 +504,6 @@ export default function AdminTimetablePage() {
     );
   };
 
-  const handleGenerate = (settings?: {
-    defaultSessionDuration: number;
-    sessionDurations: Record<string, number>;
-    workingHours?: { start: string; end: string };
-  }) => {
-    if (!termId) {
-      alert('Please select a term to generate the weekly timetable.');
-      return;
-    }
-
-    // Confirm before overwriting existing schedule
-    if (entries.length > 0) {
-      const confirmed = window.confirm(
-        'Generating a new timetable will overwrite existing schedules for this term. Do you wish to proceed?',
-      );
-      if (!confirmed) return;
-    }
-
-    let sectionIds: string[] = [];
-    if (sectionId) {
-      // If a specific section is chosen in the dropdown, generate for that section
-      sectionIds = [sectionId];
-    } else if (sections.length > 0) {
-      // If "All Sections" is chosen (or no section selected), generate for ALL sections currently in scope
-      sectionIds = sections.map((s) => s.id);
-    } else if (allSections.length > 0) {
-      // Fallback: generate for all institutional sections
-      sectionIds = allSections.map((s) => s.id);
-    }
-
-    if (sectionIds.length === 0) {
-      alert('No sections found to generate timetable. Please ensure sections are created.');
-      return;
-    }
-
-    generateTimetable(
-      {
-        termId,
-        sectionIds,
-        ...(settings?.defaultSessionDuration
-          ? { defaultSessionDuration: settings.defaultSessionDuration }
-          : {}),
-        ...(settings?.sessionDurations && Object.keys(settings.sessionDurations).length > 0
-          ? { sessionDurations: settings.sessionDurations }
-          : {}),
-        ...(settings?.workingHours ? { workingHours: settings.workingHours } : {}),
-      },
-      {
-        onSuccess: (response: any) => {
-          const newConflicts = response?.conflicts || [];
-          const newSummary = response?.summary || null;
-          setGenerationConflicts(newConflicts);
-
-          if (newConflicts.length > 0) {
-            const sessionCount = newSummary?.totalSessions ?? newSummary?.total ?? entries.length;
-            alert(
-              `Generated ${sessionCount} weekly sessions. ${newConflicts.length} conflict${newConflicts.length !== 1 ? 's' : ''} detected. Review highlighted slots.`,
-            );
-          } else {
-            alert('Weekly timetable generated successfully!');
-          }
-        },
-        onError: (err: any) => {
-          alert('Failed to generate timetable: ' + err.message);
-        },
-      },
-    );
-  };
-
   const handleToggleSelect = (id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
@@ -421,8 +511,7 @@ export default function AdminTimetablePage() {
   };
 
   const handleEntryClick = (entry: any) => {
-    setEditingEntry(entry);
-    setFormOpen(true);
+    setInspectorEntry(entry);
   };
 
   const handleEmptySlotClick = (day: string, startTime: string) => {
@@ -501,10 +590,7 @@ export default function AdminTimetablePage() {
     targetFacultyId: string;
     targetRoomId?: string;
   }) => {
-    // 1. Delete the secondary slot
     await deleteEntry(secondaryEntryId);
-
-    // 2. Update the primary slot to extend across both time slots
     await updateEntry({
       id: primaryEntryId,
       data: {
@@ -515,7 +601,6 @@ export default function AdminTimetablePage() {
         roomId: targetRoomId || undefined,
       },
     });
-
     clearSelection();
     setMergeModalOpen(false);
   };
@@ -527,15 +612,51 @@ export default function AdminTimetablePage() {
       {/* Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Timetable Management</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm">
-            Generate and manage weekly schedules with real-time overlap collision warnings.
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Timetable Management</h1>
+            <Badge variant="outline" className="text-xs font-semibold tracking-wider uppercase">
+              Generate &bull; Review &bull; Adjust &bull; Publish
+            </Badge>
+          </div>
+          <p className="text-muted-foreground mt-0.5 text-xs sm:text-sm">
+            Automated conflict-free scheduling engine with interactive live inspector and
+            drag-and-drop manual adjustments.
           </p>
         </div>
-        <TimetableConflictBadge conflictsCount={combinedConflicts.length} />
+
+        <div className="flex items-center gap-2">
+          {unsavedMoves.length > 0 && (
+            <div className="flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-200">
+              <span className="font-semibold">
+                {unsavedMoves.length} Unsaved Move{unsavedMoves.length !== 1 ? 's' : ''}
+              </span>
+              <Button
+                size="sm"
+                variant="default"
+                onClick={handleSaveChanges}
+                disabled={isSavingChanges}
+                className="h-7 gap-1 text-xs"
+              >
+                <Save className="h-3 w-3" />
+                {isSavingChanges ? 'Saving...' : 'Save Changes'}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleDiscardChanges}
+                disabled={isSavingChanges}
+                className="text-muted-foreground hover:text-foreground h-7 px-1.5 text-xs"
+                title="Discard unsaved changes"
+              >
+                <Undo2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          )}
+          <TimetableConflictBadge conflictsCount={combinedConflicts.length} />
+        </div>
       </div>
 
-      {/* Toolbar with Program & Term Filter Controls */}
+      {/* Toolbar with Curriculum, Program, Term, Section Selection & Actions */}
       <TimetableToolbar
         curriculumId={curriculumId}
         setCurriculumId={setCurriculumId}
@@ -547,17 +668,28 @@ export default function AdminTimetablePage() {
         setSectionId={setSectionId}
         dayOfWeek={dayOfWeek}
         setDayOfWeek={setDayOfWeek}
-        onGenerate={() => setSessionSettingsOpen(true)}
+        onGenerate={() => setGenerationModalOpen(true)}
         isGenerating={isGenerating}
         onImport={() => setImportModalOpen(true)}
         onExport={handleExport}
-        onPublish={handlePublish}
+        onPublish={() => setPublishModalOpen(true)}
         isPublishing={isPublishing}
         status={timetableStatus}
       />
 
-      {/* Heatmap Overview when "All Programs" is selected (programId === '') */}
-      {!programId && (
+      {/* Generation Running Progress & Post-Generation Result Summary */}
+      <TimetableGenerationProgressBanner
+        isGenerating={isGenerating}
+        totalSections={
+          pendingGenerationConfig?.sectionIds.length || sections.length || allSections.length || 1
+        }
+        sectionNames={sections.map((s) => s.name)}
+        summary={generationSummary}
+        onDismissSummary={() => setGenerationSummary(null)}
+      />
+
+      {/* Overview Heatmap when "All Programs" is active */}
+      {!programId && !sectionId && (
         <TimetableOverviewHeatmap
           programs={programs}
           sections={allSections}
@@ -570,7 +702,7 @@ export default function AdminTimetablePage() {
         />
       )}
 
-      {/* Section, Courses & Faculty Database Details Card (above timetable grid) */}
+      {/* Section, Courses & Faculty Assignments Summary Card */}
       {(programId || sectionId) && (
         <TimetableProgramSectionsSummary
           programName={selectedProgram?.name}
@@ -584,10 +716,59 @@ export default function AdminTimetablePage() {
         />
       )}
 
-      {/* Overlapping Conflict Alert Banner */}
-      {combinedConflicts.length > 0 && <ConflictAlert conflicts={combinedConflicts} />}
+      {/* Section Timetable Grid & Side-by-side Conflict Reference Panel */}
+      {programId || sectionId ? (
+        termId ? (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
+            {/* Left Area: Visual Weekly Timetable Grid */}
+            <div className="min-w-0 space-y-4">
+              <TimetableGrid
+                termId={termId}
+                sectionId={sectionId}
+                selectedIds={selectedIds}
+                onToggleSelect={handleToggleSelect}
+                onEntryClick={handleEntryClick}
+                onEmptySlotClick={handleEmptySlotClick}
+                entries={entries}
+                isPending={isTimetablePending}
+                status={timetableStatus}
+                onMoveEntry={handleMoveEntry}
+                onSwapEntries={handleSwap}
+                onSelectEntryForInspector={(entry) => setInspectorEntry(entry)}
+              />
 
-      {/* Session Planning & Instructional Hours (when section is selected) */}
+              {/* Bulk Actions */}
+              <TimetableBulkActions
+                selectedIds={selectedIds}
+                onClear={clearSelection}
+                onDelete={() => console.log('Bulk delete', selectedIds)}
+                onMove={() => console.log('Bulk move', selectedIds)}
+                onReassign={() => console.log('Bulk reassign', selectedIds)}
+                onMerge={() => setMergeModalOpen(true)}
+              />
+            </div>
+
+            {/* Right Area: Lightweight Context & Conflict Reference Panel */}
+            <div className="min-w-0">
+              <div className="sticky top-6">
+                <TimetableContextConflictPanel
+                  selectedEntry={inspectorEntry}
+                  onClearSelection={() => setInspectorEntry(null)}
+                  allEntries={rawEntries}
+                  allConflicts={combinedConflicts}
+                  onSelectEntry={(entry) => setInspectorEntry(entry)}
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
+            Please select an academic term above to view and manage the weekly timetable.
+          </div>
+        )
+      ) : null}
+
+      {/* Section Planning & Instructional Hours (when specific section is selected) */}
       {sectionId && termId && (
         <SessionPlanningCard
           sectionId={sectionId}
@@ -599,41 +780,59 @@ export default function AdminTimetablePage() {
         />
       )}
 
-      {/* Timetable Grid & Bulk Actions (shown when viewing a specific Section or Program) */}
-      {programId || sectionId ? (
-        termId ? (
-          <>
-            <TimetableGrid
-              termId={termId}
-              sectionId={sectionId}
-              selectedIds={selectedIds}
-              onToggleSelect={handleToggleSelect}
-              onEntryClick={handleEntryClick}
-              onEmptySlotClick={handleEmptySlotClick}
-              entries={entries}
-              isPending={isTimetablePending}
-              status={timetableStatus}
-              onSwapEntries={handleSwap}
-            />
+      {/* Timetable Generation Modal */}
+      <TimetableGenerationModal
+        open={generationModalOpen}
+        onOpenChange={setGenerationModalOpen}
+        academicYearName={selectedAcademicYear?.name}
+        termName={selectedTerm?.name}
+        termId={termId}
+        programs={programs}
+        allSections={allSections}
+        scopedSections={sections}
+        selectedProgramId={programId}
+        selectedSectionId={sectionId}
+        courses={courses}
+        existingSessionCount={rawEntries.length}
+        onConfirm={handleRequestGeneration}
+      />
 
-            {/* Bulk Actions */}
-            <TimetableBulkActions
-              selectedIds={selectedIds}
-              onClear={clearSelection}
-              onDelete={() => console.log('Bulk delete', selectedIds)}
-              onMove={() => console.log('Bulk move', selectedIds)}
-              onReassign={() => console.log('Bulk reassign', selectedIds)}
-              onMerge={() => setMergeModalOpen(true)}
-            />
-          </>
-        ) : (
-          <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
-            Please select a term above to view and manage the weekly timetable.
-          </div>
-        )
-      ) : null}
+      {/* Overwrite Confirmation Dialog with Exact Scope */}
+      <TimetableOverwriteWarningDialog
+        open={overwriteWarningOpen}
+        onOpenChange={setOverwriteWarningOpen}
+        academicYearName={selectedAcademicYear?.name}
+        termName={selectedTerm?.name}
+        affectedSectionsCount={pendingGenerationConfig?.sectionIds.length || sections.length || 0}
+        affectedSessionsCount={
+          pendingGenerationConfig
+            ? rawEntries.filter((e: any) =>
+                pendingGenerationConfig.sectionIds.includes(e.sectionId),
+              ).length
+            : rawEntries.length
+        }
+        onConfirm={() => {
+          if (pendingGenerationConfig) {
+            executeGeneration(pendingGenerationConfig);
+          }
+        }}
+        isGenerating={isGenerating}
+      />
 
-      {/* Merge Two Slots into Extended Session Modal */}
+      {/* Publishing Modal */}
+      <TimetablePublishModal
+        open={publishModalOpen}
+        onOpenChange={setPublishModalOpen}
+        academicYearName={selectedAcademicYear?.name}
+        termName={selectedTerm?.name}
+        sectionsCount={sections.length || allSections.length}
+        totalSessions={entries.length}
+        conflicts={combinedConflicts}
+        onConfirmPublish={handleConfirmPublish}
+        isPublishing={isPublishing}
+      />
+
+      {/* Merge Two Slots Modal */}
       <TimetableMergeModal
         open={mergeModalOpen}
         onOpenChange={setMergeModalOpen}
@@ -642,7 +841,7 @@ export default function AdminTimetablePage() {
         isSubmitting={isUpdating || isDeleting}
       />
 
-      {/* Entry Create / Edit Modal with Real-time Collision Detection */}
+      {/* Slot Create / Edit Modal */}
       <TimetableEntryForm
         open={formOpen}
         onOpenChange={(open) => {
@@ -661,14 +860,6 @@ export default function AdminTimetablePage() {
         isOpen={importModalOpen}
         onClose={() => setImportModalOpen(false)}
         onImport={handleImport}
-      />
-
-      {/* Session Settings & Generation Modal */}
-      <TimetableSessionSettings
-        open={sessionSettingsOpen}
-        onOpenChange={setSessionSettingsOpen}
-        onConfirm={handleGenerate}
-        courses={courses}
       />
     </div>
   );

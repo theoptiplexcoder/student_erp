@@ -15,6 +15,14 @@ function formatTime(timeString: string | Date) {
   return `${h}:${m}`;
 }
 
+function getFacultyName(entry: any) {
+  if (entry.faculty?.user) {
+    const { firstName, lastName } = entry.faculty.user;
+    return `${firstName || ''} ${lastName || ''}`.trim() || entry.faculty.teacherCode || 'Faculty';
+  }
+  return entry.facultyName || 'TBA';
+}
+
 function getRoomLabel(entry: any) {
   if (entry.room?.name) return entry.room.name;
   if (entry.room?.number) return `Room ${entry.room.number}`;
@@ -77,9 +85,7 @@ export function TimetableGrid() {
         name: entry.course.name,
         code: entry.course.code,
         credits: entry.course.credits,
-        faculty: entry.faculty
-          ? `${entry.faculty.user?.firstName} ${entry.faculty.user?.lastName}`
-          : 'TBA',
+        faculty: getFacultyName(entry),
       });
     }
   });
@@ -160,9 +166,7 @@ export function TimetableGrid() {
                                     <div className="mt-2 space-y-1">
                                       <div className="flex items-center gap-1 text-[10px] opacity-90">
                                         <User className="h-3 w-3" />
-                                        <span className="truncate">
-                                          {entry.faculty?.user?.lastName || 'TBA'}
-                                        </span>
+                                        <span className="truncate">{getFacultyName(entry)}</span>
                                       </div>
                                       {getRoomLabel(entry) && (
                                         <div className="flex items-center gap-1 text-[10px] opacity-90">
@@ -229,7 +233,7 @@ export function TimetableGrid() {
                               <div className="mt-2 flex items-end justify-between text-xs opacity-90">
                                 <div className="flex items-center gap-1">
                                   <User className="h-3.5 w-3.5" />
-                                  <span>{entry.faculty?.user?.lastName || 'TBA'}</span>
+                                  <span>{getFacultyName(entry)}</span>
                                 </div>
                                 {getRoomLabel(entry) && (
                                   <div className="flex items-center gap-1">
