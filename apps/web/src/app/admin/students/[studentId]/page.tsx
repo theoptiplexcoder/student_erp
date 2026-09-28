@@ -124,8 +124,8 @@ export default function StudentDetailPage() {
 
   const handleOpenChangeProgram = () => {
     if (!student) return;
-    setSelectedProgramId(student.program?.id || student.programId || '');
-    setSelectedSectionId(student.section?.id || student.sectionId || '');
+    setSelectedProgramId(student.program?.id || '');
+    setSelectedSectionId(student.section?.id || '');
     setSelectedBatchId('');
     setIsChangeProgramOpen(true);
   };
