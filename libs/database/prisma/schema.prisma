@@ -209,6 +209,8 @@ enum NotificationType {
   DOCUMENT
   FEEDBACK
   SYSTEM
+  FEE
+  GRIEVANCE
 }
 
 enum CertificateType {

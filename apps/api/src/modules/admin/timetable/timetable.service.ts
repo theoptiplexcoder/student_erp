@@ -1,6 +1,12 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { Prisma, RoomType } from '@prisma/client';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   CreateTimetableEntryDto,
   UpdateTimetableEntryDto,
@@ -12,7 +18,10 @@ import {
 
 @Injectable()
 export class TimetableService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   private parseTime(time: string): Date {
     const [hours, minutes] = time.split(':').map(Number);
@@ -422,9 +431,21 @@ export class TimetableService {
       include: { course: true, section: true },
     });
 
+    if (assignments.length === 0) {
+      throw new BadRequestException(
+        'No course assignments found for the selected sections in this term. Please assign courses and faculty to the sections first.',
+      );
+    }
+
     const rooms = await this.prisma.room.findMany({
       where: { institutionId },
     });
+
+    if (rooms.length === 0) {
+      throw new BadRequestException(
+        'No rooms found in the system. Please add rooms before generating the timetable.',
+      );
+    }
 
     // Delete existing entries for the target sections in this term before generating to prevent double counting
     await this.prisma.timetableEntry.deleteMany({
@@ -749,6 +770,14 @@ export class TimetableService {
       where: { id: timetable.id },
       include: { entries: true },
     });
+
+    if (conflicts.length > 0) {
+      this.eventEmitter.emit('timetable.conflict_detected', {
+        institutionId,
+        termId: dto.termId,
+        count: conflicts.length,
+      });
+    }
 
     return {
       timetable: timetableResult,

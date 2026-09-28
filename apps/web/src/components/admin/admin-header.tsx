@@ -7,6 +7,7 @@ import { LogoutButton } from '../shared/logout-button';
 import { Breadcrumbs } from '../shared/breadcrumbs';
 import { ThemeToggle } from '../theme-toggle';
 import { useCurrentUser } from '@/hooks/use-current-user';
+import { AdminNotificationBell } from '../layout/admin-notification-bell';
 
 export function AdminHeader() {
   const { data } = useCurrentUser();
@@ -48,15 +49,7 @@ export function AdminHeader() {
           <HelpCircle className="h-4 w-4" />
         </Button>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-foreground hover:bg-muted/70 relative h-8 w-8"
-          title="Notifications"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="bg-primary ring-background absolute top-1.5 right-1.5 h-2 w-2 rounded-full ring-2"></span>
-        </Button>
+        <AdminNotificationBell />
 
         <div className="border-border/70 bg-border mx-1 hidden h-4 w-[1px] sm:block" />
 

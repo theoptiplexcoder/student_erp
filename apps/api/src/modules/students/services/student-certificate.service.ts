@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class StudentCertificateService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async getCertificates(userId: string, institutionId: string) {
     const student = await this.prisma.student.findFirst({
@@ -24,11 +28,12 @@ export class StudentCertificateService {
   async createCertificateRequest(userId: string, institutionId: string, data: any) {
     const student = await this.prisma.student.findFirst({
       where: { userId, institutionId },
+      include: { user: true },
     });
 
     if (!student) throw new NotFoundException('Student not found');
 
-    return this.prisma.certificateRequest.create({
+    const request = await this.prisma.certificateRequest.create({
       data: {
         institutionId,
         studentId: student.id,
@@ -37,5 +42,14 @@ export class StudentCertificateService {
         supportingDocs: data.supportingDocs,
       },
     });
+
+    this.eventEmitter.emit('certificate.request_created', {
+      institutionId,
+      requestId: request.id,
+      type: request.certificateType,
+      studentName: `${student.user.firstName} ${student.user.lastName}`,
+    });
+
+    return request;
   }
 }

@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class StudentGrievanceService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async getGrievances(userId: string, institutionId: string) {
     const student = await this.prisma.student.findFirst({
@@ -24,11 +28,12 @@ export class StudentGrievanceService {
   async createGrievance(userId: string, institutionId: string, data: any) {
     const student = await this.prisma.student.findFirst({
       where: { userId, institutionId },
+      include: { user: true },
     });
 
     if (!student) throw new NotFoundException('Student not found');
 
-    return this.prisma.grievance.create({
+    const grievance = await this.prisma.grievance.create({
       data: {
         institutionId,
         studentId: student.id,
@@ -40,5 +45,16 @@ export class StudentGrievanceService {
         isAnonymous: !!data.isAnonymous,
       },
     });
+
+    this.eventEmitter.emit('grievance.created', {
+      institutionId,
+      grievanceId: grievance.id,
+      category: grievance.category,
+      studentName: data.isAnonymous
+        ? 'An anonymous student'
+        : `${student.user.firstName} ${student.user.lastName}`,
+    });
+
+    return grievance;
   }
 }
