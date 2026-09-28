@@ -16,6 +16,8 @@ export interface GenerationResultSummary {
   sessionsGenerated: number;
   conflictsFound: number;
   sectionsRequiringAdjustment: number;
+  firstGeneratedSectionId?: string;
+  firstGeneratedProgramId?: string;
   details?: {
     facultyConflicts?: number;
     roomConflicts?: number;
@@ -30,7 +32,7 @@ interface TimetableGenerationProgressBannerProps {
   sectionNames?: string[];
   summary: GenerationResultSummary | null;
   onDismissSummary?: () => void;
-  onViewSection?: (sectionId?: string) => void;
+  onViewGenerated?: (sectionId?: string, programId?: string) => void;
 }
 
 export function TimetableGenerationProgressBanner({
@@ -39,6 +41,7 @@ export function TimetableGenerationProgressBanner({
   sectionNames = [],
   summary,
   onDismissSummary,
+  onViewGenerated,
 }: TimetableGenerationProgressBannerProps) {
   const [completedCount, setCompletedCount] = useState(0);
   const [currentSection, setCurrentSection] = useState('');
@@ -170,15 +173,31 @@ export function TimetableGenerationProgressBanner({
               </div>
             </div>
 
-            {onDismissSummary && (
-              <button
-                type="button"
-                onClick={onDismissSummary}
-                className="text-muted-foreground self-end text-xs hover:underline sm:self-center"
-              >
-                Dismiss
-              </button>
-            )}
+            <div className="flex items-center gap-2 self-end sm:self-center">
+              {onViewGenerated && summary.sessionsGenerated > 0 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    onViewGenerated(
+                      summary.firstGeneratedSectionId,
+                      summary.firstGeneratedProgramId,
+                    )
+                  }
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 rounded px-3 py-1.5 text-xs font-semibold shadow-xs transition-colors"
+                >
+                  View Weekly Grid
+                </button>
+              )}
+              {onDismissSummary && (
+                <button
+                  type="button"
+                  onClick={onDismissSummary}
+                  className="text-muted-foreground px-2 py-1 text-xs hover:underline"
+                >
+                  Dismiss
+                </button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>

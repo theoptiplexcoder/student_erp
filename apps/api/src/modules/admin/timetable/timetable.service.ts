@@ -438,12 +438,19 @@ export class TimetableService {
     }
 
     const rooms = await this.prisma.room.findMany({
-      where: { institutionId },
+      where: {
+        institutionId,
+        ...(dto.selectedRoomIds && dto.selectedRoomIds.length > 0
+          ? { id: { in: dto.selectedRoomIds } }
+          : {}),
+      },
     });
 
     if (rooms.length === 0) {
       throw new BadRequestException(
-        'No rooms found in the system. Please add rooms before generating the timetable.',
+        dto.selectedRoomIds && dto.selectedRoomIds.length > 0
+          ? 'None of the selected rooms were found. Please select available rooms before generating the timetable.'
+          : 'No rooms found in the system. Please add rooms before generating the timetable.',
       );
     }
 

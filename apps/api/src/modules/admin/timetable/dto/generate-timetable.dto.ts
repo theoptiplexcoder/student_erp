@@ -53,4 +53,8 @@ export class GenerateTimetableDto {
 
   @IsOptional()
   breakPeriods?: { start: string; end: string }[];
+
+  @IsOptional()
+  @IsUUID(undefined, { each: true })
+  selectedRoomIds?: string[];
 }

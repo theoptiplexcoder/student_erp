@@ -316,6 +316,9 @@ export default function AdminTimetablePage() {
         workingHours: config.workingHours,
         breakPeriods: config.breakPeriods,
         defaultSessionDuration: config.defaultSessionDuration,
+        ...(config.selectedRoomIds && config.selectedRoomIds.length > 0
+          ? { selectedRoomIds: config.selectedRoomIds }
+          : {}),
         ...(config.sessionDurations && Object.keys(config.sessionDurations).length > 0
           ? { sessionDurations: config.sessionDurations }
           : {}),
@@ -338,18 +341,41 @@ export default function AdminTimetablePage() {
             if (c.sectionId) conflictSectionIds.add(c.sectionId);
           }
 
+          // Determine target section and program to auto-focus onto
+          const targetSectionId = config.sectionIds[0];
+          const matchedSection = allSections.find((s: any) => s.id === targetSectionId);
+          const targetProgId =
+            (matchedSection as any)?.programId ||
+            (matchedSection as any)?.program?.id ||
+            programId ||
+            '';
+
           setGenerationSummary({
             sectionsProcessed: newSummary?.sectionsProcessed || config.sectionIds.length,
             sessionsGenerated: totalSessions,
             conflictsFound: newConflicts.length,
             sectionsRequiringAdjustment: conflictSectionIds.size,
+            firstGeneratedSectionId: targetSectionId,
+            firstGeneratedProgramId: targetProgId,
           });
+
+          // Automatically focus on the generated section/program so weekly grid renders immediately
+          if (targetProgId && !programId) {
+            setProgramId(targetProgId);
+          }
+          if (targetSectionId && !sectionId) {
+            setSectionId(targetSectionId);
+          }
 
           // Clear unsaved moves on fresh generation
           setUnsavedMoves([]);
         },
         onError: (err: any) => {
-          alert('Failed to generate timetable: ' + err.message);
+          const backendMsg = err.response?.data?.message;
+          const msg = Array.isArray(backendMsg)
+            ? backendMsg.join(', ')
+            : backendMsg || err.message || 'Unknown error';
+          alert('Failed to generate timetable: ' + msg);
         },
       },
     );
@@ -686,6 +712,10 @@ export default function AdminTimetablePage() {
         sectionNames={sections.map((s) => s.name)}
         summary={generationSummary}
         onDismissSummary={() => setGenerationSummary(null)}
+        onViewGenerated={(targetSecId, targetProgId) => {
+          if (targetProgId) setProgramId(targetProgId);
+          if (targetSecId) setSectionId(targetSecId);
+        }}
       />
 
       {/* Overview Heatmap when "All Programs" is active */}
