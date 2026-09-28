@@ -7,8 +7,7 @@
     "moduleResolution": "Node",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@student-erp/timetable-engine": ["../../packages/timetable-engine/dist/index.d.ts"]
+      "@/*": ["./src/*"]
     },
     "types": ["node", "jest"],
     "ignoreDeprecations": "6.0"

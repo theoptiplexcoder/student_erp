@@ -616,28 +616,42 @@ export class TimetableService {
       }
     }
 
+    // Allow room capacity fallback if room has no capacity set or capacity is matched
     const requirements = Array.from(sectionCourseMap.values()).flatMap((courses) =>
       Array.from(courses.values())
         .filter((item) => item.credits > 0 && item.facultyIds.length > 0)
-        .map((item) => ({
-          id: `${item.sectionId}:${item.courseId}`,
-          sectionId: item.sectionId,
-          courseId: item.courseId,
-          facultyIds: [item.facultyIds[0]],
-          roomType: item.course.isPractical ? RoomType.LAB : undefined,
-          roomIds: rooms
-            .filter(
-              (room) =>
-                (room.capacity ?? 0) >= item.section.capacity &&
-                (item.course.isPractical
-                  ? room.roomType === RoomType.LAB
-                  : room.roomType !== RoomType.LAB && room.roomType !== RoomType.OFFICE),
-            )
-            .map((room) => room.id),
-          durationMinutes:
-            dto.sessionDurations?.[item.courseId] || dto.defaultSessionDuration || 50,
-          occurrences: item.credits,
-        })),
+        .map((item) => {
+          const matchingRooms = rooms.filter(
+            (room) =>
+              (!room.capacity ||
+                !item.section.capacity ||
+                room.capacity >= item.section.capacity) &&
+              (item.course.isPractical
+                ? room.roomType === RoomType.LAB
+                : room.roomType !== RoomType.LAB && room.roomType !== RoomType.OFFICE),
+          );
+          // Fallback to any suitable typed room if strict capacity filters out all rooms
+          const allowedRooms =
+            matchingRooms.length > 0
+              ? matchingRooms
+              : rooms.filter((room) =>
+                  item.course.isPractical
+                    ? room.roomType === RoomType.LAB
+                    : room.roomType !== RoomType.LAB && room.roomType !== RoomType.OFFICE,
+                );
+
+          return {
+            id: `${item.sectionId}:${item.courseId}`,
+            sectionId: item.sectionId,
+            courseId: item.courseId,
+            facultyIds: [item.facultyIds[0]],
+            roomType: item.course.isPractical ? RoomType.LAB : undefined,
+            roomIds: allowedRooms.map((room) => room.id),
+            durationMinutes:
+              dto.sessionDurations?.[item.courseId] || dto.defaultSessionDuration || 50,
+            occurrences: item.credits,
+          };
+        }),
     );
     const engineInput: SolverInput = {
       engineVersion: '1.0.0',
@@ -655,10 +669,18 @@ export class TimetableService {
         startMinute: entry.startTime.getUTCHours() * 60 + entry.startTime.getUTCMinutes(),
         endMinute: entry.endTime.getUTCHours() * 60 + entry.endTime.getUTCMinutes(),
       })),
-      roomCapacities: Object.fromEntries(rooms.map((room) => [room.id, room.capacity ?? 0])),
+      roomCapacities: Object.fromEntries(
+        rooms.map((room) => [
+          room.id,
+          room.capacity !== null && room.capacity !== undefined ? room.capacity : Infinity,
+        ]),
+      ),
       sectionCapacities: Object.fromEntries(
         Array.from(sectionCourseMap.values()).flatMap((courses) =>
-          Array.from(courses.values()).map((item) => [item.sectionId, item.section.capacity ?? 0]),
+          Array.from(courses.values()).map((item) => [
+            item.sectionId,
+            item.section.capacity ?? undefined,
+          ]),
         ),
       ),
       availabilityRestricted: Array.from(
@@ -761,43 +783,46 @@ export class TimetableService {
       }
     }
 
-    const timetableResult = await this.prisma.$transaction(async (tx) => {
-      const currentPublished = await tx.timetable.findFirst({
-        where: { institutionId, termId: dto.termId, status: 'PUBLISHED' },
-      });
-      if (currentPublished)
-        throw new ConflictException('A published timetable cannot be overwritten.');
-      const draft = await tx.timetable.create({
-        data: {
-          institutionId,
-          academicYearId: term.academicYearId,
-          termId: dto.termId,
-          name,
-          status: 'DRAFT',
-        },
-      });
-      const oldDrafts = await tx.timetable.findMany({
-        where: { institutionId, termId: dto.termId, status: 'DRAFT', id: { not: draft.id } },
-        select: { id: true },
-      });
-      await tx.timetableEntry.deleteMany({
-        where: {
-          institutionId,
-          termId: dto.termId,
-          sectionId: { in: dto.sectionIds },
-          OR: [{ timetableId: null }, { timetable: { status: 'DRAFT' } }],
-        },
-      });
-      if (generatedEntries.length > 0) {
-        await tx.timetableEntry.createMany({
-          data: generatedEntries.map((entry) => ({ ...entry, timetableId: draft.id })),
+    const timetableResult = await this.prisma.$transaction(
+      async (tx) => {
+        const currentPublished = await tx.timetable.findFirst({
+          where: { institutionId, termId: dto.termId, status: 'PUBLISHED' },
         });
-      }
-      for (const old of oldDrafts) {
-        await tx.timetable.update({ where: { id: old.id }, data: { status: 'ARCHIVED' } });
-      }
-      return tx.timetable.findUnique({ where: { id: draft.id }, include: { entries: true } });
-    });
+        if (currentPublished)
+          throw new ConflictException('A published timetable cannot be overwritten.');
+        const draft = await tx.timetable.create({
+          data: {
+            institutionId,
+            academicYearId: term.academicYearId,
+            termId: dto.termId,
+            name,
+            status: 'DRAFT',
+          },
+        });
+        const oldDrafts = await tx.timetable.findMany({
+          where: { institutionId, termId: dto.termId, status: 'DRAFT', id: { not: draft.id } },
+          select: { id: true },
+        });
+        await tx.timetableEntry.deleteMany({
+          where: {
+            institutionId,
+            termId: dto.termId,
+            sectionId: { in: dto.sectionIds },
+            OR: [{ timetableId: null }, { timetable: { status: 'DRAFT' } }],
+          },
+        });
+        if (generatedEntries.length > 0) {
+          await tx.timetableEntry.createMany({
+            data: generatedEntries.map((entry) => ({ ...entry, timetableId: draft.id })),
+          });
+        }
+        for (const old of oldDrafts) {
+          await tx.timetable.update({ where: { id: old.id }, data: { status: 'ARCHIVED' } });
+        }
+        return tx.timetable.findUnique({ where: { id: draft.id }, include: { entries: true } });
+      },
+      { timeout: 30000, maxWait: 10000 },
+    );
 
     if (conflicts.length > 0) {
       this.eventEmitter.emit('timetable.conflict_detected', {

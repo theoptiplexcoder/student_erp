@@ -34,7 +34,8 @@
       "@student-erp/sdk/*": ["packages/sdk/src/*"],
       "@student-erp/types": ["packages/types/src/index.ts"],
       "@student-erp/ui": ["packages/ui/src/index.ts"],
-      "@student-erp/utils": ["packages/utils/src/index.ts"]
+      "@student-erp/utils": ["packages/utils/src/index.ts"],
+      "@student-erp/timetable-engine": ["packages/timetable-engine/src/index.ts"]
     },
     "noUncheckedSideEffectImports": false,
     "types": ["*"],
