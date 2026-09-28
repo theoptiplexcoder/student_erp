@@ -386,40 +386,25 @@ export class TimetableService {
     const term = await this.prisma.academicTerm.findUnique({ where: { id: dto.termId } });
     if (!term) throw new NotFoundException('Term not found');
 
-    // Archive existing timetable for this term (keep only 1 previous version)
+    // Build and validate the candidate schedule before changing any persisted timetable.
     const existingTimetable = await this.prisma.timetable.findFirst({
-      where: { institutionId, termId: dto.termId, status: { in: ['DRAFT', 'PUBLISHED'] } },
+      where: { institutionId, termId: dto.termId, status: 'PUBLISHED' },
     });
     if (existingTimetable) {
-      await this.prisma.timetable.update({
-        where: { id: existingTimetable.id },
-        data: { status: 'ARCHIVED' },
-      });
-      // Delete older archived timetables for this term (keep only 1 previous)
-      const olderArchived = await this.prisma.timetable.findMany({
-        where: {
-          institutionId,
-          termId: dto.termId,
-          status: 'ARCHIVED',
-          id: { not: existingTimetable.id },
-        },
-      });
-      for (const old of olderArchived) {
-        await this.prisma.timetableEntry.deleteMany({ where: { timetableId: old.id } });
-        await this.prisma.timetable.delete({ where: { id: old.id } });
-      }
+      throw new ConflictException(
+        'A published timetable cannot be overwritten. Archive it explicitly before generating a replacement.',
+      );
     }
 
     const name = dto.name || `Generated Timetable - ${new Date().toISOString()}`;
-    const timetable = await this.prisma.timetable.create({
-      data: {
-        institutionId,
-        academicYearId: term.academicYearId,
-        termId: dto.termId,
-        name,
-        status: 'DRAFT',
-      },
-    });
+    const timetable = {
+      id: '',
+      institutionId,
+      academicYearId: term.academicYearId,
+      termId: dto.termId,
+      name,
+      status: 'DRAFT' as const,
+    };
 
     // Fetch all assignments grouped by section
     const assignments = await this.prisma.courseAssignment.findMany({
@@ -453,15 +438,6 @@ export class TimetableService {
           : 'No rooms found in the system. Please add rooms before generating the timetable.',
       );
     }
-
-    // Delete existing entries for the target sections in this term before generating to prevent double counting
-    await this.prisma.timetableEntry.deleteMany({
-      where: {
-        institutionId,
-        termId: dto.termId,
-        sectionId: { in: dto.sectionIds },
-      },
-    });
 
     const existingEntries = await this.prisma.timetableEntry.findMany({
       where: {
@@ -786,15 +762,66 @@ export class TimetableService {
       }
     }
 
-    if (generatedEntries.length > 0) {
-      await this.prisma.timetableEntry.createMany({
-        data: generatedEntries,
-      });
+    // Independent overlap verification before the atomic replace.
+    const validated = [...existingEntries, ...generatedEntries];
+    for (let i = 0; i < validated.length; i++) {
+      const a = validated[i];
+      for (let j = i + 1; j < validated.length; j++) {
+        const b = validated[j];
+        if (
+          a.dayOfWeek !== b.dayOfWeek ||
+          !overlaps(a.startTime, a.endTime, b.startTime, b.endTime)
+        )
+          continue;
+        if (
+          a.facultyId === b.facultyId ||
+          a.sectionId === b.sectionId ||
+          (a.roomId && a.roomId === b.roomId)
+        ) {
+          throw new ConflictException(
+            'Generated timetable failed independent hard-conflict validation; nothing was persisted.',
+          );
+        }
+      }
     }
 
-    const timetableResult = await this.prisma.timetable.findUnique({
-      where: { id: timetable.id },
-      include: { entries: true },
+    const timetableResult = await this.prisma.$transaction(async (tx) => {
+      const currentPublished = await tx.timetable.findFirst({
+        where: { institutionId, termId: dto.termId, status: 'PUBLISHED' },
+      });
+      if (currentPublished)
+        throw new ConflictException('A published timetable cannot be overwritten.');
+      const draft = await tx.timetable.create({
+        data: {
+          institutionId,
+          academicYearId: term.academicYearId,
+          termId: dto.termId,
+          name,
+          status: 'DRAFT',
+        },
+      });
+      const oldDrafts = await tx.timetable.findMany({
+        where: { institutionId, termId: dto.termId, status: 'DRAFT' },
+        select: { id: true },
+      });
+      await tx.timetableEntry.deleteMany({
+        where: {
+          institutionId,
+          termId: dto.termId,
+          sectionId: { in: dto.sectionIds },
+          OR: [{ timetableId: null }, { timetable: { status: 'DRAFT' } }],
+        },
+      });
+      if (generatedEntries.length > 0) {
+        await tx.timetableEntry.createMany({
+          data: generatedEntries.map((entry) => ({ ...entry, timetableId: draft.id })),
+        });
+      }
+      for (const old of oldDrafts) {
+        if (old.id !== draft.id)
+          await tx.timetable.update({ where: { id: old.id }, data: { status: 'ARCHIVED' } });
+      }
+      return tx.timetable.findUnique({ where: { id: draft.id }, include: { entries: true } });
     });
 
     if (conflicts.length > 0) {
