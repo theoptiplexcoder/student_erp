@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { Prisma, RoomType } from '@prisma/client';
+import { validateSchedule, type SolverInput } from '@student-erp/timetable-engine';
+import { solveInWorker } from './generation/engine-worker';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   CreateTimetableEntryDto,
@@ -397,15 +399,6 @@ export class TimetableService {
     }
 
     const name = dto.name || `Generated Timetable - ${new Date().toISOString()}`;
-    const timetable = {
-      id: '',
-      institutionId,
-      academicYearId: term.academicYearId,
-      termId: dto.termId,
-      name,
-      status: 'DRAFT' as const,
-    };
-
     // Fetch all assignments grouped by section
     const assignments = await this.prisma.courseAssignment.findMany({
       where: {
@@ -473,7 +466,7 @@ export class TimetableService {
     });
 
     const getCreditsForAssignment = (assignment: any) => {
-      if (!assignment.section?.programId) return assignment.course?.creditValue ?? 3;
+      if (!assignment.section?.programId) return assignment.course?.creditValue ?? null;
       const targetSemester = assignment.section.semester ?? term.semester;
       // First try to match curriculum program AND matching semester sequence
       const matchedCC =
@@ -494,13 +487,30 @@ export class TimetableService {
               (p) => p.id === assignment.section.programId,
             ),
         );
-      return matchedCC?.creditValue ?? assignment.course?.creditValue ?? 3;
+      return matchedCC?.creditValue ?? assignment.course?.creditValue ?? null;
     };
 
     const days: import('@prisma/client').TimetableDay[] =
       dto.days && dto.days.length > 0
         ? dto.days
         : ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
+    const parseClockMinutes = (value: string) => {
+      const match = /^(?:([01]\d|2[0-3])):([0-5]\d)$/.exec(value);
+      if (!match) throw new BadRequestException(`Invalid time: ${value}; expected HH:mm`);
+      return Number(match[1]) * 60 + Number(match[2]);
+    };
+    const startOfDay = dto.workingHours ? parseClockMinutes(dto.workingHours.start) : 8 * 60;
+    const endOfDay = dto.workingHours ? parseClockMinutes(dto.workingHours.end) : 17 * 60;
+    const startAnchors = Array.from(
+      { length: Math.floor((endOfDay - startOfDay) / 30) + 1 },
+      (_, index) => startOfDay + index * 30,
+    );
+    if (endOfDay <= startOfDay)
+      throw new BadRequestException('Working-hours end must be after start.');
+    for (const bp of dto.breakPeriods ?? []) {
+      if (parseClockMinutes(bp.end) <= parseClockMinutes(bp.start))
+        throw new BadRequestException('Break-period end must be after start.');
+    }
     const generatedEntries: Prisma.TimetableEntryCreateManyInput[] = [];
     const conflicts: Array<{
       type: string;
@@ -543,40 +553,7 @@ export class TimetableService {
       return true;
     };
 
-    // Check for conflicts with existing or generated entries
-    const checkConflict = (
-      day: string,
-      start: Date,
-      end: Date,
-      facultyId: string,
-      sectionId: string,
-      roomId: string | null,
-    ) => {
-      const allEntries: any[] = [...existingEntries, ...generatedEntries];
-      for (const entry of allEntries) {
-        if (entry.dayOfWeek !== day) continue;
-        if (overlaps(start, end, entry.startTime, entry.endTime)) {
-          if (entry.facultyId === facultyId)
-            return {
-              type: 'FACULTY',
-              message: `Faculty conflict at ${day} ${this.formatTime(start)}-${this.formatTime(end)}`,
-            };
-          if (entry.sectionId === sectionId)
-            return {
-              type: 'SECTION',
-              message: `Section conflict at ${day} ${this.formatTime(start)}-${this.formatTime(end)}`,
-            };
-          if (roomId && entry.roomId === roomId)
-            return {
-              type: 'ROOM',
-              message: `Room conflict at ${day} ${this.formatTime(start)}-${this.formatTime(end)}`,
-            };
-        }
-      }
-      return null;
-    };
-
-    // Group assignments by section and course to ensure exact credit proportionality per section
+    // Resolve course-section teaching requirements before handing the plain-data problem to the engine.
     interface SectionCourseScheduleItem {
       courseId: string;
       course: any;
@@ -599,7 +576,10 @@ export class TimetableService {
           sectionId: assignment.sectionId,
           section: assignment.section,
           facultyIds: [assignment.facultyId],
-          credits: Math.max(1, Math.floor(getCreditsForAssignment(assignment))),
+          credits:
+            getCreditsForAssignment(assignment) === null
+              ? -1
+              : Math.ceil(getCreditsForAssignment(assignment) ?? 0),
         });
       } else {
         const item = courseMap.get(assignment.courseId)!;
@@ -614,156 +594,152 @@ export class TimetableService {
       }
     }
 
-    // Process each section
-    for (const [sectionId, courseMap] of sectionCourseMap) {
-      const sectionCoursesList = Array.from(courseMap.values());
-
-      // Sort by credits descending to place larger courses first
-      const sortedCourses = [...sectionCoursesList].sort((a, b) => b.credits - a.credits);
-
-      for (const courseItem of sortedCourses) {
-        const durationMinutes =
-          dto.sessionDurations?.[courseItem.courseId] || dto.defaultSessionDuration || 50;
-        const sessionsNeeded = courseItem.credits; // Exactly 1 session per credit in this section
-
-        let assigned = 0;
-
-        // Try to spread sessions across different days
-        for (const day of days) {
-          if (assigned >= sessionsNeeded) break;
-
-          const whStart = dto.workingHours ? parseInt(dto.workingHours.start.split(':')[0], 10) : 8;
-          const whEnd = dto.workingHours ? parseInt(dto.workingHours.end.split(':')[0], 10) : 17;
-          const half = Math.floor((whStart + whEnd) / 2);
-
-          const startHour = courseItem.course.isPractical ? Math.max(whStart, half) : whStart;
-          const endHour = whEnd;
-
-          for (let hour = startHour; hour < endHour; hour++) {
-            if (assigned >= sessionsNeeded) break;
-
-            const startTimeStr = `${hour.toString().padStart(2, '0')}:00`;
-            const endTimeMinutes = hour * 60 + durationMinutes;
-            const endHourCalc = Math.floor(endTimeMinutes / 60);
-            const endMinuteCalc = endTimeMinutes % 60;
-            const endTimeStr = `${endHourCalc.toString().padStart(2, '0')}:${endMinuteCalc.toString().padStart(2, '0')}`;
-
-            const start = this.parseTime(startTimeStr);
-            const end = this.parseTime(endTimeStr);
-
-            // Check if slot falls into configured break periods
-            if (dto.breakPeriods && dto.breakPeriods.length > 0) {
-              const inBreak = dto.breakPeriods.some((bp) => {
-                const bpStart = this.parseTime(bp.start);
-                const bpEnd = this.parseTime(bp.end);
-                return overlaps(start, end, bpStart, bpEnd);
-              });
-              if (inBreak) {
-                continue;
-              }
-            }
-
-            // Cycle through assigned faculty or pick first available
-            let availableFacultyId: string | null = null;
-            for (const fId of courseItem.facultyIds) {
-              if (isFacultyAvailable(fId, day, start, end)) {
-                // Check if faculty has conflict
-                const fConflict = checkConflict(day, start, end, fId, courseItem.sectionId, null);
-                if (!fConflict) {
-                  availableFacultyId = fId;
-                  break;
-                }
-              }
-            }
-
-            if (!availableFacultyId) {
-              continue;
-            }
-
-            // Check for section conflict
-            const sectionConflict = checkConflict(
-              day,
-              start,
-              end,
-              availableFacultyId,
-              courseItem.sectionId,
-              null,
-            );
-            if (sectionConflict) {
-              conflicts.push({
-                ...sectionConflict,
-                courseId: courseItem.courseId,
-                sectionId: courseItem.sectionId,
-                facultyId: availableFacultyId,
-              });
-              continue;
-            }
-
-            // Find a suitable room
-            let selectedRoomId: string | null = null;
-            for (const room of rooms) {
-              if (
-                room.capacity &&
-                courseItem.section.capacity &&
-                room.capacity < courseItem.section.capacity
-              )
-                continue;
-              if (room.roomType === RoomType.LAB && !courseItem.course.isPractical) continue;
-              if (
-                (room.roomType === RoomType.CLASSROOM || room.roomType === RoomType.LECTURE_HALL) &&
-                courseItem.course.isPractical
-              )
-                continue;
-
-              const roomConflict = checkConflict(
-                day,
-                start,
-                end,
-                availableFacultyId,
-                courseItem.sectionId,
-                room.id,
-              );
-              if (!roomConflict) {
-                selectedRoomId = room.id;
-                break;
-              }
-            }
-
-            if (selectedRoomId) {
-              const entryData = {
-                institutionId,
-                academicYearId: term.academicYearId,
-                termId: dto.termId,
-                courseId: courseItem.courseId,
-                facultyId: availableFacultyId,
-                sectionId: courseItem.sectionId,
-                dayOfWeek: day,
-                startTime: start,
-                endTime: end,
-                roomId: selectedRoomId,
-                timetableId: timetable.id,
-              };
-              generatedEntries.push(entryData);
-              assigned++;
-              break; // Move to next day after placing a session
-            }
-          }
-        }
-
-        if (assigned < sessionsNeeded) {
+    // Missing/zero credits are reported rather than silently inventing sessions.
+    for (const courseMap of sectionCourseMap.values()) {
+      for (const item of courseMap.values()) {
+        if (item.facultyIds.length === 0) {
           conflicts.push({
-            type: 'UNSCHEDULED',
-            message: `Could not schedule all ${sessionsNeeded} sessions for ${courseItem.course.name} (only ${assigned} placed)`,
-            courseId: courseItem.courseId,
-            sectionId: courseItem.sectionId,
-            facultyId: courseItem.facultyIds[0],
+            type: 'MISSING_ASSIGNMENT',
+            message: `No faculty assigned to ${item.course.name}.`,
+            courseId: item.courseId,
+            sectionId: item.sectionId,
+          });
+        }
+        if (item.credits < 0) {
+          conflicts.push({
+            type: 'MISSING_CREDITS',
+            message: `No usable credits for ${item.course.name}; no sessions generated.`,
+            courseId: item.courseId,
+            sectionId: item.sectionId,
           });
         }
       }
     }
 
+    const requirements = Array.from(sectionCourseMap.values()).flatMap((courses) =>
+      Array.from(courses.values())
+        .filter((item) => item.credits > 0 && item.facultyIds.length > 0)
+        .map((item) => ({
+          id: `${item.sectionId}:${item.courseId}`,
+          sectionId: item.sectionId,
+          courseId: item.courseId,
+          facultyIds: [item.facultyIds[0]],
+          roomType: item.course.isPractical ? RoomType.LAB : undefined,
+          roomIds: rooms
+            .filter(
+              (room) =>
+                (room.capacity ?? 0) >= item.section.capacity &&
+                (item.course.isPractical
+                  ? room.roomType === RoomType.LAB
+                  : room.roomType !== RoomType.LAB && room.roomType !== RoomType.OFFICE),
+            )
+            .map((room) => room.id),
+          durationMinutes:
+            dto.sessionDurations?.[item.courseId] || dto.defaultSessionDuration || 50,
+          occurrences: item.credits,
+        })),
+    );
+    const engineInput: SolverInput = {
+      engineVersion: '1.0.0',
+      days,
+      startMinute: startOfDay,
+      endMinute: endOfDay,
+      anchors: startAnchors,
+      seed: 1,
+      rooms: rooms.map((room) => ({ id: room.id, type: room.roomType })),
+      fixedPlacements: existingEntries.map((entry) => ({
+        sectionId: entry.sectionId,
+        facultyIds: entry.facultyId ? [entry.facultyId] : [],
+        roomId: entry.roomId ?? undefined,
+        day: entry.dayOfWeek,
+        startMinute: entry.startTime.getUTCHours() * 60 + entry.startTime.getUTCMinutes(),
+        endMinute: entry.endTime.getUTCHours() * 60 + entry.endTime.getUTCMinutes(),
+      })),
+      roomCapacities: Object.fromEntries(rooms.map((room) => [room.id, room.capacity ?? 0])),
+      sectionCapacities: Object.fromEntries(
+        Array.from(sectionCourseMap.values()).flatMap((courses) =>
+          Array.from(courses.values()).map((item) => [item.sectionId, item.section.capacity ?? 0]),
+        ),
+      ),
+      availabilityRestricted: Array.from(
+        new Map(
+          facultyAvailability
+            .filter((row) => row.isAvailable)
+            .map((row) => [
+              `${row.facultyId}:${row.dayOfWeek}`,
+              { resourceId: row.facultyId, day: row.dayOfWeek },
+            ]),
+        ).values(),
+      ),
+      availability: facultyAvailability
+        .filter((row) => row.isAvailable)
+        .map((row) => ({
+          resourceId: row.facultyId,
+          day: row.dayOfWeek,
+          startMinute: row.startTime.getUTCHours() * 60 + row.startTime.getUTCMinutes(),
+          endMinute: row.endTime.getUTCHours() * 60 + row.endTime.getUTCMinutes(),
+        })),
+      blackouts: facultyAvailability
+        .filter((row) => !row.isAvailable)
+        .map((row) => ({
+          resourceId: row.facultyId,
+          day: row.dayOfWeek,
+          startMinute: row.startTime.getUTCHours() * 60 + row.startTime.getUTCMinutes(),
+          endMinute: row.endTime.getUTCHours() * 60 + row.endTime.getUTCMinutes(),
+        })),
+      dayBreaks: (dto.breakPeriods ?? []).flatMap((bp) =>
+        days.map((day) => ({
+          day,
+          startMinute: parseClockMinutes(bp.start),
+          endMinute: parseClockMinutes(bp.end),
+        })),
+      ),
+      requirements,
+    };
+    const solved = await solveInWorker(engineInput, 1, 30_000);
+    const validationIssues = validateSchedule(engineInput, solved.placements);
+    if (validationIssues.length > 0)
+      throw new ConflictException(
+        `Engine validation failed: ${validationIssues.map((issue) => issue.reason).join(', ')}`,
+      );
+    const requirementById = new Map(
+      requirements.map((requirement) => [requirement.id, requirement]),
+    );
+    for (const placement of solved.placements) {
+      generatedEntries.push({
+        institutionId,
+        academicYearId: term.academicYearId,
+        termId: dto.termId,
+        courseId: placement.courseId,
+        facultyId: placement.facultyIds[0],
+        sectionId: placement.sectionId,
+        dayOfWeek: placement.day as import('@prisma/client').TimetableDay,
+        startTime: this.parseTime(
+          `${String(Math.floor(placement.startMinute / 60)).padStart(2, '0')}:${String(placement.startMinute % 60).padStart(2, '0')}`,
+        ),
+        endTime: this.parseTime(
+          `${String(Math.floor(placement.endMinute / 60)).padStart(2, '0')}:${String(placement.endMinute % 60).padStart(2, '0')}`,
+        ),
+        roomId: placement.roomId,
+      });
+    }
+    for (const issue of solved.issues ?? []) {
+      const requirement = requirementById.get(issue.requirementId ?? '');
+      conflicts.push({
+        type: issue.code,
+        message: issue.message,
+        courseId: requirement?.courseId,
+        sectionId: requirement?.sectionId,
+        facultyId: requirement?.facultyIds[0],
+      });
+    }
+
     // Independent overlap verification before the atomic replace.
-    const validated = [...existingEntries, ...generatedEntries];
+    const validated = [...existingEntries, ...generatedEntries].map((entry) => ({
+      ...entry,
+      startTime: entry.startTime instanceof Date ? entry.startTime : new Date(entry.startTime),
+      endTime: entry.endTime instanceof Date ? entry.endTime : new Date(entry.endTime),
+    }));
     for (let i = 0; i < validated.length; i++) {
       const a = validated[i];
       for (let j = i + 1; j < validated.length; j++) {
@@ -801,7 +777,7 @@ export class TimetableService {
         },
       });
       const oldDrafts = await tx.timetable.findMany({
-        where: { institutionId, termId: dto.termId, status: 'DRAFT' },
+        where: { institutionId, termId: dto.termId, status: 'DRAFT', id: { not: draft.id } },
         select: { id: true },
       });
       await tx.timetableEntry.deleteMany({
@@ -818,8 +794,7 @@ export class TimetableService {
         });
       }
       for (const old of oldDrafts) {
-        if (old.id !== draft.id)
-          await tx.timetable.update({ where: { id: old.id }, data: { status: 'ARCHIVED' } });
+        await tx.timetable.update({ where: { id: old.id }, data: { status: 'ARCHIVED' } });
       }
       return tx.timetable.findUnique({ where: { id: draft.id }, include: { entries: true } });
     });
@@ -871,10 +846,15 @@ export class TimetableService {
 
   async publish(institutionId: string, termId: string) {
     const timetable = await this.prisma.timetable.findFirst({
-      where: { institutionId, termId },
+      where: { institutionId, termId, status: 'DRAFT' },
       orderBy: { createdAt: 'desc' },
     });
     if (!timetable) throw new NotFoundException('Timetable not found for this term');
+
+    const conflicts = await this.listConflicts(institutionId, termId);
+    if (conflicts.length > 0) {
+      throw new ConflictException('Cannot publish a timetable with unresolved hard conflicts.');
+    }
 
     return this.prisma.timetable.update({
       where: { id: timetable.id },

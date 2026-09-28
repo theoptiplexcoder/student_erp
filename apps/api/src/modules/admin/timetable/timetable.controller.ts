@@ -54,7 +54,8 @@ export class TimetableController {
   @Post('validate')
   @HttpCode(HttpStatus.OK)
   async validate(@CurrentUser() user: any, @Body('termId') termId: string) {
-    throw new NotImplementedException('Validate is not implemented yet');
+    const conflicts = await this.timetableService.listConflicts(user.institutionId, termId);
+    return { valid: conflicts.length === 0, conflicts };
   }
 
   @Post('publish')
@@ -104,10 +105,7 @@ export class TimetableController {
 
   @Post('swap-slots')
   @HttpCode(HttpStatus.OK)
-  async swapSlots(
-    @CurrentUser() user: any,
-    @Body() data: SwapSlotsDto,
-  ) {
+  async swapSlots(@CurrentUser() user: any, @Body() data: SwapSlotsDto) {
     return this.timetableService.swapSlots(user.institutionId, data.entryIdA, data.entryIdB);
   }
 

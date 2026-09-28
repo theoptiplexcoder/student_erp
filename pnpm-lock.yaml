@@ -196,6 +196,9 @@ importers:
       '@prisma/client':
         specifier: ^6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@6.0.3))(typescript@6.0.3)
+      '@student-erp/timetable-engine':
+        specifier: workspace:*
+        version: link:../../packages/timetable-engine
       '@supabase/supabase-js':
         specifier: ^2.112.2
         version: 2.112.2
@@ -415,6 +418,15 @@ importers:
         specifier: ^1.7.0
         version: 1.19.0
     devDependencies:
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+
+  packages/timetable-engine:
+    devDependencies:
+      tsx:
+        specifier: ^4.7.1
+        version: 4.23.12
       typescript:
         specifier: ^5.5.0
         version: 5.9.3
