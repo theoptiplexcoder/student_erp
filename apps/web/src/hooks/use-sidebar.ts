@@ -7,6 +7,19 @@ interface SidebarState {
   setCollapsed: (collapsed: boolean) => void;
 }
 
+export const useAdminSidebarStore = create<SidebarState>()(
+  persist(
+    (set) => ({
+      isCollapsed: false,
+      toggleSidebar: () => set((state) => ({ isCollapsed: !state.isCollapsed })),
+      setCollapsed: (collapsed) => set({ isCollapsed: collapsed }),
+    }),
+    {
+      name: 'admin-sidebar-state',
+    },
+  ),
+);
+
 export const useSidebarStore = create<SidebarState>()(
   persist(
     (set) => ({

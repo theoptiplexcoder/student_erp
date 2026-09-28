@@ -694,7 +694,13 @@ export default function AdminTimetablePage() {
         setSectionId={setSectionId}
         dayOfWeek={dayOfWeek}
         setDayOfWeek={setDayOfWeek}
-        onGenerate={() => setGenerationModalOpen(true)}
+        onGenerate={() => {
+          if (rawEntries.length > 0) {
+            setOverwriteWarningOpen(true);
+          } else {
+            setGenerationModalOpen(true);
+          }
+        }}
         isGenerating={isGenerating}
         onImport={() => setImportModalOpen(true)}
         onExport={handleExport}
@@ -833,7 +839,10 @@ export default function AdminTimetablePage() {
         onOpenChange={setOverwriteWarningOpen}
         academicYearName={selectedAcademicYear?.name}
         termName={selectedTerm?.name}
-        affectedSectionsCount={pendingGenerationConfig?.sectionIds.length || sections.length || 0}
+        affectedSectionsCount={
+          pendingGenerationConfig?.sectionIds.length ||
+          (sectionId ? 1 : sections.length || allSections.length || 0)
+        }
         affectedSessionsCount={
           pendingGenerationConfig
             ? rawEntries.filter((e: any) =>
@@ -844,6 +853,8 @@ export default function AdminTimetablePage() {
         onConfirm={() => {
           if (pendingGenerationConfig) {
             executeGeneration(pendingGenerationConfig);
+          } else {
+            setGenerationModalOpen(true);
           }
         }}
         isGenerating={isGenerating}
