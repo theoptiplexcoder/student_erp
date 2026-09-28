@@ -24,6 +24,7 @@ interface TimetableProgramSectionsSummaryProps {
   onGenerateClick?: () => void;
   isGenerating?: boolean;
   hasTermSelected?: boolean;
+  defaultExpanded?: boolean;
 }
 
 export function TimetableProgramSectionsSummary({
@@ -36,8 +37,9 @@ export function TimetableProgramSectionsSummary({
   onGenerateClick,
   isGenerating,
   hasTermSelected,
+  defaultExpanded = false,
 }: TimetableProgramSectionsSummaryProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   if (!programName && !selectedSectionId && (!sections || sections.length === 0)) {
     return null;
