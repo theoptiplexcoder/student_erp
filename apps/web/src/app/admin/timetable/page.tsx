@@ -359,11 +359,13 @@ export default function AdminTimetablePage() {
             firstGeneratedProgramId: targetProgId,
           });
 
-          // Automatically focus on the generated section/program so weekly grid renders immediately
-          if (targetProgId && !programId) {
+          // Always focus on the first generated section/program. Keeping an older section
+          // filter here makes a successful generation look empty when generation was run for
+          // another section (or for all sections).
+          if (targetProgId) {
             setProgramId(targetProgId);
           }
-          if (targetSectionId && !sectionId) {
+          if (targetSectionId) {
             setSectionId(targetSectionId);
           }
 
