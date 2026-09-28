@@ -77,14 +77,17 @@ export function SuperadminSidebar() {
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  'flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+                  'relative flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                    ? 'bg-primary/10 text-primary font-semibold'
+                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                 )}
               >
+                {isActive && (
+                  <span className="bg-primary absolute top-2 bottom-2 left-0 w-[3px] rounded-full" />
+                )}
                 <div className="flex items-center gap-3">
-                  <Icon className="h-4 w-4 shrink-0" />
+                  <Icon className={cn('h-4 w-4 shrink-0', isActive && 'text-primary')} />
                   <span>{item.title}</span>
                 </div>
                 {item.showPendingBadge && pendingCount > 0 && (
