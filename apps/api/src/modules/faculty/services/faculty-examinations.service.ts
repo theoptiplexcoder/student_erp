@@ -5,7 +5,7 @@ import { PrismaService } from '../../../database/prisma.service';
 export class FacultyExaminationsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getExaminations(userId: string, institutionId: string) {
+  async getExaminations(userId: string, institutionId: string, courseId?: string) {
     const faculty = await this.prisma.faculty.findFirst({
       where: { userId, institutionId },
     });
@@ -24,7 +24,7 @@ export class FacultyExaminationsService {
     return this.prisma.examCourse.findMany({
       where: {
         institutionId,
-        courseId: { in: courseIds },
+        courseId: courseId ? { equals: courseId } : { in: courseIds },
       },
       include: {
         exam: {

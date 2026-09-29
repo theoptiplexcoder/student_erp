@@ -15,6 +15,14 @@ export const useFacultyTimetable = () => {
   });
 };
 
+export const useFacultySessionHistory = (courseId: string, sectionId: string) => {
+  return useQuery({
+    queryKey: ['faculty', 'sessions', courseId, sectionId],
+    queryFn: () => FacultyApi.getSessionHistory(courseId, sectionId),
+    enabled: !!courseId && !!sectionId,
+  });
+};
+
 export const useFacultySession = (courseId: string, sectionId: string, date: string) => {
   return useQuery({
     queryKey: ['faculty', 'session', courseId, sectionId, date],
@@ -65,6 +73,14 @@ export const useFacultyExaminations = () => {
   return useQuery({
     queryKey: ['faculty', 'examinations'],
     queryFn: FacultyApi.getExaminations,
+  });
+};
+
+export const useFacultyCourseExaminations = (courseId: string) => {
+  return useQuery({
+    queryKey: ['faculty', 'examinations', 'course', courseId],
+    queryFn: () => FacultyApi.getCourseExaminations(courseId),
+    enabled: !!courseId,
   });
 };
 

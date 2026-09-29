@@ -99,7 +99,7 @@ export default function FacultyCourseDetailsPage({
       title: 'Take attendance',
       detail: 'Record attendance for a class session',
       icon: CalendarCheck,
-      href: `/faculty/timetable/session?courseId=${course.id}&sectionId=${section.id}&date=${format(new Date(), 'yyyy-MM-dd')}`,
+      href: `/faculty/timetable/session?courseId=${course.id}&sectionId=${section.id}&date=${format(new Date(), 'yyyy-MM-dd')}&tab=attendance`,
     },
     {
       title: 'Share resources',
@@ -111,7 +111,13 @@ export default function FacultyCourseDetailsPage({
       title: 'Previous sessions',
       detail: 'Review completed class logs',
       icon: History,
-      href: '/faculty/timetable',
+      href: `/faculty/timetable/session?courseId=${course.id}&sectionId=${section.id}&date=${format(new Date(), 'yyyy-MM-dd')}&tab=previous`,
+    },
+    {
+      title: 'Enter Marks',
+      detail: 'Open marks entry for this course',
+      icon: ClipboardList,
+      href: `/faculty/timetable/session?courseId=${course.id}&sectionId=${section.id}&date=${format(new Date(), 'yyyy-MM-dd')}&tab=marks`,
     },
     {
       title: 'Assignments',
@@ -379,7 +385,7 @@ export default function FacultyCourseDetailsPage({
         </Link>
         <Link
           className="hover:bg-muted flex items-center justify-between rounded-lg p-3"
-          href="/faculty/timetable"
+          href={`/faculty/timetable/session?courseId=${course.id}&sectionId=${section.id}&date=${format(new Date(), 'yyyy-MM-dd')}&tab=previous`}
         >
           <span className="flex items-center gap-3">
             <CalendarDays className="text-primary h-5 w-5" />

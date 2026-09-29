@@ -16,6 +16,20 @@ export class FacultyTimetableController {
     return this.timetableService.getTimetable(user.id, user.institutionId);
   }
 
+  @Get('sessions')
+  getSessionHistory(
+    @CurrentUser() user: any,
+    @Query('courseId') courseId: string,
+    @Query('sectionId') sectionId: string,
+  ) {
+    return this.timetableService.getSessionHistory(
+      user.id,
+      user.institutionId,
+      courseId,
+      sectionId,
+    );
+  }
+
   @Get('session')
   getSession(
     @CurrentUser() user: any,

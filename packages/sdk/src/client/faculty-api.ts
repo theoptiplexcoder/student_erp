@@ -47,6 +47,10 @@ facultyApiClient.interceptors.response.use(
 export const FacultyApi = {
   getDashboard: () => facultyApiClient.get('/dashboard').then((res) => res.data),
   getTimetable: () => facultyApiClient.get('/timetable').then((res) => res.data),
+  getSessionHistory: (courseId: string, sectionId: string) =>
+    facultyApiClient
+      .get(`/timetable/sessions?courseId=${courseId}&sectionId=${sectionId}`)
+      .then((res) => res.data),
   getSession: (courseId: string, sectionId: string, date: string) =>
     facultyApiClient
       .get(`/timetable/session?courseId=${courseId}&sectionId=${sectionId}&date=${date}`)
@@ -60,6 +64,8 @@ export const FacultyApi = {
   getCourseDetails: (courseId: string) =>
     facultyApiClient.get(`/courses/${courseId}`).then((res) => res.data),
   getExaminations: () => facultyApiClient.get('/examinations').then((res) => res.data),
+  getCourseExaminations: (courseId: string) =>
+    facultyApiClient.get(`/examinations?courseId=${courseId}`).then((res) => res.data),
   getExamMarks: (examCourseId: string) =>
     facultyApiClient.get(`/examinations/${examCourseId}/marks`).then((res) => res.data),
   saveMarks: (examCourseId: string, data: any) =>

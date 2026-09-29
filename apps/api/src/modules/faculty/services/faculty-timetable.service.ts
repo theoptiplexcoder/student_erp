@@ -25,6 +25,25 @@ export class FacultyTimetableService {
     });
   }
 
+  async getSessionHistory(
+    userId: string,
+    institutionId: string,
+    courseId: string,
+    sectionId: string,
+  ) {
+    const faculty = await this.prisma.faculty.findFirst({ where: { userId, institutionId } });
+    if (!faculty) throw new NotFoundException('Faculty not found');
+    const assignment = await this.prisma.courseAssignment.findFirst({
+      where: { facultyId: faculty.id, institutionId, courseId, sectionId },
+    });
+    if (!assignment) throw new NotFoundException('Course assignment not found');
+    return this.prisma.attendanceSession.findMany({
+      where: { institutionId, facultyId: faculty.id, courseId, sectionId },
+      include: { attendanceRecords: { include: { student: { include: { user: true } } } } },
+      orderBy: { date: 'desc' },
+    });
+  }
+
   async getSession(
     userId: string,
     institutionId: string,

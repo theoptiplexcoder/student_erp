@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Query } from '@nestjs/common';
 import { FacultyExaminationsService } from '../services/faculty-examinations.service';
 import { SupabaseAuthGuard } from '../../../guards/supabase-auth.guard';
 import { RolesGuard } from '../../../guards/roles.guard';
@@ -12,8 +12,8 @@ export class FacultyExaminationsController {
   constructor(private readonly examsService: FacultyExaminationsService) {}
 
   @Get()
-  getExaminations(@CurrentUser() user: any) {
-    return this.examsService.getExaminations(user.id, user.institutionId);
+  getExaminations(@CurrentUser() user: any, @Query('courseId') courseId?: string) {
+    return this.examsService.getExaminations(user.id, user.institutionId, courseId);
   }
 
   @Get(':examCourseId/marks')

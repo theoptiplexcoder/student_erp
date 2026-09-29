@@ -18,7 +18,9 @@ import {
 } from '@student-erp/ui';
 import {
   useFacultySession,
+  useFacultySessionHistory,
   useEligibleStudents,
+  useFacultyCourseExaminations,
   useSaveAttendance,
   useFacultyResources,
   useLessonPlans,
@@ -52,12 +54,23 @@ function SessionWorkspaceContent() {
 
   const courseId = searchParams.get('courseId');
   const sectionId = searchParams.get('sectionId');
-  const dateStr = searchParams.get('date');
+  const dateStr = searchParams.get('date') || format(new Date(), 'yyyy-MM-dd');
+  const requestedTab = searchParams.get('tab');
+  const initialTab =
+    requestedTab === 'previous' ? 'previous' : requestedTab === 'marks' ? 'marks' : 'attendance';
+  const [activeTab, setActiveTab] = React.useState(initialTab);
 
   const { data: session, isLoading: loadingSession } = useFacultySession(
     courseId!,
     sectionId!,
     dateStr!,
+  );
+  const { data: sessionHistory, isLoading: loadingHistory } = useFacultySessionHistory(
+    courseId!,
+    sectionId!,
+  );
+  const { data: courseExaminations, isLoading: loadingExaminations } = useFacultyCourseExaminations(
+    courseId!,
   );
   const { data: eligibleStudents, isLoading: loadingStudents } = useEligibleStudents(
     courseId!,
@@ -69,6 +82,9 @@ function SessionWorkspaceContent() {
 
   const [topic, setTopic] = React.useState('');
   const [attendance, setAttendance] = React.useState<Record<string, string>>({});
+  const isReadOnly =
+    !!session?.id &&
+    new Date(`${dateStr}T00:00:00`).getTime() < new Date(new Date().toDateString()).getTime();
 
   React.useEffect(() => {
     if (session?.topic) setTopic(session.topic);
@@ -82,6 +98,7 @@ function SessionWorkspaceContent() {
   }, [session]);
 
   const handleAttendanceChange = (studentId: string, status: string) => {
+    if (isReadOnly) return;
     setAttendance((prev) => ({ ...prev, [studentId]: status }));
   };
 
@@ -95,6 +112,7 @@ function SessionWorkspaceContent() {
   };
 
   const handleSubmit = async () => {
+    if (isReadOnly) return;
     if (!courseId || !sectionId || !dateStr) return;
     const records = Object.keys(attendance).map((studentId) => ({
       studentId,
@@ -153,16 +171,17 @@ function SessionWorkspaceContent() {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Session Workspace</h1>
-              {session?.id ? (
-                <Badge
-                  variant="default"
-                  className="bg-green-600 text-xs text-white hover:bg-green-700"
-                >
-                  Recorded
+              {isReadOnly ? (
+                <Badge variant="secondary" className="text-xs">
+                  PREVIOUS
+                </Badge>
+              ) : session?.id ? (
+                <Badge variant="default" className="bg-green-600 text-xs text-white">
+                  Saved
                 </Badge>
               ) : (
                 <Badge variant="secondary" className="text-xs">
-                  Scheduled
+                  Current session
                 </Badge>
               )}
             </div>
@@ -257,36 +276,44 @@ function SessionWorkspaceContent() {
               >
                 Session Topic
               </Label>
-              <Input
-                id="session-topic"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                placeholder="What was / is being taught?"
-                className="mt-1"
-              />
+              {isReadOnly ? (
+                <p className="mt-1 text-sm">{topic || 'No topic recorded'}</p>
+              ) : (
+                <Input
+                  id="session-topic"
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  placeholder="What was / is being taught?"
+                  className="mt-1"
+                />
+              )}
             </div>
 
             <div className="border-t pt-4">
-              <Button className="w-full" onClick={handleSubmit} disabled={saveAttendance.isPending}>
-                {saveAttendance.isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                )}
-                Finalize Session
-              </Button>
+              {!isReadOnly && (
+                <Button
+                  className="w-full"
+                  onClick={handleSubmit}
+                  disabled={saveAttendance.isPending}
+                >
+                  {saveAttendance.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                  )}
+                  Save session
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
 
         <div className="md:col-span-2">
-          <Tabs defaultValue="attendance">
-            <TabsList className="w-full justify-start overflow-x-auto">
-              <TabsTrigger value="attendance">Take Attendance</TabsTrigger>
-              <TabsTrigger value="roster">
-                Student Roster ({eligibleStudents?.length || 0})
-              </TabsTrigger>
-              <TabsTrigger value="notes">Notes & Resources</TabsTrigger>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="attendance">Attendance</TabsTrigger>
+              <TabsTrigger value="previous">Previous Sessions</TabsTrigger>
+              <TabsTrigger value="marks">Enter Marks</TabsTrigger>
             </TabsList>
 
             <TabsContent value="attendance" className="mt-4">
@@ -298,7 +325,7 @@ function SessionWorkspaceContent() {
                       {eligibleStudents?.length || 0} students eligible
                     </p>
                   </div>
-                  {eligibleStudents && eligibleStudents.length > 0 && (
+                  {!isReadOnly && eligibleStudents && eligibleStudents.length > 0 && (
                     <div className="flex gap-2">
                       <Button size="sm" variant="outline" onClick={() => handleMarkAll('PRESENT')}>
                         Mark All Present
@@ -340,6 +367,7 @@ function SessionWorkspaceContent() {
                           </div>
                           <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
                             <Button
+                              disabled={isReadOnly}
                               size="sm"
                               variant={attendance[student.id] === 'PRESENT' ? 'default' : 'outline'}
                               onClick={() => handleAttendanceChange(student.id, 'PRESENT')}
@@ -352,6 +380,7 @@ function SessionWorkspaceContent() {
                               Present
                             </Button>
                             <Button
+                              disabled={isReadOnly}
                               size="sm"
                               variant={
                                 attendance[student.id] === 'ABSENT' ? 'destructive' : 'outline'
@@ -361,6 +390,7 @@ function SessionWorkspaceContent() {
                               Absent
                             </Button>
                             <Button
+                              disabled={isReadOnly}
                               size="sm"
                               variant={attendance[student.id] === 'LATE' ? 'secondary' : 'outline'}
                               onClick={() => handleAttendanceChange(student.id, 'LATE')}
@@ -376,6 +406,110 @@ function SessionWorkspaceContent() {
               </Card>
             </TabsContent>
 
+            <TabsContent value="previous" className="mt-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Previous sessions</CardTitle>
+                  <p className="text-muted-foreground text-sm">Completed records are view-only.</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <label className="block space-y-2 text-sm font-medium" htmlFor="previous-session">
+                    Choose a session
+                  </label>
+                  <select
+                    id="previous-session"
+                    className="bg-background h-10 w-full rounded-md border px-3 text-sm"
+                    value={session?.id || ''}
+                    onChange={(event) => {
+                      const selected = sessionHistory?.find(
+                        (row: any) => row.id === event.target.value,
+                      );
+                      if (selected)
+                        router.replace(
+                          `/faculty/timetable/session?courseId=${courseId}&sectionId=${sectionId}&date=${format(new Date(selected.date), 'yyyy-MM-dd')}&tab=previous`,
+                        );
+                    }}
+                  >
+                    <option value="" disabled>
+                      Select a completed session
+                    </option>
+                    {(sessionHistory || [])
+                      .filter((row: any) => row.attendanceRecords?.length > 0)
+                      .map((row: any) => (
+                        <option key={row.id} value={row.id}>
+                          {format(new Date(row.date), 'EEE, MMM d, yyyy')} ·{' '}
+                          {row.topic || 'Class session'} · PREVIOUS
+                        </option>
+                      ))}
+                  </select>
+                  {loadingHistory ? (
+                    <p className="text-muted-foreground text-sm">Loading sessions…</p>
+                  ) : !sessionHistory?.some((row: any) => row.attendanceRecords?.length > 0) ? (
+                    <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
+                      No completed sessions yet.
+                    </p>
+                  ) : session?.id && isReadOnly ? (
+                    <div className="divide-y rounded-lg border">
+                      {session.attendanceRecords?.map((record: any) => (
+                        <div
+                          key={record.id}
+                          className="flex items-center justify-between gap-3 p-3 text-sm"
+                        >
+                          <span>
+                            {record.student?.user?.firstName} {record.student?.user?.lastName}
+                          </span>
+                          <Badge variant="outline">{record.status}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">
+                      Select a completed session to review its attendance.
+                    </p>
+                  )}
+                  {session?.id && isReadOnly && (
+                    <Badge variant="secondary">PREVIOUS · Read only</Badge>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+            <TabsContent value="marks" className="mt-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Enter marks</CardTitle>
+                  <p className="text-muted-foreground text-sm">
+                    Choose an exam for this course to enter or update marks.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {loadingExaminations ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : courseExaminations?.length ? (
+                    courseExaminations.map((examCourse: any) => (
+                      <div
+                        key={examCourse.id}
+                        className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div>
+                          <p className="font-medium">{examCourse.exam.name}</p>
+                          <p className="text-muted-foreground text-sm">
+                            {examCourse.exam.examType} ·{' '}
+                            {format(new Date(examCourse.examDate), 'MMM d, yyyy')}
+                          </p>
+                        </div>
+                        <Button asChild size="sm">
+                          <a href={`/faculty/examinations/${examCourse.id}`}>Enter Marks</a>
+                        </Button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-muted-foreground text-sm">
+                      No examinations are available for this course.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
             <TabsContent value="roster" className="mt-4">
               <Card>
                 <CardHeader>
