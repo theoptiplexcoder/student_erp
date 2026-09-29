@@ -21,12 +21,13 @@ export class FacultyAttendanceService {
     });
     if (!assignment) throw new BadRequestException('Not authorized for this course and section');
 
+    // 1. Fetch students enrolled specifically in this course or at the section cohort level
     const enrollments = await this.prisma.enrollment.findMany({
       where: {
         institutionId,
-        courseId,
         sectionId,
         status: 'ACTIVE',
+        OR: [{ courseId }, { courseId: null }],
       },
       include: {
         student: {
@@ -42,7 +43,37 @@ export class FacultyAttendanceService {
       },
     });
 
-    return enrollments.map((e) => e.student);
+    const enrolledStudents = enrollments
+      .map((e) => e.student)
+      .filter((s): s is NonNullable<typeof s> => !!s && !!s.user);
+
+    // 2. Fetch active students directly assigned to this section
+    const directSectionStudents = await this.prisma.student.findMany({
+      where: {
+        institutionId,
+        sectionId,
+        status: 'ACTIVE',
+      },
+      include: {
+        user: true,
+      },
+      orderBy: {
+        rollNumber: 'asc',
+      },
+    });
+
+    // Merge and deduplicate by student ID
+    const studentMap = new Map<string, any>();
+    for (const student of [...enrolledStudents, ...directSectionStudents]) {
+      if (student && student.user && !studentMap.has(student.id)) {
+        studentMap.set(student.id, student);
+      }
+    }
+
+    const students = Array.from(studentMap.values());
+    students.sort((a, b) => (a.rollNumber || '').localeCompare(b.rollNumber || ''));
+
+    return students;
   }
 
   async saveAttendance(userId: string, institutionId: string, data: any) {
