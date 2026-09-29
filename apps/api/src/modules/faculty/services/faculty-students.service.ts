@@ -6,6 +6,8 @@ export class FacultyStudentsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getStudents(userId: string, institutionId: string) {
+    if (!institutionId) throw new NotFoundException('Institution not found for this user');
+
     const faculty = await this.prisma.faculty.findFirst({
       where: { userId, institutionId },
     });
@@ -17,7 +19,10 @@ export class FacultyStudentsService {
       select: { sectionId: true },
     });
 
-    const sectionIds = assignments.map((a) => a.sectionId);
+    const sectionIds = [...new Set(assignments.map((assignment) => assignment.sectionId))];
+
+    // Faculty without section assignments have no class roster to view.
+    if (sectionIds.length === 0) return [];
 
     const students = await this.prisma.student.findMany({
       where: {
@@ -45,12 +50,14 @@ export class FacultyStudentsService {
       },
     });
 
-    return students.map((student) => {
-      const { enrollments, ...rest } = student;
-      return {
-        ...rest,
-        enrolledCourses: enrollments.map((e) => e.course),
-      };
-    });
+    return students
+      .filter((student) => student.user !== null)
+      .map((student) => {
+        const { enrollments, ...rest } = student;
+        return {
+          ...rest,
+          enrolledCourses: enrollments.map((e) => e.course),
+        };
+      });
   }
 }

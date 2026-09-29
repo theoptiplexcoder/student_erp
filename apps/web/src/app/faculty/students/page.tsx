@@ -82,7 +82,7 @@ export default function FacultyStudentsPage() {
                             <User className="text-primary h-4 w-4" />
                           </div>
                           <span className="font-medium">
-                            {s.user.firstName} {s.user.lastName}
+                            {s.user?.firstName ?? ''} {s.user?.lastName ?? ''}
                           </span>
                         </div>
                       </td>
