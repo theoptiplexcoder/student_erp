@@ -85,17 +85,28 @@ function SessionWorkspaceContent() {
   const isReadOnly =
     !!session?.id &&
     new Date(`${dateStr}T00:00:00`).getTime() < new Date(new Date().toDateString()).getTime();
+  const presentCount = (eligibleStudents || []).filter(
+    (student: any) => attendance[student.id] === 'PRESENT' || attendance[student.id] === 'LATE',
+  ).length;
+  const absentStudents = (eligibleStudents || []).filter(
+    (student: any) => attendance[student.id] === 'ABSENT',
+  );
 
   React.useEffect(() => {
-    if (session?.topic) setTopic(session.topic);
+    setTopic(session?.topic || '');
+    const records: Record<string, string> = {};
     if (session?.attendanceRecords) {
-      const records: Record<string, string> = {};
       session.attendanceRecords.forEach((r: any) => {
         records[r.studentId] = r.status;
       });
-      setAttendance(records);
     }
-  }, [session]);
+    if (!isReadOnly) {
+      (eligibleStudents || []).forEach((student: any) => {
+        records[student.id] ||= 'ABSENT';
+      });
+    }
+    setAttendance(records);
+  }, [session, eligibleStudents, isReadOnly]);
 
   const handleAttendanceChange = (studentId: string, status: string) => {
     if (isReadOnly) return;
@@ -103,7 +114,7 @@ function SessionWorkspaceContent() {
   };
 
   const handleMarkAll = (status: string) => {
-    if (!eligibleStudents) return;
+    if (isReadOnly || !eligibleStudents) return;
     const records: Record<string, string> = {};
     eligibleStudents.forEach((s: any) => {
       records[s.id] = status;
@@ -114,9 +125,9 @@ function SessionWorkspaceContent() {
   const handleSubmit = async () => {
     if (isReadOnly) return;
     if (!courseId || !sectionId || !dateStr) return;
-    const records = Object.keys(attendance).map((studentId) => ({
-      studentId,
-      status: attendance[studentId],
+    const records = (eligibleStudents || []).map((student: any) => ({
+      studentId: student.id,
+      status: attendance[student.id] || 'ABSENT',
     }));
 
     try {
@@ -322,7 +333,8 @@ function SessionWorkspaceContent() {
                   <div>
                     <CardTitle className="text-lg">Mark Attendance</CardTitle>
                     <p className="text-muted-foreground mt-0.5 text-xs">
-                      {eligibleStudents?.length || 0} students eligible
+                      {eligibleStudents?.length || 0} enrolled · {presentCount} present ·{' '}
+                      {absentStudents.length} absent
                     </p>
                   </div>
                   {!isReadOnly && eligibleStudents && eligibleStudents.length > 0 && (
@@ -358,10 +370,12 @@ function SessionWorkspaceContent() {
                                 {student.user?.firstName} {student.user?.lastName}
                               </p>
                               <p className="text-muted-foreground text-xs">
-                                {student.rollNumber ||
+                                USN:{' '}
+                                {student.usn ||
+                                  student.rollNumber ||
                                   student.admissionNumber ||
                                   student.studentCode ||
-                                  'No Roll #'}
+                                  'Not available'}
                               </p>
                             </div>
                           </div>
@@ -389,19 +403,26 @@ function SessionWorkspaceContent() {
                             >
                               Absent
                             </Button>
-                            <Button
-                              disabled={isReadOnly}
-                              size="sm"
-                              variant={attendance[student.id] === 'LATE' ? 'secondary' : 'outline'}
-                              onClick={() => handleAttendanceChange(student.id, 'LATE')}
-                            >
-                              Late
-                            </Button>
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
+                  <div className="mt-5 grid gap-4 border-t pt-4 sm:grid-cols-2">
+                    <div className="bg-muted/50 rounded-lg p-4">
+                      <p className="text-muted-foreground text-sm">Present</p>
+                      <p className="mt-1 text-2xl font-semibold">{presentCount}</p>
+                    </div>
+                    <div className="bg-muted/50 rounded-lg p-4">
+                      <p className="text-muted-foreground text-sm">Absent</p>
+                      <p className="mt-1 text-2xl font-semibold">{absentStudents.length}</p>
+                      <p className="text-muted-foreground mt-2 text-xs">
+                        {absentStudents.length
+                          ? `USN: ${absentStudents.map((student: any) => student.usn || student.rollNumber || student.admissionNumber || student.studentCode || 'N/A').join(', ')}`
+                          : 'No absent students'}
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
