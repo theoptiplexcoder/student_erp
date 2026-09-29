@@ -54,9 +54,15 @@ export class FacultyStudentsService {
       .filter((student) => student.user !== null)
       .map((student) => {
         const { enrollments, ...rest } = student;
+        const enrolledCourses = enrollments
+          .map((e) => e.course)
+          .filter(
+            (course): course is NonNullable<typeof course> =>
+              course !== null && course !== undefined,
+          );
         return {
           ...rest,
-          enrolledCourses: enrollments.map((e) => e.course),
+          enrolledCourses,
         };
       });
   }

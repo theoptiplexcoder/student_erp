@@ -89,8 +89,8 @@ export default function FacultyStudentsPage() {
                       <td className="p-4">{s.rollNumber || s.admissionNumber}</td>
                       <td className="p-4">
                         <div className="flex flex-wrap gap-1">
-                          {s.enrolledCourses?.map((c: any) => (
-                            <Badge key={c.id} variant="secondary" className="text-xs">
+                          {s.enrolledCourses?.filter(Boolean).map((c: any) => (
+                            <Badge key={c.id || c.code} variant="secondary" className="text-xs">
                               {c.code}
                             </Badge>
                           ))}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -39,11 +39,41 @@ export default function FacultyCoursesPage() {
   }
 
   // Filter based on search (assuming simple active status for now since backend doesn't have status yet)
-  const filteredAssignments = assignments.filter((a: any) => {
-    const searchMatch =
-      a.course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      a.course.code.toLowerCase().includes(searchTerm.toLowerCase());
-    return searchMatch;
+  // A faculty member may be assigned to multiple sections of the same course.
+  // Keep one workspace card per course while retaining all assigned sections.
+  const courses = useMemo(() => {
+    const byCourse = new Map<string, any>();
+    assignments.forEach((assignment: any) => {
+      const courseId = assignment.courseId ?? assignment.course?.id;
+      if (!courseId || !assignment.course) return;
+      const existing = byCourse.get(courseId);
+      if (existing) {
+        if (!existing.sections.some((section: any) => section.id === assignment.section?.id)) {
+          existing.sections.push(assignment.section);
+        }
+        existing.totalStudents = Math.max(existing.totalStudents, assignment.totalStudents || 0);
+        existing.lessonPlansCompleted += assignment.lessonPlansCompleted || 0;
+        existing.lessonPlansTotal += assignment.lessonPlansTotal || 0;
+        if (!existing.nextClass && assignment.nextClass) existing.nextClass = assignment.nextClass;
+      } else {
+        byCourse.set(courseId, {
+          ...assignment,
+          sections: assignment.section ? [assignment.section] : [],
+          totalStudents: assignment.totalStudents || 0,
+          lessonPlansCompleted: assignment.lessonPlansCompleted || 0,
+          lessonPlansTotal: assignment.lessonPlansTotal || 0,
+        });
+      }
+    });
+    return Array.from(byCourse.values());
+  }, [assignments]);
+
+  const filteredAssignments = courses.filter((course: any) => {
+    const query = searchTerm.trim().toLowerCase();
+    return (
+      !query ||
+      [course.course.name, course.course.code].some((value) => value?.toLowerCase().includes(query))
+    );
   });
 
   return (
@@ -84,7 +114,12 @@ export default function FacultyCoursesPage() {
                   <CardTitle className="line-clamp-2 leading-tight">
                     {assignment.course.name}
                   </CardTitle>
-                  <Badge variant="outline">{assignment.section.name}</Badge>
+                  <Badge variant="outline">
+                    {assignment.sections
+                      .map((section: any) => section?.name)
+                      .filter(Boolean)
+                      .join(', ') || 'Assigned'}
+                  </Badge>
                 </div>
                 <p className="text-muted-foreground mt-1 text-sm">{assignment.course.code}</p>
               </CardHeader>
@@ -138,8 +173,8 @@ export default function FacultyCoursesPage() {
                 )}
 
                 <Button asChild className="mt-2 w-full" variant="default">
-                  <Link href={`/faculty/courses/${assignment.courseId}`}>
-                    View Course <ArrowRight className="ml-2 h-4 w-4" />
+                  <Link href={`/faculty/courses/${assignment.courseId ?? assignment.course.id}`}>
+                    Manage Course <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
               </CardContent>
