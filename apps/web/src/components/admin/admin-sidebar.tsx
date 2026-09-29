@@ -34,6 +34,7 @@ import {
   HelpCircle,
   UserCheck,
   X,
+  CalendarOff,
 } from 'lucide-react';
 import { Button, Avatar, AvatarFallback, Badge } from '@student-erp/ui';
 import { useCurrentUser } from '@/hooks/use-current-user';
@@ -95,6 +96,7 @@ export const adminNavigationSections: NavSection[] = [
     title: 'PEOPLE & FINANCE',
     items: [
       { name: 'Faculty', href: '/admin/faculty', icon: Users },
+      { name: 'Leave Management', href: '/admin/leave-management', icon: CalendarOff },
       {
         name: 'Finance',
         href: '/admin/finance',

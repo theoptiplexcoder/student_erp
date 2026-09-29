@@ -39,9 +39,16 @@ const mapCategoryToEnum = (c: string) => {
 interface GrievanceFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
+  submitGrievance?: (values: any) => Promise<unknown>;
+  isSubmitting?: boolean;
 }
 
-export function GrievanceForm({ onSuccess, onCancel }: GrievanceFormProps) {
+export function GrievanceForm({
+  onSuccess,
+  onCancel,
+  submitGrievance,
+  isSubmitting = false,
+}: GrievanceFormProps) {
   const createGrievance = useCreateGrievance();
   const { data: coursesData } = useStudentCourses(); // To populate related to options
 
@@ -62,36 +69,28 @@ export function GrievanceForm({ onSuccess, onCancel }: GrievanceFormProps) {
     setSuccessMsg('');
     if (!category || !subject || !description) return;
 
-    createGrievance.mutate(
-      {
-        category: mapCategoryToEnum(category),
-        subject,
-        description,
-        relatedType: relatedType ? relatedType.toUpperCase() : undefined,
-        relatedId: relatedId || undefined,
-        isAnonymous,
-      } as any,
-      {
-        onSuccess: () => {
-          setSuccessMsg('Grievance submitted successfully!');
-          setTimeout(() => {
-            setCategory('');
-            setSubject('');
-            setDescription('');
-            setRelatedType('');
-            setRelatedId('');
-            setIsAnonymous(false);
-            setSuccessMsg('');
-            onSuccess?.();
-          }, 1500);
-        },
-        onError: (err: any) => {
-          const message =
-            err.response?.data?.message || err.message || 'Failed to submit grievance.';
-          setErrorMsg(message);
-        },
-      },
-    );
+    const values = {
+      category: mapCategoryToEnum(category),
+      subject,
+      description,
+      relatedType: relatedType ? relatedType.toUpperCase() : undefined,
+      relatedId: relatedId || undefined,
+      isAnonymous,
+    };
+    const submit = submitGrievance ?? ((payload: any) => createGrievance.mutateAsync(payload));
+    try {
+      await submit(values);
+      setSuccessMsg('Grievance submitted successfully!');
+      setCategory('');
+      setSubject('');
+      setDescription('');
+      setRelatedType('');
+      setRelatedId('');
+      setIsAnonymous(false);
+      onSuccess?.();
+    } catch (err: any) {
+      setErrorMsg(err.response?.data?.message || err.message || 'Failed to submit grievance.');
+    }
   };
 
   return (
@@ -243,13 +242,14 @@ export function GrievanceForm({ onSuccess, onCancel }: GrievanceFormProps) {
           type="submit"
           disabled={
             createGrievance.isPending ||
+            isSubmitting ||
             !category ||
             !subject ||
             !description ||
             (!!relatedType && !relatedId)
           }
         >
-          {createGrievance.isPending ? 'Submitting...' : 'Submit Grievance'}
+          {createGrievance.isPending || isSubmitting ? 'Submitting...' : 'Submit Grievance'}
         </Button>
       </div>
     </form>

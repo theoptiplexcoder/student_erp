@@ -25,6 +25,8 @@ import { FacultyWorkspaceService } from './services/faculty-workspace.service';
 import { LessonPlanController } from './controllers/lesson-plan.controller';
 import { LessonPlanService } from './services/lesson-plan.service';
 import { FacultySectionsController } from './controllers/faculty-sections.controller';
+import { FacultyLeaveController } from './controllers/faculty-leave.controller';
+import { FacultyLeaveService } from './services/faculty-leave.service';
 import { FacultySectionsService } from './services/faculty-sections.service';
 
 @Module({
@@ -43,6 +45,7 @@ import { FacultySectionsService } from './services/faculty-sections.service';
     FacultyWorkspaceController,
     LessonPlanController,
     FacultySectionsController,
+    FacultyLeaveController,
   ],
   providers: [
     FacultyGrievanceService,
@@ -58,6 +61,7 @@ import { FacultySectionsService } from './services/faculty-sections.service';
     FacultyWorkspaceService,
     LessonPlanService,
     FacultySectionsService,
+    FacultyLeaveService,
   ],
 })
 export class FacultyModule {}

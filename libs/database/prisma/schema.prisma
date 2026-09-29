@@ -465,6 +465,7 @@ model Institution {
   timetables                Timetable[]
   facultyAvailabilities     FacultyAvailability[]
   facultySections           FacultySection[]
+  facultyLeaveRequests      FacultyLeaveRequest[]
 
   @@map("institutions")
 }
@@ -495,6 +496,7 @@ model User {
   verifiedDocuments            StudentDocument[]    @relation("VerifiedBy")
   serviceRequestsAssigned      ServiceRequest[]     @relation("AssignedTo")
   paymentsCollected            Payment[]
+  reviewedLeaveRequests        FacultyLeaveRequest[] @relation("LeaveReviewer")
 
   @@index([institutionId])
   @@index([institutionId, role])
@@ -653,12 +655,45 @@ model Faculty {
   facultySections    FacultySection[]
 
   sessionOccurrences SessionOccurrence[]
+  leaveRequests         FacultyLeaveRequest[]
+  substituteAssignments FacultyLeaveRequest[] @relation("SubstituteFaculty")
 
   @@unique([institutionId, teacherCode])
   @@index([institutionId])
   @@index([institutionId, departmentId])
   @@index([institutionId, status])
   @@map("faculty")
+}
+
+model FacultyLeaveRequest {
+  id                   String             @id @default(uuid()) @db.Uuid
+  institutionId        String             @map("institution_id") @db.Uuid
+  facultyId            String             @map("faculty_id") @db.Uuid
+  leaveType            LeaveType          @map("leave_type")
+  startDate            DateTime           @map("start_date") @db.Date
+  endDate              DateTime           @map("end_date") @db.Date
+  reason               String             @db.Text
+  status               LeaveRequestStatus @default(PENDING)
+  adminNote            String?            @map("admin_note") @db.Text
+  reviewedBy           String?            @map("reviewed_by") @db.Uuid
+  reviewedAt           DateTime?          @map("reviewed_at")
+  // Substitute details filled by admin
+  substituteFacultyId  String?            @map("substitute_faculty_id") @db.Uuid
+  substituteNote       String?            @map("substitute_note") @db.Text
+  substituteSessionIds String[]           @map("substitute_session_ids") @db.Uuid
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  institution       Institution @relation(fields: [institutionId], references: [id])
+  faculty           Faculty     @relation(fields: [facultyId], references: [id])
+  substituteFaculty Faculty?    @relation("SubstituteFaculty", fields: [substituteFacultyId], references: [id])
+  reviewer          User?       @relation("LeaveReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([institutionId])
+  @@index([facultyId])
+  @@index([institutionId, status])
+  @@index([institutionId, startDate, endDate])
+  @@map("faculty_leave_requests")
 }
 
 model Guardian {
@@ -991,6 +1026,24 @@ enum TimetableStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
+}
+
+enum LeaveType {
+  CASUAL_LEAVE
+  SICK_LEAVE
+  EARNED_LEAVE
+  ON_DUTY
+  COMPENSATORY_LEAVE
+  UNPAID_LEAVE
+  MATERNITY_LEAVE
+  PATERNITY_LEAVE
+  OTHER
+}
+
+enum LeaveRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model Timetable {

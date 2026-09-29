@@ -28,6 +28,7 @@ import { BuildingsModule } from './buildings/buildings.module';
 import { RoomsModule } from './rooms/rooms.module';
 import { FinanceModule } from './finance/finance.module';
 import { FacultySectionsModule } from './faculty-sections/faculty-sections.module';
+import { LeaveManagementModule } from './leave-management/leave-management.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { FacultySectionsModule } from './faculty-sections/faculty-sections.modul
     RoomsModule,
     FinanceModule,
     FacultySectionsModule,
+    LeaveManagementModule,
   ],
   exports: [FinanceModule],
 })
