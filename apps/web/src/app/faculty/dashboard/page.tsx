@@ -5,12 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from '@studen
 import { useFacultyDashboard } from '@student-erp/hooks';
 import {
   Loader2,
-  Calendar,
+  CalendarCheck,
   BookOpen,
   AlertCircle,
   Users,
   ClipboardCheck,
   ArrowRight,
+  CalendarOff,
+  Megaphone,
+  User,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
@@ -45,26 +48,81 @@ export default function FacultyDashboardPage() {
         <p className="text-muted-foreground">{faculty.department} Department</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Assigned Courses</CardTitle>
-            <BookOpen className="text-muted-foreground h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{courseAssignments.length}</div>
-          </CardContent>
-        </Card>
+      <div className="space-y-3">
+        <div className="space-y-0.5">
+          <h2 className="text-foreground text-sm font-semibold tracking-tight">Quick Actions</h2>
+          <p className="text-muted-foreground text-xs">
+            Direct shortcuts to frequent faculty tasks.
+          </p>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Classes</CardTitle>
-            <Calendar className="text-muted-foreground h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{todaysClasses.length}</div>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <Button
+            asChild
+            variant="outline"
+            className="border-border/70 hover:border-primary/40 hover:bg-muted/40 h-auto flex-col items-center justify-center gap-2 p-3 text-xs"
+          >
+            <Link href="/faculty/timetable">
+              <CalendarCheck className="text-primary h-4 w-4" />
+              <span className="font-medium">My Timetable</span>
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            variant="outline"
+            className="border-border/70 hover:border-primary/40 hover:bg-muted/40 h-auto flex-col items-center justify-center gap-2 p-3 text-xs"
+          >
+            <Link href="/faculty/courses">
+              <BookOpen className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <span className="font-medium">Courses</span>
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            variant="outline"
+            className="border-border/70 hover:border-primary/40 hover:bg-muted/40 h-auto flex-col items-center justify-center gap-2 p-3 text-xs"
+          >
+            <Link href="/faculty/leave">
+              <CalendarOff className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              <span className="font-medium">Apply Leave</span>
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            variant="outline"
+            className="border-border/70 hover:border-primary/40 hover:bg-muted/40 h-auto flex-col items-center justify-center gap-2 p-3 text-xs"
+          >
+            <Link href="/faculty/announcements">
+              <Megaphone className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <span className="font-medium">Announcements</span>
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            variant="outline"
+            className="border-border/70 hover:border-primary/40 hover:bg-muted/40 h-auto flex-col items-center justify-center gap-2 p-3 text-xs"
+          >
+            <Link href="/faculty/grievances">
+              <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+              <span className="font-medium">Grievances</span>
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            variant="outline"
+            className="border-border/70 hover:border-primary/40 hover:bg-muted/40 h-auto flex-col items-center justify-center gap-2 p-3 text-xs"
+          >
+            <Link href="/faculty/profile">
+              <User className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+              <span className="font-medium">My Profile</span>
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
