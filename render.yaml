@@ -5,7 +5,7 @@ services:
     repo: https://github.com/theoptiplexcoder/student_erp
     rootDir: apps/api
     plan: free
-    buildCommand: HUSKY=0 CI=true NODE_ENV=development pnpm install --frozen-lockfile --filter @student-erp/api... && pnpm exec prisma migrate deploy --schema=../../libs/database/prisma/schema.prisma && pnpm --filter @student-erp/timetable-engine run build && pnpm run build
+    buildCommand: HUSKY=0 CI=true NODE_ENV=development pnpm install --frozen-lockfile --filter @student-erp/api... && pnpm --filter @student-erp/timetable-engine run build && pnpm run build
     startCommand: node dist/main
     healthCheckPath: /health
     envVars:
