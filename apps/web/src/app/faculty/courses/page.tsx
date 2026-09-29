@@ -1,193 +1,154 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
-  Button,
-  Input,
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from '@student-erp/ui';
+import { Badge, Button, Input } from '@student-erp/ui';
 import { useFacultyCourses } from '@student-erp/hooks';
-import { Loader2, Users, Search, ArrowRight, Clock } from 'lucide-react';
+import { Loader2, Users, Search, ArrowUpRight, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 
 export default function FacultyCoursesPage() {
   const { data: assignments, isLoading, error } = useFacultyCourses();
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('active');
 
-  if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="text-primary h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  if (error || !assignments) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center gap-2">
-        <p className="text-destructive">Failed to load courses.</p>
-      </div>
-    );
-  }
-
-  // Filter based on search (assuming simple active status for now since backend doesn't have status yet)
-  // A faculty member may be assigned to multiple sections of the same course.
-  // Keep one workspace card per course while retaining all assigned sections.
   const courses = useMemo(() => {
     const byCourse = new Map<string, any>();
-    assignments.forEach((assignment: any) => {
-      const courseId = assignment.courseId ?? assignment.course?.id;
-      if (!courseId || !assignment.course) return;
-      const existing = byCourse.get(courseId);
-      if (existing) {
-        if (!existing.sections.some((section: any) => section.id === assignment.section?.id)) {
-          existing.sections.push(assignment.section);
-        }
-        existing.totalStudents = Math.max(existing.totalStudents, assignment.totalStudents || 0);
-        existing.lessonPlansCompleted += assignment.lessonPlansCompleted || 0;
-        existing.lessonPlansTotal += assignment.lessonPlansTotal || 0;
-        if (!existing.nextClass && assignment.nextClass) existing.nextClass = assignment.nextClass;
-      } else {
-        byCourse.set(courseId, {
-          ...assignment,
-          sections: assignment.section ? [assignment.section] : [],
-          totalStudents: assignment.totalStudents || 0,
-          lessonPlansCompleted: assignment.lessonPlansCompleted || 0,
-          lessonPlansTotal: assignment.lessonPlansTotal || 0,
+    (assignments || []).forEach((item: any) => {
+      const id = item.courseId ?? item.course?.id;
+      if (!id || !item.course) return;
+      const found = byCourse.get(id);
+      if (found) {
+        if (item.section && !found.sections.some((section: any) => section.id === item.section.id))
+          found.sections.push(item.section);
+        found.totalStudents = Math.max(found.totalStudents, item.totalStudents || 0);
+        found.lessonPlansCompleted += item.lessonPlansCompleted || 0;
+        found.lessonPlansTotal += item.lessonPlansTotal || 0;
+        found.nextClass ||= item.nextClass;
+      } else
+        byCourse.set(id, {
+          ...item,
+          sections: item.section ? [item.section] : [],
+          totalStudents: item.totalStudents || 0,
+          lessonPlansCompleted: item.lessonPlansCompleted || 0,
+          lessonPlansTotal: item.lessonPlansTotal || 0,
         });
-      }
     });
     return Array.from(byCourse.values());
   }, [assignments]);
+  const filtered = courses.filter((item: any) =>
+    [item.course.name, item.course.code].some((v: string) =>
+      v?.toLowerCase().includes(searchTerm.trim().toLowerCase()),
+    ),
+  );
 
-  const filteredAssignments = courses.filter((course: any) => {
-    const query = searchTerm.trim().toLowerCase();
+  if (isLoading)
     return (
-      !query ||
-      [course.course.name, course.course.code].some((value) => value?.toLowerCase().includes(query))
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Loader2 className="text-primary h-7 w-7 animate-spin" aria-label="Loading courses" />
+      </div>
     );
-  });
+  if (error || !assignments)
+    return (
+      <div className="text-destructive p-8">
+        Unable to load your courses. Refresh the page to try again.
+      </div>
+    );
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">My Courses</h1>
-        <p className="text-muted-foreground">Courses and sections assigned to you</p>
-      </div>
-
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div className="relative max-w-sm flex-1">
-          <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+    <main className="mx-auto max-w-7xl space-y-8 p-5 md:p-8">
+      <header className="flex flex-col gap-5 border-b pb-7 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-primary mb-2 text-sm font-medium">FACULTY WORKSPACE</p>
+          <h1 className="text-3xl font-semibold tracking-tight">Your courses</h1>
+          <p className="text-muted-foreground mt-2">
+            Choose a course to take attendance, share materials, and manage teaching.
+          </p>
+        </div>
+        <label className="relative w-full sm:max-w-xs">
+          <span className="sr-only">Search courses</span>
+          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
-            placeholder="Search courses..."
-            className="pl-8"
+            placeholder="Search by name or code"
+            className="pl-9"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-        </div>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
-          <TabsList className="grid w-full grid-cols-3 md:w-auto">
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
-            <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        </label>
+      </header>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Assigned courses</h2>
+        <span className="text-muted-foreground text-sm">
+          {filtered.length} {filtered.length === 1 ? 'course' : 'courses'}
+        </span>
       </div>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filteredAssignments.map((assignment: any) => {
-          return (
-            <Card
-              key={assignment.id}
-              className="hover:border-primary/50 flex flex-col transition-colors"
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="line-clamp-2 leading-tight">
-                    {assignment.course.name}
-                  </CardTitle>
-                  <Badge variant="outline">
-                    {assignment.sections
-                      .map((section: any) => section?.name)
-                      .filter(Boolean)
-                      .join(', ') || 'Assigned'}
-                  </Badge>
-                </div>
-                <p className="text-muted-foreground mt-1 text-sm">{assignment.course.code}</p>
-              </CardHeader>
-              <CardContent className="flex flex-1 flex-col gap-4">
-                <div className="space-y-1 text-sm">
-                  <p className="flex items-center gap-2">
-                    <span className="w-4">🎓</span>
-                    <span>
-                      {assignment.course.program?.name ||
-                        assignment.section?.program?.name ||
-                        'B.Tech'}
+      {filtered.length ? (
+        <div className="divide-y rounded-xl border">
+          {filtered.map((item: any) => {
+            const progress = item.lessonPlansTotal
+              ? Math.round((item.lessonPlansCompleted / item.lessonPlansTotal) * 100)
+              : 0;
+            return (
+              <article
+                key={item.course.id}
+                className="grid gap-5 p-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-6"
+              >
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-xl font-semibold">{item.course.name}</h3>
+                    <Badge variant="outline">{item.course.code}</Badge>
+                  </div>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    {item.course.program?.name || item.section?.program?.name || 'Course'}{' '}
+                    <span aria-hidden="true">·</span> {item.term?.name || 'Current term'}
+                  </p>
+                  <div className="text-muted-foreground mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Users className="h-4 w-4" />
+                      {item.totalStudents} students
                     </span>
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <span className="w-4">📅</span>
-                    <span className="text-muted-foreground">
-                      {assignment.term?.name || 'Current Term'}
-                    </span>
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    <span>{assignment.totalStudents || 0} students</span>
-                  </p>
-                </div>
-
-                <div className="mt-auto space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-medium">Progress</span>
-                    <span className="text-muted-foreground">
-                      {assignment.lessonPlansCompleted || 0}/{assignment.lessonPlansTotal || 0}{' '}
-                      Lessons
+                    <span className="inline-flex items-center gap-1.5">
+                      <BookOpen className="h-4 w-4" />
+                      {item.sections
+                        .map((s: any) => s.name)
+                        .filter(Boolean)
+                        .join(', ') || 'Assigned'}
                     </span>
                   </div>
-                  <div className="bg-secondary h-2 w-full overflow-hidden rounded-full">
-                    <div
-                      className="bg-primary h-full transition-all"
-                      style={{
-                        width: `${assignment.lessonPlansTotal ? Math.round((assignment.lessonPlansCompleted / assignment.lessonPlansTotal) * 100) : 0}%`,
-                      }}
-                    />
-                  </div>
+                  {item.lessonPlansTotal > 0 && (
+                    <div className="mt-4 max-w-sm">
+                      <div className="text-muted-foreground mb-1 flex justify-between text-xs">
+                        <span>Lesson plan progress</span>
+                        <span>
+                          {item.lessonPlansCompleted}/{item.lessonPlansTotal}
+                        </span>
+                      </div>
+                      <div className="bg-muted h-1.5 overflow-hidden rounded-full">
+                        <div
+                          className="bg-primary h-full rounded-full"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
-
-                {assignment.nextClass && (
-                  <div className="text-muted-foreground bg-muted flex items-center gap-2 rounded-md p-2 text-xs">
-                    <Clock className="text-primary h-3.5 w-3.5" />
-                    <span>
-                      Next class: Today, {String(assignment.nextClass.startTime).substring(0, 5)}
-                    </span>
-                  </div>
-                )}
-
-                <Button asChild className="mt-2 w-full" variant="default">
-                  <Link href={`/faculty/courses/${assignment.courseId ?? assignment.course.id}`}>
-                    Manage Course <ArrowRight className="ml-2 h-4 w-4" />
+                <Button asChild className="w-full md:w-auto">
+                  <Link href={`/faculty/courses/${item.courseId ?? item.course.id}`}>
+                    Open course <ArrowUpRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-              </CardContent>
-            </Card>
-          );
-        })}
-
-        {filteredAssignments.length === 0 && (
-          <div className="text-muted-foreground col-span-full rounded-lg border border-dashed py-12 text-center">
-            No courses found matching your criteria.
-          </div>
-        )}
-      </div>
-    </div>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="rounded-xl border border-dashed px-6 py-14 text-center">
+          <p className="font-medium">
+            {searchTerm ? 'No matching courses' : 'No courses assigned'}
+          </p>
+          <p className="text-muted-foreground mt-1 text-sm">
+            {searchTerm ? 'Try another course name or code.' : 'Assigned courses will appear here.'}
+          </p>
+        </div>
+      )}
+    </main>
   );
 }
