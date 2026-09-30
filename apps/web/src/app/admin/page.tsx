@@ -13,26 +13,20 @@ import {
   Skeleton,
   PageHeader,
   PageContainer,
-  StatCard,
   StatusBadge,
   EmptyState,
 } from '@student-erp/ui';
 import {
   Users,
   GraduationCap,
-  CalendarDays,
-  FileText,
   AlertTriangle,
   AlertCircle,
   UserPlus,
   Megaphone,
   ChevronRight,
   CheckCircle2,
-  TrendingUp,
   ArrowRight,
   CalendarCheck,
-  Award,
-  BookOpen,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -55,7 +49,7 @@ export default function AdminDashboard() {
     );
   }
 
-  if (isLoading || !dashboard || !dashboard.kpis) {
+  if (isLoading || !dashboard) {
     return (
       <PageContainer>
         <div className="mb-6 space-y-2">
@@ -75,59 +69,7 @@ export default function AdminDashboard() {
     );
   }
 
-  const { kpis, attentionRequired, grievances, academicHealth, admissions } = dashboard;
-
-  const stats = [
-    {
-      label: 'Active Students',
-      value: kpis.activeStudents.current.toLocaleString(),
-      icon: Users,
-      trend: {
-        value: '+3.2%',
-        direction: 'up' as const,
-        label: 'vs last month',
-      },
-      href: '/admin/students',
-    },
-    {
-      label: 'Active Faculty',
-      value: kpis.activeFaculty.current.toLocaleString(),
-      icon: GraduationCap,
-      trend: {
-        value: '+1.0%',
-        direction: 'up' as const,
-        label: 'vs last term',
-      },
-      href: '/admin/faculty',
-    },
-    {
-      label: 'Attendance Rate',
-      value: `${kpis.attendanceRate.percentage}%`,
-      icon: CheckCircle2,
-      trend: {
-        value: kpis.attendanceRate.percentage >= 75 ? 'Healthy' : 'Needs attention',
-        direction: kpis.attendanceRate.percentage >= 75 ? ('up' as const) : ('down' as const),
-      },
-      href: '/admin/attendance/reports',
-    },
-    {
-      label: 'Pending Admissions',
-      value: kpis.pendingAdmissions.current.toLocaleString(),
-      icon: FileText,
-      subtitle: `${admissions.applicants} total applicants`,
-      href: '/admin/admissions/applications',
-    },
-    {
-      label: 'Open Grievances',
-      value: kpis.openGrievances.current.toLocaleString(),
-      icon: AlertTriangle,
-      trend: {
-        value: kpis.openGrievances.current > 0 ? 'Action required' : 'Resolved',
-        direction: kpis.openGrievances.current > 0 ? ('down' as const) : ('neutral' as const),
-      },
-      href: '/admin/grievances',
-    },
-  ];
+  const { attentionRequired, grievances, admissions } = dashboard;
 
   return (
     <PageContainer>
@@ -151,33 +93,6 @@ export default function AdminDashboard() {
           </div>
         }
       />
-
-      {/* CORE STATS (STRIPE-STYLE RESTRAINED KPI TILES) */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {stats.map((stat, i) => (
-          <Link
-            key={stat.label}
-            href={stat.href}
-            className="group focus:ring-primary block rounded-xl focus:ring-2 focus:ring-offset-1 focus:outline-none"
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-              className="h-full"
-            >
-              <StatCard
-                label={stat.label}
-                value={stat.value}
-                icon={stat.icon}
-                trend={stat.trend}
-                subtitle={stat.subtitle}
-                className="group-hover:border-primary/40 transition-colors group-hover:shadow-xs"
-              />
-            </motion.div>
-          </Link>
-        ))}
-      </div>
 
       <div className="grid gap-6 md:grid-cols-3">
         {/* NEEDS ATTENTION (JIRA/ATLASSIAN TRIAGE SECTION) */}
@@ -318,7 +233,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* RECENT ACTIVITY & SUMMARY GRIDS */}
+      {/* OPERATIONAL WORKFLOWS */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* GRIEVANCES & TICKETS */}
         <Card className="border-border/80 shadow-xs">
@@ -398,38 +313,21 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent className="p-4 pt-0 sm:p-5">
             <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="border-border/60 bg-muted/20 rounded-lg border p-3">
-                <span className="text-muted-foreground text-[11px] font-medium uppercase">
-                  Applicants
-                </span>
-                <p className="text-foreground font-display mt-1 text-lg font-bold">
-                  {admissions.applicants}
-                </p>
+              <div className="divide-border/60 divide-y">
+                {[
+                  { label: 'Applications received', value: admissions.applicants },
+                  { label: 'Offers issued', value: admissions.admitted },
+                  { label: 'Students enrolled', value: admissions.enrolled },
+                ].map((stage) => (
+                  <div
+                    key={stage.label}
+                    className="flex items-center justify-between py-3 first:pt-1 last:pb-1"
+                  >
+                    <span className="text-muted-foreground text-sm">{stage.label}</span>
+                    <span className="text-foreground text-sm font-semibold">{stage.value}</span>
+                  </div>
+                ))}
               </div>
-              <div className="border-border/60 bg-muted/20 rounded-lg border p-3">
-                <span className="text-muted-foreground text-[11px] font-medium uppercase">
-                  Admitted
-                </span>
-                <p className="font-display mt-1 text-lg font-bold text-blue-600 dark:text-blue-400">
-                  {admissions.admitted}
-                </p>
-              </div>
-              <div className="border-border/60 bg-muted/20 rounded-lg border p-3">
-                <span className="text-muted-foreground text-[11px] font-medium uppercase">
-                  Enrolled
-                </span>
-                <p className="font-display mt-1 text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                  {admissions.enrolled}
-                </p>
-              </div>
-            </div>
-            <div className="text-muted-foreground border-border/50 mt-4 flex items-center justify-between border-t pt-2 text-xs">
-              <span>Conversion Rate</span>
-              <span className="text-foreground font-semibold">
-                {admissions.applicants > 0
-                  ? `${Math.round((admissions.enrolled / admissions.applicants) * 100)}%`
-                  : '0%'}
-              </span>
             </div>
           </CardContent>
         </Card>
