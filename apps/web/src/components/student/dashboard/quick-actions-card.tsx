@@ -11,7 +11,6 @@ import {
   Award,
   MessageSquare,
   AlertTriangle,
-  Users,
   User,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@student-erp/ui';
@@ -73,13 +72,6 @@ const quickActions = [
     icon: AlertTriangle,
     color: 'bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400',
     hoverColor: 'hover:bg-orange-100 dark:hover:bg-orange-950/60',
-  },
-  {
-    label: 'Clubs',
-    href: '/student/clubs',
-    icon: Users,
-    color: 'bg-pink-50 text-pink-600 dark:bg-pink-950/40 dark:text-pink-400',
-    hoverColor: 'hover:bg-pink-100 dark:hover:bg-pink-950/60',
   },
   {
     label: 'My Profile',
