@@ -150,10 +150,11 @@ describe('Finance Services', () => {
       });
 
       expect(prismaMock.studentFeePlan.create).toHaveBeenCalled();
-      expect(plan.id).toBe('plan-1');
-      expect(plan.totalAmount).toBe(80000);
-      expect(plan.installments.length).toBe(2);
-      expect(plan.installments[0].amount).toBe(40000);
+      const singlePlan = plan as any;
+      expect(singlePlan.id).toBe('plan-1');
+      expect(singlePlan.totalAmount).toBe(80000);
+      expect(singlePlan.installments.length).toBe(2);
+      expect(singlePlan.installments[0].amount).toBe(40000);
     });
   });
 

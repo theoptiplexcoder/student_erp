@@ -3,7 +3,12 @@ import { PaymentMode } from '@prisma/client';
 
 export class GenerateFeePlanDto {
   @IsUUID()
-  studentId!: string;
+  @IsOptional()
+  studentId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  batchId?: string;
 
   @IsUUID()
   academicYearId!: string;
@@ -15,6 +20,13 @@ export class GenerateFeePlanDto {
   @IsEnum(PaymentMode)
   paymentMode!: PaymentMode;
 
+  /** Number of installments (preferred field from admin UI) */
+  @IsNumber()
+  @Min(1)
+  @IsOptional()
+  customInstallmentCount?: number;
+
+  /** Legacy alias — kept for backward compatibility */
   @IsNumber()
   @Min(1)
   @IsOptional()
@@ -25,6 +37,12 @@ export class GenerateFeePlanDto {
   @IsOptional()
   optionalComponentIds?: string[];
 
+  /** ISO date string for the first installment due date */
+  @IsString()
+  @IsOptional()
+  customFirstDueDate?: string;
+
+  /** Legacy alias — array of due-date strings, one per installment */
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
@@ -34,4 +52,13 @@ export class GenerateFeePlanDto {
   @Min(0)
   @IsOptional()
   customTotalAmount?: number;
+
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  discountAmount?: number;
+
+  @IsString()
+  @IsOptional()
+  discountReason?: string;
 }
