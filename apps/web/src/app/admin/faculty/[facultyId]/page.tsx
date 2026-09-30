@@ -38,6 +38,7 @@ import {
   Plus,
   Users,
   BookOpen,
+  Shield,
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -516,6 +517,24 @@ export default function FacultyDetailsPage({ params }: { params: Promise<{ facul
                       </div>
                     </div>
                   </div>
+                  {(faculty as any).roles && (faculty as any).roles.length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <h3 className="mb-3 flex items-center gap-2 text-lg font-medium">
+                          <Shield className="h-4 w-4" />
+                          Institutional Roles
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {(faculty as any).roles.map((fr: any) => (
+                            <Badge key={fr.id} variant="secondary">
+                              {fr.customRole?.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

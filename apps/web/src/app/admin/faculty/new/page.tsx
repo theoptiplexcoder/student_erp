@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Card, CardHeader, CardTitle, CardContent, Input } from '@student-erp/ui';
 import { useCreateFaculty } from '@/hooks/api/admin/useFaculty';
+import { useAdminRoles } from '@/hooks/api/admin/useRoles';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useAdminDepartments } from '@/hooks/api/admin/useDepartments';
@@ -14,7 +15,9 @@ export default function NewFacultyPage() {
   const router = useRouter();
   const createFaculty = useCreateFaculty();
   const { data: departmentsData } = useAdminDepartments(1, 100);
+  const { data: rolesData } = useAdminRoles();
   const departments = departmentsData?.data || [];
+  const roles = rolesData || [];
   const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -27,6 +30,7 @@ export default function NewFacultyPage() {
     employmentType: 'FULL_TIME',
     departmentId: '',
     hireDate: '',
+    roleIds: [] as string[],
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -36,6 +40,15 @@ export default function NewFacultyPage() {
 
   const handlePhoneChange = (name: string, value: any) => {
     setFormData((prev) => ({ ...prev, [name]: value || '' }));
+  };
+
+  const handleRoleToggle = (roleId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      roleIds: prev.roleIds.includes(roleId)
+        ? prev.roleIds.filter((id) => id !== roleId)
+        : [...prev.roleIds, roleId],
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -178,6 +191,46 @@ export default function NewFacultyPage() {
                 />
               </div>
             </div>
+
+            {/* Institutional Roles */}
+            {roles.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Institutional Role(s)
+                  <span className="text-muted-foreground ml-1 text-xs font-normal">
+                    (Optional — select all that apply)
+                  </span>
+                </label>
+                <div className="border-input rounded-md border p-3">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {roles.map((role) => (
+                      <label
+                        key={role.id}
+                        className="flex cursor-pointer items-center gap-2 text-sm"
+                      >
+                        <input
+                          type="checkbox"
+                          className="accent-primary h-4 w-4 rounded"
+                          checked={formData.roleIds.includes(role.id)}
+                          onChange={() => handleRoleToggle(role.id)}
+                        />
+                        <span className="font-medium">{role.name}</span>
+                        {role.description && (
+                          <span className="text-muted-foreground truncate text-xs">
+                            — {role.description}
+                          </span>
+                        )}
+                      </label>
+                    ))}
+                  </div>
+                  {formData.roleIds.length === 0 && (
+                    <p className="text-muted-foreground mt-2 text-xs">
+                      No role selected. You can assign roles later from the faculty profile.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="flex justify-end pt-4">
               <Button type="submit" disabled={createFaculty.isPending}>

@@ -1,4 +1,12 @@
-import { IsString, IsEmail, IsOptional, IsEnum, IsUUID, IsDateString } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  IsOptional,
+  IsEnum,
+  IsUUID,
+  IsDateString,
+  IsArray,
+} from 'class-validator';
 import { FacultyEmploymentType, FacultyStatus } from '@prisma/client';
 
 export class UpdateFacultyDto {
@@ -41,4 +49,9 @@ export class UpdateFacultyDto {
   @IsOptional()
   @IsEnum(FacultyStatus)
   status?: FacultyStatus;
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  roleIds?: string[];
 }

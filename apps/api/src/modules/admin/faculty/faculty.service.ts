@@ -42,6 +42,7 @@ export class FacultyService {
         include: {
           user: true,
           department: true,
+          roles: { include: { customRole: true } },
         },
         orderBy: { user: { lastName: 'asc' } },
       }),
@@ -64,6 +65,7 @@ export class FacultyService {
       include: {
         user: true,
         department: true,
+        roles: { include: { customRole: true } },
       },
     });
 
@@ -74,58 +76,93 @@ export class FacultyService {
   }
 
   async createFaculty(institutionId: string, data: CreateFacultyDto) {
-    return this.prisma.$transaction(async (tx) => {
-      let user = await tx.user.findFirst({
-        where: { email: data.email, institutionId },
+    // Step 1: create Supabase auth user OUTSIDE the DB transaction so we can
+    // clean it up if the DB steps fail.
+    let supabaseUserId: string | null = null;
+    let existingAuthUser = false;
+
+    let dbUser = await this.prisma.user.findFirst({
+      where: { email: data.email, institutionId },
+    });
+
+    if (!dbUser) {
+      const { data: authData, error: authError } = await this.supabase.auth.admin.createUser({
+        email: data.email,
+        password: data.password,
+        email_confirm: true,
+        user_metadata: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          role: 'FACULTY',
+          institutionId,
+        },
       });
 
-      if (!user) {
-        // Create user in Supabase
-        const { data: authData, error: authError } = await this.supabase.auth.admin.createUser({
-          email: data.email,
-          password: data.password,
-          email_confirm: true,
-          user_metadata: {
-            firstName: data.firstName,
-            lastName: data.lastName,
-            role: 'FACULTY',
-            institutionId,
-          },
-        });
-
-        if (authError) {
-          throw new BadRequestException(`Failed to create auth user: ${authError.message}`);
-        }
-
-        user = await tx.user.create({
-          data: {
-            institutionId,
-            authUserId: authData.user.id,
-            email: data.email,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            phone: data.phone,
-            role: 'FACULTY',
-          },
-        });
+      if (authError) {
+        throw new BadRequestException(`Failed to create auth user: ${authError.message}`);
       }
 
-      return tx.faculty.create({
-        data: {
-          institutionId,
-          userId: user.id,
-          departmentId: data.departmentId,
-          teacherCode: data.teacherCode,
-          employmentType: data.employmentType,
-          hireDate: new Date(data.hireDate),
-          status: data.status || 'ACTIVE',
-        },
-        include: {
-          user: true,
-          department: true,
-        },
+      supabaseUserId = authData.user.id;
+    } else {
+      existingAuthUser = true;
+    }
+
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        if (!dbUser) {
+          dbUser = await tx.user.create({
+            data: {
+              institutionId,
+              authUserId: supabaseUserId!,
+              email: data.email,
+              firstName: data.firstName,
+              lastName: data.lastName,
+              phone: data.phone,
+              role: 'FACULTY',
+            },
+          });
+        }
+
+        const faculty = await tx.faculty.create({
+          data: {
+            institutionId,
+            userId: dbUser.id,
+            departmentId: data.departmentId,
+            teacherCode: data.teacherCode,
+            employmentType: data.employmentType,
+            hireDate: new Date(data.hireDate),
+            status: data.status || 'ACTIVE',
+          },
+        });
+
+        // Assign institutional roles if provided
+        if (data.roleIds && data.roleIds.length > 0) {
+          await tx.facultyRole.createMany({
+            data: data.roleIds.map((customRoleId) => ({
+              facultyId: faculty.id,
+              customRoleId,
+            })),
+            skipDuplicates: true,
+          });
+        }
+
+        return tx.faculty.findUniqueOrThrow({
+          where: { id: faculty.id },
+          include: {
+            user: true,
+            department: true,
+            roles: { include: { customRole: true } },
+          },
+        });
       });
-    });
+    } catch (err) {
+      // If the Supabase auth user was freshly created but the DB transaction
+      // failed, delete the orphaned auth account.
+      if (supabaseUserId && !existingAuthUser) {
+        await this.supabase.auth.admin.deleteUser(supabaseUserId);
+      }
+      throw err;
+    }
   }
 
   async updateFaculty(institutionId: string, id: string, data: UpdateFacultyDto) {
@@ -144,6 +181,17 @@ export class FacultyService {
         });
       }
 
+      // Replace institutional roles when roleIds is explicitly provided
+      if (data.roleIds !== undefined) {
+        await tx.facultyRole.deleteMany({ where: { facultyId: id } });
+        if (data.roleIds.length > 0) {
+          await tx.facultyRole.createMany({
+            data: data.roleIds.map((customRoleId) => ({ facultyId: id, customRoleId })),
+            skipDuplicates: true,
+          });
+        }
+      }
+
       return tx.faculty.update({
         where: { id },
         data: {
@@ -157,6 +205,7 @@ export class FacultyService {
         include: {
           user: true,
           department: true,
+          roles: { include: { customRole: true } },
         },
       });
     });

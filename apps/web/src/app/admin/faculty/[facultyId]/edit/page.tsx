@@ -4,6 +4,8 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Card, CardHeader, CardTitle, CardContent, Input } from '@student-erp/ui';
 import { useAdminFacultyDetails, useUpdateFaculty } from '@/hooks/api/admin/useFaculty';
+import { useAdminRoles } from '@/hooks/api/admin/useRoles';
+import { useAdminDepartments } from '@/hooks/api/admin/useDepartments';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
@@ -12,6 +14,10 @@ export default function EditFacultyPage({ params }: { params: Promise<{ facultyI
   const { facultyId } = use(params);
   const { data: faculty, isLoading } = useAdminFacultyDetails(facultyId);
   const updateFaculty = useUpdateFaculty();
+  const { data: rolesData } = useAdminRoles();
+  const { data: departmentsData } = useAdminDepartments(1, 100);
+  const roles = rolesData || [];
+  const departments = departmentsData?.data || [];
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -22,6 +28,7 @@ export default function EditFacultyPage({ params }: { params: Promise<{ facultyI
     employmentType: 'FULL_TIME',
     departmentId: '',
     hireDate: '',
+    roleIds: [] as string[],
   });
 
   useEffect(() => {
@@ -30,14 +37,24 @@ export default function EditFacultyPage({ params }: { params: Promise<{ facultyI
         firstName: faculty.user.firstName || '',
         lastName: faculty.user.lastName || '',
         email: faculty.user.email || '',
-        phone: faculty.user.phone || '',
+        phone: (faculty.user as any).phone || '',
         teacherCode: faculty.teacherCode || '',
         employmentType: faculty.employmentType || 'FULL_TIME',
         departmentId: faculty.departmentId || '',
         hireDate: faculty.hireDate ? new Date(faculty.hireDate).toISOString().split('T')[0] : '',
+        roleIds: (faculty as any).roles?.map((r: any) => r.customRoleId) ?? [],
       });
     }
   }, [faculty]);
+
+  const handleRoleToggle = (roleId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      roleIds: prev.roleIds.includes(roleId)
+        ? prev.roleIds.filter((id) => id !== roleId)
+        : [...prev.roleIds, roleId],
+    }));
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -138,14 +155,21 @@ export default function EditFacultyPage({ params }: { params: Promise<{ facultyI
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Department ID</label>
-                <Input
+                <label className="text-sm font-medium">Department</label>
+                <select
                   required
                   name="departmentId"
                   value={formData.departmentId}
                   onChange={handleChange}
-                  placeholder="Department UUID..."
-                />
+                  className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                >
+                  <option value="">Select Department</option>
+                  {departments.map((d: any) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name} ({d.code})
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Hire Date</label>
@@ -158,6 +182,41 @@ export default function EditFacultyPage({ params }: { params: Promise<{ facultyI
                 />
               </div>
             </div>
+
+            {/* Institutional Roles */}
+            {roles.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Institutional Role(s)
+                  <span className="text-muted-foreground ml-1 text-xs font-normal">
+                    (Select all that apply)
+                  </span>
+                </label>
+                <div className="border-input rounded-md border p-3">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {roles.map((role) => (
+                      <label
+                        key={role.id}
+                        className="flex cursor-pointer items-center gap-2 text-sm"
+                      >
+                        <input
+                          type="checkbox"
+                          className="accent-primary h-4 w-4 rounded"
+                          checked={formData.roleIds.includes(role.id)}
+                          onChange={() => handleRoleToggle(role.id)}
+                        />
+                        <span className="font-medium">{role.name}</span>
+                        {role.description && (
+                          <span className="text-muted-foreground truncate text-xs">
+                            — {role.description}
+                          </span>
+                        )}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="flex justify-end pt-4">
               <Button type="submit" disabled={updateFaculty.isPending}>

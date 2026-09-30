@@ -653,6 +653,7 @@ model Faculty {
   lessonPlans        LessonPlan[]
   availability       FacultyAvailability[]
   facultySections    FacultySection[]
+  roles              FacultyRole[]
 
   sessionOccurrences SessionOccurrence[]
   leaveRequests         FacultyLeaveRequest[]
@@ -663,6 +664,21 @@ model Faculty {
   @@index([institutionId, departmentId])
   @@index([institutionId, status])
   @@map("faculty")
+}
+
+model FacultyRole {
+  id           String   @id @default(uuid()) @db.Uuid
+  facultyId    String   @map("faculty_id") @db.Uuid
+  customRoleId String   @map("custom_role_id") @db.Uuid
+  assignedAt   DateTime @default(now()) @map("assigned_at")
+
+  faculty    Faculty    @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  customRole CustomRole @relation(fields: [customRoleId], references: [id], onDelete: Cascade)
+
+  @@unique([facultyId, customRoleId])
+  @@index([facultyId])
+  @@index([customRoleId])
+  @@map("faculty_roles")
 }
 
 model FacultyLeaveRequest {
@@ -2307,9 +2323,10 @@ model CustomRole {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  institution Institution      @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  permissions RolePermission[]
-  users       User[]
+  institution  Institution      @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  permissions  RolePermission[]
+  users        User[]
+  facultyRoles FacultyRole[]
 
   @@unique([institutionId, name])
   @@map("custom_roles")
