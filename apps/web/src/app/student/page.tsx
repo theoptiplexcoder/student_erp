@@ -5,11 +5,14 @@ import { AttendanceOverviewCard } from '../../components/student/dashboard/atten
 import { UpcomingDeadlinesCard } from '../../components/student/dashboard/upcoming-deadlines-card';
 import { UpcomingEventsCard } from '../../components/student/dashboard/upcoming-events-card';
 import { RecentAnnouncements } from '../../components/student/dashboard/recent-announcements';
+import { QuickActionsCard } from '../../components/student/dashboard/quick-actions-card';
 
 export default function StudentDashboardPage() {
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6">
       <StudentWelcomeHeader />
+
+      <QuickActionsCard />
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div className="md:col-span-2 lg:col-span-2">
