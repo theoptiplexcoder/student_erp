@@ -697,11 +697,9 @@ export default function AdminTimetablePage() {
         dayOfWeek={dayOfWeek}
         setDayOfWeek={setDayOfWeek}
         onGenerate={() => {
-          if (rawEntries.length > 0) {
-            setOverwriteWarningOpen(true);
-          } else {
-            setGenerationModalOpen(true);
-          }
+          // Always collect generation settings before deciding whether to warn
+          // about replacing existing timetable entries.
+          setGenerationModalOpen(true);
         }}
         isGenerating={isGenerating}
         onImport={() => setImportModalOpen(true)}
