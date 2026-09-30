@@ -102,7 +102,6 @@ export const adminNavigationSections: NavSection[] = [
         href: '/admin/finance',
         icon: IndianRupee,
       },
-      { name: 'Alumni Network', href: '/admin/alumni', icon: GraduationCap },
     ],
   },
   {
