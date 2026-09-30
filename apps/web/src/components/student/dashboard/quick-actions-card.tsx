@@ -94,7 +94,7 @@ export function QuickActionsCard() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Quick Actions</CardTitle>
+        <CardTitle className="text-lg"></CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
