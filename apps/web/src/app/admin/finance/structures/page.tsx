@@ -192,6 +192,7 @@ export default function FeeStructuresPage() {
       code: formData.code,
       academicYearId: formData.academicYearId,
       programId: formData.programId || undefined,
+      totalAmount: totalCalculatedAmount,
       components: formData.components.map((c) => ({
         name: c.name,
         type: c.type,

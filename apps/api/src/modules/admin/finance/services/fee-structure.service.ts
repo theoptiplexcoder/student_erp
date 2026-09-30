@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../../database/prisma.service';
 import { CreateFeeStructureDto } from '../dto/create-fee-structure.dto';
 import { UpdateFeeStructureDto } from '../dto/update-fee-structure.dto';
@@ -124,7 +124,15 @@ export class FeeStructureService {
         });
       }
 
-      return tx.feeStructure.update({
+      // Recalculate totalAmount from components if not explicitly supplied
+      const newTotalAmount =
+        dto.totalAmount !== undefined
+          ? dto.totalAmount
+          : dto.components
+            ? dto.components.reduce((sum, c) => sum + (c.amount || 0), 0)
+            : undefined;
+
+      const updatedStructure = await tx.feeStructure.update({
         where: { id },
         data: {
           name: dto.name,
@@ -132,7 +140,7 @@ export class FeeStructureService {
           programId: dto.programId,
           batchId: dto.batchId,
           academicYearId: dto.academicYearId,
-          totalAmount: dto.totalAmount,
+          totalAmount: newTotalAmount,
           currency: dto.currency,
           isActive: dto.isActive,
         },
@@ -143,6 +151,61 @@ export class FeeStructureService {
           academicYear: { select: { id: true, name: true } },
         },
       });
+
+      // Propagate updated totalAmount to all enrolled students
+      // Only update ACTIVE plans that have not yet had any payments recorded
+      if (newTotalAmount !== undefined) {
+        const linkedPlans = await tx.studentFeePlan.findMany({
+          where: {
+            feeStructureId: id,
+            status: 'ACTIVE',
+          },
+          include: {
+            installments: {
+              include: {
+                allocations: { select: { id: true } },
+              },
+            },
+            waivers: { select: { amount: true } },
+          },
+        });
+
+        for (const plan of linkedPlans) {
+          // Skip plans that have any payment allocations recorded
+          const hasPayments = plan.installments.some((inst) => inst.allocations.length > 0);
+          if (hasPayments) {
+            continue;
+          }
+
+          const totalWaivers = plan.waivers.reduce((sum, w) => sum + w.amount, 0);
+          const adjustedTotal = Math.max(0, newTotalAmount - totalWaivers);
+          const installmentCount = plan.installments.length;
+
+          if (installmentCount > 0) {
+            const baseAmount = Math.floor((adjustedTotal / installmentCount) * 100) / 100;
+            const remainder =
+              Math.round((adjustedTotal - baseAmount * installmentCount) * 100) / 100;
+
+            for (let i = 0; i < plan.installments.length; i++) {
+              const inst = plan.installments[i];
+              const isLast = i === plan.installments.length - 1;
+              const instAmount = isLast ? baseAmount + remainder : baseAmount;
+
+              await tx.feeInstallment.update({
+                where: { id: inst.id },
+                data: { amount: instAmount },
+              });
+            }
+          }
+
+          await tx.studentFeePlan.update({
+            where: { id: plan.id },
+            data: { totalAmount: adjustedTotal },
+          });
+        }
+      }
+
+      return updatedStructure;
     });
   }
 
