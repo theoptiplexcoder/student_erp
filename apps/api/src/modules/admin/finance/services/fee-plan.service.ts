@@ -373,24 +373,144 @@ export class FeePlanService {
   }
 
   async getStudentDues(institutionId: string, studentId: string) {
-    const plans = await this.findAll(institutionId, { studentId });
+    // Fetch student info
+    const student = await this.prisma.student.findFirst({
+      where: { id: studentId, institutionId },
+      select: {
+        id: true,
+        rollNumber: true,
+        admissionNumber: true,
+        user: { select: { firstName: true, lastName: true, email: true, phone: true } },
+        program: { select: { id: true, name: true, code: true } },
+        batch: { select: { id: true, name: true } },
+        section: { select: { id: true, name: true } },
+      },
+    });
 
-    // Also get all payment history for student
+    // Fetch plans with live feeStructure components (source of truth after updates)
+    const rawPlans = await this.prisma.studentFeePlan.findMany({
+      where: { institutionId, studentId },
+      include: {
+        academicYear: { select: { id: true, name: true } },
+        feeStructure: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            components: true, // live components after any fee structure update
+          },
+        },
+        components: { include: { feeComponent: true } },
+        installments: {
+          orderBy: { installmentNumber: 'asc' },
+          include: {
+            allocations: {
+              include: {
+                payment: {
+                  select: {
+                    id: true,
+                    receiptNumber: true,
+                    paymentDate: true,
+                    paymentMethod: true,
+                    status: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        waivers: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const now = new Date();
+
+    const feePlans = rawPlans.map((plan) => {
+      const totalPaid = plan.installments.reduce((sum, inst) => sum + inst.amountPaid, 0);
+      const totalWaivers = plan.waivers.reduce((sum, w) => sum + w.amount, 0);
+      const balanceDue = Math.max(0, plan.totalAmount - totalPaid - totalWaivers);
+
+      // Use live feeStructure.components as the source of truth for the breakdown.
+      // StudentFeePlanComponent rows may reference stale FeeComponent IDs after a
+      // structure update (old components are deleted + recreated), so we prefer the
+      // live structure. Fall back to StudentFeePlanComponent data when there is no
+      // linked structure (custom / ad-hoc plans).
+      const components: { name: string; type: string; amount: number; isOptional: boolean }[] = plan
+        .feeStructure?.components?.length
+        ? plan.feeStructure.components.map((c) => ({
+            name: c.name,
+            type: c.type,
+            amount: c.amount,
+            isOptional: c.isOptional,
+          }))
+        : plan.components.map((c) => ({
+            name: c.feeComponent?.name ?? 'Unknown',
+            type: c.feeComponent?.type ?? 'MISC',
+            amount: c.amount,
+            isOptional: c.feeComponent?.isOptional ?? false,
+          }));
+
+      return {
+        id: plan.id,
+        academicYear: plan.academicYear,
+        feeStructure: plan.feeStructure
+          ? { id: plan.feeStructure.id, name: plan.feeStructure.name, code: plan.feeStructure.code }
+          : undefined,
+        totalAmount: plan.totalAmount,
+        currency: plan.currency,
+        paymentMode: plan.paymentMode,
+        status: plan.status,
+        totalPaid,
+        balanceDue,
+        components,
+        installments: plan.installments,
+        waivers: plan.waivers,
+        payments: [] as any[],
+      };
+    });
+
+    // Cross-plan summary
+    const totalFee = feePlans.reduce((sum, p) => sum + p.totalAmount, 0);
+    const totalPaidAll = feePlans.reduce((sum, p) => sum + p.totalPaid, 0);
+    const totalWaiversAll = rawPlans.reduce(
+      (sum, p) => sum + p.waivers.reduce((ws, w) => ws + w.amount, 0),
+      0,
+    );
+    const totalOutstanding = Math.max(0, totalFee - totalPaidAll - totalWaiversAll);
+
+    const allPendingInstallments = feePlans
+      .flatMap((p) =>
+        p.installments
+          .filter((inst) => inst.status !== InstallmentStatus.PAID)
+          .map((inst) => ({ ...inst, academicYear: p.academicYear.name })),
+      )
+      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+
+    const hasOverdue = allPendingInstallments.some((inst) => new Date(inst.dueDate) < now);
+    const nextUpcomingInstallment = allPendingInstallments[0] ?? null;
+
+    // Payment history
     const payments = await this.prisma.payment.findMany({
       where: { institutionId, studentId },
       include: {
-        allocations: {
-          include: {
-            installment: true,
-          },
-        },
+        allocations: { include: { installment: true } },
       },
       orderBy: { paymentDate: 'desc' },
     });
 
     return {
-      feePlans: plans,
+      student,
+      feePlans,
       payments,
+      summary: {
+        totalFee,
+        totalPaid: totalPaidAll,
+        totalOutstanding,
+        currency: feePlans[0]?.currency ?? 'INR',
+        hasOverdue,
+        nextUpcomingInstallment,
+      },
     };
   }
 

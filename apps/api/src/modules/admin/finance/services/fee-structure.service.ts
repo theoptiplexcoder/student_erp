@@ -202,6 +202,29 @@ export class FeeStructureService {
             where: { id: plan.id },
             data: { totalAmount: adjustedTotal },
           });
+
+          // Refresh StudentFeePlanComponent rows to point to the newly recreated
+          // FeeComponent IDs (old rows reference deleted component IDs after
+          // deleteMany + createMany above).
+          await tx.studentFeePlanComponent.deleteMany({
+            where: { studentFeePlanId: plan.id },
+          });
+
+          const newComponents = await tx.feeComponent.findMany({
+            where: { feeStructureId: id },
+          });
+
+          if (newComponents.length > 0) {
+            await tx.studentFeePlanComponent.createMany({
+              data: newComponents
+                .filter((c) => !c.isOptional)
+                .map((c) => ({
+                  studentFeePlanId: plan.id,
+                  feeComponentId: c.id,
+                  amount: c.amount,
+                })),
+            });
+          }
         }
       }
 
