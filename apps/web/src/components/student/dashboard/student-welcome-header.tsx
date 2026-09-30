@@ -40,29 +40,6 @@ export function StudentWelcomeHeader() {
           {programName} • Semester {semester} • Section {section}
         </p>
       </div>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/student/timetable">
-            <CalendarDays className="mr-2 h-4 w-4" /> Timetable
-          </Link>
-        </Button>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/student/courses">
-            <BookOpen className="mr-2 h-4 w-4" /> My Courses
-          </Link>
-        </Button>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/student/courses?tab=attendance">
-            <Clock className="mr-2 h-4 w-4" /> Attendance
-          </Link>
-        </Button>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/student/certificates">
-            <FileText className="mr-2 h-4 w-4" /> Certificates
-          </Link>
-        </Button>
-      </div>
     </div>
   );
 }
