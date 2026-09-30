@@ -4,141 +4,223 @@ import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
   PageHeader,
   PageContainer,
   StatCard,
   EmptyState,
-  StatusBadge,
 } from '@student-erp/ui';
 import { AdminApi } from '@student-erp/sdk';
-import { ClipboardList, Users, CheckCircle2, Calendar } from 'lucide-react';
+import { CheckCircle2, Users, AlertTriangle, GraduationCap } from 'lucide-react';
+import { cn } from '@student-erp/utils';
+
+interface SectionCard {
+  sectionId: string;
+  sectionName: string;
+  sectionCode: string;
+  program: string | null;
+  classLevel: string | null;
+  totalStudents: number;
+  totalSessions: number;
+  averageAttendancePercent: number;
+  presentCount: number;
+  totalRecords: number;
+}
+
+/** Colour-coded ring based on average attendance. */
+function AttendanceRing({ value }: { value: number }) {
+  const radius = 32;
+  const circumference = 2 * Math.PI * radius;
+  const filled = ((value / 100) * circumference).toFixed(1);
+
+  const colour =
+    value >= 85
+      ? '#22c55e' // green-500
+      : value >= 75
+        ? '#f59e0b' // amber-500
+        : '#ef4444'; // red-500
+
+  return (
+    <svg width="80" height="80" viewBox="0 0 80 80" className="shrink-0">
+      {/* track */}
+      <circle
+        cx="40"
+        cy="40"
+        r={radius}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="6"
+        className="text-muted/30"
+      />
+      {/* fill */}
+      <circle
+        cx="40"
+        cy="40"
+        r={radius}
+        fill="none"
+        stroke={colour}
+        strokeWidth="6"
+        strokeDasharray={`${filled} ${circumference}`}
+        strokeLinecap="round"
+        transform="rotate(-90 40 40)"
+      />
+      <text x="40" y="44" textAnchor="middle" fontSize="13" fontWeight="700" fill={colour}>
+        {value.toFixed(1)}%
+      </text>
+    </svg>
+  );
+}
+
+function statusLabel(pct: number) {
+  if (pct >= 85) return { text: 'Healthy', colour: 'text-green-600 bg-green-50' };
+  if (pct >= 75) return { text: 'At Risk', colour: 'text-amber-600 bg-amber-50' };
+  return { text: 'Critical', colour: 'text-red-600 bg-red-50' };
+}
 
 export default function AttendancePage() {
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [sections, setSections] = useState<SectionCard[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    (async () => {
       try {
         setLoading(true);
-        const [statsRes, sessionsRes] = await Promise.all([
+        const [overviewRes, statsRes] = await Promise.all([
+          AdminApi.attendance.getSectionOverview(),
           AdminApi.attendance.getStats(),
-          AdminApi.attendance.getSessions(),
         ]);
-
-        if (statsRes) {
-          setStats(statsRes);
-        }
-
-        if (sessionsRes && sessionsRes.data) {
-          setSessions(sessionsRes.data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch attendance data', error);
+        if (Array.isArray(overviewRes)) setSections(overviewRes);
+        if (statsRes) setStats(statsRes);
+      } catch (err) {
+        console.error('Failed to load attendance overview', err);
       } finally {
         setLoading(false);
       }
-    };
-    fetchData();
+    })();
   }, []);
+
+  // Derived KPIs from section data
+  const totalSections = sections.length;
+  const criticalSections = sections.filter((s) => s.averageAttendancePercent < 75).length;
+  const overallAvg =
+    sections.length > 0
+      ? sections.reduce((sum, s) => sum + s.averageAttendancePercent, 0) / sections.length
+      : 0;
 
   return (
     <PageContainer>
       <PageHeader
-        title="Attendance Monitor"
-        description="Institution-wide attendance tracking, lecture session logs, and real-time absence monitoring."
+        title="Attendance Overview"
+        description="High-level average attendance per class section across the institution."
       />
 
-      {/* KPI Ribbons */}
+      {/* KPI Ribbon */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
-          label="Total Logged Sessions"
-          value={loading || !stats ? '...' : stats.totalSessions.toLocaleString()}
-          icon={ClipboardList}
-          subtitle="Recorded in current academic cycle"
-        />
-        <StatCard
-          label="Average Attendance"
-          value={loading || !stats ? '...' : `${stats.averageAttendance.toFixed(1)}%`}
+          label="Overall Avg Attendance"
+          value={loading ? '...' : `${overallAvg.toFixed(1)}%`}
           icon={CheckCircle2}
-          trend={stats?.trend || { value: '+0%', direction: 'up', label: 'vs last week' }}
+          subtitle="Across all sections"
         />
         <StatCard
-          label="Absence Flag Threshold"
-          value={loading || !stats ? '...' : `${stats.threshold.toFixed(1)}%`}
+          label="Total Sections"
+          value={loading ? '...' : totalSections}
           icon={Users}
-          subtitle="Mandatory minimum compliance"
+          subtitle="Active class sections"
+        />
+        <StatCard
+          label="Critical Sections"
+          value={loading ? '...' : criticalSections}
+          icon={AlertTriangle}
+          subtitle="Below 75% attendance"
         />
       </div>
 
-      {/* Session Data Records */}
-      <Card className="border-border/80 shadow-xs">
-        <CardHeader className="border-border/60 border-b p-4 sm:p-5">
-          <CardTitle className="text-sm font-semibold">Recent Class Sessions</CardTitle>
-          <CardDescription className="text-xs">
-            Real-time attendance logs submitted by teaching faculty.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          {loading ? (
-            <div className="text-muted-foreground flex h-44 animate-pulse items-center justify-center text-xs">
-              Loading sessions data...
-            </div>
-          ) : sessions.length === 0 ? (
-            <EmptyState
-              icon={Calendar}
-              title="No attendance sessions logged today"
-              description="Sessions conducted by faculty members will appear here automatically."
-            />
-          ) : (
-            <div className="divide-border/60 divide-y">
-              {sessions.map((session) => (
-                <div
-                  key={session.id}
-                  className="hover:bg-muted/40 group flex flex-col justify-between gap-3 p-3.5 transition-colors sm:flex-row sm:items-center sm:p-4"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-foreground text-xs font-semibold">
-                        {session.course?.name || 'Academic Course'}
-                      </h4>
-                      <span className="text-muted-foreground font-mono text-[11px]">
-                        ({session.course?.code || 'N/A'})
-                      </span>
+      {/* Section Cards Grid */}
+      {loading ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Card key={i} className="border-border/60 animate-pulse">
+              <CardContent className="h-36" />
+            </Card>
+          ))}
+        </div>
+      ) : sections.length === 0 ? (
+        <EmptyState
+          icon={GraduationCap}
+          title="No sections found"
+          description="Create sections and record attendance sessions for them to appear here."
+        />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {sections.map((section) => {
+            const badge = statusLabel(section.averageAttendancePercent);
+            return (
+              <Card
+                key={section.sectionId}
+                className="border-border/60 shadow-xs transition-shadow hover:shadow-sm"
+              >
+                <CardHeader className="p-4 pb-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <CardTitle className="truncate text-sm leading-tight font-semibold">
+                        {section.classLevel
+                          ? `${section.classLevel} — ${section.sectionName}`
+                          : section.sectionName}
+                      </CardTitle>
+                      <p className="text-muted-foreground mt-0.5 truncate text-[11px]">
+                        {section.program ?? 'No program'}
+                        {' · '}
+                        <span className="font-mono">{section.sectionCode}</span>
+                      </p>
                     </div>
-                    <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
-                      <span>{new Date(session.date).toLocaleDateString()}</span>
-                      <span>•</span>
-                      <span>
-                        Faculty: {session.faculty?.user?.firstName}{' '}
-                        {session.faculty?.user?.lastName}
-                      </span>
-                      <span>•</span>
-                      <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-[10px] font-medium">
-                        Section {session.section?.name || 'A'}
-                      </span>
-                    </div>
+                    {/* Status pill */}
+                    <span
+                      className={cn(
+                        'shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium',
+                        badge.colour,
+                      )}
+                    >
+                      {badge.text}
+                    </span>
                   </div>
+                </CardHeader>
 
+                <CardContent className="p-4 pt-0">
                   <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="text-foreground text-xs font-semibold">
-                        {session._count?.attendanceRecords || 0} Students
+                    {/* Circular progress */}
+                    <AttendanceRing value={section.averageAttendancePercent} />
+
+                    {/* Stats */}
+                    <div className="flex min-w-0 flex-col gap-1.5 text-xs">
+                      <div className="flex justify-between gap-2">
+                        <span className="text-muted-foreground">Students</span>
+                        <span className="font-semibold tabular-nums">{section.totalStudents}</span>
                       </div>
-                      <div className="text-muted-foreground text-[10px]">Verified</div>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-muted-foreground">Sessions</span>
+                        <span className="font-semibold tabular-nums">{section.totalSessions}</span>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-muted-foreground">Present</span>
+                        <span className="font-semibold text-green-600 tabular-nums">
+                          {section.presentCount}
+                        </span>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-muted-foreground">Total Records</span>
+                        <span className="font-semibold tabular-nums">{section.totalRecords}</span>
+                      </div>
                     </div>
-                    <StatusBadge status="completed" size="sm" />
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </PageContainer>
   );
 }

@@ -52,6 +52,8 @@ export const AdminApi = {
     markAllAsRead: () => adminApiClient.patch('/notifications/read-all').then((res) => res.data),
   },
   attendance: {
+    getSectionOverview: () =>
+      adminApiClient.get('/attendance/section-overview').then((res) => res.data),
     getStats: () => adminApiClient.get('/attendance/stats').then((res) => res.data),
     getSessions: (params?: {
       page?: number;

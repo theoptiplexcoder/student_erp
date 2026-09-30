@@ -2,6 +2,19 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { Prisma } from '@prisma/client';
 
+export interface SectionAttendanceOverview {
+  sectionId: string;
+  sectionName: string;
+  sectionCode: string;
+  program: string | null;
+  classLevel: string | null;
+  totalStudents: number;
+  totalSessions: number;
+  averageAttendancePercent: number;
+  presentCount: number;
+  totalRecords: number;
+}
+
 @Injectable()
 export class AttendanceService {
   constructor(private readonly prisma: PrismaService) {}
@@ -15,14 +28,14 @@ export class AttendanceService {
     // Let's get the aggregate of records
     const presentRecords = await this.prisma.attendanceRecord.count({
       where: {
-        session: { institutionId },
+        attendanceSession: { institutionId },
         status: 'PRESENT',
       },
     });
 
     const totalRecords = await this.prisma.attendanceRecord.count({
       where: {
-        session: { institutionId },
+        attendanceSession: { institutionId },
       },
     });
 
@@ -90,5 +103,59 @@ export class AttendanceService {
     });
     if (!session) throw new NotFoundException('Session not found');
     return session;
+  }
+
+  /**
+   * Returns one card per section with the average attendance percentage
+   * across all students enrolled in that section.
+   *
+   * Logic:
+   *  - For every AttendanceSession in a section, fetch all AttendanceRecords.
+   *  - averageAttendancePercent = (PRESENT records / total records) * 100
+   *  - totalStudents comes from Student.sectionId count.
+   */
+  async getSectionOverview(institutionId: string): Promise<SectionAttendanceOverview[]> {
+    // Fetch all sections for the institution
+    const sections = await this.prisma.section.findMany({
+      where: { institutionId },
+      include: {
+        program: { select: { name: true } },
+        classLevel: { select: { name: true } },
+        _count: { select: { students: true, attendanceSessions: true } },
+      },
+      orderBy: [{ classLevel: { sequence: 'asc' } }, { name: 'asc' }],
+    });
+
+    // For each section compute present / total attendance records
+    const results: SectionAttendanceOverview[] = await Promise.all(
+      sections.map(async (section) => {
+        const [present, total] = await Promise.all([
+          this.prisma.attendanceRecord.count({
+            where: {
+              attendanceSession: { sectionId: section.id, institutionId },
+              status: 'PRESENT',
+            },
+          }),
+          this.prisma.attendanceRecord.count({
+            where: { attendanceSession: { sectionId: section.id, institutionId } },
+          }),
+        ]);
+
+        return {
+          sectionId: section.id,
+          sectionName: section.name,
+          sectionCode: section.code,
+          program: section.program?.name ?? null,
+          classLevel: section.classLevel?.name ?? null,
+          totalStudents: section._count.students,
+          totalSessions: section._count.attendanceSessions,
+          presentCount: present,
+          totalRecords: total,
+          averageAttendancePercent: total > 0 ? Math.round((present / total) * 1000) / 10 : 0,
+        };
+      }),
+    );
+
+    return results;
   }
 }
