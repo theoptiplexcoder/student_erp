@@ -72,6 +72,8 @@ export default function AdminTimetablePage() {
   const [editingEntry, setEditingEntry] = useState<any>(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [generationModalOpen, setGenerationModalOpen] = useState(false);
+  const [gridWorkingHours, setGridWorkingHours] = useState({ start: '08:00', end: '17:00' });
+  const [gridBreakPeriods, setGridBreakPeriods] = useState<{ start: string; end: string }[]>([]);
   const [overwriteWarningOpen, setOverwriteWarningOpen] = useState(false);
   const [pendingGenerationConfig, setPendingGenerationConfig] =
     useState<TimetableGenerationConfig | null>(null);
@@ -385,6 +387,8 @@ export default function AdminTimetablePage() {
 
   // Pre-flight check: trigger overwrite warning dialog if existing timetable entries exist
   const handleRequestGeneration = (config: TimetableGenerationConfig) => {
+    setGridWorkingHours(config.workingHours);
+    setGridBreakPeriods(config.breakPeriods);
     const existingInScope = rawEntries.filter((e: any) => config.sectionIds.includes(e.sectionId));
 
     if (existingInScope.length > 0) {
@@ -771,6 +775,8 @@ export default function AdminTimetablePage() {
                 onMoveEntry={handleMoveEntry}
                 onSwapEntries={handleSwap}
                 onSelectEntryForInspector={(entry) => setInspectorEntry(entry)}
+                workingHours={gridWorkingHours}
+                breakPeriods={gridBreakPeriods}
               />
 
               {/* Bulk Actions */}

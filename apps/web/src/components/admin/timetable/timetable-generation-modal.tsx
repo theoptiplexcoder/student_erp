@@ -122,8 +122,9 @@ export function TimetableGenerationModal({
   const [workingHoursStart, setWorkingHoursStart] = useState('08:00');
   const [workingHoursEnd, setWorkingHoursEnd] = useState('17:00');
   const [defaultDuration, setDefaultDuration] = useState(50);
-  const [breakStart, setBreakStart] = useState('13:00');
-  const [breakEnd, setBreakEnd] = useState('14:00');
+  const [breakPeriods, setBreakPeriods] = useState<{ start: string; end: string }[]>([
+    { start: '13:00', end: '14:00' },
+  ]);
   const [hasBreak, setHasBreak] = useState(true);
 
   // Overrides & Rooms collapsible
@@ -139,8 +140,7 @@ export function TimetableGenerationModal({
       setWorkingHoursEnd(institutionClosingTime);
       setDefaultDuration(50);
       setSelectedDays(['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY']);
-      setBreakStart('13:00');
-      setBreakEnd('14:00');
+      setBreakPeriods([{ start: '13:00', end: '14:00' }]);
       setHasBreak(true);
       setShowAdvanced(false);
 
@@ -233,15 +233,14 @@ export function TimetableGenerationModal({
       }
     });
 
-    const breakPeriods =
-      hasBreak && breakStart && breakEnd ? [{ start: breakStart, end: breakEnd }] : [];
+    const activeBreakPeriods = hasBreak ? breakPeriods : [];
 
     onConfirm({
       termId,
       sectionIds,
       days: selectedDays,
       workingHours: { start: workingHoursStart, end: workingHoursEnd },
-      breakPeriods,
+      breakPeriods: activeBreakPeriods,
       defaultSessionDuration: defaultDuration,
       sessionDurations,
       selectedRoomIds: selectedRoomIds.length > 0 ? selectedRoomIds : undefined,
@@ -488,20 +487,61 @@ export function TimetableGenerationModal({
                 </div>
               </div>
               {hasBreak ? (
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="time"
-                    value={breakStart}
-                    onChange={(e) => setBreakStart(e.target.value)}
-                    className="h-8 text-xs"
-                  />
-                  <span className="text-muted-foreground text-xs">to</span>
-                  <Input
-                    type="time"
-                    value={breakEnd}
-                    onChange={(e) => setBreakEnd(e.target.value)}
-                    className="h-8 text-xs"
-                  />
+                <div className="space-y-2">
+                  {breakPeriods.map((period, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Input
+                        aria-label={`Break ${index + 1} start`}
+                        type="time"
+                        value={period.start}
+                        onChange={(e) =>
+                          setBreakPeriods((current) =>
+                            current.map((item, i) =>
+                              i === index ? { ...item, start: e.target.value } : item,
+                            ),
+                          )
+                        }
+                        className="h-8 text-xs"
+                      />
+                      <span className="text-muted-foreground text-xs">to</span>
+                      <Input
+                        aria-label={`Break ${index + 1} end`}
+                        type="time"
+                        value={period.end}
+                        onChange={(e) =>
+                          setBreakPeriods((current) =>
+                            current.map((item, i) =>
+                              i === index ? { ...item, end: e.target.value } : item,
+                            ),
+                          )
+                        }
+                        className="h-8 text-xs"
+                      />
+                      {breakPeriods.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            setBreakPeriods((current) => current.filter((_, i) => i !== index))
+                          }
+                          aria-label={`Remove break ${index + 1}`}
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setBreakPeriods((current) => [...current, { start: '15:00', end: '15:15' }])
+                    }
+                  >
+                    Add break
+                  </Button>
                 </div>
               ) : (
                 <p className="text-muted-foreground text-xs italic">No break period scheduled</p>

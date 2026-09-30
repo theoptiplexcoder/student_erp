@@ -68,6 +68,8 @@ interface AdminTimetableGridProps {
   ) => void;
   onSwapEntries?: (entryIdA: string, entryIdB: string) => void;
   onSelectEntryForInspector?: (entry: any) => void;
+  workingHours?: { start: string; end: string };
+  breakPeriods?: { start: string; end: string }[];
 }
 
 interface DraggableEntryCardProps {
@@ -267,6 +269,8 @@ export function TimetableGrid({
   onMoveEntry,
   onSwapEntries,
   onSelectEntryForInspector,
+  workingHours = { start: '08:00', end: '17:00' },
+  breakPeriods = [],
 }: AdminTimetableGridProps) {
   const displayDays = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 
@@ -294,7 +298,27 @@ export function TimetableGrid({
     return map;
   }, [allConflicts]);
 
+  const timeToMinutes = (time: string) => {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + (minutes || 0);
+  };
   const timeSlotsSet = new Set<string>();
+  const dayStart = timeToMinutes(workingHours.start);
+  const dayEnd = timeToMinutes(workingHours.end);
+  const breakRanges = breakPeriods
+    .map((period) => ({ start: timeToMinutes(period.start), end: timeToMinutes(period.end) }))
+    .filter((period) => period.end > period.start);
+  // Use 60-minute grid columns within the configured daily range; include
+  // partial first/last hours so the grid covers the exact selected hours.
+  for (let start = dayStart; start < dayEnd; start += 60) {
+    const end = Math.min(start + 60, dayEnd);
+    const overlapsBreak = breakRanges.some((period) => start < period.end && end > period.start);
+    if (!overlapsBreak) {
+      const toTime = (minutes: number) =>
+        `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+      timeSlotsSet.add(`${toTime(start)}-${toTime(end)}`);
+    }
+  }
   entries.forEach((entry: any) => {
     const s = formatTime(entry.startTime);
     const e = formatTime(entry.endTime);
@@ -303,16 +327,19 @@ export function TimetableGrid({
     }
   });
 
-  if (timeSlotsSet.size === 0) {
-    timeSlotsSet.add('08:00-09:00');
-    timeSlotsSet.add('09:00-10:00');
-    timeSlotsSet.add('10:00-11:00');
-    timeSlotsSet.add('11:00-12:00');
-    timeSlotsSet.add('12:00-13:00');
-    timeSlotsSet.add('14:00-15:00');
-  }
-
   const timeSlots = Array.from(timeSlotsSet).sort((a, b) => a.localeCompare(b));
+  const breakColumns = breakRanges.map((period) => {
+    const toTime = (minutes: number) =>
+      `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+    return { slot: `${toTime(period.start)}-${toTime(period.end)}`, breakPeriod: period };
+  });
+  const displayColumns = [
+    ...timeSlots.map((slot) => ({
+      slot,
+      breakPeriod: null as (typeof breakRanges)[number] | null,
+    })),
+    ...breakColumns,
+  ].sort((a, b) => a.slot.localeCompare(b.slot));
   const courseColors: Record<string, string> = {};
   let colorIndex = 0;
 
@@ -503,9 +530,18 @@ export function TimetableGrid({
                     <th className="bg-muted border-border text-muted-foreground w-28 border p-3 text-left text-xs font-semibold tracking-wider uppercase">
                       Day / Time
                     </th>
-                    {timeSlots.map((slot) => {
+                    {displayColumns.map(({ slot, breakPeriod }) => {
                       const [slotStart, slotEnd] = slot.split('-');
-                      return (
+                      return breakPeriod ? (
+                        <th
+                          key={`break-${slot}`}
+                          className="border-border border bg-amber-100 p-3 text-center text-xs font-semibold tracking-wider text-amber-900 uppercase dark:bg-amber-950/40 dark:text-amber-200"
+                        >
+                          <span className="inline-block [text-orientation:mixed] [writing-mode:vertical-rl]">
+                            {breakPeriod === breakRanges[0] ? 'LUNCH BREAK' : 'BREAK'}
+                          </span>
+                        </th>
+                      ) : (
                         <th
                           key={slot}
                           className="bg-muted border-border text-muted-foreground border p-3 text-center text-xs font-semibold tracking-wider whitespace-nowrap uppercase"
@@ -523,8 +559,16 @@ export function TimetableGrid({
                         <td className="border-border bg-muted/20 text-muted-foreground border p-3 align-middle text-xs font-semibold whitespace-nowrap uppercase">
                           {day}
                         </td>
-                        {timeSlots.map((slot) => {
+                        {displayColumns.map(({ slot, breakPeriod }) => {
                           const [slotStart, slotEnd] = slot.split('-');
+                          if (breakPeriod) {
+                            return (
+                              <td
+                                key={`break-${slot}`}
+                                className="border-border border bg-amber-50 p-2 text-center align-middle dark:bg-amber-950/20"
+                              />
+                            );
+                          }
                           const dayEntries = entries.filter((e: any) => {
                             if (e.dayOfWeek !== day) return false;
                             const eSlot = `${formatTime(e.startTime)}-${formatTime(e.endTime)}`;
