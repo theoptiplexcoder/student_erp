@@ -110,7 +110,13 @@ export function TodayScheduleCard() {
                   </div>
                   <div className="flex items-center gap-1 truncate">
                     <MapPin className="h-3 w-3 shrink-0" />{' '}
-                    <span className="truncate">{cls.room || 'TBA'}</span>
+                    <span className="truncate">
+                      {cls.room
+                        ? typeof cls.room === 'string'
+                          ? cls.room
+                          : cls.room.name || cls.room.number || 'Room'
+                        : 'TBA'}
+                    </span>
                   </div>
                 </div>
               </div>
