@@ -126,7 +126,6 @@ export const adminNavigationSections: NavSection[] = [
         href: '/admin/administration/roles',
         icon: Shield,
       },
-      { name: 'System Settings', href: '/admin/administration/settings', icon: Settings },
     ],
   },
 ];
