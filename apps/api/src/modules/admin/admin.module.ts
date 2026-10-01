@@ -7,7 +7,6 @@ import { FacultyModule } from './faculty/faculty.module';
 import { DepartmentsModule } from './departments/departments.module';
 import { ProgramsModule } from './programs/programs.module';
 import { CoursesModule } from './courses/courses.module';
-import { BatchesModule } from './batches/batches.module';
 import { SectionsModule } from './sections/sections.module';
 import { SubjectsModule } from './subjects/subjects.module';
 import { TimetableModule } from './timetable/timetable.module';
@@ -40,7 +39,6 @@ import { LeaveManagementModule } from './leave-management/leave-management.modul
     DepartmentsModule,
     ProgramsModule,
     CoursesModule,
-    BatchesModule,
     SectionsModule,
     SubjectsModule,
     TimetableModule,

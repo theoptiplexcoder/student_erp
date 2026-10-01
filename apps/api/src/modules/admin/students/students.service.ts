@@ -22,7 +22,6 @@ export class StudentsService {
       departmentId,
       programId,
       academicYearId,
-      batchId,
       sectionId,
       termId,
       status,
@@ -41,11 +40,10 @@ export class StudentsService {
       ...(gender && { gender }),
       ...(programId && { programId }),
       ...(departmentId && { program: { departmentId } }),
-      ...((batchId || academicYearId || termId) && {
+      ...((academicYearId || termId) && {
         enrollments: {
           some: {
             status: 'ACTIVE',
-            ...(batchId && { batchId }),
             ...(academicYearId && { academicYearId }),
             ...(termId && { termId }),
           },
@@ -705,7 +703,6 @@ export class StudentsService {
           programId: data.programId,
           sectionId: newSectionId,
           curriculumId: activeCurriculum ? activeCurriculum.id : null,
-          ...(data.batchId ? { batchId: data.batchId } : {}),
           ...(finalUsn ? { rollNumber: finalUsn } : {}),
         },
       });

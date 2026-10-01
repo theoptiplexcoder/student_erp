@@ -73,7 +73,6 @@ export interface StudentFilters {
   departmentId?: string;
   programId?: string;
   academicYearId?: string;
-  batchId?: string;
   sectionId?: string;
   termId?: string;
   status?: string;
@@ -95,7 +94,6 @@ export const useAdminStudents = (filters: StudentFilters) => {
           departmentId: filters.departmentId || undefined,
           programId: filters.programId || undefined,
           academicYearId: filters.academicYearId || undefined,
-          batchId: filters.batchId || undefined,
           sectionId: filters.sectionId || undefined,
           termId: filters.termId || undefined,
           status: filters.status || undefined,
@@ -167,7 +165,6 @@ export const useDeleteStudent = () => {
 export interface ChangeStudentProgramInput {
   programId: string;
   sectionId?: string;
-  batchId?: string;
   usn?: string;
 }
 

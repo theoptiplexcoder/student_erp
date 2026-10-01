@@ -600,12 +600,6 @@ export default function SectionDetailPage({ params }: { params: Promise<{ sectio
                 {section.program?.name || 'Not assigned'}
               </p>
             </div>
-            {section.batch && (
-              <div>
-                <span className="text-sm font-medium">Batch</span>
-                <p className="text-muted-foreground text-sm">{section.batch.name}</p>
-              </div>
-            )}
             {section.classLevel && (
               <div>
                 <span className="text-sm font-medium">Class Level</span>

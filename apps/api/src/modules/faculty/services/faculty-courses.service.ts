@@ -24,7 +24,6 @@ export class FacultyCoursesService {
         section: {
           include: {
             program: true,
-            batch: true,
           },
         },
         term: true,
@@ -134,7 +133,6 @@ export class FacultyCoursesService {
         section: {
           include: {
             program: true,
-            batch: true,
             enrollments: {
               where: { status: 'ACTIVE' },
               include: {

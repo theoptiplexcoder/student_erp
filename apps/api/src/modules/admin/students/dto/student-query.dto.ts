@@ -21,10 +21,6 @@ export class StudentQueryDto {
 
   @IsOptional()
   @IsString()
-  batchId?: string;
-
-  @IsOptional()
-  @IsString()
   sectionId?: string;
 
   @IsOptional()

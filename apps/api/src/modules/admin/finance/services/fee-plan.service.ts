@@ -9,38 +9,8 @@ export class FeePlanService {
   constructor(private readonly prisma: PrismaService) {}
 
   async generateStudentFeePlan(institutionId: string, dto: GenerateFeePlanDto) {
-    // ---------- Batch rollout: fan out to individual students ----------
-    if (dto.batchId && !dto.studentId) {
-      const students = await this.prisma.student.findMany({
-        where: { institutionId, status: 'ACTIVE' },
-        include: {
-          enrollments: {
-            where: { section: { batchId: dto.batchId } },
-            take: 1,
-          },
-        },
-      });
-
-      const batchStudents = students.filter((s) => s.enrollments.length > 0);
-      if (!batchStudents.length) {
-        throw new NotFoundException('No active students found in that batch');
-      }
-
-      const results: any[] = [];
-      for (const student of batchStudents) {
-        try {
-          const plan = await this._generateForOneStudent(institutionId, student.id, dto);
-          results.push(plan);
-        } catch {
-          // skip students who already have a plan or hit a constraint
-        }
-      }
-      return results;
-    }
-
-    // ---------- Single student ----------
     if (!dto.studentId) {
-      throw new BadRequestException('Either studentId or batchId must be provided');
+      throw new BadRequestException('studentId must be provided');
     }
     return this._generateForOneStudent(institutionId, dto.studentId, dto);
   }
@@ -242,7 +212,6 @@ export class FeePlanService {
       studentId?: string;
       academicYearId?: string;
       programId?: string;
-      batchId?: string;
       status?: string;
       search?: string;
     },
@@ -253,10 +222,9 @@ export class FeePlanService {
     if (filters?.academicYearId) where.academicYearId = filters.academicYearId;
     if (filters?.status) where.status = filters.status;
 
-    if (filters?.programId || filters?.batchId || filters?.search) {
+    if (filters?.programId || filters?.search) {
       where.student = {};
       if (filters.programId) where.student.programId = filters.programId;
-      if (filters.batchId) where.student.batchId = filters.batchId;
       if (filters.search) {
         where.student.OR = [
           { rollNumber: { contains: filters.search, mode: 'insensitive' } },

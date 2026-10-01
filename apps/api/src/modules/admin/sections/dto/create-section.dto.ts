@@ -25,10 +25,6 @@ export class CreateSectionDto {
   @IsUUID()
   classLevelId?: string;
 
-  @IsOptional()
-  @IsUUID()
-  batchId?: string;
-
   @IsNotEmpty()
   @IsUUID()
   academicYearId!: string;

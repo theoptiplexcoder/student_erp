@@ -43,7 +43,6 @@ import {
   StudentFeePlan,
 } from '@/hooks/api/admin/useFinance';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
-import { useAdminBatches } from '@/hooks/api/admin/useBatches';
 import { useAdminStudents } from '@/hooks/api/admin/useStudents';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
@@ -52,7 +51,6 @@ export default function StudentFeePlansPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [selectedProgramId, setSelectedProgramId] = useState<string>('');
-  const [selectedBatchId, setSelectedBatchId] = useState<string>('');
 
   // Modals
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
@@ -65,7 +63,6 @@ export default function StudentFeePlansPage() {
     search: searchQuery || undefined,
     status: selectedStatus || undefined,
     programId: selectedProgramId || undefined,
-    batchId: selectedBatchId || undefined,
   });
 
   const { data: selectedPlanDetails, isLoading: planDetailsLoading } = useFeePlan(
@@ -74,7 +71,6 @@ export default function StudentFeePlansPage() {
 
   const { data: feeStructures } = useFeeStructures({ isActive: true });
   const { data: programsData } = useAdminPrograms(1, 100);
-  const { data: batchesData } = useAdminBatches(1, 100);
   const { data: studentsData } = useAdminStudents({ pageSize: 200 });
 
   const { data: academicYears } = useQuery({
@@ -89,10 +85,8 @@ export default function StudentFeePlansPage() {
   const applyWaiverMutation = useApplyWaiver();
 
   // Generation form
-  const [targetType, setTargetType] = useState<'SINGLE' | 'BATCH'>('SINGLE');
   const [generateForm, setGenerateForm] = useState({
     studentId: '',
-    batchId: '',
     feeStructureId: '',
     academicYearId: '',
     paymentMode: 'INSTALLMENTS' as 'ANNUAL' | 'INSTALLMENTS',
@@ -113,7 +107,6 @@ export default function StudentFeePlansPage() {
   const resetGenerateForm = () => {
     setGenerateForm({
       studentId: '',
-      batchId: '',
       feeStructureId: feeStructures?.[0]?.id || '',
       academicYearId: academicYears?.[0]?.id || '',
       paymentMode: 'INSTALLMENTS',
@@ -149,20 +142,14 @@ export default function StudentFeePlansPage() {
       return;
     }
 
-    if (targetType === 'SINGLE' && !generateForm.studentId) {
+    if (!generateForm.studentId) {
       alert('Please select a student');
-      return;
-    }
-
-    if (targetType === 'BATCH' && !generateForm.batchId) {
-      alert('Please select a batch');
       return;
     }
 
     try {
       await generateMutation.mutateAsync({
-        studentId: targetType === 'SINGLE' ? generateForm.studentId : undefined,
-        batchId: targetType === 'BATCH' ? generateForm.batchId : undefined,
+        studentId: generateForm.studentId,
         feeStructureId: generateForm.feeStructureId,
         academicYearId: generateForm.academicYearId,
         paymentMode: generateForm.paymentMode,
@@ -346,21 +333,6 @@ export default function StudentFeePlansPage() {
               ))}
             </select>
           </div>
-
-          <div>
-            <select
-              className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-              value={selectedBatchId}
-              onChange={(e) => setSelectedBatchId(e.target.value)}
-            >
-              <option value="">All Batches</option>
-              {(batchesData?.data || []).map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
-          </div>
         </CardContent>
       </Card>
 
@@ -378,7 +350,7 @@ export default function StudentFeePlansPage() {
               <thead className="text-muted-foreground border-b text-xs font-medium">
                 <tr>
                   <th className="pb-3">Student</th>
-                  <th className="pb-3">Program / Batch</th>
+                  <th className="pb-3">Program</th>
                   <th className="pb-3">Fee Structure</th>
                   <th className="pb-3">Total Amount</th>
                   <th className="pb-3">Paid / Due</th>
@@ -624,70 +596,24 @@ export default function StudentFeePlansPage() {
           </DialogHeader>
 
           <form onSubmit={handleGenerateSubmit} className="space-y-4 text-sm">
-            {/* Target Mode: Single vs Batch */}
-            <div className="border-border flex rounded-lg border p-1">
-              <button
-                type="button"
-                className={`flex-1 rounded-md py-1.5 text-xs font-semibold transition-colors ${
-                  targetType === 'SINGLE'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground'
-                }`}
-                onClick={() => setTargetType('SINGLE')}
+            <div className="space-y-1.5">
+              <Label htmlFor="studentSelect">Select Student *</Label>
+              <select
+                id="studentSelect"
+                className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                value={generateForm.studentId}
+                onChange={(e) => setGenerateForm({ ...generateForm, studentId: e.target.value })}
+                required
               >
-                Individual Student
-              </button>
-              <button
-                type="button"
-                className={`flex-1 rounded-md py-1.5 text-xs font-semibold transition-colors ${
-                  targetType === 'BATCH'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground'
-                }`}
-                onClick={() => setTargetType('BATCH')}
-              >
-                Batch / Class Rollout
-              </button>
+                <option value="">Choose a student...</option>
+                {(studentsData?.data || []).map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.user.firstName} {s.user.lastName} (
+                    {s.studentCode || s.admissionNumber || s.user.email})
+                  </option>
+                ))}
+              </select>
             </div>
-
-            {targetType === 'SINGLE' ? (
-              <div className="space-y-1.5">
-                <Label htmlFor="studentSelect">Select Student *</Label>
-                <select
-                  id="studentSelect"
-                  className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                  value={generateForm.studentId}
-                  onChange={(e) => setGenerateForm({ ...generateForm, studentId: e.target.value })}
-                  required
-                >
-                  <option value="">Choose a student...</option>
-                  {(studentsData?.data || []).map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.user.firstName} {s.user.lastName} (
-                      {s.studentCode || s.admissionNumber || s.user.email})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : (
-              <div className="space-y-1.5">
-                <Label htmlFor="batchSelect">Select Target Batch *</Label>
-                <select
-                  id="batchSelect"
-                  className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                  value={generateForm.batchId}
-                  onChange={(e) => setGenerateForm({ ...generateForm, batchId: e.target.value })}
-                  required
-                >
-                  <option value="">Choose a batch...</option>
-                  {(batchesData?.data || []).map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name} ({b.program?.name || 'Program'})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">

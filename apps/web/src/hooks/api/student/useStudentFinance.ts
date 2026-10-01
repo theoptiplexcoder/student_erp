@@ -23,7 +23,6 @@ export interface StudentDuesResponse {
       phone?: string;
     };
     program?: { id: string; name: string; code: string };
-    batch?: { id: string; name: string };
     section?: { id: string; name: string };
   };
   feePlans: {

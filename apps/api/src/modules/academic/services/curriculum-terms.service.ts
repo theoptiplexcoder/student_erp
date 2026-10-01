@@ -41,7 +41,6 @@ export class CurriculumTermsService {
         semester: term.sequence,
       },
       include: {
-        batch: true,
         courseAssignments: {
           include: {
             course: true,

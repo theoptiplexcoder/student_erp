@@ -1,9 +1,10 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useAdminStudents } from '@/hooks/api/admin/useStudents';
+import { getDrafts, removeDraft, AdmissionDraft } from '@/hooks/useAdmissionDrafts';
 import { StudentFilters } from './components/student-filters';
 import {
   Button,
@@ -23,6 +24,7 @@ import {
   StatCard,
   StatusBadge,
   EmptyState,
+  Badge,
 } from '@student-erp/ui';
 import {
   Plus,
@@ -35,7 +37,12 @@ import {
   Search,
   ArrowRight,
   Download,
+  FileEdit,
+  Trash2,
+  Clock,
+  User,
 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 
 function getInitials(firstName?: string, lastName?: string) {
   return `${(firstName?.[0] || '').toUpperCase()}${(lastName?.[0] || '').toUpperCase()}`;
@@ -64,12 +71,36 @@ function StudentsList() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const [drafts, setDrafts] = useState<AdmissionDraft[]>([]);
+  const [draftsLoading, setDraftsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    getDrafts()
+      .then((data) => {
+        if (isMounted) setDrafts(data || []);
+      })
+      .finally(() => {
+        if (isMounted) setDraftsLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleDeleteDraft = async (id: string) => {
+    if (confirm('Are you sure you want to delete this admission draft?')) {
+      await removeDraft(id);
+      const updated = await getDrafts();
+      setDrafts(updated || []);
+    }
+  };
+
   const page = parseInt(searchParams.get('page') || '1', 10);
   const search = searchParams.get('search') || '';
   const departmentId = searchParams.get('departmentId') || '';
   const programId = searchParams.get('programId') || '';
   const academicYearId = searchParams.get('academicYearId') || '';
-  const batchId = searchParams.get('batchId') || '';
   const sectionId = searchParams.get('sectionId') || '';
   const status = searchParams.get('status') || '';
   const gender = searchParams.get('gender') || '';
@@ -89,7 +120,6 @@ function StudentsList() {
     departmentId,
     programId,
     academicYearId,
-    batchId,
     sectionId,
     status,
     gender,
@@ -157,6 +187,120 @@ function StudentsList() {
           <StudentFilters />
         </CardContent>
       </Card>
+
+      {/* Admission Drafts Section */}
+      {(draftsLoading || drafts.length > 0) && (
+        <Card className="border-border/80 shadow-xs">
+          <CardHeader className="border-border/60 flex flex-row items-center justify-between border-b px-4 py-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                <FileEdit className="h-4 w-4" />
+              </div>
+              <div>
+                <CardTitle className="text-sm font-semibold">
+                  In-Progress Admission Drafts
+                </CardTitle>
+                <p className="text-muted-foreground text-xs">
+                  Incomplete student admission forms that can be resumed or discarded.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {drafts.length > 0 && (
+                <Badge variant="secondary" className="text-xs">
+                  {drafts.length} {drafts.length === 1 ? 'draft' : 'drafts'}
+                </Badge>
+              )}
+              <Link href="/admin/admissions/students/new">
+                <Button variant="outline" size="sm" className="h-7 text-xs">
+                  <Plus className="mr-1.5 h-3 w-3" /> New Admission
+                </Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4">
+            {draftsLoading ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="border-border/60 space-y-2 rounded-lg border p-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <div className="flex-1 space-y-1">
+                        <Skeleton className="h-3.5 w-24" />
+                        <Skeleton className="h-3 w-32" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-8 w-full rounded" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {drafts.map((draft) => {
+                  const name =
+                    [draft.data?.firstName, draft.data?.lastName].filter(Boolean).join(' ') ||
+                    'Unnamed Student';
+                  const contact =
+                    draft.data?.email || draft.data?.phone || 'No contact details entered';
+                  const timeAgo = draft.updatedAt
+                    ? `${formatDistanceToNow(new Date(draft.updatedAt))} ago`
+                    : 'recently';
+
+                  return (
+                    <div
+                      key={draft.id}
+                      className="border-border/70 hover:border-primary/40 bg-card flex flex-col justify-between rounded-lg border p-3.5 transition-colors"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex min-w-0 items-center gap-2.5">
+                            <div className="bg-primary/10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
+                              <User className="h-4 w-4" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-foreground truncate text-xs leading-tight font-semibold">
+                                {name}
+                              </p>
+                              <p className="text-muted-foreground truncate text-[11px]">
+                                {contact}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-muted-foreground flex items-center gap-1.5 text-[11px]">
+                          <Clock className="h-3 w-3 shrink-0" />
+                          <span>Last updated {timeAgo}</span>
+                        </div>
+                      </div>
+
+                      <div className="border-border/60 mt-3 flex items-center gap-2 border-t pt-2.5">
+                        <Link
+                          href={`/admin/admissions/students/new?draftId=${draft.id}`}
+                          className="flex-1"
+                        >
+                          <Button variant="secondary" size="sm" className="h-7 w-full text-xs">
+                            <FileEdit className="mr-1.5 h-3 w-3" /> Continue Admission
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:bg-destructive/10 hover:text-destructive h-7 w-7"
+                          onClick={() => handleDeleteDraft(draft.id)}
+                          title="Delete draft"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Main Table / State Section */}
       {isLoading ? (

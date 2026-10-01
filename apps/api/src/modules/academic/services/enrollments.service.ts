@@ -44,7 +44,6 @@ export class EnrollmentsService {
         courseOfferingId,
         courseId: offering.courseId,
         programId: offering.programId,
-        batchId: offering.batchId,
         sectionId: offering.sectionId,
         termId: offering.termId,
         status: 'ACTIVE',

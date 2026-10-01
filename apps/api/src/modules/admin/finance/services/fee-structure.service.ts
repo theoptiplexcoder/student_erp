@@ -20,7 +20,6 @@ export class FeeStructureService {
           name: dto.name,
           code: dto.code,
           programId: dto.programId || null,
-          batchId: dto.batchId || null,
           academicYearId: dto.academicYearId,
           totalAmount,
           currency: dto.currency || 'INR',
@@ -37,7 +36,6 @@ export class FeeStructureService {
         include: {
           components: true,
           program: { select: { id: true, name: true, code: true } },
-          batch: { select: { id: true, name: true } },
           academicYear: { select: { id: true, name: true, startDate: true, endDate: true } },
         },
       });
@@ -50,14 +48,12 @@ export class FeeStructureService {
     institutionId: string,
     filters?: {
       programId?: string;
-      batchId?: string;
       academicYearId?: string;
       isActive?: boolean;
     },
   ) {
     const where: any = { institutionId };
     if (filters?.programId) where.programId = filters.programId;
-    if (filters?.batchId) where.batchId = filters.batchId;
     if (filters?.academicYearId) where.academicYearId = filters.academicYearId;
     if (filters?.isActive !== undefined) where.isActive = filters.isActive;
 
@@ -66,7 +62,6 @@ export class FeeStructureService {
       include: {
         components: true,
         program: { select: { id: true, name: true, code: true } },
-        batch: { select: { id: true, name: true } },
         academicYear: { select: { id: true, name: true } },
         _count: {
           select: {
@@ -85,7 +80,6 @@ export class FeeStructureService {
       include: {
         components: true,
         program: { select: { id: true, name: true, code: true } },
-        batch: { select: { id: true, name: true } },
         academicYear: { select: { id: true, name: true, startDate: true, endDate: true } },
         _count: {
           select: {
@@ -138,7 +132,6 @@ export class FeeStructureService {
           name: dto.name,
           code: dto.code,
           programId: dto.programId,
-          batchId: dto.batchId,
           academicYearId: dto.academicYearId,
           totalAmount: newTotalAmount,
           currency: dto.currency,
@@ -147,7 +140,6 @@ export class FeeStructureService {
         include: {
           components: true,
           program: { select: { id: true, name: true, code: true } },
-          batch: { select: { id: true, name: true } },
           academicYear: { select: { id: true, name: true } },
         },
       });

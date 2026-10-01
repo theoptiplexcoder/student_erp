@@ -14,7 +14,6 @@ export class DefaultersService {
     institutionId: string,
     filters?: {
       programId?: string;
-      batchId?: string;
       academicYearId?: string;
       search?: string;
     },
@@ -40,10 +39,9 @@ export class DefaultersService {
       where.academicYearId = filters.academicYearId;
     }
 
-    if (filters?.programId || filters?.batchId || filters?.search) {
+    if (filters?.programId || filters?.search) {
       where.student = {};
       if (filters.programId) where.student.programId = filters.programId;
-      if (filters.batchId) where.student.batchId = filters.batchId;
       if (filters.search) {
         where.student.OR = [
           { rollNumber: { contains: filters.search, mode: 'insensitive' } },

@@ -7,10 +7,6 @@ export class GenerateFeePlanDto {
   studentId?: string;
 
   @IsUUID()
-  @IsOptional()
-  batchId?: string;
-
-  @IsUUID()
   academicYearId!: string;
 
   @IsUUID()

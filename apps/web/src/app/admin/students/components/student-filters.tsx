@@ -15,7 +15,6 @@ import {
 import { Search, Filter, X, ChevronDown, SlidersHorizontal, RotateCcw } from 'lucide-react';
 import { useAdminDepartments } from '@/hooks/api/admin/useDepartments';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
-import { useAdminBatches } from '@/hooks/api/admin/useBatches';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
 import { useAcademicYears } from '@/hooks/api/admin/useAcademicYears';
 
@@ -35,13 +34,11 @@ export function StudentFilters() {
   // Queries
   const { data: deptData } = useAdminDepartments(1, 1000);
   const { data: progData } = useAdminPrograms(1, 1000);
-  const { data: batchData } = useAdminBatches(1, 1000);
   const { data: secData } = useAdminSections(1, 1000);
   const { data: academicYears } = useAcademicYears();
 
   const departments = deptData?.data || [];
   const programs = progData?.data || [];
-  const batches = batchData?.data || [];
   const sections = secData?.data || [];
 
   // Current values from URL
@@ -49,7 +46,6 @@ export function StudentFilters() {
   const academicYearId = searchParams.get('academicYearId') || '';
   const departmentId = searchParams.get('departmentId') || '';
   const programId = searchParams.get('programId') || '';
-  const batchId = searchParams.get('batchId') || '';
   const sectionId = searchParams.get('sectionId') || '';
   const status = searchParams.get('status') || '';
 
@@ -109,12 +105,8 @@ export function StudentFilters() {
     ? programs.filter((p) => (p as any).departmentId === departmentId)
     : programs;
 
-  const filteredBatches = programId
-    ? batches.filter((b) => b.program?.id === programId || (b as any).programId === programId)
-    : batches;
-
-  const filteredSections = batchId
-    ? sections.filter((s) => s.batch?.id === batchId || (s as any).batchId === batchId)
+  const filteredSections = programId
+    ? sections.filter((s) => (s as any).programId === programId)
     : sections;
 
   // Active secondary filters count (filters inside the collapsible section)
@@ -122,7 +114,6 @@ export function StudentFilters() {
     academicYearId,
     departmentId,
     programId,
-    batchId,
     sectionId,
     gender,
     admissionDateFrom,
@@ -135,7 +126,6 @@ export function StudentFilters() {
     academicYearId,
     departmentId,
     programId,
-    batchId,
     sectionId,
     status,
     gender,
@@ -165,8 +155,6 @@ export function StudentFilters() {
         return `Dept: ${departments.find((d) => d.id === value)?.name || value}`;
       case 'programId':
         return `Program: ${programs.find((p) => p.id === value)?.name || value}`;
-      case 'batchId':
-        return `Batch: ${batches.find((b) => b.id === value)?.name || value}`;
       case 'sectionId':
         return `Section: ${sections.find((s) => s.id === value)?.name || value}`;
       case 'status':
@@ -303,7 +291,6 @@ export function StudentFilters() {
                   updateMultipleFilters({
                     departmentId: e.target.value,
                     programId: null, // cascade clear
-                    batchId: null,
                     sectionId: null,
                   });
                 }}
@@ -325,7 +312,6 @@ export function StudentFilters() {
                 onChange={(e) => {
                   updateMultipleFilters({
                     programId: e.target.value,
-                    batchId: null, // cascade clear
                     sectionId: null,
                   });
                 }}
@@ -341,34 +327,12 @@ export function StudentFilters() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-muted-foreground text-[11px] font-medium">Batch</label>
-              <select
-                className={SELECT_CLASS + ' h-8 text-xs'}
-                value={batchId}
-                onChange={(e) => {
-                  updateMultipleFilters({
-                    batchId: e.target.value,
-                    sectionId: null, // cascade clear
-                  });
-                }}
-                disabled={!!programId && filteredBatches.length === 0}
-              >
-                <option value="">All Batches</option>
-                {filteredBatches.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-1">
               <label className="text-muted-foreground text-[11px] font-medium">Section</label>
               <select
                 className={SELECT_CLASS + ' h-8 text-xs'}
                 value={sectionId}
                 onChange={(e) => updateFilter('sectionId', e.target.value)}
-                disabled={!!batchId && filteredSections.length === 0}
+                disabled={!!programId && filteredSections.length === 0}
               >
                 <option value="">All Sections</option>
                 {filteredSections.map((s) => (
@@ -410,7 +374,6 @@ export function StudentFilters() {
                       academicYearId: null,
                       departmentId: null,
                       programId: null,
-                      batchId: null,
                       sectionId: null,
                       gender: null,
                       admissionDateFrom: null,

@@ -226,13 +226,12 @@ export default function FinanceOverviewPage() {
                 </div>
                 <CardTitle className="mt-3 text-base">Student Fee Plans</CardTitle>
                 <CardDescription className="text-xs">
-                  Assign fee templates to students or batches, schedule installments, and apply
-                  waivers.
+                  Assign fee templates to students, schedule installments, and apply waivers.
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="text-muted-foreground text-xs font-medium">
-                  Manage individual & batch plans
+                  Manage individual student fee plans
                 </div>
               </CardContent>
             </Card>

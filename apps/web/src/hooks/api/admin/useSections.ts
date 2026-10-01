@@ -13,11 +13,6 @@ export interface Section {
     code?: string;
     courses?: any[];
   };
-  batch?: {
-    id: string;
-    name: string;
-    code?: string;
-  };
   classLevel?: {
     id: string;
     name: string;

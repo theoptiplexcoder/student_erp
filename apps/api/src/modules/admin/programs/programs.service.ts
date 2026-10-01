@@ -78,7 +78,6 @@ export class ProgramsService {
             courses: true,
             curriculums: true,
             sections: true,
-            batches: true,
           },
         },
       },
@@ -124,7 +123,6 @@ export class ProgramsService {
               courses: true,
               curriculums: true,
               sections: true,
-              batches: true,
             },
           },
         },
@@ -204,7 +202,6 @@ export class ProgramsService {
             curriculums: true,
             sections: true,
             enrollments: true,
-            batches: true,
           },
         },
       },
@@ -214,7 +211,7 @@ export class ProgramsService {
       throw new NotFoundException('Program not found');
     }
 
-    const { students, enrollments, sections, batches } = program._count;
+    const { students, enrollments, sections } = program._count;
 
     if (students > 0 || enrollments > 0) {
       throw new BadRequestException(
@@ -225,12 +222,6 @@ export class ProgramsService {
     if (sections > 0 && !dto?.deleteSections) {
       throw new BadRequestException(
         `Cannot delete program. It has ${sections} linked sections. Choose whether to delete sections or reassign them first.`,
-      );
-    }
-
-    if (batches > 0 && !dto?.deleteBatches) {
-      throw new BadRequestException(
-        `Cannot delete program. It has ${batches} linked batches. Choose whether to delete batches or reassign them first.`,
       );
     }
 
@@ -328,14 +319,7 @@ export class ProgramsService {
         });
       }
 
-      // 3. Handle batches (Batch has non-nullable program_id, so if deleted it deletes; if any exist they must have been authorized to delete)
-      if (dto?.deleteBatches) {
-        await tx.batch.deleteMany({
-          where: { programId: id, institutionId },
-        });
-      }
-
-      // 4. Handle courses
+      // 3. Handle courses
       // First disconnect all courses from this program
       await tx.program.update({
         where: { id },

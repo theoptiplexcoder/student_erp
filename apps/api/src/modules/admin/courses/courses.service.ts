@@ -159,7 +159,6 @@ export class CoursesService {
           include: {
             term: true,
             program: true,
-            batch: true,
             section: true,
             enrollments: true,
           },

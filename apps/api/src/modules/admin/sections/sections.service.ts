@@ -22,13 +22,11 @@ export class SectionsService {
     page = 1,
     pageSize = 50,
     search?: string,
-    batchId?: string,
     programId?: string,
   ) {
     const skip = (page - 1) * pageSize;
     const where: Prisma.SectionWhereInput = {
       institutionId,
-      ...(batchId ? { batchId } : {}),
       ...(programId ? { programId } : {}),
       ...(search
         ? {
@@ -48,7 +46,6 @@ export class SectionsService {
         take: pageSize,
         include: {
           program: true,
-          batch: true,
           classLevel: true,
           academicYear: true,
           courseAssignments: {
@@ -94,7 +91,6 @@ export class SectionsService {
             },
           },
         },
-        batch: true,
         classLevel: true,
         academicYear: true,
         courseAssignments: {

@@ -11,9 +11,5 @@ export class ChangeStudentProgramDto {
 
   @IsOptional()
   @IsString()
-  batchId?: string;
-
-  @IsOptional()
-  @IsString()
   usn?: string;
 }

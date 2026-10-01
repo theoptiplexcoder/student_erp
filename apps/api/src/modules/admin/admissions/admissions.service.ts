@@ -532,7 +532,6 @@ export class AdmissionsService {
           academicYearId: data.academicYearId,
           programId: data.programId,
           courseId: data.courseId,
-          batchId: data.batchId,
           sectionId: data.sectionId,
           rollNumber: generatedUsn,
           status: 'ACTIVE',

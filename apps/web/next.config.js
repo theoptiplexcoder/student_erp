@@ -36,11 +36,6 @@ const nextConfig = {
         permanent: true,
       },
       {
-        source: '/admin/batches/:path*',
-        destination: '/admin/academics/batches/:path*',
-        permanent: true,
-      },
-      {
         source: '/admin/sections/:path*',
         destination: '/admin/academics/sections/:path*',
         permanent: true,

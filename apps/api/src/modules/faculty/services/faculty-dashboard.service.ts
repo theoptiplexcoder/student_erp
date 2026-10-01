@@ -41,7 +41,6 @@ export class FacultyDashboardService {
           section: {
             include: {
               program: true,
-              batch: true,
               enrollments: {
                 where: { status: 'ACTIVE' },
                 select: { id: true },

@@ -6,7 +6,6 @@ export interface StudentQuery {
   pageSize?: number;
   search?: string;
   programId?: string;
-  batchId?: string;
   sectionId?: string;
   status?: string;
 }

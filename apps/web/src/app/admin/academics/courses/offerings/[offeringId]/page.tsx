@@ -29,10 +29,6 @@ export default function CourseOfferingDetailsPage({ params }: { params: { offeri
               <span>B.Tech CSE</span>
             </div>
             <div className="flex justify-between border-b pb-2">
-              <span className="text-muted-foreground font-semibold">Batch</span>
-              <span>2025</span>
-            </div>
-            <div className="flex justify-between border-b pb-2">
               <span className="text-muted-foreground font-semibold">Primary Faculty</span>
               <span>Prof. Rahul</span>
             </div>

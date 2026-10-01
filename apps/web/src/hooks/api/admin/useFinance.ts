@@ -32,11 +32,9 @@ export interface FeeStructure {
   currency: string;
   academicYearId: string;
   programId?: string;
-  batchId?: string;
   isActive: boolean;
   academicYear?: { id: string; name: string };
   program?: { id: string; name: string; code: string };
-  batch?: { id: string; name: string };
   components: FeeComponentItem[];
   _count?: { feePlans: number };
   createdAt?: string;
@@ -48,7 +46,6 @@ export interface CreateFeeStructureDto {
   code: string;
   academicYearId: string;
   programId?: string;
-  batchId?: string;
   totalAmount?: number;
   currency?: string;
   components: {
@@ -118,7 +115,6 @@ export interface StudentFeePlan {
       phone?: string;
     };
     program?: { id: string; name: string; code: string };
-    batch?: { id: string; name: string };
     section?: { id: string; name: string };
   };
   academicYear: { id: string; name: string };
@@ -220,7 +216,6 @@ export interface FinanceStats {
 export interface GenerateFeePlanDto {
   studentId?: string;
   studentIds?: string[];
-  batchId?: string;
   feeStructureId: string;
   academicYearId: string;
   paymentMode?: 'ANNUAL' | 'INSTALLMENTS';
@@ -267,7 +262,6 @@ export const useFinanceStats = () => {
 // 2. Fee Structures Hooks
 export const useFeeStructures = (filters?: {
   programId?: string;
-  batchId?: string;
   academicYearId?: string;
   isActive?: boolean;
 }) => {
@@ -344,7 +338,6 @@ export const useFeePlans = (filters?: {
   studentId?: string;
   academicYearId?: string;
   programId?: string;
-  batchId?: string;
   status?: string;
   search?: string;
 }) => {
@@ -451,7 +444,6 @@ export const useRecordOfflinePayment = () => {
 // 5. Defaulters Hooks
 export const useDefaulters = (filters?: {
   programId?: string;
-  batchId?: string;
   academicYearId?: string;
   search?: string;
 }) => {

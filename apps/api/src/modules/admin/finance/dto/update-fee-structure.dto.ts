@@ -26,10 +26,6 @@ export class UpdateFeeStructureDto {
 
   @IsUUID()
   @IsOptional()
-  batchId?: string;
-
-  @IsUUID()
-  @IsOptional()
   academicYearId?: string;
 
   @IsNumber()

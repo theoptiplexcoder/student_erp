@@ -39,12 +39,10 @@ import {
   DefaulterStudent,
 } from '@/hooks/api/admin/useFinance';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
-import { useAdminBatches } from '@/hooks/api/admin/useBatches';
 
 export default function DefaultersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProgramId, setSelectedProgramId] = useState<string>('');
-  const [selectedBatchId, setSelectedBatchId] = useState<string>('');
   const [selectedDefaulter, setSelectedDefaulter] = useState<DefaulterStudent | null>(null);
 
   // Queries
@@ -56,11 +54,9 @@ export default function DefaultersPage() {
   } = useDefaulters({
     search: searchQuery || undefined,
     programId: selectedProgramId || undefined,
-    batchId: selectedBatchId || undefined,
   });
 
   const { data: programsData } = useAdminPrograms(1, 100);
-  const { data: batchesData } = useAdminBatches(1, 100);
 
   const actionMutation = useDefaulterAction();
   const processOverdueMutation = useProcessOverdueInstallments();
@@ -215,21 +211,6 @@ export default function DefaultersPage() {
               {(programsData?.data || []).map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <select
-              className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-              value={selectedBatchId}
-              onChange={(e) => setSelectedBatchId(e.target.value)}
-            >
-              <option value="">All Batches</option>
-              {(batchesData?.data || []).map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
                 </option>
               ))}
             </select>

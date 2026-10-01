@@ -76,7 +76,6 @@ export default function SectionsPage() {
                   <TableHead>Code</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Program</TableHead>
-                  <TableHead>Batch</TableHead>
                   <TableHead>Capacity</TableHead>
                   <TableHead>Students</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -88,7 +87,6 @@ export default function SectionsPage() {
                     <TableCell className="font-medium">{section.code}</TableCell>
                     <TableCell>{section.name}</TableCell>
                     <TableCell>{section.program?.name || 'N/A'}</TableCell>
-                    <TableCell>{section.batch?.name || 'N/A'}</TableCell>
                     <TableCell>{section.capacity}</TableCell>
                     <TableCell>{section._count?.students || 0}</TableCell>
                     <TableCell className="space-x-2 text-right">

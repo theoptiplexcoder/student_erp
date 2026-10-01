@@ -38,7 +38,6 @@ import {
 } from '@/hooks/api/admin/useSections';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
 import { useAcademicYears } from '@/hooks/api/admin/useAcademicYears';
-import { useAdminBatches } from '@/hooks/api/admin/useBatches';
 import { Label, Input } from '@student-erp/ui';
 
 function NewCurriculumButton() {
@@ -67,12 +66,7 @@ export default function AcademicsPage() {
   const { data: sectionsData, isLoading: isLoadingSections } = useAdminSections(1, 50);
   const { data: programsData } = useAdminPrograms(1, 200);
   const { data: academicYears = [] } = useAcademicYears();
-  const { data: batchesData } = useAdminBatches(1, 100, '', {
-    programId: selectedProgramIdForSection || undefined,
-  });
-
   const programs = programsData?.data || [];
-  const batches = batchesData?.data || [];
 
   // Mutations
   const deleteCurriculum = useDeleteCurriculum();
@@ -85,7 +79,6 @@ export default function AcademicsPage() {
     const fd = new FormData(e.currentTarget);
     const programId = fd.get('programId') as string;
     const academicYearId = fd.get('academicYearId') as string;
-    const batchId = (fd.get('batchId') as string) || undefined;
     const name = (fd.get('name') as string).trim();
     const code = (fd.get('code') as string).trim();
     const capacity = parseInt(fd.get('capacity') as string, 10);
@@ -109,7 +102,6 @@ export default function AcademicsPage() {
         semester,
         programId,
         academicYearId,
-        batchId,
       });
       setIsAddSectionOpen(false);
       setSelectedProgramIdForSection('');
@@ -490,22 +482,6 @@ export default function AcademicsPage() {
                     placeholder="e.g. 1"
                   />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="sec-batch">Batch (Optional)</Label>
-                <select
-                  id="sec-batch"
-                  name="batchId"
-                  className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
-                >
-                  <option value="">Select Batch (Optional)</option>
-                  {batches.map((b: any) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))}
-                </select>
               </div>
             </div>
             <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

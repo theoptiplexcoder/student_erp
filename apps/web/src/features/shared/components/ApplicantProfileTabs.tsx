@@ -336,7 +336,7 @@ export function ApplicantProfileTabs() {
                     </div>
                     <div className="text-muted-foreground flex items-center gap-3 text-sm">
                       <div className="border-muted-foreground/30 h-4 w-4 rounded-sm border-2"></div>{' '}
-                      Phase 14: Academic Allocation (Program, Dept, Batch, Section)
+                      Phase 14: Academic Allocation (Program, Dept, Section)
                     </div>
                     <div className="text-muted-foreground flex items-center gap-3 text-sm">
                       <div className="border-muted-foreground/30 h-4 w-4 rounded-sm border-2"></div>{' '}

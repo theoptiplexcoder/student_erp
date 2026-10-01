@@ -35,7 +35,6 @@ import { useAdminDepartments } from '@/hooks/api/admin/useDepartments';
 import { useAdminCourses, useCreateCourse, useDeleteCourse } from '@/hooks/api/admin/useCourses';
 import { useCreateSection } from '@/hooks/api/admin/useSections';
 import { useAcademicYears } from '@/hooks/api/admin/useAcademicYears';
-import { useAdminBatches } from '@/hooks/api/admin/useBatches';
 
 export function ProgramsTab() {
   const { data: programsData, isLoading: isLoadingProgs } = useAdminPrograms(1, 200);
@@ -49,7 +48,6 @@ export function ProgramsTab() {
   // Flexible delete dialog state
   const [programToDelete, setProgramToDelete] = useState<any>(null);
   const [deleteOptions, setDeleteOptions] = useState({
-    deleteBatches: false,
     deleteSections: false,
     deleteCourses: false,
     deleteCurriculums: false,
@@ -63,10 +61,6 @@ export function ProgramsTab() {
   const [selectedProgForSection, setSelectedProgForSection] = useState<any>(null);
 
   const { data: academicYears = [] } = useAcademicYears();
-  const { data: programBatchesData } = useAdminBatches(1, 100, '', {
-    programId: selectedProgForSection?.id,
-  });
-  const programBatches = programBatchesData?.data || [];
 
   const createProg = useCreateAdminProgram();
   const updateProg = useUpdateAdminProgram();
@@ -127,7 +121,6 @@ export function ProgramsTab() {
   const handleDeleteProgram = (prog: any) => {
     setProgramToDelete(prog);
     setDeleteOptions({
-      deleteBatches: false,
       deleteSections: false,
       deleteCourses: false,
       deleteCurriculums: false,
@@ -201,7 +194,6 @@ export function ProgramsTab() {
     if (!selectedProgForSection?.id) return;
     const fd = new FormData(e.currentTarget);
     const academicYearId = fd.get('academicYearId') as string;
-    const batchId = (fd.get('batchId') as string) || undefined;
     const name = (fd.get('name') as string).trim();
     const code = (fd.get('code') as string).trim();
     const capacity = parseInt(fd.get('capacity') as string, 10);
@@ -221,7 +213,6 @@ export function ProgramsTab() {
         semester,
         programId: selectedProgForSection.id,
         academicYearId,
-        batchId,
       });
       setSectionDialogOpen(false);
       setSelectedProgForSection(null);
@@ -611,22 +602,6 @@ export function ProgramsTab() {
                   />
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="section-batch">Batch (Optional)</Label>
-                <select
-                  id="section-batch"
-                  name="batchId"
-                  className="border-input bg-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
-                >
-                  <option value="">Select Batch (Optional)</option>
-                  {programBatches.map((b: any) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
             <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button
@@ -756,29 +731,6 @@ export function ProgramsTab() {
                       </p>
                     </div>
                   )}
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3 pt-1">
-                <Checkbox
-                  id="del-batches"
-                  checked={deleteOptions.deleteBatches}
-                  onCheckedChange={(checked) =>
-                    setDeleteOptions((prev) => ({ ...prev, deleteBatches: !!checked }))
-                  }
-                />
-                <div className="grid gap-1 leading-none">
-                  <label
-                    htmlFor="del-batches"
-                    className="text-foreground cursor-pointer text-sm leading-none font-medium"
-                  >
-                    Delete program batches
-                  </label>
-                  <p className="text-muted-foreground text-xs">
-                    {deleteOptions.deleteBatches
-                      ? 'Batches created under this program will be deleted.'
-                      : 'Batches will be kept (if batches exist, you must select this or reassign them first).'}
-                  </p>
                 </div>
               </div>
             </div>

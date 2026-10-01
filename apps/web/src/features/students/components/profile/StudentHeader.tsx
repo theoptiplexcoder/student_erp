@@ -37,7 +37,7 @@ export function StudentHeader({ studentId }: { studentId: string }) {
               <span className="hidden sm:inline">•</span>
               <span>3rd Semester</span>
               <span className="hidden sm:inline">•</span>
-              <span>Batch 2024</span>
+              <span>Enrolled</span>
             </div>
           </div>
         </div>

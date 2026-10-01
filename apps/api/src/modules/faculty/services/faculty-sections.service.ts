@@ -37,7 +37,7 @@ export class FacultySectionsService {
       include: {
         course: true,
         section: {
-          include: { program: true, batch: true },
+          include: { program: true },
         },
         term: true,
       },
@@ -109,7 +109,6 @@ export class FacultySectionsService {
       where: { id: sectionId },
       include: {
         program: true,
-        batch: true,
       },
     });
 

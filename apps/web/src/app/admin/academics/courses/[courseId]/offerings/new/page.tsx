@@ -59,15 +59,9 @@ export default function NewCourseOfferingPage({ params }: { params: { courseId: 
               <Input id="program" required placeholder="e.g. B.Tech Computer Science" />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="batch">Batch</Label>
-                <Input id="batch" required placeholder="e.g. Batch 2025" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="section">Section</Label>
-                <Input id="section" required placeholder="e.g. Section A" />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="section">Section</Label>
+              <Input id="section" required placeholder="e.g. Section A" />
             </div>
 
             <div className="space-y-2">

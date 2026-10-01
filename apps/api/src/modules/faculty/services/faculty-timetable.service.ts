@@ -76,7 +76,6 @@ export class FacultyTimetableService {
         section: {
           include: {
             program: true,
-            batch: true,
           },
         },
         term: true,
@@ -124,7 +123,7 @@ export class FacultyTimetableService {
         }),
         this.prisma.section.findUnique({
           where: { id: sectionId },
-          include: { program: true, batch: true },
+          include: { program: true },
         }),
       ]);
 

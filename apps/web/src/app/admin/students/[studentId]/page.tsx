@@ -11,7 +11,6 @@ import {
 } from '@/hooks/api/admin/useStudents';
 import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
-import { useAdminBatches } from '@/hooks/api/admin/useBatches';
 import {
   Card,
   CardContent,
@@ -80,21 +79,12 @@ export default function StudentDetailPage() {
   const [isChangeProgramOpen, setIsChangeProgramOpen] = useState(false);
   const [selectedProgramId, setSelectedProgramId] = useState('');
   const [selectedSectionId, setSelectedSectionId] = useState('');
-  const [selectedBatchId, setSelectedBatchId] = useState('');
 
   const { data: sectionsData, isLoading: isLoadingSections } = useAdminSections(1, 100, '', {
     enabled: isChangeProgramOpen && !!selectedProgramId,
     programId: selectedProgramId || undefined,
   });
   const availableSections = sectionsData?.data || [];
-
-  const { data: batchesData, isLoading: isLoadingBatches } = useAdminBatches(1, 100);
-  const availableBatches = (batchesData?.data || []).filter(
-    (b: any) =>
-      !selectedProgramId ||
-      b.programId === selectedProgramId ||
-      b.program?.id === selectedProgramId,
-  );
 
   useEffect(() => {
     if (student && !isEditingUsn) {
@@ -126,7 +116,6 @@ export default function StudentDetailPage() {
     if (!student) return;
     setSelectedProgramId(student.program?.id || '');
     setSelectedSectionId(student.section?.id || '');
-    setSelectedBatchId('');
     setIsChangeProgramOpen(true);
   };
 
@@ -138,7 +127,6 @@ export default function StudentDetailPage() {
         data: {
           programId: selectedProgramId,
           sectionId: selectedSectionId || undefined,
-          batchId: selectedBatchId || undefined,
         },
       });
       toast.success('Student program updated successfully');
@@ -508,7 +496,6 @@ export default function StudentDetailPage() {
                 onChange={(e) => {
                   setSelectedProgramId(e.target.value);
                   setSelectedSectionId('');
-                  setSelectedBatchId('');
                 }}
                 disabled={isLoadingPrograms || changeProgramMutation.isPending}
                 className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-xs focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
@@ -552,34 +539,6 @@ export default function StudentDetailPage() {
                 </p>
               )}
             </div>
-
-            {/* Optional Batch */}
-            {availableBatches.length > 0 && (
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="change-batch-select"
-                  className="text-foreground text-xs font-semibold"
-                >
-                  Batch (Optional)
-                </label>
-                <select
-                  id="change-batch-select"
-                  value={selectedBatchId}
-                  onChange={(e) => setSelectedBatchId(e.target.value)}
-                  disabled={
-                    !selectedProgramId || isLoadingBatches || changeProgramMutation.isPending
-                  }
-                  className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-xs focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="">Keep current batch or none</option>
-                  {availableBatches.map((b: any) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name} ({b.admissionYear})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
           </div>
 
           <DialogFooter className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

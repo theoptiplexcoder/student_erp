@@ -107,7 +107,6 @@ export const useUpdateAdminProgram = () => {
 };
 
 export interface DeleteProgramOptions {
-  deleteBatches?: boolean;
   deleteSections?: boolean;
   deleteCourses?: boolean;
   deleteCurriculums?: boolean;
@@ -128,7 +127,6 @@ export const useDeleteAdminProgram = () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'curriculums'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'sections'] });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'batches'] });
     },
   });
 };

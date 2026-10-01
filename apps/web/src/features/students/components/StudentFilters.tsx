@@ -30,7 +30,6 @@ const pinnedFilterDefinitions = [
     type: 'select',
     options: ['Computer Science', 'Mechanical', 'Electrical', 'Business'],
   },
-  { id: 'batch', label: 'Batch', type: 'select', options: ['2023', '2024', '2025', '2026'] },
   { id: 'section', label: 'Section', type: 'select', options: ['A', 'B', 'C'] },
   {
     id: 'semester',

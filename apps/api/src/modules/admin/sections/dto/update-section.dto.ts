@@ -27,9 +27,5 @@ export class UpdateSectionDto {
 
   @IsOptional()
   @IsUUID()
-  batchId?: string;
-
-  @IsOptional()
-  @IsUUID()
   academicYearId?: string;
 }

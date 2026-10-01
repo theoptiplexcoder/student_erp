@@ -51,14 +51,12 @@ export class FinanceController {
   async getFeeStructures(
     @Request() req: any,
     @Query('programId') programId?: string,
-    @Query('batchId') batchId?: string,
     @Query('academicYearId') academicYearId?: string,
     @Query('isActive') isActive?: string,
   ) {
     const activeBool = isActive !== undefined ? isActive === 'true' : undefined;
     return this.feeStructureService.findAll(req.user.institutionId, {
       programId,
-      batchId,
       academicYearId,
       isActive: activeBool,
     });
@@ -95,7 +93,6 @@ export class FinanceController {
     @Query('studentId') studentId?: string,
     @Query('academicYearId') academicYearId?: string,
     @Query('programId') programId?: string,
-    @Query('batchId') batchId?: string,
     @Query('status') status?: string,
     @Query('search') search?: string,
   ) {
@@ -103,7 +100,6 @@ export class FinanceController {
       studentId,
       academicYearId,
       programId,
-      batchId,
       status,
       search,
     });
@@ -154,13 +150,11 @@ export class FinanceController {
   async getDefaulters(
     @Request() req: any,
     @Query('programId') programId?: string,
-    @Query('batchId') batchId?: string,
     @Query('academicYearId') academicYearId?: string,
     @Query('search') search?: string,
   ) {
     return this.defaultersService.getDefaulters(req.user.institutionId, {
       programId,
-      batchId,
       academicYearId,
       search,
     });

@@ -45,10 +45,6 @@ export class CreateFeeStructureDto {
   programId?: string;
 
   @IsUUID()
-  @IsOptional()
-  batchId?: string;
-
-  @IsUUID()
   academicYearId!: string;
 
   @IsNumber()

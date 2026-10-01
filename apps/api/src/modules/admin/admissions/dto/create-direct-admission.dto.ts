@@ -203,10 +203,6 @@ export class CreateDirectAdmissionDto {
 
   @IsString()
   @IsOptional()
-  batchId?: string;
-
-  @IsString()
-  @IsOptional()
   sectionId?: string;
 
   @IsString()

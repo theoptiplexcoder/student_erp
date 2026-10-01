@@ -536,7 +536,6 @@ function DirectAdmissionForm() {
     programId: '',
     courseId: '',
     sectionId: '',
-    batchId: '',
 
     feeStructureId: '',
     totalFee: 0,
@@ -559,7 +558,6 @@ function DirectAdmissionForm() {
   const [programs, setPrograms] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [sections, setSections] = useState<any[]>([]);
-  const [batches, setBatches] = useState<any[]>([]);
   const [institutionType, setInstitutionType] = useState<'SCHOOL' | 'COLLEGE'>('SCHOOL');
   const [departments, setDepartments] = useState<any[]>([]);
 
@@ -612,14 +610,6 @@ function DirectAdmissionForm() {
   });
   const [isProgSubmitting, setIsProgSubmitting] = useState(false);
 
-  const [isBatchDialogOpen, setIsBatchDialogOpen] = useState(false);
-  const [batchFormData, setBatchFormData] = useState({
-    name: '',
-    admissionYear: new Date().getFullYear(),
-    programId: '',
-  });
-  const [isBatchSubmitting, setIsBatchSubmitting] = useState(false);
-
   const [isSectionDialogOpen, setIsSectionDialogOpen] = useState(false);
   const [sectionFormData, setSectionFormData] = useState({
     name: '',
@@ -628,7 +618,6 @@ function DirectAdmissionForm() {
     academicYearId: '',
     departmentId: '',
     programId: '',
-    batchId: '',
   });
   const [isSectionSubmitting, setIsSectionSubmitting] = useState(false);
 
@@ -667,7 +656,6 @@ function DirectAdmissionForm() {
         ...prev,
         programId: newProg.id,
         courseId: '',
-        batchId: '',
         sectionId: '',
       }));
       setIsProgDialogOpen(false);
@@ -685,32 +673,6 @@ function DirectAdmissionForm() {
     }
   };
 
-  const handleCreateBatch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsBatchSubmitting(true);
-    try {
-      if (!formData.sectionId) throw new Error('Section is required for batch');
-      const payload = {
-        ...batchFormData,
-        admissionYear: Number(batchFormData.admissionYear),
-        programId: formData.programId || batchFormData.programId,
-      };
-      if (!payload.programId) throw new Error('Program is required for batch');
-      const res = await apiClient.post('/admin/batches', payload);
-      const newBatch = res.data;
-      setBatches((prev) => [...prev, newBatch]);
-      setFormData((prev) => ({ ...prev, batchId: newBatch.id, sectionId: '' }));
-      setIsBatchDialogOpen(false);
-      setBatchFormData({ name: '', admissionYear: new Date().getFullYear(), programId: '' });
-    } catch (e) {
-      console.error(e);
-      alert('Failed to create Batch');
-    } finally {
-      setIsBatchSubmitting(false);
-    }
-  };
-
   const handleCreateSection = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -722,7 +684,6 @@ function DirectAdmissionForm() {
         capacity: Number(sectionFormData.capacity),
         academicYearId: formData.academicYearId || sectionFormData.academicYearId,
         programId: formData.programId || sectionFormData.programId || undefined,
-        batchId: formData.batchId || sectionFormData.batchId || undefined,
       };
       if (!payload.academicYearId) throw new Error('Academic Year is required');
       if (!payload.programId) throw new Error('Program is required to create a section');
@@ -738,7 +699,6 @@ function DirectAdmissionForm() {
         academicYearId: '',
         departmentId: '',
         programId: '',
-        batchId: '',
       });
     } catch (e) {
       console.error(e);
@@ -756,7 +716,6 @@ function DirectAdmissionForm() {
     description: '',
     academicYearId: '',
     programId: '',
-    batchId: '',
     defaultPaymentMode: 'INSTALLMENTS' as 'ANNUAL' | 'INSTALLMENTS',
     installmentCount: 2,
     installmentIntervalMonths: 6,
@@ -814,7 +773,6 @@ function DirectAdmissionForm() {
         code: feeStructFormData.code,
         academicYearId: feeStructFormData.academicYearId || formData.academicYearId,
         programId: feeStructFormData.programId || formData.programId || undefined,
-        batchId: feeStructFormData.batchId || formData.batchId || undefined,
         components: feeStructFormData.components.map((c) => ({
           name: c.name,
           type: c.type,
@@ -866,19 +824,10 @@ function DirectAdmissionForm() {
     }
 
     // Find the best match:
-    // 1. Exact match for both academicYearId and programId (and optionally batchId if present)
-    const exactMatch =
-      (formData.batchId &&
-        allFeeStructures.find(
-          (fs) =>
-            fs.academicYearId === formData.academicYearId &&
-            fs.programId === formData.programId &&
-            fs.batchId === formData.batchId,
-        )) ||
-      allFeeStructures.find(
-        (fs) =>
-          fs.academicYearId === formData.academicYearId && fs.programId === formData.programId,
-      );
+    // Exact match for both academicYearId and programId
+    const exactMatch = allFeeStructures.find(
+      (fs) => fs.academicYearId === formData.academicYearId && fs.programId === formData.programId,
+    );
 
     if (exactMatch) {
       // If no fee structure is selected yet or the current selection is from another program/academic year
@@ -906,7 +855,7 @@ function DirectAdmissionForm() {
         };
       });
     }
-  }, [formData.academicYearId, formData.programId, formData.batchId, allFeeStructures]);
+  }, [formData.academicYearId, formData.programId, allFeeStructures]);
 
   useEffect(() => {
     const loadDropdowns = async () => {
@@ -962,7 +911,7 @@ function DirectAdmissionForm() {
   };
 
   useEffect(() => {
-    const loadCoursesAndBatches = async () => {
+    const loadCourses = async () => {
       try {
         if (formData.programId && institutionType === 'COLLEGE') {
           const cRes = await apiClient.get(`/admin/courses?programId=${formData.programId}`);
@@ -970,27 +919,17 @@ function DirectAdmissionForm() {
         } else {
           setCourses([]);
         }
-
-        if (formData.programId) {
-          const bRes = await apiClient.get(`/admin/batches?programId=${formData.programId}`);
-          setBatches(bRes.data.data || []);
-        } else {
-          setBatches([]);
-        }
       } catch (e) {
         console.error(e);
       }
     };
-    loadCoursesAndBatches();
+    loadCourses();
   }, [formData.programId, institutionType]);
 
   useEffect(() => {
     const loadSections = async () => {
       try {
-        if (formData.batchId) {
-          const sRes = await apiClient.get(`/admin/sections?batchId=${formData.batchId}`);
-          setSections(sRes.data.data || []);
-        } else if (formData.programId) {
+        if (formData.programId) {
           const sRes = await apiClient.get(`/admin/sections?programId=${formData.programId}`);
           setSections(sRes.data.data || []);
         } else {
@@ -1001,7 +940,7 @@ function DirectAdmissionForm() {
       }
     };
     loadSections();
-  }, [formData.batchId, formData.programId]);
+  }, [formData.programId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -1100,7 +1039,6 @@ function DirectAdmissionForm() {
         academicYearId: formData.academicYearId,
         programId: formData.programId || undefined,
         courseId: formData.courseId || undefined,
-        batchId: formData.batchId || undefined,
         sectionId: formData.sectionId || undefined,
 
         feePlan:
@@ -1873,7 +1811,6 @@ function DirectAdmissionForm() {
                             setFormData((p) => ({
                               ...p,
                               courseId: '',
-                              batchId: '',
                               sectionId: '',
                             }));
                           }}
@@ -2042,79 +1979,6 @@ function DirectAdmissionForm() {
                         <span className="text-xs text-red-500">{errors['sectionId']}</span>
                       )}
                     </div>
-
-                    <div className="space-y-2">
-                      <Label>Batch</Label>
-                      <div className="flex items-center gap-2">
-                        <select
-                          name="batchId"
-                          value={formData.batchId}
-                          onChange={(e) => {
-                            handleChange(e);
-                            setFormData((p) => ({ ...p, sectionId: '' }));
-                          }}
-                          className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                        >
-                          <option value="">Select Batch (Optional)</option>
-                          {batches.map((b) => (
-                            <option key={b.id} value={b.id}>
-                              {b.name}
-                            </option>
-                          ))}
-                        </select>
-                        <Dialog open={isBatchDialogOpen} onOpenChange={setIsBatchDialogOpen}>
-                          <DialogTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="shrink-0"
-                              disabled={!formData.programId || !formData.sectionId}
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Add Batch</DialogTitle>
-                            </DialogHeader>
-                            <form onSubmit={handleCreateBatch} className="space-y-4">
-                              <div className="space-y-2">
-                                <Label>Name</Label>
-                                <Input
-                                  required
-                                  placeholder="e.g. 2024-2028"
-                                  value={batchFormData.name}
-                                  onChange={(e) =>
-                                    setBatchFormData((p) => ({ ...p, name: e.target.value }))
-                                  }
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label>Admission Year</Label>
-                                <Input
-                                  required
-                                  type="number"
-                                  value={batchFormData.admissionYear}
-                                  onChange={(e) =>
-                                    setBatchFormData((p) => ({
-                                      ...p,
-                                      admissionYear: Number(e.target.value),
-                                    }))
-                                  }
-                                />
-                              </div>
-                              <Button type="submit" disabled={isBatchSubmitting}>
-                                {isBatchSubmitting ? 'Saving...' : 'Save'}
-                              </Button>
-                            </form>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                      {errors['batchId'] && (
-                        <span className="text-xs text-red-500">{errors['batchId']}</span>
-                      )}
-                    </div>
                   </div>
                 </section>
               </div>
@@ -2184,7 +2048,6 @@ function DirectAdmissionForm() {
                               description: '',
                               academicYearId: formData.academicYearId || academicYears[0]?.id || '',
                               programId: formData.programId || '',
-                              batchId: formData.batchId || '',
                               defaultPaymentMode: 'INSTALLMENTS',
                               installmentCount: 2,
                               installmentIntervalMonths: 6,
@@ -2485,7 +2348,6 @@ function DirectAdmissionForm() {
                             {[
                               selectedFeeStructure.academicYear?.name,
                               selectedFeeStructure.program?.name,
-                              selectedFeeStructure.batch?.name,
                             ]
                               .filter(Boolean)
                               .join(' • ')}
@@ -2668,9 +2530,6 @@ function DirectAdmissionForm() {
                     )}
                     <p>
                       <strong>Section ID:</strong> {formData.sectionId}
-                    </p>
-                    <p>
-                      <strong>Batch ID:</strong> {formData.batchId}
                     </p>
                     {formData.previousEducation.length > 0 && (
                       <div className="pt-2">
