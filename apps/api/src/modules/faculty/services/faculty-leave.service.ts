@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
+import { ActiveTermService } from '../../../database/active-term.service';
 import { CreateLeaveRequestDto } from '../dto/create-leave-request.dto';
 
 @Injectable()
 export class FacultyLeaveService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activeTerm: ActiveTermService,
+  ) {}
 
   private async resolveFacultyId(userId: string, institutionId: string): Promise<string> {
     const faculty = await this.prisma.faculty.findFirst({
@@ -49,6 +53,7 @@ export class FacultyLeaveService {
         startDate: start,
         endDate: end,
         reason: dto.reason,
+        termId: await this.activeTerm.resolve(institutionId),
       },
     });
   }

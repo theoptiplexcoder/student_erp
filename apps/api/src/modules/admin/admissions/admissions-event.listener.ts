@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { PrismaService } from '../../../database/prisma.service';
+import { ActiveTermService } from '../../../database/active-term.service';
 import { StudentAdmittedEvent } from './events/student-admitted.event';
 import { InstallmentStatus } from '@prisma/client';
 
@@ -8,13 +9,18 @@ import { InstallmentStatus } from '@prisma/client';
 export class AdmissionsEventListener {
   private readonly logger = new Logger(AdmissionsEventListener.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activeTerm: ActiveTermService,
+  ) {}
 
   @OnEvent('student.admitted', { async: true })
   async handleStudentAdmittedEvent(event: StudentAdmittedEvent) {
     this.logger.log(`Handling student.admitted for student ${event.studentId}`);
 
     try {
+      const termId = await this.activeTerm.resolve(event.institutionId);
+
       if (event.feePlanData) {
         // From createDirectAdmission
         const data = event.feePlanData;
@@ -28,6 +34,7 @@ export class AdmissionsEventListener {
             currency: data.currency || 'INR',
             paymentMode: data.paymentMode,
             status: 'ACTIVE',
+            termId,
           },
         });
 
@@ -43,6 +50,7 @@ export class AdmissionsEventListener {
             amountPaid: 0,
             dueDate: inst.dueDate ? new Date(inst.dueDate) : new Date(),
             status: 'PENDING' as InstallmentStatus,
+            termId,
           }));
           await this.prisma.feeInstallment.createMany({ data: installments });
         } else if (data.paymentMode === 'INSTALLMENTS') {
@@ -59,6 +67,7 @@ export class AdmissionsEventListener {
               amountPaid: 0,
               dueDate: dueDate,
               status: 'PENDING' as InstallmentStatus,
+              termId,
             });
           }
           await this.prisma.feeInstallment.createMany({ data: installments });
@@ -71,6 +80,7 @@ export class AdmissionsEventListener {
               amountPaid: 0,
               dueDate: new Date(),
               status: 'PENDING',
+              termId,
             },
           });
         }
@@ -103,6 +113,7 @@ export class AdmissionsEventListener {
               currency: activeFeeStructure.currency,
               paymentMode: 'ANNUAL',
               status: 'ACTIVE',
+              termId,
             },
           });
 
@@ -114,6 +125,7 @@ export class AdmissionsEventListener {
               amountPaid: 0,
               dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
               status: 'PENDING',
+              termId,
             },
           });
         }
@@ -129,6 +141,7 @@ export class AdmissionsEventListener {
             entityType: 'STUDENT',
             entityId: event.studentId,
             afterData: JSON.parse(JSON.stringify(event.studentData)),
+            termId,
           },
         });
       }

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
+import { ActiveTermService } from '../../../database/active-term.service';
 import { UpdateInstitutionDto } from './dto/update-institution.dto';
 import { UpdateInstitutionSettingsDto } from './dto/update-institution-settings.dto';
 import { CreateAcademicYearDto, UpdateAcademicYearDto } from './dto/academic-year.dto';
@@ -8,7 +9,10 @@ import { CreateCalendarEventDto, UpdateCalendarEventDto } from './dto/calendar-e
 
 @Injectable()
 export class InstitutionService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activeTerm: ActiveTermService,
+  ) {}
 
   async getProfile(institutionId: string) {
     const institution = await this.prisma.institution.findUnique({
@@ -233,6 +237,7 @@ export class InstitutionService {
         institutionId,
         startAt: new Date(dto.startAt),
         endAt: new Date(dto.endAt),
+        termId: await this.activeTerm.resolve(institutionId),
       },
     });
   }

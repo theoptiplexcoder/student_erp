@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { ActiveTermService } from '../../database/active-term.service';
 import { OnEvent } from '@nestjs/event-emitter';
 import { NotificationType } from '@prisma/client';
 
@@ -7,7 +8,10 @@ import { NotificationType } from '@prisma/client';
 export class NotificationService {
   private readonly logger = new Logger(NotificationService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activeTerm: ActiveTermService,
+  ) {}
 
   async notifyAdmins(
     institutionId: string,
@@ -16,6 +20,8 @@ export class NotificationService {
     type: NotificationType,
   ) {
     try {
+      const termId = await this.activeTerm.resolve(institutionId);
+
       // Find all admins in the institution
       const admins = await this.prisma.user.findMany({
         where: {
@@ -35,6 +41,7 @@ export class NotificationService {
           title,
           message,
           type,
+          termId,
         })),
       });
 
@@ -47,6 +54,8 @@ export class NotificationService {
   @OnEvent('fee.overdue')
   async handleFeeOverdue(payload: { institutionId: string; userId: string; amountDue: number }) {
     try {
+      const termId = await this.activeTerm.resolve(payload.institutionId);
+
       await this.prisma.notification.create({
         data: {
           institutionId: payload.institutionId,
@@ -54,6 +63,7 @@ export class NotificationService {
           title: 'Fee Payment Overdue',
           message: `You have overdue fee installments totaling ₹${payload.amountDue.toLocaleString()}. Please make payment to avoid service restrictions.`,
           type: 'FEE',
+          termId,
         },
       });
       this.logger.log(`Overdue notification sent to user ${payload.userId}`);

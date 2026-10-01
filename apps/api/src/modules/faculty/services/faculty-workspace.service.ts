@@ -5,10 +5,14 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
+import { ActiveTermService } from '../../../database/active-term.service';
 
 @Injectable()
 export class FacultyWorkspaceService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activeTerm: ActiveTermService,
+  ) {}
 
   private async verifyFacultyAccess(userId: string, institutionId: string, courseId: string) {
     const faculty = await this.prisma.faculty.findFirst({
@@ -52,6 +56,7 @@ export class FacultyWorkspaceService {
         externalUrl: data.externalUrl,
         isPublished: data.isPublished ?? true,
         publishedAt: data.isPublished ? new Date() : null,
+        termId: await this.activeTerm.resolve(institutionId),
       },
     });
   }

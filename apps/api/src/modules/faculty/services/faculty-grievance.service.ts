@@ -1,11 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
+import { ActiveTermService } from '../../../database/active-term.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class FacultyGrievanceService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly activeTerm: ActiveTermService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -44,6 +46,7 @@ export class FacultyGrievanceService {
         relatedType: data.relatedType || null,
         relatedId: data.relatedId || null,
         isAnonymous: !!data.isAnonymous,
+        termId: await this.activeTerm.resolve(institutionId),
       },
     });
 

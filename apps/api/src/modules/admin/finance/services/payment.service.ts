@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../../database/prisma.service';
+import { ActiveTermService } from '../../../../database/active-term.service';
 import { RecordOfflinePaymentDto } from '../dto/record-offline-payment.dto';
 import { InitiatePaymentDto } from '../dto/initiate-payment.dto';
 import { VerifyPaymentDto } from '../dto/verify-payment.dto';
@@ -10,6 +11,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 export class PaymentService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly activeTerm: ActiveTermService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -39,6 +41,7 @@ export class PaymentService {
     }
 
     const receiptNumber = this.generateReceiptNumber();
+    const termId = await this.activeTerm.resolve(institutionId);
 
     return this.prisma.$transaction(async (tx) => {
       // 1. Create Payment record
@@ -55,6 +58,7 @@ export class PaymentService {
           notes: dto.notes,
           status: PaymentStatus.SUCCESS,
           collectedById: collectedById || null,
+          termId,
         },
       });
 
@@ -204,6 +208,7 @@ export class PaymentService {
 
     const receiptNumber = this.generateReceiptNumber();
     const gatewayOrderId = `order_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    const termId = await this.activeTerm.resolve(institutionId);
 
     const payment = await this.prisma.payment.create({
       data: {
@@ -216,6 +221,7 @@ export class PaymentService {
         status: PaymentStatus.PENDING,
         receiptNumber,
         notes: `Online checkout for installments: ${dto.installmentIds.join(', ')}`,
+        termId,
       },
     });
 

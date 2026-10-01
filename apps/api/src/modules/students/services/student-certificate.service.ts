@@ -1,11 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
+import { ActiveTermService } from '../../../database/active-term.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class StudentCertificateService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly activeTerm: ActiveTermService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -40,6 +42,7 @@ export class StudentCertificateService {
         certificateType: data.certificateType,
         purpose: data.purpose,
         supportingDocs: data.supportingDocs,
+        termId: await this.activeTerm.resolve(institutionId),
       },
     });
 

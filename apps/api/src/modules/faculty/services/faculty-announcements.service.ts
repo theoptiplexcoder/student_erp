@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
+import { ActiveTermService } from '../../../database/active-term.service';
 
 @Injectable()
 export class FacultyAnnouncementsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activeTerm: ActiveTermService,
+  ) {}
 
   async getAnnouncements(userId: string, institutionId: string) {
     const faculty = await this.prisma.faculty.findFirst({
@@ -58,6 +62,7 @@ export class FacultyAnnouncementsService {
         content: data.content,
         isPublished: data.isPublished ?? true,
         publishedAt: data.isPublished ? new Date() : null,
+        termId: await this.activeTerm.resolve(institutionId),
       },
     });
   }

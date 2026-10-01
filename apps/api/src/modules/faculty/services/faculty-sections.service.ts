@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
+import { ActiveTermService } from '../../../database/active-term.service';
 import {
   CreateAttendanceSessionDto,
   UpdateAttendanceSessionDto,
@@ -8,7 +9,10 @@ import {
 
 @Injectable()
 export class FacultySectionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activeTerm: ActiveTermService,
+  ) {}
 
   private async getFacultyContext(
     userId: string,
@@ -384,6 +388,8 @@ export class FacultySectionsService {
   ) {
     await this.getFacultyContext(userId, institutionId, sectionId, courseId);
 
+    const termId = await this.activeTerm.resolve(institutionId);
+
     const examCourse = await this.prisma.examCourse.findUnique({
       where: { id: dto.examCourseId },
     });
@@ -435,6 +441,7 @@ export class FacultySectionsService {
               grade,
               resultStatus,
               remarks: markData.remarks,
+              termId,
             },
             update: {
               marksObtained: markData.marksObtained,
@@ -483,6 +490,7 @@ export class FacultySectionsService {
                 grade,
                 resultStatus,
                 remarks: markData.remarks,
+                termId,
               },
             });
           }

@@ -5,6 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
+import { ActiveTermService } from '../../../database/active-term.service';
 import { StudentQueryDto } from './dto/student-query.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { ChangeStudentProgramDto } from './dto/change-student-program.dto';
@@ -12,7 +13,10 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class StudentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activeTerm: ActiveTermService,
+  ) {}
 
   async findAll(institutionId: string, query: StudentQueryDto) {
     const {
@@ -274,6 +278,7 @@ export class StudentsService {
         title: data.fileName,
         fileUrl: data.fileUrl,
         verificationStatus: 'PENDING',
+        termId: await this.activeTerm.resolve(institutionId),
       },
     });
   }
