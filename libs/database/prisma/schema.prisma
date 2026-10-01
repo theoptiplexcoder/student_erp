@@ -270,9 +270,11 @@ model Grievance {
   createdAt     DateTime               @default(now()) @map("created_at")
   updatedAt     DateTime               @updatedAt @map("updated_at")
 
-  institution Institution @relation(fields: [institutionId], references: [id])
-  student     Student?    @relation(fields: [studentId], references: [id])
-  faculty     Faculty?    @relation(fields: [facultyId], references: [id])
+  institution    Institution   @relation(fields: [institutionId], references: [id])
+  student        Student?      @relation(fields: [studentId], references: [id])
+  faculty        Faculty?      @relation(fields: [facultyId], references: [id])
+  academicTerm   AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  academicTermId String?       @db.Uuid
 
   @@index([institutionId])
   // Accelerates dashboard open grievance filtering and chronological retrieval
@@ -385,10 +387,10 @@ enum ResourceOwner {
 // ─── Core Models ────────────────────────────────────────
 
 model Institution {
-  id              String          @id @default(uuid()) @db.Uuid
-  institutionType InstitutionType @map("institution_type")
-  legalName       String          @map("legal_name")
-  displayName     String          @map("display_name")
+  id              String            @id @default(uuid()) @db.Uuid
+  institutionType InstitutionType   @map("institution_type")
+  legalName       String            @map("legal_name")
+  displayName     String            @map("display_name")
   logoUrl         String?           @map("logo_url")
   branding        Json?
   status          InstitutionStatus @default(PENDING)
@@ -485,15 +487,15 @@ model User {
   updatedAt     DateTime   @updatedAt @map("updated_at")
 
   institution Institution? @relation(fields: [institutionId], references: [id])
-  customRole  CustomRole? @relation(fields: [customRoleId], references: [id])
+  customRole  CustomRole?  @relation(fields: [customRoleId], references: [id])
   faculty     Faculty?
   student     Student?
   guardian    Guardian?
 
   notifications                Notification[]
-  certificateRequestsProcessed CertificateRequest[] @relation("ProcessedBy")
-  verifiedDocuments            StudentDocument[]    @relation("VerifiedBy")
-  serviceRequestsAssigned      ServiceRequest[]     @relation("AssignedTo")
+  certificateRequestsProcessed CertificateRequest[]  @relation("ProcessedBy")
+  verifiedDocuments            StudentDocument[]     @relation("VerifiedBy")
+  serviceRequestsAssigned      ServiceRequest[]      @relation("AssignedTo")
   paymentsCollected            Payment[]
   reviewedLeaveRequests        FacultyLeaveRequest[] @relation("LeaveReviewer")
 
@@ -628,7 +630,7 @@ model Faculty {
   facultySections    FacultySection[]
   roles              FacultyRole[]
 
-  sessionOccurrences SessionOccurrence[]
+  sessionOccurrences    SessionOccurrence[]
   leaveRequests         FacultyLeaveRequest[]
   substituteAssignments FacultyLeaveRequest[] @relation("SubstituteFaculty")
 
@@ -673,10 +675,12 @@ model FacultyLeaveRequest {
   createdAt            DateTime           @default(now()) @map("created_at")
   updatedAt            DateTime           @updatedAt @map("updated_at")
 
-  institution       Institution @relation(fields: [institutionId], references: [id])
-  faculty           Faculty     @relation(fields: [facultyId], references: [id])
-  substituteFaculty Faculty?    @relation("SubstituteFaculty", fields: [substituteFacultyId], references: [id])
-  reviewer          User?       @relation("LeaveReviewer", fields: [reviewedBy], references: [id])
+  institution       Institution   @relation(fields: [institutionId], references: [id])
+  faculty           Faculty       @relation(fields: [facultyId], references: [id])
+  substituteFaculty Faculty?      @relation("SubstituteFaculty", fields: [substituteFacultyId], references: [id])
+  reviewer          User?         @relation("LeaveReviewer", fields: [reviewedBy], references: [id])
+  academicTerm      AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  academicTermId    String?       @db.Uuid
 
   @@index([institutionId])
   @@index([facultyId])
@@ -811,6 +815,36 @@ model AcademicTerm {
   lessonPlans        LessonPlan[]
   timetables         Timetable[]
   sessionOccurrences SessionOccurrence[]
+
+  // Audit-trail back-relations (nullable termId on child tables)
+  attendanceRecords      AttendanceRecord[]
+  assignmentSubmissions  AssignmentSubmission[]
+  examCourses            ExamCourse[]
+  marks                  Mark[]
+  grievances             Grievance[]
+  facultyLeaveRequests   FacultyLeaveRequest[]
+  courseResources        CourseResource[]
+  calendarEvents         CalendarEvent[]
+  announcements          Announcement[]
+  notifications          Notification[]
+  certificateRequests    CertificateRequest[]
+  certificates           Certificate[]
+  studentDocuments       StudentDocument[]
+  feedbackForms          FeedbackForm[]
+  feedbackSubmissions    FeedbackSubmission[]
+  serviceRequests        ServiceRequest[]
+  clubMemberships        ClubMembership[]
+  clubEvents             ClubEvent[]
+  clubEventRegistrations ClubEventRegistration[]
+  studentAchievements    StudentAchievement[]
+  studentInternships     StudentInternship[]
+  studentProjects        StudentProject[]
+  payments               Payment[]
+  feeStructures          FeeStructure[]
+  studentFeePlans        StudentFeePlan[]
+  feeInstallments        FeeInstallment[]
+  feeWaivers             FeeWaiver[]
+  auditLogs              AuditLog[]
 
   @@index([institutionId])
   @@index([academicYearId])
@@ -1244,6 +1278,8 @@ model AttendanceRecord {
   student             Student            @relation(fields: [studentId], references: [id], onDelete: Restrict)
   sessionOccurrence   SessionOccurrence? @relation(fields: [sessionOccurrenceId], references: [id])
   sessionOccurrenceId String?            @map("session_occurrence_id") @db.Uuid
+  academicTerm        AcademicTerm?      @relation(fields: [academicTermId], references: [id])
+  academicTermId      String?            @db.Uuid
 
   @@unique([attendanceSessionId, studentId])
   @@index([institutionId])
@@ -1281,6 +1317,8 @@ model CourseResource {
   faculty     Faculty     @relation(fields: [facultyId], references: [id])
 
   lessonPlanResources LessonPlanResource[]
+  academicTerm        AcademicTerm?        @relation(fields: [academicTermId], references: [id])
+  academicTermId      String?              @db.Uuid
 
   @@index([institutionId])
   @@map("course_resources")
@@ -1325,9 +1363,11 @@ model AssignmentSubmission {
   createdAt     DateTime         @default(now()) @map("created_at")
   updatedAt     DateTime         @updatedAt @map("updated_at")
 
-  institution Institution @relation(fields: [institutionId], references: [id])
-  assignment  Assignment  @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  student     Student     @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  institution    Institution   @relation(fields: [institutionId], references: [id])
+  assignment     Assignment    @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  academicTerm   AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  academicTermId String?       @db.Uuid
 
   @@unique([assignmentId, studentId])
   @@index([institutionId])
@@ -1335,19 +1375,19 @@ model AssignmentSubmission {
 }
 
 model Exam {
-  id                String           @id @default(uuid()) @db.Uuid
-  institutionId     String           @map("institution_id") @db.Uuid
-  academicYearId    String           @map("academic_year_id") @db.Uuid
-  termId            String           @map("term_id") @db.Uuid
+  id                String     @id @default(uuid()) @db.Uuid
+  institutionId     String     @map("institution_id") @db.Uuid
+  academicYearId    String     @map("academic_year_id") @db.Uuid
+  termId            String     @map("term_id") @db.Uuid
   name              String
   code              String?
-  examType          ExamType         @map("exam_type")
-  examinationTypeId String?          @map("examination_type_id") @db.Uuid
-  status            ExamStatus       @default(DRAFT)
-  startDate         DateTime?        @map("start_date") @db.Date
-  endDate           DateTime?        @map("end_date") @db.Date
-  createdAt         DateTime         @default(now()) @map("created_at")
-  updatedAt         DateTime         @updatedAt @map("updated_at")
+  examType          ExamType   @map("exam_type")
+  examinationTypeId String?    @map("examination_type_id") @db.Uuid
+  status            ExamStatus @default(DRAFT)
+  startDate         DateTime?  @map("start_date") @db.Date
+  endDate           DateTime?  @map("end_date") @db.Date
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
 
   institution     Institution      @relation(fields: [institutionId], references: [id])
   academicYear    AcademicYear     @relation(fields: [academicYearId], references: [id])
@@ -1361,15 +1401,15 @@ model Exam {
 }
 
 model ExaminationType {
-  id           String    @id @default(uuid()) @db.Uuid
+  id            String   @id @default(uuid()) @db.Uuid
   institutionId String   @map("institution_id") @db.Uuid
-  name         String
-  code         String?
-  totalMarks   Float     @map("total_marks")
-  passingMarks Float?    @map("passing_marks")
-  description  String?
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  name          String
+  code          String?
+  totalMarks    Float    @map("total_marks")
+  passingMarks  Float?   @map("passing_marks")
+  description   String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   institution Institution @relation(fields: [institutionId], references: [id])
   exams       Exam[]
@@ -1396,7 +1436,9 @@ model ExamCourse {
   course      Course      @relation(fields: [courseId], references: [id])
   room        Room?       @relation(fields: [roomId], references: [id])
 
-  marks Mark[]
+  marks          Mark[]
+  academicTerm   AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  academicTermId String?       @db.Uuid
 
   @@unique([examId, courseId])
   @@index([institutionId])
@@ -1418,10 +1460,12 @@ model Mark {
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
 
-  institution Institution @relation(fields: [institutionId], references: [id])
-  examCourse  ExamCourse  @relation(fields: [examCourseId], references: [id])
-  student     Student     @relation(fields: [studentId], references: [id], onDelete: Restrict)
-  enrollment  Enrollment  @relation(fields: [enrollmentId], references: [id])
+  institution    Institution   @relation(fields: [institutionId], references: [id])
+  examCourse     ExamCourse    @relation(fields: [examCourseId], references: [id])
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  enrollment     Enrollment    @relation(fields: [enrollmentId], references: [id])
+  academicTerm   AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  academicTermId String?       @db.Uuid
 
   @@unique([examCourseId, studentId])
   @@index([institutionId])
@@ -1443,9 +1487,11 @@ model CalendarEvent {
   createdAt     DateTime          @default(now()) @map("created_at")
   updatedAt     DateTime          @updatedAt @map("updated_at")
 
-  institution Institution @relation(fields: [institutionId], references: [id])
-  program     Program?    @relation(fields: [programId], references: [id])
-  section     Section?    @relation(fields: [sectionId], references: [id])
+  institution    Institution   @relation(fields: [institutionId], references: [id])
+  program        Program?      @relation(fields: [programId], references: [id])
+  section        Section?      @relation(fields: [sectionId], references: [id])
+  academicTerm   AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  academicTermId String?       @db.Uuid
 
   @@index([institutionId])
   @@map("calendar_events")
@@ -1463,9 +1509,11 @@ model Announcement {
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  institution Institution @relation(fields: [institutionId], references: [id])
-  course      Course?     @relation(fields: [courseId], references: [id])
-  faculty     Faculty?    @relation(fields: [facultyId], references: [id])
+  institution    Institution   @relation(fields: [institutionId], references: [id])
+  course         Course?       @relation(fields: [courseId], references: [id])
+  faculty        Faculty?      @relation(fields: [facultyId], references: [id])
+  academicTerm   AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  academicTermId String?       @db.Uuid
 
   @@index([institutionId])
   @@map("announcements")
@@ -1482,8 +1530,10 @@ model Notification {
   readAt        DateTime?        @map("read_at")
   createdAt     DateTime         @default(now()) @map("created_at")
 
-  institution Institution @relation(fields: [institutionId], references: [id])
-  user        User        @relation(fields: [userId], references: [id])
+  institution    Institution   @relation(fields: [institutionId], references: [id])
+  user           User          @relation(fields: [userId], references: [id])
+  academicTerm   AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  academicTermId String?       @db.Uuid
 
   @@index([institutionId])
   @@index([userId, isRead])
@@ -1510,7 +1560,9 @@ model CertificateRequest {
   student         Student     @relation(fields: [studentId], references: [id], onDelete: Restrict)
   processedByUser User?       @relation("ProcessedBy", fields: [processedByUserId], references: [id])
 
-  certificates Certificate[]
+  certificates   Certificate[]
+  academicTerm   AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  academicTermId String?       @db.Uuid
 
   @@index([institutionId])
   @@map("certificate_requests")
@@ -1531,6 +1583,8 @@ model Certificate {
   institution        Institution         @relation(fields: [institutionId], references: [id])
   student            Student             @relation(fields: [studentId], references: [id], onDelete: Restrict)
   certificateRequest CertificateRequest? @relation(fields: [requestId], references: [id])
+  academicTerm       AcademicTerm?       @relation(fields: [academicTermId], references: [id])
+  academicTermId     String?             @db.Uuid
 
   @@index([institutionId])
   @@index([institutionId, studentId])
@@ -1551,9 +1605,11 @@ model StudentDocument {
   verifiedByUserId   String?                    @map("verified_by_user_id") @db.Uuid
   remarks            String?
 
-  institution    Institution @relation(fields: [institutionId], references: [id])
-  student        Student     @relation(fields: [studentId], references: [id], onDelete: Restrict)
-  verifiedByUser User?       @relation("VerifiedBy", fields: [verifiedByUserId], references: [id])
+  institution    Institution   @relation(fields: [institutionId], references: [id])
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  verifiedByUser User?         @relation("VerifiedBy", fields: [verifiedByUserId], references: [id])
+  academicTerm   AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  academicTermId String?       @db.Uuid
 
   @@index([institutionId])
   @@index([institutionId, studentId])
@@ -1574,6 +1630,8 @@ model FeedbackForm {
 
   feedbackQuestions   FeedbackQuestion[]
   feedbackSubmissions FeedbackSubmission[]
+  academicTerm        AcademicTerm?        @relation(fields: [academicTermId], references: [id])
+  academicTermId      String?              @db.Uuid
 
   @@index([institutionId])
   @@map("feedback_forms")
@@ -1607,6 +1665,8 @@ model FeedbackSubmission {
   student      Student      @relation(fields: [studentId], references: [id], onDelete: Restrict)
 
   feedbackAnswers FeedbackAnswer[]
+  academicTerm    AcademicTerm?    @relation(fields: [academicTermId], references: [id])
+  academicTermId  String?          @db.Uuid
 
   @@index([institutionId])
   @@map("feedback_submissions")
@@ -1638,9 +1698,11 @@ model ServiceRequest {
   updatedAt        DateTime               @updatedAt @map("updated_at")
   resolvedAt       DateTime?              @map("resolved_at")
 
-  institution    Institution @relation(fields: [institutionId], references: [id])
-  student        Student     @relation(fields: [studentId], references: [id], onDelete: Restrict)
-  assignedToUser User?       @relation("AssignedTo", fields: [assignedToUserId], references: [id])
+  institution    Institution   @relation(fields: [institutionId], references: [id])
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  assignedToUser User?         @relation("AssignedTo", fields: [assignedToUserId], references: [id])
+  academicTerm   AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  academicTermId String?       @db.Uuid
 
   @@index([institutionId])
   @@index([institutionId, studentId])
@@ -1677,9 +1739,11 @@ model ClubMembership {
   leftAt        DateTime?            @map("left_at")
   status        ClubMembershipStatus @default(ACTIVE)
 
-  institution Institution @relation(fields: [institutionId], references: [id])
-  club        Club        @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  student     Student     @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  institution    Institution   @relation(fields: [institutionId], references: [id])
+  club           Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  academicTerm   AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  academicTermId String?       @db.Uuid
 
   @@unique([clubId, studentId])
   @@index([institutionId])
@@ -1702,6 +1766,8 @@ model ClubEvent {
   club        Club        @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
   clubEventRegistrations ClubEventRegistration[]
+  academicTerm           AcademicTerm?           @relation(fields: [academicTermId], references: [id])
+  academicTermId         String?                 @db.Uuid
 
   @@index([institutionId])
   @@map("club_events")
@@ -1715,9 +1781,11 @@ model ClubEventRegistration {
   registeredAt  DateTime @default(now()) @map("registered_at")
   status        String   @default("REGISTERED")
 
-  institution Institution @relation(fields: [institutionId], references: [id])
-  clubEvent   ClubEvent   @relation(fields: [clubEventId], references: [id], onDelete: Cascade)
-  student     Student     @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  institution    Institution   @relation(fields: [institutionId], references: [id])
+  clubEvent      ClubEvent     @relation(fields: [clubEventId], references: [id], onDelete: Cascade)
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  academicTerm   AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  academicTermId String?       @db.Uuid
 
   @@unique([clubEventId, studentId])
   @@index([institutionId])
@@ -1750,8 +1818,10 @@ model StudentAchievement {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  institution Institution @relation(fields: [institutionId], references: [id])
-  student     Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  institution    Institution   @relation(fields: [institutionId], references: [id])
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  academicTerm   AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  academicTermId String?       @db.Uuid
 
   @@index([institutionId])
   @@map("student_achievements")
@@ -1787,8 +1857,10 @@ model StudentInternship {
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
-  institution Institution @relation(fields: [institutionId], references: [id])
-  student     Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  institution    Institution   @relation(fields: [institutionId], references: [id])
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  academicTerm   AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  academicTermId String?       @db.Uuid
 
   @@index([institutionId])
   @@map("student_internships")
@@ -1808,8 +1880,10 @@ model StudentProject {
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  institution Institution @relation(fields: [institutionId], references: [id])
-  student     Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  institution    Institution   @relation(fields: [institutionId], references: [id])
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  academicTerm   AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  academicTermId String?       @db.Uuid
 
   @@index([institutionId])
   @@map("student_projects")
@@ -1856,7 +1930,9 @@ model AuditLog {
   afterData     Json?    @map("after_data")
   createdAt     DateTime @default(now()) @map("created_at")
 
-  institution Institution @relation(fields: [institutionId], references: [id])
+  institution    Institution   @relation(fields: [institutionId], references: [id])
+  academicTerm   AcademicTerm? @relation(fields: [academicTermId], references: [id])
+  academicTermId String?       @db.Uuid
 
   @@index([institutionId])
   @@index([actorUserId])
@@ -2043,11 +2119,13 @@ model FeeStructure {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  institution  Institution      @relation(fields: [institutionId], references: [id])
-  program      Program?         @relation(fields: [programId], references: [id])
-  academicYear AcademicYear     @relation(fields: [academicYearId], references: [id])
-  components   FeeComponent[]
-  feePlans     StudentFeePlan[]
+  institution    Institution      @relation(fields: [institutionId], references: [id])
+  program        Program?         @relation(fields: [programId], references: [id])
+  academicYear   AcademicYear     @relation(fields: [academicYearId], references: [id])
+  components     FeeComponent[]
+  feePlans       StudentFeePlan[]
+  academicTerm   AcademicTerm?    @relation(fields: [academicTermId], references: [id])
+  academicTermId String?          @db.Uuid
 
   @@index([institutionId])
   @@index([academicYearId])
@@ -2105,9 +2183,11 @@ model StudentFeePlan {
   academicYear AcademicYear  @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
   feeStructure FeeStructure? @relation(fields: [feeStructureId], references: [id])
 
-  installments FeeInstallment[]
-  waivers      FeeWaiver[]
-  components   StudentFeePlanComponent[]
+  installments   FeeInstallment[]
+  waivers        FeeWaiver[]
+  components     StudentFeePlanComponent[]
+  academicTerm   AcademicTerm?             @relation(fields: [academicTermId], references: [id])
+  academicTermId String?                   @db.Uuid
 
   @@index([institutionId])
   @@index([studentId])
@@ -2128,6 +2208,8 @@ model FeeInstallment {
 
   studentFeePlan StudentFeePlan      @relation(fields: [studentFeePlanId], references: [id], onDelete: Cascade)
   allocations    PaymentAllocation[]
+  academicTerm   AcademicTerm?       @relation(fields: [academicTermId], references: [id])
+  academicTermId String?             @db.Uuid
 
   @@index([studentFeePlanId])
   @@index([status])
@@ -2147,6 +2229,8 @@ model FeeWaiver {
   updatedAt        DateTime     @updatedAt @map("updated_at")
 
   studentFeePlan StudentFeePlan @relation(fields: [studentFeePlanId], references: [id], onDelete: Cascade)
+  academicTerm   AcademicTerm?  @relation(fields: [academicTermId], references: [id])
+  academicTermId String?        @db.Uuid
 
   @@index([studentFeePlanId])
   @@map("fee_waivers")
@@ -2171,10 +2255,12 @@ model Payment {
   createdAt            DateTime      @default(now()) @map("created_at")
   updatedAt            DateTime      @updatedAt @map("updated_at")
 
-  institution Institution         @relation(fields: [institutionId], references: [id])
-  student     Student             @relation(fields: [studentId], references: [id], onDelete: Restrict)
-  collectedBy User?               @relation(fields: [collectedById], references: [id])
-  allocations PaymentAllocation[]
+  institution    Institution         @relation(fields: [institutionId], references: [id])
+  student        Student             @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  collectedBy    User?               @relation(fields: [collectedById], references: [id])
+  allocations    PaymentAllocation[]
+  academicTerm   AcademicTerm?       @relation(fields: [academicTermId], references: [id])
+  academicTermId String?             @db.Uuid
 
   @@index([institutionId])
   @@index([studentId])

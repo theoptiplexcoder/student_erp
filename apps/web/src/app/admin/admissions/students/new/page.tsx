@@ -39,6 +39,7 @@ import {
   Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
+  Pencil,
 } from 'lucide-react';
 import { useCreateDirectAdmission } from '@/hooks/api/admin/useAdmissions';
 import {
@@ -979,6 +980,9 @@ function DirectAdmissionForm() {
       if (!formData.sectionId) newErrors['sectionId'] = 'Section is required';
     }
     if (step >= 3) {
+      if (!formData.feeStructureId) {
+        newErrors['feeStructureId'] = 'A financial fee structure must be selected to proceed';
+      }
       if (formData.totalFee > 0) {
         const sum = formData.installments.reduce((acc, curr) => acc + Number(curr.amount), 0);
         if (Math.abs(sum - formData.totalFee) > 0.01) {
@@ -1994,13 +1998,18 @@ function DirectAdmissionForm() {
                     template.
                   </p>
                 </div>
+                {errors['feeStructureId'] && (
+                  <p className="text-sm font-semibold text-red-500">{errors['feeStructureId']}</p>
+                )}
                 {errors['totalFee'] && (
                   <p className="text-sm font-semibold text-red-500">{errors['totalFee']}</p>
                 )}
 
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="feeStructureSelect">Fee Structure Template</Label>
+                    <Label htmlFor="feeStructureSelect">
+                      Fee Structure Template <span className="text-red-500">*</span>
+                    </Label>
                     <div className="flex max-w-md items-center gap-2">
                       <select
                         id="feeStructureSelect"
@@ -2481,59 +2490,215 @@ function DirectAdmissionForm() {
             {/* STEP 4: PREVIEW */}
             {currentStep === 4 && (
               <div className="animate-in fade-in slide-in-from-right-4 space-y-8 duration-300">
-                <h2 className="mb-4 text-xl font-semibold">Preview & Submit</h2>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold">Preview & Submit</h2>
+                  <p className="text-muted-foreground text-sm">
+                    Review your details below. Click any section edit button or pencil icon to make
+                    changes.
+                  </p>
+                </div>
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                   <div className="space-y-2 rounded-md border p-4 text-sm">
                     <div className="mb-2 flex items-center justify-between">
                       <h3 className="text-lg font-semibold">Student Info</h3>
-                      <Button variant="outline" size="sm" onClick={() => setCurrentStep(1)}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-1.5"
+                        onClick={() => setCurrentStep(1)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
                         Edit
                       </Button>
                     </div>
-                    <p>
-                      <strong>Name:</strong> {formData.firstName} {formData.middleName}{' '}
-                      {formData.lastName}
-                    </p>
-                    <p>
-                      <strong>DOB:</strong> {formData.dateOfBirth}
-                    </p>
-                    <p>
-                      <strong>Gender:</strong> {formData.gender}
-                    </p>
-                    <p>
-                      <strong>Phone:</strong> {formData.phone}
-                    </p>
-                    <p>
-                      <strong>Email:</strong> {formData.email}
-                    </p>
-                    <p>
-                      <strong>Parents:</strong> {formData.fatherName} & {formData.motherName}
-                    </p>
-                    <p>
-                      <strong>Documents:</strong> {formData.documents.length} files attached
-                    </p>
+                    <div className="group flex items-center justify-between py-1">
+                      <p>
+                        <strong>Name:</strong> {formData.firstName} {formData.middleName}{' '}
+                        {formData.lastName}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(1)}
+                        className="text-muted-foreground hover:text-foreground p-1 opacity-70 transition-opacity group-hover:opacity-100"
+                        title="Edit Student Info"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <div className="group flex items-center justify-between py-1">
+                      <p>
+                        <strong>DOB:</strong> {formData.dateOfBirth}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(1)}
+                        className="text-muted-foreground hover:text-foreground p-1 opacity-70 transition-opacity group-hover:opacity-100"
+                        title="Edit DOB"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <div className="group flex items-center justify-between py-1">
+                      <p>
+                        <strong>Gender:</strong> {formData.gender || 'Not specified'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(1)}
+                        className="text-muted-foreground hover:text-foreground p-1 opacity-70 transition-opacity group-hover:opacity-100"
+                        title="Edit Gender"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <div className="group flex items-center justify-between py-1">
+                      <p>
+                        <strong>Phone:</strong> {formData.phone || 'Not specified'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(1)}
+                        className="text-muted-foreground hover:text-foreground p-1 opacity-70 transition-opacity group-hover:opacity-100"
+                        title="Edit Phone"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <div className="group flex items-center justify-between py-1">
+                      <p>
+                        <strong>Email:</strong> {formData.email || 'Not specified'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(1)}
+                        className="text-muted-foreground hover:text-foreground p-1 opacity-70 transition-opacity group-hover:opacity-100"
+                        title="Edit Email"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <div className="group flex items-center justify-between py-1">
+                      <p>
+                        <strong>Parents:</strong> {formData.fatherName || '-'} &{' '}
+                        {formData.motherName || '-'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(1)}
+                        className="text-muted-foreground hover:text-foreground p-1 opacity-70 transition-opacity group-hover:opacity-100"
+                        title="Edit Parent Details"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <div className="group flex items-center justify-between py-1">
+                      <p>
+                        <strong>Documents:</strong> {formData.documents.length} files attached
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(1)}
+                        className="text-muted-foreground hover:text-foreground p-1 opacity-70 transition-opacity group-hover:opacity-100"
+                        title="Edit Documents"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
                   <div className="space-y-2 rounded-md border p-4 text-sm">
                     <div className="mb-2 flex items-center justify-between">
                       <h3 className="text-lg font-semibold">Academic Details</h3>
-                      <Button variant="outline" size="sm" onClick={() => setCurrentStep(2)}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-1.5"
+                        onClick={() => setCurrentStep(2)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
                         Edit
                       </Button>
                     </div>
-                    <p>
-                      <strong>Program ID:</strong> {formData.programId}
-                    </p>
-                    {institutionType === 'COLLEGE' && (
+                    <div className="group flex items-center justify-between py-1">
                       <p>
-                        <strong>Course ID:</strong> {formData.courseId}
+                        <strong>Academic Year:</strong>{' '}
+                        {academicYears.find((y) => y.id === formData.academicYearId)?.name ||
+                          formData.academicYearId ||
+                          'Not selected'}
                       </p>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(2)}
+                        className="text-muted-foreground hover:text-foreground p-1 opacity-70 transition-opacity group-hover:opacity-100"
+                        title="Edit Academic Year"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <div className="group flex items-center justify-between py-1">
+                      <p>
+                        <strong>Program:</strong>{' '}
+                        {programs.find((p) => p.id === formData.programId)?.name ||
+                          formData.programId ||
+                          'Not selected'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(2)}
+                        className="text-muted-foreground hover:text-foreground p-1 opacity-70 transition-opacity group-hover:opacity-100"
+                        title="Edit Program"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    {institutionType === 'COLLEGE' && (
+                      <div className="group flex items-center justify-between py-1">
+                        <p>
+                          <strong>Course:</strong>{' '}
+                          {courses.find((c) => c.id === formData.courseId)?.name ||
+                            formData.courseId ||
+                            'Not selected'}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setCurrentStep(2)}
+                          className="text-muted-foreground hover:text-foreground p-1 opacity-70 transition-opacity group-hover:opacity-100"
+                          title="Edit Course"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     )}
-                    <p>
-                      <strong>Section ID:</strong> {formData.sectionId}
-                    </p>
+                    <div className="group flex items-center justify-between py-1">
+                      <p>
+                        <strong>Section:</strong>{' '}
+                        {sections.find((s) => s.id === formData.sectionId)?.name ||
+                          formData.sectionId ||
+                          'Not selected'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(2)}
+                        className="text-muted-foreground hover:text-foreground p-1 opacity-70 transition-opacity group-hover:opacity-100"
+                        title="Edit Section"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                     {formData.previousEducation.length > 0 && (
                       <div className="pt-2">
-                        <p className="font-semibold">Previous Education:</p>
+                        <div className="group flex items-center justify-between">
+                          <p className="font-semibold">Previous Education:</p>
+                          <button
+                            type="button"
+                            onClick={() => setCurrentStep(2)}
+                            className="text-muted-foreground hover:text-foreground p-1 opacity-70 transition-opacity group-hover:opacity-100"
+                            title="Edit Previous Education"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                         <ul className="list-inside list-disc pl-1">
                           {formData.previousEducation.map((edu, idx) => (
                             <li key={idx}>
@@ -2547,23 +2712,58 @@ function DirectAdmissionForm() {
                   <div className="space-y-2 rounded-md border p-4 text-sm md:col-span-2">
                     <div className="mb-2 flex items-center justify-between">
                       <h3 className="text-lg font-semibold">Fee Details</h3>
-                      <Button variant="outline" size="sm" onClick={() => setCurrentStep(3)}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-1.5"
+                        onClick={() => setCurrentStep(3)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
                         Edit
                       </Button>
                     </div>
-                    {formData.feeStructureId && (
+                    <div className="group flex items-center justify-between py-1">
                       <p>
                         <strong>Fee Structure:</strong>{' '}
                         {allFeeStructures.find((s) => s.id === formData.feeStructureId)?.name ||
-                          'Linked Structure'}
+                          (formData.feeStructureId ? 'Linked Structure' : 'None Selected')}
                       </p>
-                    )}
-                    <p>
-                      <strong>Annual Fee:</strong> ₹{formData.totalFee}
-                    </p>
-                    <p>
-                      <strong>Installments:</strong> {formData.installmentsCount}
-                    </p>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(3)}
+                        className="text-muted-foreground hover:text-foreground p-1 opacity-70 transition-opacity group-hover:opacity-100"
+                        title="Edit Fee Structure"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <div className="group flex items-center justify-between py-1">
+                      <p>
+                        <strong>Annual Fee:</strong> ₹{formData.totalFee}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(3)}
+                        className="text-muted-foreground hover:text-foreground p-1 opacity-70 transition-opacity group-hover:opacity-100"
+                        title="Edit Annual Fee"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <div className="group flex items-center justify-between py-1">
+                      <p>
+                        <strong>Installments:</strong> {formData.installmentsCount}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(3)}
+                        className="text-muted-foreground hover:text-foreground p-1 opacity-70 transition-opacity group-hover:opacity-100"
+                        title="Edit Installments"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                     <div className="mt-2 flex gap-4">
                       {formData.installments.map((inst, i) => (
                         <div key={i} className="bg-muted rounded-md p-2">
