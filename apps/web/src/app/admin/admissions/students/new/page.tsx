@@ -680,7 +680,16 @@ function DirectAdmissionForm() {
     if (step >= 1) {
       if (!formData.firstName) newErrors['firstName'] = 'First name is required';
       if (!formData.lastName) newErrors['lastName'] = 'Last name is required';
-      if (!formData.dateOfBirth) newErrors['dateOfBirth'] = 'Date of birth is required';
+      if (!formData.dateOfBirth) {
+        newErrors['dateOfBirth'] = 'Date of birth is required';
+      } else {
+        const selectedDate = new Date(formData.dateOfBirth);
+        const today = new Date();
+        today.setHours(23, 59, 59, 999);
+        if (selectedDate > today) {
+          newErrors['dateOfBirth'] = 'Date of birth cannot be in the future';
+        }
+      }
       if (!formData.fatherEmail && !formData.motherEmail)
         newErrors['parentEmail'] = 'At least one parent email is required';
     }
@@ -1098,6 +1107,7 @@ function DirectAdmissionForm() {
                         name="dateOfBirth"
                         type="date"
                         required
+                        max={new Date().toISOString().split('T')[0]}
                         value={formData.dateOfBirth}
                         onChange={handleChange}
                       />
