@@ -36,6 +36,9 @@ import {
   Camera,
   RefreshCw,
   ZoomIn,
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useCreateDirectAdmission } from '@/hooks/api/admin/useAdmissions';
 import {
@@ -60,6 +63,345 @@ const PROGRAM_LEVELS = [
   'DOCTORAL',
   'CERTIFICATE',
 ];
+
+const MONTH_NAMES = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+interface SteppedDatePickerProps {
+  value: string;
+  onChange: (val: string) => void;
+  maxDate?: Date;
+  minYear?: number;
+}
+
+function SteppedDatePicker({
+  value,
+  onChange,
+  maxDate = new Date(),
+  minYear = 1940,
+}: SteppedDatePickerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [view, setView] = useState<'year' | 'month' | 'day'>('year');
+  const [selectedYear, setSelectedYear] = useState<number | null>(() => {
+    if (value) {
+      const d = new Date(value);
+      if (!isNaN(d.getTime())) return d.getFullYear();
+    }
+    return null;
+  });
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(() => {
+    if (value) {
+      const d = new Date(value);
+      if (!isNaN(d.getTime())) return d.getMonth();
+    }
+    return null;
+  });
+
+  const maxYear = maxDate.getFullYear();
+  const maxMonth = maxDate.getMonth();
+  const maxDay = maxDate.getDate();
+
+  // Range of years (latest downwards to minYear)
+  const years = React.useMemo(() => {
+    const list: number[] = [];
+    for (let y = maxYear; y >= minYear; y--) {
+      list.push(y);
+    }
+    return list;
+  }, [maxYear, minYear]);
+
+  // Keep internal state aligned if value prop changes externally
+  useEffect(() => {
+    if (value) {
+      const d = new Date(value);
+      if (!isNaN(d.getTime())) {
+        setSelectedYear(d.getFullYear());
+        setSelectedMonth(d.getMonth());
+      }
+    }
+  }, [value]);
+
+  const handleOpenToggle = () => {
+    if (!isOpen) {
+      if (selectedYear !== null && selectedMonth !== null) {
+        setView('day');
+      } else if (selectedYear !== null) {
+        setView('month');
+      } else {
+        setView('year');
+      }
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
+    }
+  };
+
+  const handleSelectYear = (year: number) => {
+    setSelectedYear(year);
+    // If user previously had a future month selected in this max year, reset month
+    if (year === maxYear && selectedMonth !== null && selectedMonth > maxMonth) {
+      setSelectedMonth(null);
+    }
+    setView('month');
+  };
+
+  const handleSelectMonth = (monthIndex: number) => {
+    setSelectedMonth(monthIndex);
+    setView('day');
+  };
+
+  const handleSelectDay = (day: number) => {
+    if (selectedYear === null || selectedMonth === null) return;
+    const formattedMonth = String(selectedMonth + 1).padStart(2, '0');
+    const formattedDay = String(day).padStart(2, '0');
+    const formattedDate = `${selectedYear}-${formattedMonth}-${formattedDay}`;
+    onChange(formattedDate);
+    setIsOpen(false);
+  };
+
+  // Generate days for grid
+  const daysInSelectedMonth = React.useMemo(() => {
+    if (selectedYear === null || selectedMonth === null) return 0;
+    return new Date(selectedYear, selectedMonth + 1, 0).getDate();
+  }, [selectedYear, selectedMonth]);
+
+  const firstDayWeekday = React.useMemo(() => {
+    if (selectedYear === null || selectedMonth === null) return 0;
+    return new Date(selectedYear, selectedMonth, 1).getDay();
+  }, [selectedYear, selectedMonth]);
+
+  // Format display value for trigger
+  const displayLabel = React.useMemo(() => {
+    if (!value) return 'Select date of birth (Year → Month → Date)';
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return value;
+    return `${MONTH_NAMES[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+  }, [value]);
+
+  return (
+    <div className="relative w-full">
+      <button
+        type="button"
+        onClick={handleOpenToggle}
+        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-left text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+      >
+        <span className={value ? 'text-foreground font-medium' : 'text-muted-foreground'}>
+          {displayLabel}
+        </span>
+        <CalendarIcon className="text-muted-foreground ml-2 h-4 w-4 shrink-0" />
+      </button>
+
+      {isOpen && (
+        <div className="bg-popover text-popover-foreground absolute z-50 mt-1.5 w-full max-w-[360px] min-w-[310px] rounded-lg border p-3 shadow-xl backdrop-blur-md">
+          {/* Header navigation bar */}
+          <div className="mb-3 flex items-center justify-between border-b pb-2">
+            <div className="flex items-center gap-1.5 text-xs font-semibold">
+              <span
+                onClick={() => setView('year')}
+                className={`cursor-pointer rounded px-1.5 py-0.5 transition-colors ${
+                  view === 'year'
+                    ? 'bg-primary text-primary-foreground font-bold'
+                    : 'text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                1. {selectedYear || 'Year'}
+              </span>
+              <span className="text-muted-foreground">/</span>
+              <span
+                onClick={() => {
+                  if (selectedYear) setView('month');
+                }}
+                className={`rounded px-1.5 py-0.5 transition-colors ${
+                  !selectedYear
+                    ? 'text-muted-foreground/40 cursor-not-allowed'
+                    : view === 'month'
+                      ? 'bg-primary text-primary-foreground cursor-pointer font-bold'
+                      : 'text-muted-foreground hover:bg-muted cursor-pointer'
+                }`}
+              >
+                2. {selectedMonth !== null ? MONTH_NAMES[selectedMonth].slice(0, 3) : 'Month'}
+              </span>
+              <span className="text-muted-foreground">/</span>
+              <span
+                onClick={() => {
+                  if (selectedYear && selectedMonth !== null) setView('day');
+                }}
+                className={`rounded px-1.5 py-0.5 transition-colors ${
+                  !selectedYear || selectedMonth === null
+                    ? 'text-muted-foreground/40 cursor-not-allowed'
+                    : view === 'day'
+                      ? 'bg-primary text-primary-foreground cursor-pointer font-bold'
+                      : 'text-muted-foreground hover:bg-muted cursor-pointer'
+                }`}
+              >
+                3. Date
+              </span>
+            </div>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground h-6 w-6 p-0"
+              onClick={() => setIsOpen(false)}
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+
+          {/* VIEW 1: Year selection */}
+          {view === 'year' && (
+            <div>
+              <div className="text-muted-foreground mb-2 text-center text-xs font-medium">
+                Step 1: Choose Year
+              </div>
+              <div className="grid max-h-56 grid-cols-4 gap-1.5 overflow-y-auto pr-1">
+                {years.map((y) => {
+                  const isSelected = selectedYear === y;
+                  return (
+                    <button
+                      key={y}
+                      type="button"
+                      onClick={() => handleSelectYear(y)}
+                      className={`h-9 rounded-md text-xs font-medium transition-colors ${
+                        isSelected
+                          ? 'bg-primary text-primary-foreground font-bold shadow-sm'
+                          : 'hover:bg-muted text-foreground'
+                      }`}
+                    >
+                      {y}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* VIEW 2: Month selection */}
+          {view === 'month' && (
+            <div>
+              <div className="mb-2 flex items-center justify-between text-xs font-medium">
+                <button
+                  type="button"
+                  onClick={() => setView('year')}
+                  className="text-primary flex items-center hover:underline"
+                >
+                  <ChevronLeft className="mr-0.5 h-3.5 w-3.5" /> {selectedYear}
+                </button>
+                <span className="text-muted-foreground">Step 2: Choose Month</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {MONTH_NAMES.map((name, idx) => {
+                  const isFutureMonth = selectedYear === maxYear && idx > maxMonth;
+                  const isSelected = selectedMonth === idx;
+                  return (
+                    <button
+                      key={name}
+                      type="button"
+                      disabled={isFutureMonth}
+                      onClick={() => handleSelectMonth(idx)}
+                      className={`h-10 rounded-md text-xs font-medium transition-colors ${
+                        isSelected
+                          ? 'bg-primary text-primary-foreground font-bold shadow-sm'
+                          : isFutureMonth
+                            ? 'text-muted-foreground cursor-not-allowed opacity-30'
+                            : 'hover:bg-muted text-foreground'
+                      }`}
+                    >
+                      {name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* VIEW 3: Day selection */}
+          {view === 'day' && (
+            <div>
+              <div className="mb-2 flex items-center justify-between text-xs font-medium">
+                <button
+                  type="button"
+                  onClick={() => setView('month')}
+                  className="text-primary flex items-center hover:underline"
+                >
+                  <ChevronLeft className="mr-0.5 h-3.5 w-3.5" />{' '}
+                  {selectedMonth !== null ? MONTH_NAMES[selectedMonth] : ''} {selectedYear}
+                </button>
+                <span className="text-muted-foreground">Step 3: Choose Date</span>
+              </div>
+
+              {/* Day headers */}
+              <div className="text-muted-foreground mb-1 grid grid-cols-7 text-center text-[10px] font-semibold">
+                <span>Su</span>
+                <span>Mo</span>
+                <span>Tu</span>
+                <span>We</span>
+                <span>Th</span>
+                <span>Fr</span>
+                <span>Sa</span>
+              </div>
+
+              {/* Day grid */}
+              <div className="grid grid-cols-7 gap-1 text-center">
+                {Array.from({ length: firstDayWeekday }).map((_, i) => (
+                  <div key={`empty-${i}`} className="h-8" />
+                ))}
+
+                {Array.from({ length: daysInSelectedMonth }).map((_, i) => {
+                  const day = i + 1;
+                  const isFutureDay =
+                    selectedYear === maxYear && selectedMonth === maxMonth && day > maxDay;
+
+                  const isSelected = (() => {
+                    if (!value) return false;
+                    const d = new Date(value);
+                    return (
+                      !isNaN(d.getTime()) &&
+                      d.getFullYear() === selectedYear &&
+                      d.getMonth() === selectedMonth &&
+                      d.getDate() === day
+                    );
+                  })();
+
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      disabled={isFutureDay}
+                      onClick={() => handleSelectDay(day)}
+                      className={`mx-auto flex h-8 w-8 items-center justify-center rounded-md text-xs font-medium transition-colors ${
+                        isSelected
+                          ? 'bg-primary text-primary-foreground font-bold shadow-sm'
+                          : isFutureDay
+                            ? 'text-muted-foreground cursor-not-allowed opacity-30'
+                            : 'hover:bg-muted text-foreground'
+                      }`}
+                    >
+                      {day}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const steps = [
   { id: 1, title: 'Student Info', icon: User },
@@ -1103,13 +1445,18 @@ function DirectAdmissionForm() {
                       <Label>
                         Date of Birth <span className="text-red-500">*</span>
                       </Label>
-                      <Input
-                        name="dateOfBirth"
-                        type="date"
-                        required
-                        max={new Date().toISOString().split('T')[0]}
+                      <SteppedDatePicker
                         value={formData.dateOfBirth}
-                        onChange={handleChange}
+                        onChange={(val) => {
+                          setFormData((prev) => ({ ...prev, dateOfBirth: val }));
+                          if (errors['dateOfBirth']) {
+                            setErrors((prev) => {
+                              const next = { ...prev };
+                              delete next['dateOfBirth'];
+                              return next;
+                            });
+                          }
+                        }}
                       />
                       {errors['dateOfBirth'] && (
                         <span className="text-xs text-red-500">{errors['dateOfBirth']}</span>
