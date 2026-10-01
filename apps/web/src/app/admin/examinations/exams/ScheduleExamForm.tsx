@@ -115,6 +115,17 @@ export function ScheduleExamForm({ onCancel }: { onCancel: () => void }) {
     });
   };
 
+  // Auto-select the first active or upcoming academic term if none is selected
+  useEffect(() => {
+    if (!selectedAcademicTermId && academicTermsData && academicTermsData.length > 0) {
+      const activeTerm =
+        academicTermsData.find((t: any) => t.status === 'ACTIVE') || academicTermsData[0];
+      if (activeTerm) {
+        setSelectedAcademicTermId(activeTerm.id);
+      }
+    }
+  }, [academicTermsData, selectedAcademicTermId]);
+
   useEffect(() => {
     if (coursesData?.data) {
       const selectedType = dynamicExamTypes.find(
