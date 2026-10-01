@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { StudentQueryDto } from './dto/student-query.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
@@ -214,7 +219,7 @@ export class StudentsService {
         }
         studentData.usn = trimmedUsn;
       } else {
-        studentData.usn = null;
+        delete studentData.usn;
       }
     }
 

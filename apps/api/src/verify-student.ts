@@ -9,7 +9,7 @@ async function bootstrap() {
   const academicService = app.get(StudentAcademicService);
 
   const user = await prisma.user.findFirst({ where: { email: 'student1@demo-institute.test' } });
-  if (!user) throw new Error('Student user not found');
+  if (!user || !user.institutionId) throw new Error('Student user or institution not found');
 
   const terms = await academicService.getTerms(user.id, user.institutionId);
   console.log(
