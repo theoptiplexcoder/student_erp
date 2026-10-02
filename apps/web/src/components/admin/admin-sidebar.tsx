@@ -14,7 +14,6 @@ import {
   FileText,
   Award,
   Megaphone,
-  Settings,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -568,16 +567,6 @@ export function AdminSidebar() {
                 {roleName}
               </span>
             </div>
-          )}
-
-          {!collapsed && (
-            <Link
-              href="/admin/administration/settings"
-              className="text-muted-foreground/60 hover:text-foreground hover:bg-muted/80 rounded-md p-1 transition-colors"
-              title="Quick Settings"
-            >
-              <Settings className="h-3.5 w-3.5" />
-            </Link>
           )}
         </div>
       </div>
