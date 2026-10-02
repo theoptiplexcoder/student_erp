@@ -25,10 +25,13 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@student-erp/ui';
-import { Plus, Eye, Loader2, Trash2, AlertTriangle } from 'lucide-react';
+import { Plus, Eye, Loader2, Trash2, AlertTriangle, Upload, Download } from 'lucide-react';
 import Link from 'next/link';
+import { useQueryClient } from '@tanstack/react-query';
 import { DepartmentsTab } from './departments-tab';
 import { ProgramsTab } from './programs-tab';
+import { BulkAcademicImportDialog } from './components/bulk-import/BulkAcademicImportDialog';
+import { downloadStarterTemplates } from './components/bulk-import/utils/csv-parser';
 import { useAdminAllCurriculums, useDeleteCurriculum } from '@/hooks/api/admin/useCurriculums';
 import { useAdminCourses, useDeleteCourse } from '@/hooks/api/admin/useCourses';
 import {
@@ -51,7 +54,11 @@ function NewCurriculumButton() {
 }
 
 export default function AcademicsPage() {
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('departments');
+
+  // Bulk import dialog state
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
 
   // Delete dialog state for Curriculum with warning
   const [curriculumToDelete, setCurriculumToDelete] = useState<any>(null);
@@ -142,14 +149,39 @@ export default function AcademicsPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Academic Management</h1>
           <p className="text-muted-foreground">
             Manage academic programs, curriculums, courses, and sections.
           </p>
         </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={downloadStarterTemplates}
+            title="Download CSV Starter Templates"
+          >
+            <Download className="mr-2 h-4 w-4" /> Download Templates
+          </Button>
+          <Button size="sm" onClick={() => setIsBulkImportOpen(true)}>
+            <Upload className="mr-2 h-4 w-4" /> Bulk Setup Wizard
+          </Button>
+        </div>
       </div>
+
+      <BulkAcademicImportDialog
+        open={isBulkImportOpen}
+        onOpenChange={setIsBulkImportOpen}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ['admin-departments'] });
+          queryClient.invalidateQueries({ queryKey: ['admin-programs'] });
+          queryClient.invalidateQueries({ queryKey: ['admin-courses'] });
+          queryClient.invalidateQueries({ queryKey: ['admin-curriculums'] });
+          queryClient.invalidateQueries({ queryKey: ['admin-sections'] });
+        }}
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="max-w-full justify-start overflow-x-auto">

@@ -15,6 +15,8 @@ import { CurriculumElectiveGroupsController } from './controllers/curriculum-ele
 import { CurriculumElectiveGroupsService } from './services/curriculum-elective-groups.service';
 import { TermsController } from './controllers/terms.controller';
 import { TermsService } from './services/terms.service';
+import { AcademicBulkController } from './controllers/academic-bulk.controller';
+import { AcademicBulkImportService } from './services/academic-bulk-import.service';
 
 @Module({
   controllers: [
@@ -26,6 +28,7 @@ import { TermsService } from './services/terms.service';
     CurriculumCoursesController,
     CurriculumElectiveGroupsController,
     TermsController,
+    AcademicBulkController,
   ],
   providers: [
     CourseOfferingsService,
@@ -36,6 +39,7 @@ import { TermsService } from './services/terms.service';
     CurriculumCoursesService,
     CurriculumElectiveGroupsService,
     TermsService,
+    AcademicBulkImportService,
   ],
 })
 export class AcademicModule {}
