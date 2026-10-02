@@ -92,4 +92,16 @@ export class AdmissionsController {
     // and potentially creating the student's auth account if integration requires
     return this.admissionsService.createDirectAdmission(req.user.institutionId, req.user.id, data);
   }
+
+  @Post('bulk-direct-students')
+  async createBulkDirectAdmissions(
+    @Request() req: any,
+    @Body() payload: { students: CreateDirectAdmissionDto[] },
+  ) {
+    return this.admissionsService.createBulkDirectAdmissions(
+      req.user.institutionId,
+      req.user.id,
+      payload.students,
+    );
+  }
 }

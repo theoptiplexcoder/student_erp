@@ -41,6 +41,23 @@ export const useCreateDirectAdmission = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'admissions'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'students'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'sections'] });
+    },
+  });
+};
+
+export const useBulkDirectAdmission = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: { students: any[] }) => {
+      const response = await apiClient.post('/admin/admissions/bulk-direct-students', payload);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'admissions'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'students'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'sections'] });
     },
   });
 };

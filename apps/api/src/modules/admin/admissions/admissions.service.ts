@@ -555,4 +555,42 @@ export class AdmissionsService {
       return student;
     });
   }
+
+  async createBulkDirectAdmissions(
+    institutionId: string,
+    authUserId: string,
+    students: CreateDirectAdmissionDto[],
+  ) {
+    if (!students || !Array.isArray(students) || students.length === 0) {
+      throw new BadRequestException('No student records provided');
+    }
+
+    const results: { success: any[]; errors: { index: number; email?: string; error: string }[] } =
+      {
+        success: [],
+        errors: [],
+      };
+
+    for (let i = 0; i < students.length; i++) {
+      const studentDto = students[i];
+      try {
+        const admitted = await this.createDirectAdmission(institutionId, authUserId, studentDto);
+        results.success.push({
+          id: admitted.id,
+          firstName: studentDto.firstName,
+          lastName: studentDto.lastName,
+          email: studentDto.email,
+          usn: admitted.usn,
+        });
+      } catch (err: any) {
+        results.errors.push({
+          index: i + 1,
+          email: studentDto.email,
+          error: err?.message || 'Failed to admit student',
+        });
+      }
+    }
+
+    return results;
+  }
 }

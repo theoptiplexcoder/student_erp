@@ -32,7 +32,8 @@
     "react-dom": "19.0.0",
     "react-phone-number-input": "^3.4.17",
     "sonner": "^2.0.8",
-    "three": "^0.185.1"
+    "three": "^0.185.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
@@ -40,6 +41,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/three": "^0.185.4",
+    "@types/xlsx": "^0.0.36",
     "playwright": "^1.62.1",
     "prisma": "^6.19.3",
     "typescript": "6.0.3"
