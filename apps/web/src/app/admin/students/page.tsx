@@ -8,8 +8,6 @@ import { useAdminPrograms } from '@/hooks/api/admin/usePrograms';
 import { useAdminSections } from '@/hooks/api/admin/useSections';
 import { StudentFilters } from './components/student-filters';
 import { SectionsProgramsView } from './components/sections-programs-view';
-import { QuickAdmissionModal } from './components/quick-admission-modal';
-import { BulkUploadModal } from './components/bulk-upload-modal';
 import {
   Button,
   Card,
@@ -28,17 +26,13 @@ import {
   EmptyState,
 } from '@student-erp/ui';
 import {
-  Plus,
   Users,
   UserCheck,
-  UserPlus,
   GraduationCap,
   ChevronLeft,
   ChevronRight,
   Search,
   ArrowRight,
-  Download,
-  Upload,
   LayoutGrid,
   List,
 } from 'lucide-react';
@@ -72,9 +66,6 @@ function StudentsPageContent() {
 
   // Tab View: default to 'sections' per user requirement
   const currentView = searchParams.get('view') || 'sections';
-
-  const [isQuickAdmitOpen, setIsQuickAdmitOpen] = useState(false);
-  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
   const setView = (view: 'sections' | 'directory') => {
     const params = new URLSearchParams(searchParams.toString());
@@ -141,27 +132,6 @@ function StudentsPageContent() {
       <PageHeader
         title="Students & Sections"
         description="Organize, manage, and view students grouped by their academic programs and sections."
-        actions={
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsBulkUploadOpen(true)}
-              className="h-8 gap-1.5 text-xs"
-            >
-              <Upload className="h-3.5 w-3.5" />
-              Bulk Import
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => setIsQuickAdmitOpen(true)}
-              className="h-8 gap-1.5 text-xs shadow-xs"
-            >
-              <UserPlus className="h-3.5 w-3.5" />
-              Admit Student
-            </Button>
-          </div>
-        }
       />
 
       {/* Stats Ribbon */}
@@ -202,14 +172,6 @@ function StudentsPageContent() {
             All Students Directory
           </Button>
         </div>
-
-        {currentView === 'directory' && (
-          <Link href="/admin/admissions/students/new">
-            <Button variant="outline" size="sm" className="h-7 gap-1 text-xs">
-              <Plus className="h-3 w-3" /> Full Admission Form
-            </Button>
-          </Link>
-        )}
       </div>
 
       {/* View Content */}
@@ -256,11 +218,6 @@ function StudentsPageContent() {
               icon={Users}
               title="No students match your criteria"
               description="Try broadening or clearing your active filters to find student records."
-              action={{
-                label: 'Admit New Student',
-                onClick: () => setIsQuickAdmitOpen(true),
-                icon: Plus,
-              }}
             />
           ) : (
             <div className="space-y-4">
@@ -393,11 +350,6 @@ function StudentsPageContent() {
           )}
         </div>
       )}
-
-      {/* Global Modals */}
-      <QuickAdmissionModal isOpen={isQuickAdmitOpen} onClose={() => setIsQuickAdmitOpen(false)} />
-
-      <BulkUploadModal isOpen={isBulkUploadOpen} onClose={() => setIsBulkUploadOpen(false)} />
     </PageContainer>
   );
 }
