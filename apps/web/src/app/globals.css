@@ -6,87 +6,87 @@
   --font-display: 'Outfit', sans-serif;
   --font-body: 'DM Sans', sans-serif;
 
-  /* Soft cream-and-indigo application palette inspired by modern cloud dashboard */
-  --background: #fbf8f4;
-  --foreground: #1c1d22;
+  /* Modern cloud dashboard palette with crisp contrast */
+  --background: #f1edeb;
+  --foreground: #18181b;
   --card: #ffffff;
-  --card-foreground: #1c1d22;
+  --card-foreground: #18181b;
   --popover: #ffffff;
-  --popover-foreground: #1c1d22;
+  --popover-foreground: #18181b;
 
-  --primary: #7582eb;
+  --primary: #6c78e6;
   --primary-foreground: #ffffff;
-  --secondary: #fdf5ed;
-  --secondary-foreground: #2d2b38;
+  --secondary: #fbeee0;
+  --secondary-foreground: #222129;
 
-  --muted: #f3eee7;
-  --muted-foreground: #6b6976;
-  --accent: #edf1fe;
-  --accent-foreground: #4f5ec9;
+  --muted: #e6dfd7;
+  --muted-foreground: #5a5763;
+  --accent: #e5ebff;
+  --accent-foreground: #3f4cb8;
 
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #e8e2d9;
-  --input: #ded7cc;
-  --ring: #7582eb;
+  --border: #d8cfc4;
+  --input: #cfc4b7;
+  --ring: #6c78e6;
 
   --radius: 0.5rem;
 
   /* Shared and role-specific tokens keep every workspace on-brand. */
-  --sidebar: #f7f3ee;
-  --sidebar-foreground: #5c5a64;
-  --sidebar-primary: #7582eb;
+  --sidebar: #eae4dd;
+  --sidebar-foreground: #47454f;
+  --sidebar-primary: #6c78e6;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #edf1fe;
-  --sidebar-accent-foreground: #4f5ec9;
-  --sidebar-border: #e8e2d9;
-  --sidebar-ring: #7582eb;
+  --sidebar-accent: #e5ebff;
+  --sidebar-accent-foreground: #3f4cb8;
+  --sidebar-border: #d8cfc4;
+  --sidebar-ring: #6c78e6;
 
-  --admin-primary: #7582eb;
-  --admin-primary-hover: #6370de;
+  --admin-primary: #6c78e6;
+  --admin-primary-hover: #5864db;
   --admin-primary-foreground: #ffffff;
-  --admin-accent: #edf1fe;
-  --admin-accent-foreground: #4f5ec9;
-  --admin-sidebar: #f7f3ee;
-  --admin-sidebar-foreground: #5c5a64;
-  --admin-sidebar-active: #7582eb;
-  --admin-sidebar-border: #e8e2d9;
+  --admin-accent: #e5ebff;
+  --admin-accent-foreground: #3f4cb8;
+  --admin-sidebar: #eae4dd;
+  --admin-sidebar-foreground: #47454f;
+  --admin-sidebar-active: #6c78e6;
+  --admin-sidebar-border: #d8cfc4;
 
-  --tenant-primary: #7582eb;
-  --tenant-primary-hover: #6370de;
+  --tenant-primary: #6c78e6;
+  --tenant-primary-hover: #5864db;
   --tenant-primary-foreground: #ffffff;
-  --tenant-accent: #edf1fe;
-  --tenant-accent-foreground: #4f5ec9;
-  --tenant-sidebar: #f7f3ee;
-  --tenant-sidebar-foreground: #5c5a64;
-  --tenant-sidebar-active: #7582eb;
-  --tenant-sidebar-border: #e8e2d9;
+  --tenant-accent: #e5ebff;
+  --tenant-accent-foreground: #3f4cb8;
+  --tenant-sidebar: #eae4dd;
+  --tenant-sidebar-foreground: #47454f;
+  --tenant-sidebar-active: #6c78e6;
+  --tenant-sidebar-border: #d8cfc4;
 
-  --faculty-primary: #7582eb;
-  --faculty-primary-hover: #6370de;
+  --faculty-primary: #6c78e6;
+  --faculty-primary-hover: #5864db;
   --faculty-primary-foreground: #ffffff;
-  --faculty-accent: #edf1fe;
-  --faculty-accent-foreground: #4f5ec9;
-  --faculty-sidebar: #f7f3ee;
-  --faculty-sidebar-foreground: #5c5a64;
-  --faculty-sidebar-active: #7582eb;
-  --faculty-sidebar-border: #e8e2d9;
+  --faculty-accent: #e5ebff;
+  --faculty-accent-foreground: #3f4cb8;
+  --faculty-sidebar: #eae4dd;
+  --faculty-sidebar-foreground: #47454f;
+  --faculty-sidebar-active: #6c78e6;
+  --faculty-sidebar-border: #d8cfc4;
 
-  --student-primary: #7582eb;
-  --student-primary-hover: #6370de;
+  --student-primary: #6c78e6;
+  --student-primary-hover: #5864db;
   --student-primary-foreground: #ffffff;
-  --student-accent: #edf1fe;
-  --student-accent-foreground: #4f5ec9;
-  --student-sidebar: #f7f3ee;
-  --student-sidebar-foreground: #5c5a64;
-  --student-sidebar-active: #7582eb;
-  --student-sidebar-border: #e8e2d9;
+  --student-accent: #e5ebff;
+  --student-accent-foreground: #3f4cb8;
+  --student-sidebar: #eae4dd;
+  --student-sidebar-foreground: #47454f;
+  --student-sidebar-active: #6c78e6;
+  --student-sidebar-border: #d8cfc4;
 
-  --chart-1: #7582eb;
-  --chart-2: #9ba7f7;
-  --chart-3: #c2caff;
-  --chart-4: #f6ad55;
-  --chart-5: #f87171;
+  --chart-1: #6c78e6;
+  --chart-2: #8f9cf5;
+  --chart-3: #b7c3ff;
+  --chart-4: #f59e0b;
+  --chart-5: #ef4444;
 }
 
 .dark {
