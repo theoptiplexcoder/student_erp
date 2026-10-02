@@ -26,7 +26,6 @@ import {
 } from 'lucide-react';
 import { useAdminPrograms, Program } from '@/hooks/api/admin/usePrograms';
 import { useAdminSections, Section } from '@/hooks/api/admin/useSections';
-import { SectionStudentsModal } from './section-students-modal';
 import { QuickAdmissionModal } from './quick-admission-modal';
 import { BulkUploadModal } from './bulk-upload-modal';
 
@@ -35,7 +34,6 @@ export function SectionsProgramsView() {
   const [selectedProgramId, setSelectedProgramId] = useState<string>('all');
 
   // Modals state
-  const [activeRosterSection, setActiveRosterSection] = useState<Section | null>(null);
   const [admissionTarget, setAdmissionTarget] = useState<{
     programId?: string;
     programName?: string;
@@ -335,15 +333,16 @@ export function SectionsProgramsView() {
 
                             {/* Card Footer Actions */}
                             <div className="border-border/60 mt-4 flex items-center justify-between gap-2 border-t pt-3">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setActiveRosterSection(sec)}
-                                className="h-7 flex-1 gap-1 text-xs"
-                              >
-                                <Users className="h-3 w-3" />
-                                View Students
-                              </Button>
+                              <Link href={`/admin/students/sections/${sec.id}`} className="flex-1">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 w-full gap-1 text-xs"
+                                >
+                                  <Users className="h-3 w-3" />
+                                  View Students
+                                </Button>
+                              </Link>
 
                               <div className="flex items-center gap-1">
                                 <Button
@@ -411,15 +410,12 @@ export function SectionsProgramsView() {
                         <p className="text-muted-foreground font-mono text-xs">{sec.code}</p>
                       </div>
                       <div className="border-border/60 mt-4 flex items-center justify-between border-t pt-3">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setActiveRosterSection(sec)}
-                          className="h-7 flex-1 gap-1 text-xs"
-                        >
-                          <Users className="h-3 w-3" />
-                          View Students ({sec._count?.students || 0})
-                        </Button>
+                        <Link href={`/admin/students/sections/${sec.id}`} className="flex-1">
+                          <Button variant="outline" size="sm" className="h-7 w-full gap-1 text-xs">
+                            <Users className="h-3 w-3" />
+                            View Students ({sec._count?.students || 0})
+                          </Button>
+                        </Link>
                       </div>
                     </div>
                   ))}
@@ -428,31 +424,6 @@ export function SectionsProgramsView() {
             </Card>
           )}
         </div>
-      )}
-
-      {/* Roster Modal */}
-      {activeRosterSection && (
-        <SectionStudentsModal
-          isOpen={!!activeRosterSection}
-          onClose={() => setActiveRosterSection(null)}
-          section={activeRosterSection}
-          onAdmitDirect={() => {
-            setAdmissionTarget({
-              programId: activeRosterSection.program?.id,
-              programName: activeRosterSection.program?.name,
-              sectionId: activeRosterSection.id,
-              sectionName: activeRosterSection.name,
-            });
-          }}
-          onBulkUpload={() => {
-            setBulkUploadTarget({
-              programId: activeRosterSection.program?.id,
-              programName: activeRosterSection.program?.name,
-              sectionId: activeRosterSection.id,
-              sectionName: activeRosterSection.name,
-            });
-          }}
-        />
       )}
 
       {/* Quick Direct Admission Modal */}
