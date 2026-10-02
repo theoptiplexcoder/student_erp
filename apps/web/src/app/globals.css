@@ -7,80 +7,80 @@
   --font-body: 'DM Sans', sans-serif;
 
   /* Soft cream-and-indigo application palette inspired by modern cloud dashboard */
-  --background: #fffcf9;
-  --foreground: #1e1e24;
+  --background: #fbf8f4;
+  --foreground: #1c1d22;
   --card: #ffffff;
-  --card-foreground: #1e1e24;
+  --card-foreground: #1c1d22;
   --popover: #ffffff;
-  --popover-foreground: #1e1e24;
+  --popover-foreground: #1c1d22;
 
   --primary: #7582eb;
   --primary-foreground: #ffffff;
-  --secondary: #fff5ee;
+  --secondary: #fdf5ed;
   --secondary-foreground: #2d2b38;
 
-  --muted: #f7f6f4;
+  --muted: #f3eee7;
   --muted-foreground: #6b6976;
-  --accent: #f0f3ff;
-  --accent-foreground: #5e6cdb;
+  --accent: #edf1fe;
+  --accent-foreground: #4f5ec9;
 
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #f0ece7;
-  --input: #e5e0d8;
+  --border: #e8e2d9;
+  --input: #ded7cc;
   --ring: #7582eb;
 
   --radius: 0.5rem;
 
   /* Shared and role-specific tokens keep every workspace on-brand. */
-  --sidebar: #ffffff;
+  --sidebar: #f7f3ee;
   --sidebar-foreground: #5c5a64;
   --sidebar-primary: #7582eb;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #eef1fe;
-  --sidebar-accent-foreground: #5e6cdb;
-  --sidebar-border: #f0ece7;
+  --sidebar-accent: #edf1fe;
+  --sidebar-accent-foreground: #4f5ec9;
+  --sidebar-border: #e8e2d9;
   --sidebar-ring: #7582eb;
 
   --admin-primary: #7582eb;
   --admin-primary-hover: #6370de;
   --admin-primary-foreground: #ffffff;
-  --admin-accent: #eef1fe;
-  --admin-accent-foreground: #5e6cdb;
-  --admin-sidebar: #ffffff;
+  --admin-accent: #edf1fe;
+  --admin-accent-foreground: #4f5ec9;
+  --admin-sidebar: #f7f3ee;
   --admin-sidebar-foreground: #5c5a64;
   --admin-sidebar-active: #7582eb;
-  --admin-sidebar-border: #f0ece7;
+  --admin-sidebar-border: #e8e2d9;
 
   --tenant-primary: #7582eb;
   --tenant-primary-hover: #6370de;
   --tenant-primary-foreground: #ffffff;
-  --tenant-accent: #eef1fe;
-  --tenant-accent-foreground: #5e6cdb;
-  --tenant-sidebar: #ffffff;
+  --tenant-accent: #edf1fe;
+  --tenant-accent-foreground: #4f5ec9;
+  --tenant-sidebar: #f7f3ee;
   --tenant-sidebar-foreground: #5c5a64;
   --tenant-sidebar-active: #7582eb;
-  --tenant-sidebar-border: #f0ece7;
+  --tenant-sidebar-border: #e8e2d9;
 
   --faculty-primary: #7582eb;
   --faculty-primary-hover: #6370de;
   --faculty-primary-foreground: #ffffff;
-  --faculty-accent: #eef1fe;
-  --faculty-accent-foreground: #5e6cdb;
-  --faculty-sidebar: #ffffff;
+  --faculty-accent: #edf1fe;
+  --faculty-accent-foreground: #4f5ec9;
+  --faculty-sidebar: #f7f3ee;
   --faculty-sidebar-foreground: #5c5a64;
   --faculty-sidebar-active: #7582eb;
-  --faculty-sidebar-border: #f0ece7;
+  --faculty-sidebar-border: #e8e2d9;
 
   --student-primary: #7582eb;
   --student-primary-hover: #6370de;
   --student-primary-foreground: #ffffff;
-  --student-accent: #eef1fe;
-  --student-accent-foreground: #5e6cdb;
-  --student-sidebar: #ffffff;
+  --student-accent: #edf1fe;
+  --student-accent-foreground: #4f5ec9;
+  --student-sidebar: #f7f3ee;
   --student-sidebar-foreground: #5c5a64;
   --student-sidebar-active: #7582eb;
-  --student-sidebar-border: #f0ece7;
+  --student-sidebar-border: #e8e2d9;
 
   --chart-1: #7582eb;
   --chart-2: #9ba7f7;
