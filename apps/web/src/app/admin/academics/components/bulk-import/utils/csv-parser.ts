@@ -106,7 +106,12 @@ export function detectFileType(headers: string[]): AcademicFileType {
 
   if (has('sectioncode') || (has('capacity') && has('section'))) return 'sections';
   if (has('curriculum') || has('termsequence') || has('ismandatory')) return 'curriculum';
-  if (has('duration') || has('durationyears') || (has('program') && has('level')))
+  if (
+    has('duration') ||
+    has('durationyears') ||
+    has('durationmonths') ||
+    (has('program') && has('level'))
+  )
     return 'programs';
   if (has('credit') || has('credits') || has('coursetitle')) return 'courses';
   if (has('deptcode') || (has('code') && has('name') && !has('credit') && !has('duration'))) {
@@ -182,8 +187,14 @@ export async function parseAcademicFiles(files: File[]): Promise<{
         rows.forEach((r, idx) => {
           const code = getField(r, ['code', 'program_code', 'programcode']);
           const name = getField(r, ['name', 'program_name', 'programname']);
-          const level = getField(r, ['level', 'program_level']) || 'UNDERGRADUATE';
-          const durationStr = getField(r, ['duration_years', 'durationyears', 'duration']) || '4';
+          const level = getField(r, ['level', 'program_level']) || 'PRIMARY';
+          const durationMonthsStr = getField(r, [
+            'duration_months',
+            'durationmonths',
+            'duration_month',
+            'months',
+          ]);
+          const durationYearsStr = getField(r, ['duration_years', 'durationyears', 'duration']);
           const departmentCode = getField(r, [
             'department_code',
             'dept_code',
@@ -195,11 +206,20 @@ export async function parseAcademicFiles(files: File[]): Promise<{
             errors.push({ file: file.name, row: idx + 2, message: 'Missing program code or name' });
             return;
           }
+
+          let durationYears = 1;
+          if (durationMonthsStr) {
+            const months = parseInt(durationMonthsStr, 10);
+            durationYears = Math.max(1, Math.round(months / 12)) || 1;
+          } else if (durationYearsStr) {
+            durationYears = parseInt(durationYearsStr, 10) || 1;
+          }
+
           programs.push({
             code: code.toUpperCase(),
             name,
             level: level.toUpperCase(),
-            durationYears: parseInt(durationStr, 10) || 4,
+            durationYears,
             departmentCode: departmentCode.toUpperCase(),
           });
         });
@@ -406,17 +426,17 @@ ENG1,English 1,1,ENG,THEORY
 ENG2,English 2,1,ENG,THEORY
 SOC1,Social Studies 1,1,SOC,THEORY
 SOC2,Social Studies 2,1,SOC,THEORY`,
-    '3_programs.csv': `code,name,level,duration_years,department_code
-STD1,Standard 1,PRIMARY,1,MATH
-STD2,Standard 2,PRIMARY,1,MATH
-STD3,Standard 3,PRIMARY,1,MATH
-STD4,Standard 4,PRIMARY,1,MATH
-STD5,Standard 5,PRIMARY,1,MATH
-STD6,Standard 6,SECONDARY,1,MATH
-STD7,Standard 7,SECONDARY,1,MATH
-STD8,Standard 8,SECONDARY,1,MATH
-STD9,Standard 9,SECONDARY,1,MATH
-STD10,Standard 10,SECONDARY,1,MATH`,
+    '3_programs.csv': `code,name,level,duration_months,department_code
+STD1,Standard 1,PRIMARY,12,MATH
+STD2,Standard 2,PRIMARY,12,MATH
+STD3,Standard 3,PRIMARY,12,MATH
+STD4,Standard 4,PRIMARY,12,MATH
+STD5,Standard 5,PRIMARY,12,MATH
+STD6,Standard 6,SECONDARY,12,MATH
+STD7,Standard 7,SECONDARY,12,MATH
+STD8,Standard 8,SECONDARY,12,MATH
+STD9,Standard 9,SECONDARY,12,MATH
+STD10,Standard 10,SECONDARY,12,MATH`,
     '4_curriculum_progression.csv': `program_code,curriculum_name,term_sequence,term_name,course_code,is_mandatory,prerequisite_course_codes
 STD1,K-10 School Curriculum,1,Term 1,MAT1,true,
 STD1,K-10 School Curriculum,1,Term 1,SCI1,true,
