@@ -68,14 +68,14 @@ export const adminNavigationSections: NavSection[] = [
   {
     title: 'ACADEMICS',
     items: [
-      { name: 'Students', href: '/admin/students', icon: GraduationCap },
-      { name: 'Admissions', href: '/admin/admissions', icon: UserPlus },
       {
         name: 'Academics',
         href: '/admin/academics',
         icon: BookOpen,
         exact: true,
       },
+      { name: 'Admissions', href: '/admin/admissions', icon: UserPlus },
+      { name: 'Students', href: '/admin/students', icon: GraduationCap },
       {
         name: 'Examinations',
         href: '/admin/examinations',
