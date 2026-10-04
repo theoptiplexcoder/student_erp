@@ -1,6 +1,9 @@
 program_code,curriculum_name,term_sequence,term_name,course_code,is_mandatory,prerequisite_course_codes
-BTECH_CSE,Scheme 2026,1,Semester 1,CS101,true,
-BTECH_CSE,Scheme 2026,1,Semester 1,CS102,true,
-BTECH_CSE,Scheme 2026,1,Semester 1,MA101,true,
-BTECH_CSE,Scheme 2026,2,Semester 2,CS201,true,CS101
-BTECH_CSE,Scheme 2026,2,Semester 2,CS202,true,CS102
+STD1,K-10 School Curriculum,1,Term 1,MAT1,true,
+STD1,K-10 School Curriculum,1,Term 1,SCI1,true,
+STD1,K-10 School Curriculum,1,Term 1,ENG1,true,
+STD1,K-10 School Curriculum,1,Term 1,SOC1,true,
+STD2,K-10 School Curriculum,2,Term 1,MAT2,true,MAT1
+STD2,K-10 School Curriculum,2,Term 1,SCI2,true,SCI1
+STD2,K-10 School Curriculum,2,Term 1,ENG2,true,ENG1
+STD2,K-10 School Curriculum,2,Term 1,SOC2,true,SOC1

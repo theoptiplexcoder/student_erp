@@ -214,11 +214,16 @@ export class AcademicBulkImportService {
           // Find or create curriculum
           // Curriculum has @@unique([institutionId, name, versionNumber])
           const versionNumber = c.versionNumber ?? 'v1.0';
-          let curriculum = await tx.curriculum.findFirst({
+          let curriculum = await tx.curriculum.findUnique({
             where: {
-              institutionId,
-              name: c.curriculumName,
-              programs: { some: { id: programId } },
+              institutionId_name_versionNumber: {
+                institutionId,
+                name: c.curriculumName,
+                versionNumber,
+              },
+            },
+            include: {
+              programs: { select: { id: true } },
             },
           });
           if (!curriculum) {
@@ -230,6 +235,19 @@ export class AcademicBulkImportService {
                 effectiveFrom: new Date(),
                 status: 'DRAFT',
                 programs: { connect: [{ id: programId }] },
+              },
+              include: {
+                programs: { select: { id: true } },
+              },
+            });
+          } else if (!curriculum.programs.some((p) => p.id === programId)) {
+            curriculum = await tx.curriculum.update({
+              where: { id: curriculum.id },
+              data: {
+                programs: { connect: [{ id: programId }] },
+              },
+              include: {
+                programs: { select: { id: true } },
               },
             });
           }

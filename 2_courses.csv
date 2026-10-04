@@ -1,6 +1,9 @@
 code,title,credits,department_code,type
-CS101,Introduction to Programming,4,CSE,THEORY
-CS102,Programming Laboratory,2,CSE,PRACTICAL
-MA101,Engineering Mathematics I,4,CSE,THEORY
-CS201,Data Structures and Algorithms,4,CSE,THEORY
-CS202,Data Structures Laboratory,2,CSE,PRACTICAL
+MAT1,Mathematics 1,1,MATH,THEORY
+MAT2,Mathematics 2,1,MATH,THEORY
+SCI1,Science 1,1,SCI,THEORY
+SCI2,Science 2,1,SCI,THEORY
+ENG1,English 1,1,ENG,THEORY
+ENG2,English 2,1,ENG,THEORY
+SOC1,Social Studies 1,1,SOC,THEORY
+SOC2,Social Studies 2,1,SOC,THEORY

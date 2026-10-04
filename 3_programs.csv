@@ -1,3 +1,11 @@
-code,name,level,duration_years,department_code
-BTECH_CSE,B.Tech Computer Science and Engineering,UNDERGRADUATE,4,CSE
-BTECH_ECE,B.Tech Electronics and Communication,UNDERGRADUATE,4,ECE
+code,name,level,duration_months,department_code
+STD1,Standard 1,PRIMARY,12,MATH
+STD2,Standard 2,PRIMARY,12,MATH
+STD3,Standard 3,PRIMARY,12,MATH
+STD4,Standard 4,PRIMARY,12,MATH
+STD5,Standard 5,PRIMARY,12,MATH
+STD6,Standard 6,SECONDARY,12,MATH
+STD7,Standard 7,SECONDARY,12,MATH
+STD8,Standard 8,SECONDARY,12,MATH
+STD9,Standard 9,SECONDARY,12,MATH
+STD10,Standard 10,SECONDARY,12,MATH
