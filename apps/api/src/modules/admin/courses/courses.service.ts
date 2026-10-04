@@ -181,6 +181,12 @@ export class CoursesService {
   }
 
   async remove(id: string) {
-    return this.prisma.course.delete({ where: { id } });
+    return this.prisma.$transaction(async (tx) => {
+      // Clean up curriculum courses and prerequisite references where this course is prerequisite
+      await tx.curriculumCourse.deleteMany({ where: { courseId: id } });
+      await tx.coursePrerequisite.deleteMany({ where: { prerequisiteCourseId: id } });
+
+      return tx.course.delete({ where: { id } });
+    });
   }
 }

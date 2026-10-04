@@ -2025,7 +2025,7 @@ model CurriculumCourse {
 
   institution    Institution    @relation(fields: [institutionId], references: [id])
   curriculumTerm CurriculumTerm @relation(fields: [curriculumTermId], references: [id], onDelete: Cascade)
-  course         Course         @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  course         Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([curriculumTermId, courseId])
   @@unique([curriculumTermId, sequence])

@@ -118,9 +118,7 @@ export function detectFileType(headers: string[]): AcademicFileType {
 // -------------------------------------------------------------
 // Main parse function for multiple files
 // -------------------------------------------------------------
-export async function parseAcademicFiles(
-  files: File[],
-): Promise<{
+export async function parseAcademicFiles(files: File[]): Promise<{
   data: ParsedAcademicData;
   errors: ParseError[];
   detected: Record<string, AcademicFileType>;
@@ -394,11 +392,45 @@ export function downloadCSV(filename: string, content: string) {
 
 export function downloadStarterTemplates() {
   const templates: Record<string, string> = {
-    '1_departments.csv': `code,name\nCSE,Computer Science and Engineering\nECE,Electronics and Communication Engineering\nMECH,Mechanical Engineering`,
-    '2_courses.csv': `code,title,credits,department_code,type\nCS101,Introduction to Programming,4,CSE,THEORY\nCS102,Programming Laboratory,2,CSE,PRACTICAL\nMA101,Engineering Mathematics I,4,CSE,THEORY\nCS201,Data Structures and Algorithms,4,CSE,THEORY\nCS202,Data Structures Laboratory,2,CSE,PRACTICAL`,
-    '3_programs.csv': `code,name,level,duration_years,department_code\nBTECH_CSE,B.Tech Computer Science and Engineering,UNDERGRADUATE,4,CSE\nBTECH_ECE,B.Tech Electronics and Communication,UNDERGRADUATE,4,ECE`,
-    '4_curriculum_progression.csv': `program_code,curriculum_name,term_sequence,term_name,course_code,is_mandatory,prerequisite_course_codes\nBTECH_CSE,Scheme 2026,1,Semester 1,CS101,true,\nBTECH_CSE,Scheme 2026,1,Semester 1,CS102,true,\nBTECH_CSE,Scheme 2026,1,Semester 1,MA101,true,\nBTECH_CSE,Scheme 2026,2,Semester 2,CS201,true,CS101\nBTECH_CSE,Scheme 2026,2,Semester 2,CS202,true,CS102`,
-    '5_sections.csv': `program_code,term_sequence,section_code,section_name,capacity,academic_year_code\nBTECH_CSE,1,A,Section A,60,AY-2026-27\nBTECH_CSE,1,B,Section B,60,AY-2026-27\nBTECH_CSE,2,A,Section A,60,AY-2026-27\nBTECH_CSE,2,B,Section B,60,AY-2026-27`,
+    '1_departments.csv': `code,name
+MATH,Mathematics
+SCI,Science
+ENG,English
+SOC,Social Studies`,
+    '2_courses.csv': `code,title,credits,department_code,type
+MAT1,Mathematics 1,1,MATH,THEORY
+MAT2,Mathematics 2,1,MATH,THEORY
+SCI1,Science 1,1,SCI,THEORY
+SCI2,Science 2,1,SCI,THEORY
+ENG1,English 1,1,ENG,THEORY
+ENG2,English 2,1,ENG,THEORY
+SOC1,Social Studies 1,1,SOC,THEORY
+SOC2,Social Studies 2,1,SOC,THEORY`,
+    '3_programs.csv': `code,name,level,duration_years,department_code
+STD1,Standard 1,PRIMARY,1,MATH
+STD2,Standard 2,PRIMARY,1,MATH
+STD3,Standard 3,PRIMARY,1,MATH
+STD4,Standard 4,PRIMARY,1,MATH
+STD5,Standard 5,PRIMARY,1,MATH
+STD6,Standard 6,SECONDARY,1,MATH
+STD7,Standard 7,SECONDARY,1,MATH
+STD8,Standard 8,SECONDARY,1,MATH
+STD9,Standard 9,SECONDARY,1,MATH
+STD10,Standard 10,SECONDARY,1,MATH`,
+    '4_curriculum_progression.csv': `program_code,curriculum_name,term_sequence,term_name,course_code,is_mandatory,prerequisite_course_codes
+STD1,K-10 School Curriculum,1,Term 1,MAT1,true,
+STD1,K-10 School Curriculum,1,Term 1,SCI1,true,
+STD1,K-10 School Curriculum,1,Term 1,ENG1,true,
+STD1,K-10 School Curriculum,1,Term 1,SOC1,true,
+STD2,K-10 School Curriculum,2,Term 1,MAT2,true,MAT1
+STD2,K-10 School Curriculum,2,Term 1,SCI2,true,SCI1
+STD2,K-10 School Curriculum,2,Term 1,ENG2,true,ENG1
+STD2,K-10 School Curriculum,2,Term 1,SOC2,true,SOC1`,
+    '5_sections.csv': `program_code,term_sequence,section_code,section_name,capacity,academic_year_code
+STD1,1,A,Section A,35,AY-2026-27
+STD1,1,B,Section B,35,AY-2026-27
+STD2,2,A,Section A,35,AY-2026-27
+STD2,2,B,Section B,35,AY-2026-27`,
   };
 
   let delay = 0;
