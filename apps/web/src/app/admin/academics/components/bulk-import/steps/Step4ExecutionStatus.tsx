@@ -26,6 +26,13 @@ export function Step4ExecutionStatus({
   onRetry,
 }: Step4ExecutionStatusProps) {
   if (error) {
+    const serverMessage = (error as any)?.response?.data?.message;
+    const displayMessage = Array.isArray(serverMessage)
+      ? serverMessage.join(', ')
+      : serverMessage ||
+        error.message ||
+        'An unexpected error occurred during database commit. No partial data was saved.';
+
     return (
       <div className="space-y-6 py-6 text-center">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-600">
@@ -33,9 +40,8 @@ export function Step4ExecutionStatus({
         </div>
         <div>
           <h3 className="text-xl font-bold text-red-900">Ingestion Transaction Failed</h3>
-          <p className="text-muted-foreground mx-auto mt-2 max-w-md text-sm">
-            {error.message ||
-              'An unexpected error occurred during database commit. No partial data was saved.'}
+          <p className="text-muted-foreground mx-auto mt-2 max-w-md text-sm font-medium">
+            {displayMessage}
           </p>
         </div>
         <div className="flex justify-center gap-3 pt-4">

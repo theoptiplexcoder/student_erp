@@ -1,0 +1,5 @@
+program_code,term_sequence,section_code,section_name,capacity,academic_year_code
+BTECH_CSE,1,A,Section A,60,AY-2026-27
+BTECH_CSE,1,B,Section B,60,AY-2026-27
+BTECH_CSE,2,A,Section A,60,AY-2026-27
+BTECH_CSE,2,B,Section B,60,AY-2026-27

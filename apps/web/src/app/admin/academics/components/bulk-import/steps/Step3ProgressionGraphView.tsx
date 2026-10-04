@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Button,
   Card,
@@ -20,8 +20,11 @@ import {
   GitBranch,
   Calendar,
   CheckCircle2,
+  PlusCircle,
+  Check,
 } from 'lucide-react';
 import { ParsedAcademicData } from '../utils/csv-parser';
+import { useAcademicYears, useCreateAcademicYear } from '@/hooks/api/admin/useAcademicYears';
 
 interface Step3ProgressionGraphViewProps {
   data: ParsedAcademicData;
@@ -36,7 +39,86 @@ export function Step3ProgressionGraphView({
   onBack,
   isExecuting,
 }: Step3ProgressionGraphViewProps) {
-  const [academicYearCode, setAcademicYearCode] = useState(data.academicYearCode || 'AY-2026-27');
+  const { data: existingYears = [], isLoading: isLoadingYears } = useAcademicYears();
+  const createAcademicYearMutation = useCreateAcademicYear();
+
+  const [mode, setMode] = useState<'select' | 'create'>('select');
+  const [selectedYearName, setSelectedYearName] = useState<string>('');
+
+  // Form state for creating a new academic year
+  const [newYearName, setNewYearName] = useState<string>(data.academicYearCode || 'AY-2026-27');
+  const [startDate, setStartDate] = useState<string>('2026-08-01');
+  const [endDate, setEndDate] = useState<string>('2027-05-31');
+  const [createError, setCreateError] = useState<string | null>(null);
+
+  // Sync initial selection once existingYears load
+  useEffect(() => {
+    if (existingYears.length > 0 && !selectedYearName) {
+      // If data has an academicYearCode matching an existing year, select it
+      const match = data.academicYearCode
+        ? existingYears.find((y) => y.name === data.academicYearCode)
+        : null;
+      if (match) {
+        setSelectedYearName(match.name);
+        setMode('select');
+      } else {
+        const activeYear = existingYears.find((y) => y.isCurrent || y.status === 'ACTIVE');
+        setSelectedYearName(activeYear ? activeYear.name : existingYears[0].name);
+        setMode('select');
+      }
+    } else if (existingYears.length === 0 && !isLoadingYears) {
+      setMode('create');
+    }
+  }, [existingYears, isLoadingYears, data.academicYearCode, selectedYearName]);
+
+  const handleCreateYear = async () => {
+    if (!newYearName.trim()) {
+      setCreateError('Academic Year code/name is required');
+      return;
+    }
+    setCreateError(null);
+    try {
+      const created = await createAcademicYearMutation.mutateAsync({
+        name: newYearName.trim(),
+        startDate: new Date(startDate).toISOString(),
+        endDate: new Date(endDate).toISOString(),
+        isActive: true,
+      });
+      setSelectedYearName(created.name);
+      setMode('select');
+    } catch (err: any) {
+      setCreateError(
+        err?.response?.data?.message || err.message || 'Failed to create academic year',
+      );
+    }
+  };
+
+  const currentAcademicYear = mode === 'select' ? selectedYearName : newYearName.trim();
+
+  const handleConfirmAndIngest = async () => {
+    if (mode === 'create') {
+      // First ensure the year is created
+      if (!newYearName.trim()) {
+        setCreateError('Academic year name is required');
+        return;
+      }
+      try {
+        const created = await createAcademicYearMutation.mutateAsync({
+          name: newYearName.trim(),
+          startDate: new Date(startDate).toISOString(),
+          endDate: new Date(endDate).toISOString(),
+          isActive: true,
+        });
+        onExecute(created.name);
+      } catch (err: any) {
+        setCreateError(
+          err?.response?.data?.message || err.message || 'Failed to create academic year',
+        );
+      }
+    } else {
+      onExecute(selectedYearName);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -50,25 +132,127 @@ export function Step3ProgressionGraphView({
         </div>
       </div>
 
-      {/* Target Academic Year Input */}
-      <div className="bg-muted/30 flex flex-wrap items-center gap-4 rounded-lg border p-4">
-        <div className="flex items-center gap-2">
-          <Calendar className="text-primary h-5 w-5" />
-          <Label htmlFor="ayCode" className="text-sm font-semibold">
-            Target Academic Year Code:
-          </Label>
+      {/* Target Academic Year Configuration */}
+      <div className="bg-card rounded-lg border p-4 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3">
+          <div className="flex items-center gap-2">
+            <Calendar className="text-primary h-5 w-5" />
+            <h4 className="text-sm font-semibold">Target Academic Session</h4>
+          </div>
+          <div className="bg-muted flex items-center gap-1 rounded-md p-1 text-xs">
+            <button
+              type="button"
+              disabled={existingYears.length === 0}
+              onClick={() => setMode('select')}
+              className={`rounded px-2.5 py-1 font-medium transition-colors ${
+                mode === 'select'
+                  ? 'bg-background text-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              } ${existingYears.length === 0 ? 'cursor-not-allowed opacity-50' : ''}`}
+            >
+              Choose Existing ({existingYears.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('create')}
+              className={`rounded px-2.5 py-1 font-medium transition-colors ${
+                mode === 'create'
+                  ? 'bg-background text-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              + Create New Year
+            </button>
+          </div>
         </div>
-        <div className="w-48">
-          <Input
-            id="ayCode"
-            placeholder="e.g. AY-2026-27"
-            value={academicYearCode}
-            onChange={(e) => setAcademicYearCode(e.target.value)}
-          />
+
+        <div className="pt-3">
+          {mode === 'select' ? (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="w-full sm:w-72">
+                <select
+                  id="existingYearSelect"
+                  value={selectedYearName}
+                  onChange={(e) => setSelectedYearName(e.target.value)}
+                  className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
+                >
+                  {existingYears.map((ay) => (
+                    <option key={ay.id} value={ay.name}>
+                      {ay.name} {ay.isCurrent || ay.status === 'ACTIVE' ? '★ (Active)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <span className="text-muted-foreground text-xs">
+                Imported sections will be linked to academic year{' '}
+                <strong className="text-foreground">{selectedYearName}</strong>.
+              </span>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <Label htmlFor="newYearName" className="text-xs">
+                    Academic Year Name/Code *
+                  </Label>
+                  <Input
+                    id="newYearName"
+                    placeholder="e.g. AY-2026-27"
+                    value={newYearName}
+                    onChange={(e) => setNewYearName(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="startDate" className="text-xs">
+                    Start Date *
+                  </Label>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="endDate" className="text-xs">
+                    End Date *
+                  </Label>
+                  <Input
+                    id="endDate"
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+              {createError && (
+                <div className="rounded bg-red-50 p-2 text-xs font-medium text-red-700">
+                  {createError}
+                </div>
+              )}
+              <div className="text-muted-foreground flex items-center justify-between text-xs">
+                <span>
+                  This academic year will be created under your institution and linked to all
+                  imported sections.
+                </span>
+                {existingYears.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setMode('select')}
+                  >
+                    Cancel, pick existing
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
-        <span className="text-muted-foreground text-xs">
-          Sections will be registered under this academic session.
-        </span>
       </div>
 
       {/* Progression Graphs per Program */}
@@ -214,14 +398,20 @@ export function Step3ProgressionGraphView({
           ← Back to Code Resolver
         </Button>
         <Button
-          onClick={() => onExecute(academicYearCode)}
-          disabled={isExecuting || !academicYearCode.trim()}
+          onClick={handleConfirmAndIngest}
+          disabled={
+            isExecuting ||
+            createAcademicYearMutation.isPending ||
+            (mode === 'select' ? !selectedYearName : !newYearName.trim())
+          }
           className="bg-primary text-primary-foreground shadow-sm"
         >
-          {isExecuting ? (
+          {isExecuting || createAcademicYearMutation.isPending ? (
             <span className="flex items-center gap-2">
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              Ingesting Academic Structure...
+              {createAcademicYearMutation.isPending
+                ? 'Creating Academic Year...'
+                : 'Ingesting Academic Structure...'}
             </span>
           ) : (
             'Confirm & Ingest Structure (3NF) →'

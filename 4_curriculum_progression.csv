@@ -1,0 +1,6 @@
+program_code,curriculum_name,term_sequence,term_name,course_code,is_mandatory,prerequisite_course_codes
+BTECH_CSE,Scheme 2026,1,Semester 1,CS101,true,
+BTECH_CSE,Scheme 2026,1,Semester 1,CS102,true,
+BTECH_CSE,Scheme 2026,1,Semester 1,MA101,true,
+BTECH_CSE,Scheme 2026,2,Semester 2,CS201,true,CS101
+BTECH_CSE,Scheme 2026,2,Semester 2,CS202,true,CS102
